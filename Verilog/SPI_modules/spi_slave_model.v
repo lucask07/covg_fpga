@@ -50,16 +50,16 @@ module spi_slave_model (rst, ss, sclk, mosi, miso);
 
   reg           miso;
 
-  reg           rx_negedge;     // slave receiving on negedge
-  reg           tx_negedge;     // slave transmiting on negedge
-  reg    [15:0] data;           // data register (used to be 32 bits)
+  reg           rx_negedge = 1'b0;     // slave receiving on negedge
+  reg           tx_negedge = 1'b1;     // slave transmiting on negedge
+  reg    [15:0] data; //= 16'ha596;           // data register (used to be 32 bits)
 
   parameter     Tp = 0; //this used to be Tp = 1
 
   always @(posedge(sclk && !rx_negedge) or negedge(sclk && rx_negedge) or rst)
   begin
     if (rst)
-      data <= #Tp 15'b0;//used to be 32
+      data <= #Tp 16'ha596;//used to be 32 bits
     else if (!ss)
       data <= #Tp {data[14:0], mosi};//used to be data [30:0]
   end
@@ -73,4 +73,3 @@ module spi_slave_model (rst, ss, sclk, mosi, miso);
   end
 
 endmodule
-      
