@@ -20,39 +20,17 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
+module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o, tx_spi_dat, control_dat
 
     );
     input wire clk, rst;
     input wire [31:0] ep_dataout;
     input wire trigger;
     input wire int_o;
+    input wire [31:0] tx_spi_dat;//this signal and the one below will be used to detect manual/one-shot read requests
+    input wire [13:0] control_dat;
     output reg o_stb = 1'b0;
     output reg [33:0] cmd_word;
-    
-    reg startread = 1'b0;
-    reg readmarker = 1'b0;
-    always@(posedge clk /*or posedge int_o*/)begin
-        if(int_o && !readmarker)begin
-           startread <= 1'b1;
-           readmarker <= 1'b1;
-        end
-        else if(!int_o)begin
-            readmarker <= 1'b0;
-        end
-        /*else begin
-           startread <= 1'b0; 
-        end*/
-    end
-	 
-	 always@(negedge clk)begin
-		if(startread)begin
-			startread <= 1'b0;
-		end
-		else begin
-			startread <= startread;
-		end
-	 end
     
     //states
     reg [4:0] state, nextstate;
@@ -72,12 +50,9 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
     
     
     //state register
-    always@(posedge rst or posedge clk or posedge startread/*int_o*/)begin
+    always@(posedge rst or posedge clk)begin
         if(rst)begin
             state <= S0;
-        end
-        else if(startread)begin
-            state <= read;
         end
         else begin
             state <= nextstate;
@@ -91,6 +66,9 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
                 if(trigger)begin
                     nextstate = S1;
                 end
+		else if(int_o)begin
+		    nextstate = read;
+		end
                 else begin
                     nextstate = S0;
                 end
