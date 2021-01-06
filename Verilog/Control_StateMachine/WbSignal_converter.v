@@ -11,6 +11,19 @@
 // Tool Versions: 
 // Description: 
 // 
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company: UST
+// Engineer: Ian Delgadillo Bonequi
+// 
+// Create Date: 11/30/2020 10:01:41 PM
+// Design Name: 
+// Module Name: WbSignal_converter
+// Project Name: 
+// Target Devices: 
+// Tool Versions: 
+// Description: 
+// 
 // Dependencies: 
 // 
 // Revision:
@@ -20,16 +33,16 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o, tx_spi_dat, control_dat
+module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o/*, tx_spi_dat, control_dat//*/
 
     );
     input wire clk, rst;
     input wire [31:0] ep_dataout;
     input wire trigger;
     input wire int_o;
-    input wire [31:0] tx_spi_dat;//this signal and the one below will be used to detect manual/one-shot read requests
-    input wire [13:0] control_dat;
-    output reg o_stb = 1'b0;
+	 /*input wire [31:0] tx_spi_dat;//this signal and the one below will be used to detect manual/one-shot read requests
+	 input wire [13:0] control_dat;//*/
+    output reg o_stb;
     output reg [33:0] cmd_word;
     
     //states
