@@ -30,10 +30,12 @@ module tb_spi_top;
 	reg [31:0] ep_dataout;
 	reg trigger;
 	reg readFifo;
+	reg rstFifo;
 
 	// Outputs
 	wire hostinterrupt;
 	wire [31:0] dout;
+	wire [31:0] lastWrite;
 
 	// Instantiate the Unit Under Test (UUT)
 	top_module uut (
@@ -42,8 +44,10 @@ module tb_spi_top;
 		.ep_dataout(ep_dataout), 
 		.trigger(trigger), 
 		.hostinterrupt(hostinterrupt), 
-		.readFifo(readFifo), 
-		.dout(dout)
+		.readFifo(readFifo),
+		.rstFifo(rstFifo),
+		.dout(dout),
+		.lastWrite(lastWrite)
 	);
 	
 	// Generate clock
@@ -53,15 +57,18 @@ module tb_spi_top;
 		// Initialize Inputs
 		clk = 1'b0;
 		rst = 1'b0;
+		rstFifo = 1'b0;
 		/*ep_dataout = 0;
 		trigger = 0;*/
 		readFifo = 1'b0;
 		#10;
 		rst = 1'b1;
+		rstFifo = 1'b1;
 
 		// Wait 100 ns for global reset to finish
 		#100;
 		rst = 1'b0;
+		rstFifo = 1'b0;
         
 		// Add stimulus here
 		#5;
@@ -159,6 +166,10 @@ module tb_spi_top;
       readFifo = 1'b1;
       #10;
       readFifo = 1'b0;
+		#40;
+		rstFifo = 1'b1;
+		#10;
+		rstFifo = 1'b0;
 	end
       
 endmodule
