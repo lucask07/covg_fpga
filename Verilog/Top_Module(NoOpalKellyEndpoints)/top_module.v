@@ -27,7 +27,9 @@ module top_module(
     input wire trigger,  
     output wire hostinterrupt, //interrupt signal from fifo to tell host computer that FIFO is half full
     input wire readFifo,
-    output wire [31:0] dout
+	 input wire rstFifo,
+    output wire [31:0] dout,
+	 output wire [31:0] lastWrite //this signal will give the value of the last word written into the FIFO (for debugging)
     );
     
       wire cmd_stb;
@@ -35,7 +37,7 @@ module top_module(
       wire cmd_busy;
       wire rsp_stb;
       wire [33:0] wb_cmd_dataout;
-      wire [31:0] adr;
+      wire [29:0] adr; //was 32 bits wide
       wire [31:0] dat_i; 
       wire [31:0] dat_o;
       wire we;
@@ -54,6 +56,9 @@ module top_module(
       wire full;
       wire empty;
       wire writeFifo;
+		
+		/*wire [31:0] tx_spi_dat;
+		wire [13:0]control_dat;//*/
     
   /*Wishbone Master module*/
     hbexec Wishbone_Master (
@@ -72,7 +77,7 @@ module top_module(
       .wb_adr_i(adr[4:0]), .wb_dat_i(dat_o), .wb_dat_o(dat_i), 
       .wb_sel_i(sel), .wb_we_i(we), .wb_stb_i(stb), 
       .wb_cyc_i(cyc), .wb_ack_o(ack), .wb_err_o(err), .wb_int_o(int_o),
-      .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
+      .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso)/*, .tx_spi_dat(tx_spi_dat), .control_dat(control_dat)//*/ 
     );
   
     // SPI slave model
@@ -80,13 +85,29 @@ module top_module(
       .rst(rst), .ss(ss[0]), .sclk(sclk), .mosi(mosi), .miso(miso)
     );
     
+	 //FIFO to hold data from the ADS7950
     fifo_generator_0 FIFO(
     .full(full), .din(wb_cmd_dataout[31:0]), .wr_en(writeFifo), .empty(empty), 
-    .dout(dout), .rd_en(readFifo), .clk(clk), .rst(rst), .prog_full(hostinterrupt)
+    .dout(dout), .rd_en(readFifo), .clk(clk), .rst(rstFifo), .prog_full(hostinterrupt)
     );
     
+	 //module to take commands from the host and format them into commands that the Wishbone master will understand
     WbSignal_converter CONVERT(
-    .clk(clk), .rst(rst), .ep_dataout(ep_dataout), .trigger(trigger), .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)
+    .clk(clk), .rst(rst), .ep_dataout(ep_dataout), .trigger(trigger), .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)/*,
+	 .tx_spi_dat(tx_spi_dat), .control_dat(control_dat)//*/
     );
+	 
+	 reg [31:0] lastFifoWrite;
+	 
+	 always@(posedge rst or posedge writeFifo)begin
+		if(rst)begin
+			lastFifoWrite <= 32'h0;
+		end
+		else begin
+			lastFifoWrite <= wb_cmd_dataout[31:0];
+		end
+	 end
+	 
+	 assign lastWrite = lastFifoWrite;
     
 endmodule
