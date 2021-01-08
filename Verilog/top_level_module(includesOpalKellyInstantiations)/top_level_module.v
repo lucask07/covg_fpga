@@ -22,8 +22,18 @@ module top_level_module(
 	input wire [4:0] okUH,
 	output wire[2:0] okHU,
 	inout wire[31:0] okUHU,
-	inout wire okAA
+	inout wire okAA,
+   input wire sys_clkn,
+	input wire sys_clkp
     );
+	 
+	//System Clock from input differential pair 
+	wire clk_sys;
+	IBUFGDS osc_clk(
+		  .O(clk_sys),
+		  .I(sys_clkp),
+		  .IB(sys_clkn)
+	);
 	 
 	 //FrontPanel (HostInterface) wires	
 	wire okClk;
@@ -37,10 +47,13 @@ module top_level_module(
 	//wires to capture output from the user HDL
 	wire [31:0] lastWrite;
 	wire hostinterrupt;
+	wire ep_ready;
 	//output data from the FIFO via top user HDL module
 	wire [31:0] dout;
 	//wires to capture the input into the user HDL
 	wire readFifo;
+	//wire to capture the BT pipe strobe
+	wire pipestrobe;
 	
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
@@ -50,7 +63,7 @@ module top_level_module(
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
              .okClk(okClk), .okHE(okHE), .okEH(okEH));
 				 
-	//wire to hold the data/commands from the host – this will be routed to the wishbone formatter/state machine
+	//wire to hold the data/commands from the host â€“ this will be routed to the wishbone formatter/state machine
 	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
 	
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
@@ -58,20 +71,23 @@ module top_level_module(
 	//ep40trig[1] will be used as the master reset for the rest of the design
 	//ep40trig[2] will be used as the reset for the FIFO
 	okTriggerIn trigIn40 (.okHE(okHE),
-                      .ep_addr(8'h40), .ep_clk(okClk), .ep_trigger(ep40trig));
+                      .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep40trig));
 	
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
 	okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 	
 	//status signal (bit 0) from FIFO telling the host that it is half full (time to read data)
-	okWireOut wo1 (.okHE(okHE), .okEH(okEHx[1*65 +: 65 ]), .ep_addr(8'h21), .ep_datain({31'b0, hostinterrupt}));
+	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), .ep_trigger({31'b0, hostinterrupt}));
 	
 	//pipeOut to transfer data in bulk from the FIFO
-	okPipeOut pipeA0(.okHE(okHE), .okEH(okEHx[2*65 +: 65]), .ep_addr(8'hA0), .ep_read(readFifo), .ep_datain(dout));
+	okBTPipeOut pipeOutA0 (.okHE(okHE), .okEH(okEHx[2*65 +: 65]),
+                       .ep_addr(8'hA0), .ep_datain(dout), .ep_read(readFifo),
+                       .ep_blockstrobe(pipestrobe), .ep_ready(ep_ready));
 	
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
-	top_module top (.clk(okClk), .rst(ep40trig[1]), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
-				 .hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep40trig[2]), .dout(dout), .lastWrite(lastWrite));
+	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(ep40trig[1]), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
+				 .hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep40trig[2]), .dout(dout), .lastWrite(lastWrite),
+				 .ep_ready(ep_ready));
 	
 
 endmodule
