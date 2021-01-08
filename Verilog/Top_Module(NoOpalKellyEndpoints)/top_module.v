@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+//`timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -22,14 +22,16 @@
 
 module top_module(
     input wire clk,
+    input wire fifoclk,
     input wire rst,
     input wire [31:0] ep_dataout,
     input wire trigger,  
     output wire hostinterrupt, //interrupt signal from fifo to tell host computer that FIFO is half full
     input wire readFifo,
-	 input wire rstFifo,
+    input wire rstFifo,
     output wire [31:0] dout,
-	 output wire [31:0] lastWrite //this signal will give the value of the last word written into the FIFO (for debugging)
+    output wire [31:0] lastWrite, //this signal will give the value of the last word written into the FIFO (for debugging)
+    output wire [31:0] ep_ready //this signal will tell the host that a block transfer is ready
     );
     
       wire cmd_stb;
@@ -57,8 +59,6 @@ module top_module(
       wire empty;
       wire writeFifo;
 		
-		/*wire [31:0] tx_spi_dat;
-		wire [13:0]control_dat;//*/
     
   /*Wishbone Master module*/
     hbexec Wishbone_Master (
@@ -77,7 +77,7 @@ module top_module(
       .wb_adr_i(adr[4:0]), .wb_dat_i(dat_o), .wb_dat_o(dat_i), 
       .wb_sel_i(sel), .wb_we_i(we), .wb_stb_i(stb), 
       .wb_cyc_i(cyc), .wb_ack_o(ack), .wb_err_o(err), .wb_int_o(int_o),
-      .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso)/*, .tx_spi_dat(tx_spi_dat), .control_dat(control_dat)//*/ 
+      .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
     );
   
     // SPI slave model
@@ -88,15 +88,15 @@ module top_module(
 	 //FIFO to hold data from the ADS7950
     fifo_generator_0 FIFO(
     .full(full), .din(wb_cmd_dataout[31:0]), .wr_en(writeFifo), .empty(empty), 
-    .dout(dout), .rd_en(readFifo), .clk(clk), .rst(rstFifo), .prog_full(hostinterrupt)
+    .dout(dout), .rd_en(readFifo), .wr_clk(clk), .rd_clk(fifoclk), .rst(rstFifo), .prog_full(hostinterrupt)
     );
     
 	 //module to take commands from the host and format them into commands that the Wishbone master will understand
     WbSignal_converter CONVERT(
-    .clk(clk), .rst(rst), .ep_dataout(ep_dataout), .trigger(trigger), .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)/*,
-	 .tx_spi_dat(tx_spi_dat), .control_dat(control_dat)//*/
+    .clk(clk), .rst(rst), .ep_dataout(ep_dataout), .trigger(trigger), .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)
     );
 	 
+	 //capturing the value of the last word written to the FIFO
 	 reg [31:0] lastFifoWrite;
 	 
 	 always@(posedge rst or posedge writeFifo)begin
@@ -109,5 +109,22 @@ module top_module(
 	 end
 	 
 	 assign lastWrite = lastFifoWrite;
+	 
+	 //creating a signal to serve as the EP_READY for the Block throttled Pipe out
+	 reg blockready;
+	 
+	 always@(posedge rstFifo or posedge fifoclk)begin
+		if(rstFifo)begin
+			blockready = 1'b0;
+		end
+		else if(hostinterrupt)begin
+			blockready = 1'b1;
+		end
+		else if(empty)begin
+			blockready = 1'b0;
+		end
+	 end
+	 
+	 assign ep_ready = blockready;
     
 endmodule
