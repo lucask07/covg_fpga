@@ -22,16 +22,20 @@
 
 module top_module(
     input wire clk,
-    input wire fifoclk,
+	 input wire fifoclk,
     input wire rst,
     input wire [31:0] ep_dataout,
     input wire trigger,  
     output wire hostinterrupt, //interrupt signal from fifo to tell host computer that FIFO is half full
     input wire readFifo,
-    input wire rstFifo,
+	 input wire rstFifo,
     output wire [31:0] dout,
-    output wire [31:0] lastWrite, //this signal will give the value of the last word written into the FIFO (for debugging)
-    output wire [31:0] ep_ready //this signal will tell the host that a block transfer is ready
+	 output wire [31:0] lastWrite, //this signal will give the value of the last word written into the FIFO (for debugging)
+	 output wire ep_ready, //this signal will tell the host that a block transfer is ready
+	 /**/output wire mosi,
+	 input wire miso, //should be input
+	 output wire sclk,
+	 output wire [7:0] ss//*/
     );
     
       wire cmd_stb;
@@ -50,10 +54,10 @@ module top_module(
       wire err;
       wire int_o;
         
-      wire [7:0] ss;
+      /*wire [7:0] ss;
       wire sclk;
       wire mosi;
-      wire miso;
+      wire miso;//*/
         
       wire full;
       wire empty;
@@ -122,6 +126,9 @@ module top_module(
 		end
 		else if(empty)begin
 			blockready = 1'b0;
+		end
+		else begin
+			blockready = blockready;
 		end
 	 end
 	 
