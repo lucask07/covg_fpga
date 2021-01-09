@@ -24,7 +24,11 @@ module top_level_module(
 	inout wire[31:0] okUHU,
 	inout wire okAA,
    input wire sys_clkn,
-	input wire sys_clkp
+	input wire sys_clkp,
+	output wire mosi,/////////
+	input wire miso,  /*these spi signals are for the ADS7950*/
+	output wire ss,
+	output wire sclk/////////
     );
 	 
 	//System Clock from input differential pair 
@@ -50,10 +54,12 @@ module top_level_module(
 	wire ep_ready;
 	//output data from the FIFO via top user HDL module
 	wire [31:0] dout;
-	//wires to capture the input into the user HDL
+	//wires to capture output from BTPipeOut (initiating block reads from FIFO)
 	wire readFifo;
-	//wire to capture the BT pipe strobe
 	wire pipestrobe;
+	//wires to capture slave select signals the SPI master
+	wire [7:0] slaveselects;
+	assign ss = slaveselects[0];//slave select signal for ADS7950
 	
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
@@ -87,7 +93,7 @@ module top_level_module(
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
 	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(ep40trig[1]), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
 				 .hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep40trig[2]), .dout(dout), .lastWrite(lastWrite),
-				 .ep_ready(ep_ready));
+				 .ep_ready(ep_ready), .mosi(mosi), .miso(miso), .sclk(sclk), .ss(slaveselects));
 	
 
 endmodule
