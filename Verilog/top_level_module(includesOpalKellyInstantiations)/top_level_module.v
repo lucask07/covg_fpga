@@ -23,12 +23,13 @@ module top_level_module(
 	output wire[2:0] okHU,
 	inout wire[31:0] okUHU,
 	inout wire okAA,
-   input wire sys_clkn,
+   	input wire sys_clkn,
 	input wire sys_clkp,
 	output wire mosi,/////////
 	input wire miso,  /*these spi signals are for the ADS7950*/
 	output wire ss,
-	output wire sclk/////////
+	output wire sclk,/////////
+	input wire pushreset//pushbutton reset
     );
 	 
 	//System Clock from input differential pair 
@@ -43,23 +44,33 @@ module top_level_module(
 	wire okClk;
 	wire [112:0] okHE;
 	wire [64:0] okEH;
+	
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
 	wire [3*65-1:0] okEHx;
+	
 	//wires and triggers
 	wire [31:0] ep00wire, ep01wire;
 	wire [31:0] ep40trig;
+	
 	//wires to capture output from the user HDL
 	wire [31:0] lastWrite;
 	wire hostinterrupt;
 	wire ep_ready;
+	
 	//output data from the FIFO via top user HDL module
 	wire [31:0] dout;
+	
 	//wires to capture output from BTPipeOut (initiating block reads from FIFO)
 	wire readFifo;
 	wire pipestrobe;
+	
 	//wires to capture slave select signals the SPI master
 	wire [7:0] slaveselects;
 	assign ss = slaveselects[0];//slave select signal for ADS7950
+	
+	//wire to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
+	wire sys_rst;
+	assign sys_rst = (pushreset | ep40trig[1]);
 	
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
@@ -91,7 +102,7 @@ module top_level_module(
                        .ep_blockstrobe(pipestrobe), .ep_ready(ep_ready));
 	
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
-	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(ep40trig[1]), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
+	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
 				 .hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep40trig[2]), .dout(dout), .lastWrite(lastWrite),
 				 .ep_ready(ep_ready), .mosi(mosi), .miso(miso), .sclk(sclk), .ss(slaveselects));
 	
