@@ -20,15 +20,13 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o/*, tx_spi_dat, control_dat//*/
+module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
 
     );
     input wire clk, rst;
     input wire [31:0] ep_dataout;
     input wire trigger;
     input wire int_o;
-    /*input wire [31:0] tx_spi_dat;//this signal and the one below will be used to detect manual/one-shot read requests
-    input wire [13:0] control_dat;//*/
     output reg o_stb;
     output reg [33:0] cmd_word;
     
@@ -39,7 +37,7 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o/
     parameter S1 = 5'b00001;
     parameter S2 = 5'b00010;
     parameter S3 = 5'b00011;
-    parameter S4 = 5'b01111;
+	 parameter S4 = 5'b01111;
     parameter read = 5'b00100;//this state and the ones below will initiate transfer of data from the ADC to the FIFO
     parameter read1 = 5'b00101;//this will ensure that there is not need for host intervention to move data from the SPI master to the FIFO
     parameter read2 = 5'b00110;
@@ -51,7 +49,7 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o/
     
     
     //state register
-    always@(posedge rst or posedge clk)begin
+    always@(posedge clk)begin
         if(rst)begin
             state <= S0;
         end
@@ -67,14 +65,14 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o/
                 if(trigger)begin
                     nextstate = S1;
                 end
-	        else if(int_o)begin
+		else if(int_o)begin
 		    nextstate = read;
-	        end
+		end
                 else begin
                     nextstate = S0;
                 end
             end
-	    S1: begin
+				S1: begin
                 nextstate = S2;
             end
             S2: begin
