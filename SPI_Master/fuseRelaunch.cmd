@@ -1,0 +1,1 @@
+-intstyle "ise" -incremental -lib "unisims_ver" -lib "unimacro_ver" -lib "xilinxcorelib_ver" -lib "secureip" -o "C:/Users/iande/Desktop/covg_fpga/SPI_Master/tb_spi_top_isim_beh.exe" -prj "C:/Users/iande/Desktop/covg_fpga/SPI_Master/tb_spi_top_beh.prj" "work.tb_spi_top" "work.glbl" 
