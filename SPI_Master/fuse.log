@@ -1,0 +1,39 @@
+Running: C:\Xilinx\14.7\ISE_DS\ISE\bin\nt64\unwrapped\fuse.exe -intstyle ise -incremental -lib unisims_ver -lib unimacro_ver -lib xilinxcorelib_ver -lib secureip -o C:/Users/iande/Desktop/covg_fpga/SPI_Master/tb_spi_top_isim_beh.exe -prj C:/Users/iande/Desktop/covg_fpga/SPI_Master/tb_spi_top_beh.prj work.tb_spi_top work.glbl 
+ISim P.20131013 (signature 0x7708f090)
+Number of CPUs detected in this system: 8
+Turning on mult-threading, number of parallel sub-compilation jobs: 16 
+Determining compilation order of HDL files
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/spi_shift.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/spi_clgen.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/WbSignal_converter.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/spi_top.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/spi_slave_model.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/one_second_pulse.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/ipcore_dir/fifo_generator_0.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/hbexec.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/top_module.v" into library work
+Analyzing Verilog file "C:/Users/iande/Desktop/covg_fpga/SPI_Master/tb_spi_top.v" into library work
+Analyzing Verilog file "C:/Xilinx/14.7/ISE_DS/ISE//verilog/src/glbl.v" into library work
+Starting static elaboration
+WARNING:HDLCompiler:1016 - "C:/Users/iande/Desktop/covg_fpga/SPI_Master/tb_spi_top.v" Line 47: Port mosi is not connected to this instance
+Completed static elaboration
+Compiling module hbexec_default
+Compiling module spi_clgen
+Compiling module spi_shift
+Compiling module spi_top
+Compiling module spi_slave_model
+Compiling module fifo_generator_v9_3_sync_stage(C...
+Compiling module fifo_generator_v9_3_bhv_ver_as(C...
+Compiling module FIFO_GENERATOR_V9_3_CONV_VER(C_C...
+Compiling module FIFO_GENERATOR_V9_3(C_DATA_COUNT...
+Compiling module fifo_generator_0
+Compiling module WbSignal_converter
+Compiling module one_second_pulse
+Compiling module top_module
+Compiling module tb_spi_top
+Compiling module glbl
+Time Resolution for simulation is 1ps.
+Compiled 15 Verilog Units
+Built simulation executable C:/Users/iande/Desktop/covg_fpga/SPI_Master/tb_spi_top_isim_beh.exe
+Fuse Memory Usage: 33184 KB
+Fuse CPU Usage: 827 ms
