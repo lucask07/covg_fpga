@@ -138,7 +138,7 @@ module tb_spi_top;
       trigger = 1'b1;
       #10;
       trigger = 1'b0;
-      #900;
+      #905;
 		/**/
 		ep_dataout = 32'hc0000000;
 		trigger = 1'b1;
