@@ -30,8 +30,15 @@ module top_level_module(
 	output wire ss,
 	output wire sclk,/////////
 	input wire pushreset,//pushbutton reset
-	output wire [7:0] led//LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
-    );
+	output wire [7:0] led, //LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
+	output wire [3:0] gp
+	);
+	 
+	// connect ADS7950 SPI signals to the general purpose outputs for debug
+	assign gp[0] = mosi;
+	assign gp[1] = miso;
+	assign gp[2] = ss;
+	assign gp[3] = sclk;
 	 
 	//System Clock from input differential pair 
 	wire clk_sys;
