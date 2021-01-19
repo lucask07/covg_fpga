@@ -102,11 +102,11 @@ if __name__ == "__main__":
                     0x80000061, 0x40000001]:
 
         f.set_wire(control.addr, val, mask = 0xffffffff)
-        f.send_trig(ep.valid) 
+        send_trig(valid) 
 
     # now send SPI command 
-    for val in [0x80000001, 0x40001XXX, 
+    for val in [0x80000001, 0x40001000, 
                 0x80000041, 0x40003710]:
         f.set_wire(control.addr, val, mask = 0xffffffff)
-        f.send_trig(ep.valid) 
+        send_trig(valid) 
 
