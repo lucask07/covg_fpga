@@ -67,3 +67,5 @@ _xmsgs/
 
 # for Python
 *.pyc
+
+*.swp
