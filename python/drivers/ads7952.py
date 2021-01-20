@@ -6,18 +6,17 @@ import matplotlib.pyplot as plt
 import pickle as pkl
 from drivers.utils import rev_lookup, bin, test_bit, twos_comp
 
-
 from collections import namedtuple
 ep = namedtuple('ep', 'addr bits type')
 control =   ep(0x00, [i for i in range(32)], 'wi')  # note this is active low 
 
 # wire outs for "1 deep FIFO" 
-adc_pll_lock =   ep(0x20, [i for i in range(32)], 'wo')
+one_deep_fifo =   ep(0x20, [i for i in range(32)], 'wo')
 
 # triggers in 
-valid      = ep(0x40, 0, 'to')
-fpga_reset = ep(0x40, 1, 'to')
-fifo_reset = ep(0x40, 2, 'to')
+valid      = ep(0x40, 0, 'ti')
+fpga_reset = ep(0x40, 1, 'ti')
+fifo_reset = ep(0x40, 2, 'ti')
 
 # triggers out 
 hall_full = ep(0x60, 0, 'to')
@@ -91,22 +90,65 @@ def read_wire(ep_bit):
     return a 
 
 
+'''
+cmd_word = {ep_dataout[31:30], 2'b0, ep_dataout[29:0]};
+
+
+// Wishbone Master
+// Purpose: An example debug bus.  This bus takes commands from an incoming
+//      34-bit command word, and issues those commands across a wishbone
+//  bus, returning the result from the bus command.  Basic bus commands are:
+//
+//  2'b00   Read
+//  2'b01   Write (lower 32-bits are the value to be written)
+//  2'b10   Set address
+//      Next 30 bits are the address
+//      bit[1] is an address difference bit
+//      bit[0] is an increment bit
+//  2'b11   Special command
+
+// SPI Master addresses 
+
+Rx0 0x00 32 R Data receive register 0
+CTRL 0x10 32 R/W Control and status register w/ offset 4
+DIVIDER 0x14 32 R/W Clock divider register : w/ offset 5 
+SS 0x18 32 R/W Slave select register: w/ offset 6
+
+'''
+
 if __name__ == "__main__":
 
     f = FPGA()
     f.init_device()
 
-    # SPI Master configuration
-    for val in [0x80000051, 0x40000001, 
-                    0x80000041, 0x40003610,
-                    0x80000061, 0x40000001]:
+    # FPGA reset 
+
+    # SPI Master configuration: divide reg, ctrl reg, SS register 
+    # MSB: 8 - set address, 4 - write data  
+    for val in [0x80000051, 0x40000004,  # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
+                0x80000041, 0x40003610,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
+                0x80000061, 0x40000001]: # slave select (just setting bit0)
 
         f.set_wire(control.addr, val, mask = 0xffffffff)
         send_trig(valid) 
 
     # now send SPI command 
-    for val in [0x80000001, 0x40001000, 
-                0x80000041, 0x40003710]:
+    for val in [0x80000001, 0x40001000,  # Tx register, data to send  
+                0x80000041, 0x40003710]: # Control register - GO (bit 8)
         f.set_wire(control.addr, val, mask = 0xffffffff)
         send_trig(valid) 
+
+
+    # TODO: test block throttle pipe, use an auto mode to cycle through ~4 channels 
+    # 128 transfers and then will be ready to read a block 
+
+    # TODO: 
+    # 1) setup auto mode by sending wire in commands to the wishbone master
+    # 2) wait for trigger out "half full"
+    # 3) read block throttle pipe  
+
+
+    # test wire out using manual reads of CH0 and CH3 
+    a = read_wire(one_deep_fifo)
+    # TODO - convert this value 'a' to a voltage 
 
