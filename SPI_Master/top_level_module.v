@@ -25,20 +25,62 @@ module top_level_module(
 	inout wire okAA,
    input wire sys_clkn,
 	input wire sys_clkp,
+	
+	/*
 	output wire mosi,/////////
-	input wire miso,  /*these spi signals are for the ADS7950*/
+	input wire miso, 
 	output wire ss,
 	output wire sclk,/////////
+	*/ 
+	
+	// ADS7952
+	output wire adcs_sdi,/////////
+	input wire adcs_sdo,  /*these spi signals are for the ADS7950*/
+	output wire adcs_sclk,
+	output wire adcs_csb,/////////
+	
+	//Fast DAC AD5453
+	output wire d0_sdi,
+	output wire d0_csb,
+	output wire d0_sclk,
+
+	output wire d1_sdi,
+	output wire d1_csb,
+	output wire d1_sclk,
+
+	output wire d2_sdi,
+	output wire d2_csb,
+	output wire d2_sclk,
+
+	output wire d3_sdi,
+	output wire d3_csb,
+	output wire d3_sclk,	
+	
 	input wire pushreset,//pushbutton reset
 	output wire [7:0] led, //LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
 	output wire [3:0] gp
 	);
-	 
-	// connect ADS7950 SPI signals to the general purpose outputs for debug
+	
+	wire mosi;
+	wire miso;
+	wire ss;
+	wire sclk;
+	
+	// connect SPI signals to the general purpose outputs for debug
 	assign gp[0] = mosi;
 	assign gp[1] = miso;
 	assign gp[2] = ss;
 	assign gp[3] = sclk;
+	 
+	// MUX for routing the SPI master  [select mosi default, outputs]
+	mux_1to8 mux_sdi (ep01wire[2:0], mosi, 1'b0, {d3_sdi, d2_sdi, d1_sdi, d0_sdi, adcs_sdi});
+	// MUX for routing the SPI master  [select ss default, outputs]
+	mux_1to8 mux_csb (ep01wire[2:0], ss, 1'b1, {d3_csb, d2_csb, d1_csb, d0_csb, adcs_csb});
+	// MUX for routing the SPI master  [select sclk default, outputs]
+	mux_1to8 mux_sclk (ep01wire[2:0], sclk, 1'b0, {d3_sclk, d2_sclk, d1_sclk, d0_sclk, adcs_sclk});
+
+	// no mux needed since DACs do not output data
+	assign miso = adcs_sclk;
 	 
 	//System Clock from input differential pair 
 	wire clk_sys;
@@ -89,6 +131,10 @@ module top_level_module(
 				 
 	//wire to hold the data/commands from the host – this will be routed to the wishbone formatter/state machine
 	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
+	
+	// Wire in to select what slave the SPI data is routed to
+	okWireIn wi1 (.okHE(okHE), .ep_addr(8'h01), .ep_dataout(ep01wire));
+
 	
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
