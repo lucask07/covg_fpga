@@ -37,6 +37,14 @@ rising_edge_load = 3 # bits 14-15 : switch to loading data on the rising edge of
 Serial Data Input. Data is clocked into the 16-bit input register upon the active edge of the serial
 clock input. By default, in power-up mode data is clocked into the shift register upon the falling
 edge of SCLK. The control bits allow the user to change the active edge to a rising edge.
+
+
+Settings for AD5453
+
+# creg_val = 0x40003010 # Char length of 16; clear both Tx_NEG, Rx_NEG; set ASS, IE. AD5453    
+# val = 0x40001fff # AD5453 (half-scale)
+
+
 '''
 
 def set_bit(ep_bit, adc_chan = None):
@@ -88,6 +96,13 @@ def read_wire(ep_bit):
     a = f.xem.GetWireOutValue(ep_bit.addr) 
     return a 
 
+def to_voltage(a):
+    bits = 12
+    vref = 2.5*2 
+    masked = a & 0xfff  # 12 bit ADC        
+    v = masked/(2**bits - 1)*vref
+    chan = (a & 0xf000) >> 12
+    return v, chan
 
 '''
 cmd_word = {ep_dataout[31:30], 2'b0, ep_dataout[29:0]};
@@ -122,6 +137,9 @@ if __name__ == "__main__":
 
     # FPGA reset 
 
+    mode = 'manual'
+    mode = 'auto-1'
+
     # MUX control (0 picks ADS7952)
     ads7952 = 0
     dacs = [1,2,3,4]
@@ -131,7 +149,6 @@ if __name__ == "__main__":
     # MSB: 8 - set address, 4 - write data  
 
     creg_val = 0x40003610 # Char length of 16; set both Tx_NEG, Rx_NEG; set ASS, IE. ADS7952
-    # creg_val = 0x40003010 # Char length of 16; clear both Tx_NEG, Rx_NEG; set ASS, IE. AD5453    
 
     for val in [0x80000051, 0x40000004,  # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
                 0x80000041, creg_val,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
@@ -140,37 +157,53 @@ if __name__ == "__main__":
         f.set_wire(control.addr, val, mask = 0xffffffff)
         send_trig(valid) 
 
-    # now send SPI command 
-    val = 0x40001840 # ADS manual read of channel 0
-    val = 0x400019C0 # ADS manual read of channel 3
+    if mode == 'manual':
+        # now send SPI command 
+        #val = 0x40001840 # ADS manual read of channel 0
+        val = 0x400018C0 # ADS manual read of channel 1
+        val = 0x400018C0 # ADS manual read of channel 3
 
-    # val = 0x40001fff # AD5453 (half-scale)
-    for val in [0x80000001, val,  # Tx register, data to send  
-                0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
-        f.set_wire(control.addr, val, mask = 0xffffffff)
-        send_trig(valid) 
+        for val in [0x80000001, val,  # Tx register, data to send  
+                    0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
+            f.set_wire(control.addr, val, mask = 0xffffffff)
+            send_trig(valid) 
 
-    # TODO: test block throttle pipe, use an auto mode to cycle through ~4 channels 
-    # 128 transfers and then will be ready to read a block 
+        # TODO: test block throttle pipe, use an auto mode to cycle through ~4 channels 
+        # 128 transfers and then will be ready to read a block 
 
-    # TODO: 
-    # 1) setup auto mode by sending wire in commands to the wishbone master
-    # 2) wait for trigger out "half full"
-    # 3) read block throttle pipe  
+        # TODO: 
+        # 1) setup auto mode by sending wire in commands to the wishbone master
+        # 2) wait for trigger out "half full"
+        # 3) read block throttle pipe  
 
+        # test wire out using manual reads of CH0 and CH3 
+        a = read_wire(one_deep_fifo)
+        v,chan = to_voltage(a)
+        print('Measured voltage on channel {} = {} [V]'.format(chan, v))
 
-    # test wire out using manual reads of CH0 and CH3 
-    def to_voltage(a):
-        bits = 12
-        vref = 2.5*2 
-        masked = a & 0xfff  # 12 bit ADC        
-        v = masked/(2**bits - 1)*vref
-        return v
+    elif mode == 'auto-1':
 
-    a = read_wire(one_deep_fifo)
-    v = to_voltage(a)
-    print('Measured voltage of = {} [V]'.format(v))
+        # setup 
+        for val in [0x80000001, 0x40008000,  # enter auto-1 program sequence
+                    0x80000041, creg_val | (1 << 8),
+                    0x80000001, 0x4000000f,  # channels 0,1,2,3   
+                    0x80000041, creg_val | (1 << 8),
+                    0x80000001, 0x40002840,  # enter auto-1  
+                    0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
+            
+            f.set_wire(control.addr, val, mask = 0xffffffff)
+            send_trig(valid) 
 
+        # now cycle through 
+        for i in range(128):
+            for val in [0x80000001, 0x40002040,  # retain
+                        0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
+                
 
-    # TODO - convert this value 'a' to a voltage 
+                f.set_wire(control.addr, val, mask = 0xffffffff)
+                send_trig(valid) 
+
+            a = read_wire(one_deep_fifo)
+            v,chan = to_voltage(a)
+            print('Measured voltage on channel {} = {} [V]'.format(chan, v))
 
