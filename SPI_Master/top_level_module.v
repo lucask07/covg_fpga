@@ -80,7 +80,7 @@ module top_level_module(
 	mux_1to8 mux_sclk (ep01wire[2:0], sclk, 1'b0, {d3_sclk, d2_sclk, d1_sclk, d0_sclk, adcs_sclk});
 
 	// no mux needed since DACs do not output data
-	assign miso = adcs_sclk;
+	assign miso = adcs_sdo;
 	 
 	//System Clock from input differential pair 
 	wire clk_sys;
