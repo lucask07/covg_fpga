@@ -25,18 +25,26 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 	 output reg [7:0] adr;
 	 output reg [33:0] cmd_word;
 	 output reg cmd_stb;
-	 output reg rd_en;
+	 output reg rd_en; //pulse to mark the points in time where the state machine is grabbing AD796x datan(for simulation purposes)
 	 
 	 reg [13:0] converted_dat; //reg to hold the converted value to be sent to the AD5453
 	 wire [15:0] converted_cmd_dat = {2'b0, converted_dat}; //reg to hold the converted value plus command bits for AD5453
 	 
-	 //this always block will do the data conversion ****currently incomplete
+	 parameter conversion_offset = 14'h2000; //offset to convert AD796x data before sending to AD5453
+	 
+	 //this always block will do the data conversion
+	 //the data is constantly being converted, but the state machine only samples the converted data every 400 ns
 	 always@(posedge clk)begin
 		if(rst)begin
 			converted_dat = 14'b0;
 		end
 		else begin
-			converted_dat = adc_dat_i[15:2];
+			if(adc_dat_i[15])begin
+				converted_dat = (adc_dat_i[15:2] - conversion_offset);
+			end
+			else begin
+				converted_dat = (adc_dat_i[15:2] + conversion_offset);
+			end
 		end
 	 end
 	 
@@ -59,9 +67,9 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 	 parameter Transfer_1 = 5'b01101;
 	 parameter Transfer_2 = 5'b01110;
 	 parameter IDLE_0 = 5'b10001; //states to take advantage of "idle" time during SPI transfer, reading the next word from AD796x FIFO
-	 parameter IDLE_1 = 5'b10010;
-	 parameter IDLE_2 = 5'b10100;
-	 parameter Fifo_empty_INIT = 5'b11010; //if the Fifo is empty when the state machine wants to do its first read, this will serve as an idle state
+	 //parameter IDLE_1 = 5'b10010;
+	 //parameter IDLE_2 = 5'b10100;
+	 //parameter Fifo_empty_INIT = 5'b11010; //if the Fifo is empty when the state machine wants to do its first read, this will serve as an idle state
 	 
 	 
 	 //state register
@@ -102,12 +110,12 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					nextstate = INIT_8;
 				end
 				INIT_8: begin
-					if(empty)begin
+					/*if(empty)begin
 						nextstate = Fifo_empty_INIT;
-					end
-					else begin
+					end*/
+					//else begin
 						nextstate = Convert_0;
-					end
+					//end
 				end
 				Convert_0: begin
 					nextstate = Convert_1;
@@ -128,14 +136,20 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					nextstate = IDLE_0;
 				end
 				IDLE_0: begin
-					if(empty)begin
+					/*if(empty)begin
 						nextstate = IDLE_0;
 					end
 					else begin
 						nextstate = IDLE_1;
+					end*/
+					if(int_o)begin
+						nextstate = Convert_0;
+					end
+					else begin
+						nextstate = IDLE_0;
 					end
 				end
-				IDLE_1: begin
+				/*IDLE_1: begin
 					nextstate = IDLE_2;
 				end
 				IDLE_2: begin
@@ -145,15 +159,15 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					else begin
 						nextstate = IDLE_2;
 					end
-				end
-				Fifo_empty_INIT: begin
+				end*/
+				/*Fifo_empty_INIT: begin
 					if(!empty)begin
 						nextstate = Convert_0;
 					end
 					else begin
 						nextstate = Fifo_empty_INIT;
 					end
-				end
+				end*/
 				default: nextstate = INIT_0;
 			endcase
 	 end
@@ -215,7 +229,7 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					cmd_word = 34'h100000001;
 					cmd_stb = 1'b1;
 				end
-				Convert_0: begin //reading data entry from AD796x FIFO for the first time after INIT states
+				Convert_0: begin //reading data entry from AD796x FIFO
 					rd_en = 1'b1;
 					adr = 8'h0;
 					cmd_word = {18'h10000, converted_cmd_dat};
@@ -224,7 +238,7 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 				Convert_1: begin
 					rd_en = 1'b0;
 					adr = 8'h0;
-					cmd_word = {18'h10000, converted_cmd_dat};
+					cmd_word = cmd_word;
 					cmd_stb = 1'b1;
 				end
 				Convert_2: begin
@@ -251,13 +265,13 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					cmd_word = cmd_word;
 					cmd_stb = 1'b1;
 				end
-				IDLE_0: begin //while SPI transfers are in progress, take advantage of "idle" time and read out/prepare next data from FIFO
+				IDLE_0: begin //idling while SPI transfers are in progress
 					rd_en = 1'b0;
 					adr = 8'h0;
 					cmd_word = cmd_word;
 					cmd_stb = 1'b0;
 				end
-				IDLE_1: begin
+				/*IDLE_1: begin
 					rd_en = 1'b1;
 					adr = 8'h0;
 					cmd_word = cmd_word;
@@ -268,13 +282,13 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					adr = 8'h0;
 					cmd_word = {18'h10000, converted_cmd_dat};;
 					cmd_stb = 1'b0;
-				end
-				Fifo_empty_INIT: begin
+				end*/
+				/*Fifo_empty_INIT: begin
 					rd_en = 1'b0;
 					adr = 8'h18;
 					cmd_word = 34'h100000001;
 					cmd_stb = 1'b0;
-				end
+				end*/
 				default: begin
 					rd_en = 1'b0;
 					adr = 8'h0;

@@ -2,9 +2,9 @@ Command line:
    tb_spi_top_isim_beh.exe
      -simmode  gui
      -simrunnum  0
-     -socket  54058
+     -socket  59841
 
-Wed Jan 27 16:33:09 2021
+Thu Jan 28 18:46:43 2021
 
 
  Elaboration Time: 0.046875 sec
