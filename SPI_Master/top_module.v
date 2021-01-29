@@ -35,7 +35,7 @@ module top_module(
 	 /**/output wire mosi,
 	 input wire miso,
 	 output wire sclk,
-	 output wire [7:0] ss,//*/
+	 output wire ss,//*/
 	 output wire slow_pulse
     );
     
@@ -138,7 +138,7 @@ module top_module(
   
     /*// SPI slave model
     spi_slave_model i_spi_slave (
-      .rst(sync_rst), .ss(ss[0]), .sclk(sclk), .mosi(mosi), .miso(miso)
+      .rst(sync_rst), .ss(ss), .sclk(sclk), .mosi(mosi), .miso(miso)
     );//*/
     
 	 //FIFO to hold data from the ADS7950
@@ -219,13 +219,13 @@ module top_module(
 	 wire int_o_0;
 	 wire rd_en_0; //read enable for AD796x FIFO
 	 
-	 wire [7:0] ss_0;
+	 wire ss_0;
     wire sclk_0;
     wire mosi_0;
 	 
 	 //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
 	 read_AD796x_fifo_cmd data_converter_0(
-	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(16'ha596), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
+	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0)
 	 );
 	 
