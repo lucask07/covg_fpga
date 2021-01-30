@@ -35,7 +35,7 @@ module top_module(
 	 /**/output wire mosi,
 	 input wire miso,
 	 output wire sclk,
-	 output wire [7:0] ss,//*/
+	 output wire ss,//*/
 	 output wire slow_pulse
     );
     
@@ -138,7 +138,7 @@ module top_module(
   
     /*// SPI slave model
     spi_slave_model i_spi_slave (
-      .rst(sync_rst), .ss(ss[0]), .sclk(sclk), .mosi(mosi), .miso(miso)
+      .rst(sync_rst), .ss(ss), .sclk(sclk), .mosi(mosi), .miso(miso)
     );//*/
     
 	 //FIFO to hold data from the ADS7950
@@ -199,5 +199,51 @@ module top_module(
 	 end
 	 
 	 assign ep_ready = blockready;
+	 
+	 /*
+	 //instantiations and wires for AD796x and AD5453
+	 wire cmd_stb_0;
+	 wire [33:0] cmd_word_0;
+	 wire cmd_busy_0;
+	 wire rsp_stb_0;
+	 wire [33:0] wb_cmd_dataout_0;
+	 wire [7:0] adr_0;
+	 wire [31:0] dat_i_0; 
+	 wire [31:0] dat_o_0;
+	 wire we_0;
+	 wire [3:0] sel_0;
+	 wire stb_0;
+	 wire cyc_0;
+	 wire ack_0;
+	 wire err_0;
+	 wire int_o_0;
+	 wire rd_en_0; //read enable for AD796x FIFO
+	 
+	 wire ss_0;
+    wire sclk_0;
+    wire mosi_0;
+	 
+	 //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
+	 read_AD796x_fifo_cmd data_converter_0(
+	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
+	 .rd_en(rd_en_0)
+	 );
+	 
+	 //Wishbone Master module for AD796x and AD5453
+    hbexec Wishbone_Master_0 (
+    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_0), .i_cmd_word(cmd_word_0), .o_cmd_busy(cmd_busy_0), .o_rsp_stb(rsp_stb_0),
+    .o_rsp_word(wb_cmd_dataout_0), .o_wb_cyc(cyc_0), .o_wb_stb(stb_0),
+    .o_wb_we(we_0), .o_wb_addr(), .o_wb_data(dat_o_0), .o_wb_sel(sel_0),        
+    .i_wb_ack(ack_0), .i_wb_stall(1'b0), .i_wb_err(err_0), .i_wb_data(dat_i_0)
+    );
     
+	 
+    //SPI master core for AD796x and AD5453
+    spi_top i_spi_top_0 (
+      .wb_clk_i(clk), .wb_rst_i(sync_rst), 
+      .wb_adr_i(adr_0[4:0]), .wb_dat_i(dat_o_0), .wb_dat_o(dat_i_0), 
+      .wb_sel_i(sel_0), .wb_we_i(we_0), .wb_stb_i(stb_0), 
+      .wb_cyc_i(cyc_0), .wb_ack_o(ack_0), .wb_err_o(err_0), .wb_int_o(int_o_0),
+      .ss_pad_o(ss_0), .sclk_pad_o(sclk_0), .mosi_pad_o(mosi_0), .miso_pad_i() 
+    );*/
 endmodule
