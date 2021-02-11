@@ -67,13 +67,10 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 	 parameter Transfer_1 = 5'b01101;
 	 parameter Transfer_2 = 5'b01110;
 	 parameter IDLE_0 = 5'b10001; //states to take advantage of "idle" time during SPI transfer, reading the next word from AD796x FIFO
-	 //parameter IDLE_1 = 5'b10010;
-	 //parameter IDLE_2 = 5'b10100;
-	 //parameter Fifo_empty_INIT = 5'b11010; //if the Fifo is empty when the state machine wants to do its first read, this will serve as an idle state
 	 
 	 
 	 //state register
-	 always@(negedge clk)begin
+	 always@(posedge clk)begin
 		if(rst)begin
 			state <= INIT_0;
 		end
@@ -110,12 +107,7 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					nextstate = INIT_8;
 				end
 				INIT_8: begin
-					/*if(empty)begin
-						nextstate = Fifo_empty_INIT;
-					end*/
-					//else begin
 						nextstate = Convert_0;
-					//end
 				end
 				Convert_0: begin
 					nextstate = Convert_1;
@@ -136,38 +128,13 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					nextstate = IDLE_0;
 				end
 				IDLE_0: begin
-					/*if(empty)begin
-						nextstate = IDLE_0;
-					end
-					else begin
-						nextstate = IDLE_1;
-					end*/
-					if(int_o)begin
-						nextstate = Convert_0;
-					end
-					else begin
-						nextstate = IDLE_0;
-					end
-				end
-				/*IDLE_1: begin
-					nextstate = IDLE_2;
-				end
-				IDLE_2: begin
 					if(int_o)begin
 						nextstate = Convert_1;
 					end
 					else begin
-						nextstate = IDLE_2;
+						nextstate = IDLE_0;
 					end
-				end*/
-				/*Fifo_empty_INIT: begin
-					if(!empty)begin
-						nextstate = Convert_0;
-					end
-					else begin
-						nextstate = Fifo_empty_INIT;
-					end
-				end*/
+				end
 				default: nextstate = INIT_0;
 			endcase
 	 end
@@ -266,29 +233,19 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					cmd_stb = 1'b1;
 				end
 				IDLE_0: begin //idling while SPI transfers are in progress
-					rd_en = 1'b0;
-					adr = 8'h0;
-					cmd_word = cmd_word;
-					cmd_stb = 1'b0;
+					if(int_o)begin//as soon as SPI transfer is complete, read in the next converted word
+						rd_en = 1'b1;
+						adr = 8'h0;
+						cmd_word = {18'h10000, converted_cmd_dat};
+						cmd_stb = 1'b0;
+					end
+					else begin
+						rd_en = 1'b0;
+						adr = 8'h0;
+						cmd_word = cmd_word;
+						cmd_stb = 1'b0;
+					end
 				end
-				/*IDLE_1: begin
-					rd_en = 1'b1;
-					adr = 8'h0;
-					cmd_word = cmd_word;
-					cmd_stb = 1'b0;
-				end
-				IDLE_2: begin
-					rd_en = 1'b0;
-					adr = 8'h0;
-					cmd_word = {18'h10000, converted_cmd_dat};;
-					cmd_stb = 1'b0;
-				end*/
-				/*Fifo_empty_INIT: begin
-					rd_en = 1'b0;
-					adr = 8'h18;
-					cmd_word = 34'h100000001;
-					cmd_stb = 1'b0;
-				end*/
 				default: begin
 					rd_en = 1'b0;
 					adr = 8'h0;
