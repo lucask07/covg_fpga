@@ -1,0 +1,51 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_0/fifo_generator_0.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fifo_generator_0
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_slave_model.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module spi_slave_model
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_8to1.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module mux_8to1
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_shift.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module spi_shift
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_clgen.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module spi_clgen
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/WbSignal_converter.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module WbSignal_converter
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_top.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module spi_top
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/one_second_pulse.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module one_second_pulse
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/hbexec.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module hbexec
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module top_module
+INFO: [VRFC 10-2263] Analyzing Verilog file "C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module okHost
+INFO: [VRFC 10-311] analyzing module okCoreHarness
+INFO: [VRFC 10-311] analyzing module okWireIn
+INFO: [VRFC 10-311] analyzing module okWireOut
+INFO: [VRFC 10-311] analyzing module okTriggerIn
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_clk' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:140]
+ERROR: [VRFC 10-1145] non-net port ep_clk cannot be of mode input [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:140]
+ERROR: [VRFC 10-2787] module okTriggerIn ignored due to previous errors [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:137]
+INFO: [VRFC 10-311] analyzing module okTriggerOut
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_clk' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:150]
+ERROR: [VRFC 10-1145] non-net port ep_clk cannot be of mode input [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:150]
+ERROR: [VRFC 10-2787] module okTriggerOut ignored due to previous errors [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:146]
+INFO: [VRFC 10-311] analyzing module okPipeIn
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_write' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:160]
+ERROR: [VRFC 10-2787] module okPipeIn ignored due to previous errors [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:156]
+INFO: [VRFC 10-311] analyzing module okPipeOut
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_read' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:170]
+ERROR: [VRFC 10-2787] module okPipeOut ignored due to previous errors [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:166]
+INFO: [VRFC 10-311] analyzing module okBTPipeIn
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_write' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:179]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_blockstrobe' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:180]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_ready' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:182]
+ERROR: [VRFC 10-1145] non-net port ep_ready cannot be of mode input [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:182]
+ERROR: [VRFC 10-2787] module okBTPipeIn ignored due to previous errors [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:175]
+INFO: [VRFC 10-311] analyzing module okBTPipeOut
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_read' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:191]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_blockstrobe' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:192]
+ERROR: [VRFC 10-1103] net type must be explicitly specified for 'ep_ready' when default_nettype is none [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:194]
+ERROR: [VRFC 10-1145] non-net port ep_ready cannot be of mode input [C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okLibrary.v:194]
+INFO: [#UNDEF] Sorry, too many errors..
