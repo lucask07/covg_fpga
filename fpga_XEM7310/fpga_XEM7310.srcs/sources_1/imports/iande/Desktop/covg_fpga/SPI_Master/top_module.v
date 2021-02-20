@@ -63,11 +63,11 @@ module top_module(
       wire full;
       wire empty;
       wire writeFifo;//this signal and the one below are used to generate the write enable signal for the FIFO
-		reg wr_en;//
+      reg wr_en;//
 		
     //syncronizer for the system rst (non-Fifo)
-    reg s1, s2;
-	 wire sync_rst;
+      reg s1, s2;
+	  wire sync_rst;
 	 
     always@(posedge rst or posedge clk)begin
 		if(rst)begin
@@ -136,7 +136,7 @@ module top_module(
       .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
     );
   
-    /*// SPI slave model
+    /**/// SPI slave model
     spi_slave_model i_spi_slave (
       .rst(sync_rst), .ss(ss), .sclk(sclk), .mosi(mosi), .miso(miso)
     );//*/
