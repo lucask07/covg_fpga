@@ -142,7 +142,7 @@ module top_module(
     );//*/
     
 	 //FIFO to hold data from the ADS7950
-    fifo_generator_0 FIFO(
+    fifo_generator_1 FIFO(
     .full(full), .din(wb_cmd_dataout[31:0]), .wr_en(writeFifo), .empty(empty), 
     .dout(dout), .rd_en(readFifo), .wr_clk(clk), .rd_clk(fifoclk), .rst(sync_fifo_rst), .prog_full(hostinterrupt)
     );
