@@ -1,10 +1,27 @@
 Vivado Simulator 2018.2
 Copyright 1986-1999, 2001-2018 Xilinx, Inc. All Rights Reserved.
-Running: C:/Users/iande/Documents/Vivado/2018.2/bin/unwrapped/win64.o/xelab.exe -wto 1946c52a45964498a526646af489febf --incr --debug typical --relax --mt 2 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot tb_spi_top_behav xil_defaultlib.tb_spi_top xil_defaultlib.glbl -log elaborate.log 
+Running: C:/Users/iande/Documents/Vivado/2018.2/bin/unwrapped/win64.o/xelab.exe -wto 1946c52a45964498a526646af489febf --incr --debug typical --relax --mt 2 -L fifo_generator_v13_2_2 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot tb_spi_top_behav xil_defaultlib.tb_spi_top xil_defaultlib.glbl -log elaborate.log 
 Using 2 slave threads.
 Starting static elaboration
-ERROR: [VRFC 10-2063] Module <FIFO_GENERATOR_V9_3> not found while processing module instance <inst> [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_0/fifo_generator_0.v:65]
-ERROR: [VRFC 10-2063] Module <WbSignal_converter> not found while processing module instance <CONVERT> [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:151]
-ERROR: [VRFC 10-2063] Module <one_second_pulse> not found while processing module instance <out_pulse> [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:156]
-ERROR: [VRFC 10-2063] Module <read_AD796x_fifo_cmd> not found while processing module instance <data_converter_0> [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:227]
-ERROR: [XSIM 43-3322] Static elaboration of top level Verilog design unit(s) in library work failed.
+Completed static elaboration
+Starting simulation data flow analysis
+Completed simulation data flow analysis
+Time Resolution for simulation is 1ps
+Compiling module xil_defaultlib.hbexec_default
+Compiling module xil_defaultlib.spi_clgen
+Compiling module xil_defaultlib.spi_shift
+Compiling module xil_defaultlib.spi_top
+Compiling module xil_defaultlib.spi_slave_model
+Compiling module fifo_generator_v13_2_2.fifo_generator_v13_2_2_sync_stag...
+Compiling module fifo_generator_v13_2_2.fifo_generator_v13_2_2_bhv_ver_a...
+Compiling module fifo_generator_v13_2_2.fifo_generator_v13_2_2_CONV_VER(...
+Compiling module fifo_generator_v13_2_2.fifo_generator_vlog_beh(C_DATA_C...
+Compiling module fifo_generator_v13_2_2.fifo_generator_v13_2_2(C_EN_SAFE...
+Compiling module xil_defaultlib.fifo_generator_1
+Compiling module xil_defaultlib.WbSignal_converter
+Compiling module xil_defaultlib.one_second_pulse
+Compiling module xil_defaultlib.read_AD796x_fifo_cmd
+Compiling module xil_defaultlib.top_module
+Compiling module xil_defaultlib.tb_spi_top
+Compiling module xil_defaultlib.glbl
+Built simulation snapshot tb_spi_top_behav
