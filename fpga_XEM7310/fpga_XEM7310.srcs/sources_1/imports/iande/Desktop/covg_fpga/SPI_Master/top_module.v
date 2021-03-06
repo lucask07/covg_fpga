@@ -220,18 +220,57 @@ module top_module(
 	 wire rd_en_0; //read enable for AD796x FIFO
 	 
 	 wire ss_0;
-    wire sclk_0;
-    wire mosi_0;
+     wire sclk_0;
+     wire mosi_0;
+     
+     parameter master_clock_freq = 9'd200; //give master clock frequency in MHz
+     parameter wait_time = (master_clock_freq/9'd100) - 1'b1;
+     reg [5:0]count;
+     reg clk_ad796x_enable;
+     
+     initial clk_ad796x_enable = 1'b0;
+     always@(posedge clk)begin
+        if(sync_rst)begin
+            count <= 5'b0;
+            clk_ad796x_enable <= 1'b1;
+        end
+        else begin
+            if(count == wait_time)begin
+                clk_ad796x_enable <= 1'b1;
+                count <= 1'b0;
+            end
+            else begin
+                count <= count + 1'b1;
+                clk_ad796x_enable <= 1'b0;
+            end
+        end
+     end
+	 
+	 reg ad796x_clk;
+	 always@(posedge clk)begin
+//	   if(sync_rst)begin
+//	       ad796x_clk <= clk;
+//	   end
+//	   else begin
+	       ad796x_clk <= clk_ad796x_enable & clk;
+//	   end
+	 end
+
+//    wire ad796x_clk;
+//    assign ad796x_clk = (clk_ad796x_enable && clk);
+
+//    wire ad796x_clk;
+//    assign ad796x_clk = (clk_ad796x_enable & clk) || (sync_rst & clk);
 	 
 	 //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
 	 read_AD796x_fifo_cmd data_converter_0(
-	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
+	 .clk(ad796x_clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0)
 	 );
 	 
 	 //Wishbone Master module for AD796x and AD5453
     hbexec Wishbone_Master_0 (
-    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_0), .i_cmd_word(cmd_word_0), .o_cmd_busy(cmd_busy_0), .o_rsp_stb(rsp_stb_0),
+    .i_clk(ad796x_clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_0), .i_cmd_word(cmd_word_0), .o_cmd_busy(cmd_busy_0), .o_rsp_stb(rsp_stb_0),
     .o_rsp_word(wb_cmd_dataout_0), .o_wb_cyc(cyc_0), .o_wb_stb(stb_0),
     .o_wb_we(we_0), .o_wb_addr(), .o_wb_data(dat_o_0), .o_wb_sel(sel_0),        
     .i_wb_ack(ack_0), .i_wb_stall(1'b0), .i_wb_err(err_0), .i_wb_data(dat_i_0)
@@ -240,7 +279,7 @@ module top_module(
 	 
     //SPI master core for AD796x and AD5453
     spi_top i_spi_top_0 (
-      .wb_clk_i(clk), .wb_rst_i(sync_rst), 
+      .wb_clk_i(ad796x_clk), .wb_rst_i(sync_rst), 
       .wb_adr_i(adr_0[4:0]), .wb_dat_i(dat_o_0), .wb_dat_o(dat_i_0), 
       .wb_sel_i(sel_0), .wb_we_i(we_0), .wb_stb_i(stb_0), 
       .wb_cyc_i(cyc_0), .wb_ack_o(ack_0), .wb_err_o(err_0), .wb_int_o(int_o_0),

@@ -32,18 +32,21 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 	 
 	 parameter conversion_offset = 14'h2000; //offset to convert AD796x data before sending to AD5453
 	 
+	 parameter master_clock_freq = 9'd200; //give master clock frequency
+	 parameter divideby = (master_clock_freq/9'd100);
+	 
 	 //this always block will do the data conversion
 	 //the data is constantly being converted, but the state machine only samples the converted data every 400 ns
 	 always@(posedge clk)begin
 		if(rst)begin
-			converted_dat = 14'b0;
+			converted_dat <= 14'b0;
 		end
 		else begin
 			if(adc_dat_i[15])begin
-				converted_dat = (adc_dat_i[15:2] - conversion_offset);
+				converted_dat <= (adc_dat_i[15:2] - conversion_offset);
 			end
 			else begin
-				converted_dat = (adc_dat_i[15:2] + conversion_offset);
+				converted_dat <= (adc_dat_i[15:2] + conversion_offset);
 			end
 		end
 	 end
