@@ -60,7 +60,7 @@ module tb_spi_top;
 	);
 	
 	// Generate clock
-	always #5 clk = ~clk;
+	always #2.5 clk = ~clk;//now 200 MHz sys clock
 	
 	// Generate fifoclk
 	always #4.96 fifoclk = ~fifoclk;
@@ -88,18 +88,18 @@ module tb_spi_top;
 		#20;
       trigger = 1'b0;
       #5;
-      ep_dataout = 32'h80000051;
+      ep_dataout = 32'h80000051;//divide register address
 		#10//
       trigger = 1'b1;
       #10;
       trigger = 1'b0;
       #40;
       trigger = 1'b1;
-      ep_dataout = 32'h40000001;
+      ep_dataout = 32'h40000003;
       #10;
       trigger = 1'b0;
       #40;
-      ep_dataout = 32'h80000001;
+      ep_dataout = 32'h80000001;//tx register 1 address
       trigger = 1'b1;
       #10;
       trigger = 1'b0;
@@ -109,7 +109,7 @@ module tb_spi_top;
       #10;
       trigger = 1'b0;
       #40;
-      ep_dataout = 32'h80000041;
+      ep_dataout = 32'h80000041;//ctrl register address
       trigger = 1'b1;
       #10;
       trigger = 1'b0;
@@ -119,7 +119,7 @@ module tb_spi_top;
       #10;
       trigger = 1'b0;
       #40;
-      ep_dataout = 32'h80000061;
+      ep_dataout = 32'h80000061;//ss register address
       trigger = 1'b1;
       #10;
       trigger = 1'b0;
