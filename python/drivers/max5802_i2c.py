@@ -8,8 +8,8 @@ from drivers.utils import rev_lookup, bin, test_bit, twos_comp
 
 
 ## TODO: move this to a generic I2C folder 
-
-def read(reg_name, signed = False):
+signed = false
+def read(reg_name, signed):
     # code to read multiple bytes 
     multi_first = regs[reg_name].first
     if regs[reg_name].length == 1:
