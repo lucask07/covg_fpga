@@ -35,16 +35,20 @@ def write(reg_name, val):
         return t
     else:
         print('write greater than 1 byte not yet implemented')
+        
+#address values for i2c       
+Gndaddr = '0001111'
+NCaddr = '0001110'
+Vddaddr = '0001100'
 
 # MAX5802 : 00011 + 2 bits configured by Address pin
-
 ADDR = 'NC' # daq_v1 PCB -- this pin is connected to Gnd but thru a 100k pull-down 
 if ADDR == 'Gnd':
-    i2c_addr = '0001111'
+    i2c_addr = Gndaddr
 elif ADDR == 'NC':
-    i2c_addr = '0001110'
+    i2c_addr = NCaddr
 elif ADDR == 'Vdd':
-    i2c_addr = '0001100'
+    i2c_addr = Vddaddr
 
 devAddr = int(i2c_addr, 2) << 1
 
