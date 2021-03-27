@@ -42,14 +42,17 @@
 `include "spi_defines.v"
 `include "timescale.v"
 
-module spi_top
+module spi_top_CE
 (
   // Wishbone signals
   wb_clk_i, wb_rst_i, wb_adr_i, wb_dat_i, wb_dat_o, wb_sel_i,
   wb_we_i, wb_stb_i, wb_cyc_i, wb_ack_o, wb_err_o, wb_int_o,
 
   // SPI signals
-  ss_pad_o, sclk_pad_o, mosi_pad_o, miso_pad_i
+  ss_pad_o, sclk_pad_o, mosi_pad_o, miso_pad_i,
+  
+  //Clock Enable
+  CE
 );
 
   //parameter Tp = 0;// this used to be Tp = 1
@@ -82,6 +85,8 @@ module spi_top
   output   wire                        sclk_pad_o;       // serial clock
   output   wire                        mosi_pad_o;       // master out slave in
   input    wire                        miso_pad_i;       // master in slave out
+  
+  input    wire                        CE;
                                                      
   reg                     [32-1:0] wb_dat_o;
   reg                              wb_ack_o;
@@ -150,19 +155,33 @@ module spi_top
   // Wb data out
   always @(posedge wb_clk_i or posedge wb_rst_i)
   begin
-    if (wb_rst_i)
+    if (wb_rst_i)begin
       wb_dat_o <= /*#Tp*/ 32'b0;
-    else
-      wb_dat_o <= /*#Tp*/ wb_dat;
+    end
+    else begin
+        if(CE)begin
+            wb_dat_o <= /*#Tp*/ wb_dat;
+        end
+        else begin
+            wb_dat_o <= wb_dat_o;
+        end
+    end
   end
   
   // Wb acknowledge
   always @(posedge wb_clk_i or posedge wb_rst_i)
   begin
-    if (wb_rst_i)
+    if (wb_rst_i)begin
       wb_ack_o <= /*#Tp*/ 1'b0;
-    else
-      wb_ack_o <= /*#Tp*/ wb_cyc_i & wb_stb_i & ~wb_ack_o;
+    end
+    else begin
+        if(CE)begin
+            wb_ack_o <= /*#Tp*/ wb_cyc_i & wb_stb_i & ~wb_ack_o;
+        end
+        else begin
+            wb_ack_o <= wb_ack_o;
+        end
+    end
   end
   
   // Wb error
@@ -171,66 +190,92 @@ module spi_top
   // Interrupt
   always @(posedge wb_clk_i or posedge wb_rst_i)
   begin
-    if (wb_rst_i)
-      wb_int_o <= /*#Tp*/ 1'b0;
-    else if (ie && tip && last_bit && pos_edge)
-      wb_int_o <= /*#Tp*/ 1'b1;
-    else if (wb_ack_o)
-      wb_int_o <= /*#Tp*/ 1'b0;
+    if (wb_rst_i)begin
+        wb_int_o <= /*#Tp*/ 1'b0;
+    end
+    else begin
+        if(CE)begin
+            if (ie && tip && last_bit && pos_edge)begin
+                wb_int_o <= /*#Tp*/ 1'b1;
+            end
+            else if (wb_ack_o)begin
+                wb_int_o <= /*#Tp*/ 1'b0;
+            end
+        end
+        else begin
+            wb_int_o <= wb_int_o;
+        end
+    end
   end
   
   // Divider register
   always @(posedge wb_clk_i or posedge wb_rst_i)
   begin
-    if (wb_rst_i)
+    if (wb_rst_i)begin
         divider <= /*#Tp*/ {`SPI_DIVIDER_LEN{1'b0}};
-    else if (spi_divider_sel && wb_we_i && !tip)
-      begin
-      `ifdef SPI_DIVIDER_LEN_8
-        if (wb_sel_i[0])
-          divider <= /*#Tp*/ wb_dat_i[`SPI_DIVIDER_LEN-1:0];
-      `endif
-      `ifdef SPI_DIVIDER_LEN_16
-        if (wb_sel_i[0])
-          divider[7:0] <= /*#Tp*/ wb_dat_i[7:0];
-        if (wb_sel_i[1])
-          divider[`SPI_DIVIDER_LEN-1:8] <= /*#Tp*/ wb_dat_i[`SPI_DIVIDER_LEN-1:8];
-      `endif
-      `ifdef SPI_DIVIDER_LEN_24
-        if (wb_sel_i[0])
-          divider[7:0] <= /*#Tp*/ wb_dat_i[7:0];
-        if (wb_sel_i[1])
-          divider[15:8] <= /*#Tp*/ wb_dat_i[15:8];
-        if (wb_sel_i[2])
-          divider[`SPI_DIVIDER_LEN-1:16] <= /*#Tp*/ wb_dat_i[`SPI_DIVIDER_LEN-1:16];
-      `endif
-      `ifdef SPI_DIVIDER_LEN_32
-        if (wb_sel_i[0])
-          divider[7:0] <= /*#Tp*/ wb_dat_i[7:0];
-        if (wb_sel_i[1])
-          divider[15:8] <= /*#Tp*/ wb_dat_i[15:8];
-        if (wb_sel_i[2])
-          divider[23:16] <= /*#Tp*/ wb_dat_i[23:16];
-        if (wb_sel_i[3])
-          divider[`SPI_DIVIDER_LEN-1:24] <= /*#Tp*/ wb_dat_i[`SPI_DIVIDER_LEN-1:24];
-      `endif
-      end
+    end
+    else begin
+        if(CE)begin
+            if (spi_divider_sel && wb_we_i && !tip)
+              begin
+              `ifdef SPI_DIVIDER_LEN_8
+                if (wb_sel_i[0])
+                  divider <= /*#Tp*/ wb_dat_i[`SPI_DIVIDER_LEN-1:0];
+              `endif
+              `ifdef SPI_DIVIDER_LEN_16
+                if (wb_sel_i[0])
+                  divider[7:0] <= /*#Tp*/ wb_dat_i[7:0];
+                if (wb_sel_i[1])
+                  divider[`SPI_DIVIDER_LEN-1:8] <= /*#Tp*/ wb_dat_i[`SPI_DIVIDER_LEN-1:8];
+              `endif
+              `ifdef SPI_DIVIDER_LEN_24
+                if (wb_sel_i[0])
+                  divider[7:0] <= /*#Tp*/ wb_dat_i[7:0];
+                if (wb_sel_i[1])
+                  divider[15:8] <= /*#Tp*/ wb_dat_i[15:8];
+                if (wb_sel_i[2])
+                  divider[`SPI_DIVIDER_LEN-1:16] <= /*#Tp*/ wb_dat_i[`SPI_DIVIDER_LEN-1:16];
+              `endif
+              `ifdef SPI_DIVIDER_LEN_32
+                if (wb_sel_i[0])
+                  divider[7:0] <= /*#Tp*/ wb_dat_i[7:0];
+                if (wb_sel_i[1])
+                  divider[15:8] <= /*#Tp*/ wb_dat_i[15:8];
+                if (wb_sel_i[2])
+                  divider[23:16] <= /*#Tp*/ wb_dat_i[23:16];
+                if (wb_sel_i[3])
+                  divider[`SPI_DIVIDER_LEN-1:24] <= /*#Tp*/ wb_dat_i[`SPI_DIVIDER_LEN-1:24];
+              `endif
+              end
+          end
+        else begin
+            divider <= divider;
+        end
+    end
   end
   
   // Ctrl register
   always @(posedge wb_clk_i or posedge wb_rst_i)
   begin
-    if (wb_rst_i)
+    if (wb_rst_i)begin
       ctrl <= /*#Tp*/ {`SPI_CTRL_BIT_NB{1'b0}};
-    else if(spi_ctrl_sel && wb_we_i && !tip)
-      begin
-        if (wb_sel_i[0])
-          ctrl[7:0] <= /*#Tp*/ wb_dat_i[7:0] | {7'b0, ctrl[0]};
-        if (wb_sel_i[1])
-          ctrl[`SPI_CTRL_BIT_NB-1:8] <= /*#Tp*/ wb_dat_i[`SPI_CTRL_BIT_NB-1:8];
-      end
-    else if(tip && last_bit && pos_edge)
-      ctrl[`SPI_CTRL_GO] <= /*#Tp*/ 1'b0;
+    end
+    else begin
+        if(CE)begin
+            if(spi_ctrl_sel && wb_we_i && !tip)begin
+                if (wb_sel_i[0])
+                  ctrl[7:0] <= /*#Tp*/ wb_dat_i[7:0] | {7'b0, ctrl[0]};
+                if (wb_sel_i[1])
+                  ctrl[`SPI_CTRL_BIT_NB-1:8] <= /*#Tp*/ wb_dat_i[`SPI_CTRL_BIT_NB-1:8];
+              end
+            else if(tip && last_bit && pos_edge)begin
+              ctrl[`SPI_CTRL_GO] <= /*#Tp*/ 1'b0;
+            end
+        end
+        else begin
+            ctrl <= ctrl;
+        end
+    end
   end
   
   assign rx_negedge = ctrl[`SPI_CTRL_RX_NEGEDGE];
@@ -244,38 +289,41 @@ module spi_top
   // Slave select register
   always @(posedge wb_clk_i or posedge wb_rst_i)
   begin
-    if (wb_rst_i)
+    if (wb_rst_i)begin
       ss <= /*#Tp*/ {`SPI_SS_NB{1'b0}};
-    else if(spi_ss_sel && wb_we_i && !tip)
-      begin
-      `ifdef SPI_SS_NB_8
-        if (wb_sel_i[0])
-          ss <= /*#Tp*/ wb_dat_i[`SPI_SS_NB-1:0];
-      `endif
-      `ifdef SPI_SS_NB_16
-        if (wb_sel_i[0])
-          ss[7:0] <= /*#Tp*/ wb_dat_i[7:0];
-        if (wb_sel_i[1])
-          ss[`SPI_SS_NB-1:8] <= /*#Tp*/ wb_dat_i[`SPI_SS_NB-1:8];
-      `endif
-      `ifdef SPI_SS_NB_24
-        if (wb_sel_i[0])
-          ss[7:0] <= /*#Tp*/ wb_dat_i[7:0];
-        if (wb_sel_i[1])
-          ss[15:8] <= /*#Tp*/ wb_dat_i[15:8];
-        if (wb_sel_i[2])
-          ss[`SPI_SS_NB-1:16] <= /*#Tp*/ wb_dat_i[`SPI_SS_NB-1:16];
-      `endif
-      `ifdef SPI_SS_NB_32
-        if (wb_sel_i[0])
-          ss[7:0] <= /*#Tp*/ wb_dat_i[7:0];
-        if (wb_sel_i[1])
-          ss[15:8] <= /*#Tp*/ wb_dat_i[15:8];
-        if (wb_sel_i[2])
-          ss[23:16] <= /*#Tp*/ wb_dat_i[23:16];
-        if (wb_sel_i[3])
-          ss[`SPI_SS_NB-1:24] <= /*#Tp*/ wb_dat_i[`SPI_SS_NB-1:24];
-      `endif
+    end
+    else begin
+        if(spi_ss_sel && wb_we_i && !tip)
+          begin
+          `ifdef SPI_SS_NB_8
+            if (wb_sel_i[0])
+              ss <= /*#Tp*/ wb_dat_i[`SPI_SS_NB-1:0];
+          `endif
+          `ifdef SPI_SS_NB_16
+            if (wb_sel_i[0])
+              ss[7:0] <= /*#Tp*/ wb_dat_i[7:0];
+            if (wb_sel_i[1])
+              ss[`SPI_SS_NB-1:8] <= /*#Tp*/ wb_dat_i[`SPI_SS_NB-1:8];
+          `endif
+          `ifdef SPI_SS_NB_24
+            if (wb_sel_i[0])
+              ss[7:0] <= /*#Tp*/ wb_dat_i[7:0];
+            if (wb_sel_i[1])
+              ss[15:8] <= /*#Tp*/ wb_dat_i[15:8];
+            if (wb_sel_i[2])
+              ss[`SPI_SS_NB-1:16] <= /*#Tp*/ wb_dat_i[`SPI_SS_NB-1:16];
+          `endif
+          `ifdef SPI_SS_NB_32
+            if (wb_sel_i[0])
+              ss[7:0] <= /*#Tp*/ wb_dat_i[7:0];
+            if (wb_sel_i[1])
+              ss[15:8] <= /*#Tp*/ wb_dat_i[15:8];
+            if (wb_sel_i[2])
+              ss[23:16] <= /*#Tp*/ wb_dat_i[23:16];
+            if (wb_sel_i[3])
+              ss[`SPI_SS_NB-1:24] <= /*#Tp*/ wb_dat_i[`SPI_SS_NB-1:24];
+          `endif
+          end
       end
   end
   
@@ -285,11 +333,11 @@ module spi_top
                    .divider(divider), .clk_out(sclk_pad_o), .pos_edge(pos_edge), 
                    .neg_edge(neg_edge));
   
-  spi_shift shift (.clk(wb_clk_i), .rst(wb_rst_i), .len(char_len[`SPI_CHAR_LEN_BITS-1:0]),
+  spi_shift_CE shift (.clk(wb_clk_i), .rst(wb_rst_i), .len(char_len[`SPI_CHAR_LEN_BITS-1:0]),
                    .latch(spi_tx_sel[3:0] & {4{wb_we_i}}), .byte_sel(wb_sel_i), .lsb(lsb), 
                    .go(go), .pos_edge(pos_edge), .neg_edge(neg_edge), 
                    .rx_negedge(rx_negedge), .tx_negedge(tx_negedge),
                    .tip(tip), .last(last_bit), 
                    .p_in(wb_dat_i), .p_out(rx), 
-                   .s_clk(sclk_pad_o), .s_in(miso_pad_i), .s_out(mosi_pad_o));
+                   .s_clk(sclk_pad_o), .s_in(miso_pad_i), .s_out(mosi_pad_o), .CE(CE));
 endmodule
