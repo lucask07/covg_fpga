@@ -21,6 +21,9 @@ Compiling module xil_defaultlib.fifo_generator_1
 Compiling module xil_defaultlib.WbSignal_converter
 Compiling module xil_defaultlib.one_second_pulse
 Compiling module xil_defaultlib.read_AD796x_fifo_cmd_default
+Compiling module xil_defaultlib.hbexec_CE_default
+Compiling module xil_defaultlib.spi_shift_CE
+Compiling module xil_defaultlib.spi_top_CE
 Compiling module xil_defaultlib.top_module_default
 Compiling module xil_defaultlib.tb_spi_top
 Compiling module xil_defaultlib.glbl

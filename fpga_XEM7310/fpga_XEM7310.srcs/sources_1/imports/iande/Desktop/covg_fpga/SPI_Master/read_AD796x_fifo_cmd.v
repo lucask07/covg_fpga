@@ -18,10 +18,11 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd_word, rd_en
+module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd_word, rd_en, CE
     );
 	 input wire clk, rst, int_o, empty;
 	 input wire [15:0] adc_dat_i;
+	 input wire CE;
 	 output reg [7:0] adr;
 	 output reg [33:0] cmd_word;
 	 output reg cmd_stb;
@@ -32,8 +33,8 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 	 
 	 parameter conversion_offset = 14'h2000; //offset to convert AD796x data before sending to AD5453
 	 
-	 parameter master_clock_freq = 9'd200; //give master clock frequency
-	 parameter divideby = (master_clock_freq/9'd100);
+	 parameter master_clock_freq = 16'd200; //give master clock frequency
+	 parameter divide_reg_val = ((master_clock_freq/16'h32)/16'h02) - 16'h01 ;
 	 
 	 //this always block will do the data conversion
 	 //the data is constantly being converted, but the state machine only samples the converted data every 400 ns
@@ -78,7 +79,12 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 			state <= INIT_0;
 		end
 		else begin
-			state <= nextstate;
+		  if(CE)begin
+			 state <= nextstate;
+		  end
+		  else begin
+		      state <= state;
+		  end
 		end
 	 end
 	 
@@ -130,10 +136,11 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 				Transfer_2: begin
 					nextstate = IDLE_0;
 				end
-				IDLE_0: begin
-					if(int_o)begin
-						nextstate = Convert_1;
-					end
+				IDLE_0: begin				    
+                    if(int_o)begin
+                        nextstate = Convert_1;
+                        //nextstate = Convert_0;
+                    end
 					else begin
 						nextstate = IDLE_0;
 					end
@@ -148,20 +155,23 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 				INIT_0: begin //programming DIVIDE register: starts here
 					rd_en = 1'b0;
 					adr = 8'h14;
-					cmd_word = 34'h100000000;
+					//cmd_word = 34'h100000001;
+					cmd_word = {26'h10000, divide_reg_val};
 					cmd_stb = 1'b0;
 				end
 				INIT_1: begin
 					rd_en = 1'b0;
 					adr = 8'h14;
-					cmd_word = 34'h100000000;
+					//cmd_word = 34'h100000001;
+					cmd_word = {26'h10000, divide_reg_val};
 					cmd_stb = 1'b1;	
 				end
 				INIT_2: begin
 					rd_en = 1'b0;
 					adr = 8'h14;
-					cmd_word = 34'h100000000;
-					cmd_stb = 1'b1;
+					//cmd_word = 34'h100000001;
+					cmd_word = {26'h10000, divide_reg_val};
+					cmd_stb = 1'b0;
 				end
 				INIT_3: begin //programming CTRL register: starts here
 					rd_en = 1'b0;
@@ -179,7 +189,7 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					rd_en = 1'b0;
 					adr = 8'h10;
 					cmd_word = 34'h100003010;
-					cmd_stb = 1'b1;
+					cmd_stb = 1'b0;
 				end
 				INIT_6: begin //programming SS register: starts here
 					rd_en = 1'b0;
@@ -197,25 +207,29 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					rd_en = 1'b0;
 					adr = 8'h18;
 					cmd_word = 34'h100000001;
-					cmd_stb = 1'b1;
-				end
-				Convert_0: begin //reading data entry from AD796x FIFO
-					rd_en = 1'b1;
-					adr = 8'h0;
-					cmd_word = {18'h10000, converted_cmd_dat};
 					cmd_stb = 1'b0;
 				end
-				Convert_1: begin
+				Convert_0: begin //reading data entry from AD796x FIFO
+					//rd_en = 1'b1;
 					rd_en = 1'b0;
 					adr = 8'h0;
 					cmd_word = cmd_word;
+					//cmd_word = {18'h10000, converted_cmd_dat};
+					cmd_stb = 1'b0;
+				end
+				Convert_1: begin
+					//rd_en = 1'b0;
+					rd_en = 1'b1;
+					adr = 8'h0;
+					//cmd_word = cmd_word;
+					cmd_word = {18'h10000, converted_cmd_dat};
 					cmd_stb = 1'b1;
 				end
 				Convert_2: begin
 					rd_en = 1'b0;
 					adr = 8'h0;
 					cmd_word = cmd_word;
-					cmd_stb = 1'b1;
+					cmd_stb = 1'b0;
 				end
 				Transfer_0: begin //starting SPI transfer
 					rd_en = 1'b0;
@@ -233,15 +247,17 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					rd_en = 1'b0;
 					adr = 8'h10;
 					cmd_word = cmd_word;
-					cmd_stb = 1'b1;
+					cmd_stb = 1'b0;
 				end
 				IDLE_0: begin //idling while SPI transfers are in progress
-					if(int_o)begin//as soon as SPI transfer is complete, read in the next converted word
-						rd_en = 1'b1;
-						adr = 8'h0;
-						cmd_word = {18'h10000, converted_cmd_dat};
-						cmd_stb = 1'b0;
-					end
+                    if(int_o)begin//as soon as SPI transfer is complete, read in the next converted word
+                        //rd_en = 1'b1;
+                        rd_en = 1'b0;
+                        adr = 8'h0;
+                        //cmd_word = {18'h10000, converted_cmd_dat};
+                        cmd_word = cmd_word;
+                        cmd_stb = 1'b0;
+                    end
 					else begin
 						rd_en = 1'b0;
 						adr = 8'h0;
