@@ -18,11 +18,12 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd_word, rd_en, CE
+module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd_word, rd_en, data_rdy//CE
     );
 	 input wire clk, rst, int_o, empty;
 	 input wire [15:0] adc_dat_i;
-	 input wire CE;
+	 //input wire CE;
+	 input wire data_rdy;
 	 output reg [7:0] adr;
 	 output reg [33:0] cmd_word;
 	 output reg cmd_stb;
@@ -37,7 +38,7 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 	 parameter divide_reg_val = ((master_clock_freq/16'h32)/16'h02) - 16'h01 ;
 	 
 	 //this always block will do the data conversion
-	 //the data is constantly being converted, but the state machine only samples the converted data every 400 ns
+	 //the data is constantly being converted, but the state machine only really samples the converted data every 400 ns
 	 always@(posedge clk)begin
 		if(rst)begin
 			converted_dat <= 14'b0;
@@ -79,12 +80,7 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 			state <= INIT_0;
 		end
 		else begin
-		  if(CE)begin
 			 state <= nextstate;
-		  end
-		  else begin
-		      state <= state;
-		  end
 		end
 	 end
 	 
@@ -137,7 +133,7 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 					nextstate = IDLE_0;
 				end
 				IDLE_0: begin				    
-                    if(int_o)begin
+                    if(int_o & data_rdy)begin
                         nextstate = Convert_1;
                         //nextstate = Convert_0;
                     end

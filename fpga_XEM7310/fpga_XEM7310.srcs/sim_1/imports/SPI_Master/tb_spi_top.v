@@ -42,6 +42,8 @@ module tb_spi_top;
 	
 	//
 	integer i;
+	//
+	reg data_rdy = 1'b0;
 
 	// Instantiate the Unit Under Test (UUT)
 	top_module uut (
@@ -56,7 +58,8 @@ module tb_spi_top;
 		.dout(dout),
 		.lastWrite(lastWrite),
 		.ep_ready(ep_ready),
-		.slow_pulse(slow_pulse)
+		.slow_pulse(slow_pulse),
+		.data_rdy_0(data_rdy)
 	);
 	
 	// Generate clock
@@ -64,7 +67,21 @@ module tb_spi_top;
 	
 	// Generate fifoclk
 	always #4.96 fifoclk = ~fifoclk;
-
+	
+	//simulating data ready from ad796x.v
+	reg [7:0] count_enable = 8'b0;
+	//reg data_rdy = 1'b0;
+    always@(posedge clk)begin
+        if(count_enable == 8'd39)begin
+            data_rdy = 1'b1;
+            count_enable = 5'b0;
+        end
+        else begin
+            data_rdy = 1'b0;
+            count_enable = count_enable + 1'b1;
+        end
+    end
+    
 	initial begin
 		// Initialize Inputs
 		clk = 1'b0;
