@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GenRun Id="synth_1" LaunchPart="xc7a75tfgg484-1" LaunchTime="1619751198">
+  <File Type="PA-TCL" Name="top_level_module.tcl"/>
+  <File Type="REPORTS-TCL" Name="top_level_module_reports.tcl"/>
+  <File Type="RDS-RDS" Name="top_level_module.vds"/>
+  <File Type="RDS-UTIL" Name="top_level_module_utilization_synth.rpt"/>
+  <File Type="RDS-UTIL-PB" Name="top_level_module_utilization_synth.pb"/>
+  <File Type="RDS-DCP" Name="top_level_module.dcp"/>
+  <FileSet Name="sources" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
+    <Filter Type="Srcs"/>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_slave_model.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/spi_slave_model.v"/>
+        <Attr Name="ImportTime" Val="1609197050"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/TFIFO64x8a_64x8b.ngc">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="UserDisabled" Val="1"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/TFIFO64x8a_64x8b.ngc"/>
+        <Attr Name="ImportTime" Val="1611176365"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_8to1.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/mux_8to1.v"/>
+        <Attr Name="ImportTime" Val="1611176365"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_shift.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/spi_shift.v"/>
+        <Attr Name="ImportTime" Val="1609787643"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_clgen.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/spi_clgen.v"/>
+        <Attr Name="ImportTime" Val="1609798641"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/WbSignal_converter.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/WbSignal_converter.v"/>
+        <Attr Name="ImportTime" Val="1611360493"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_top.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/spi_top.v"/>
+        <Attr Name="ImportTime" Val="1609869469"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/one_second_pulse.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/one_second_pulse.v"/>
+        <Attr Name="ImportTime" Val="1610577031"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/hbexec.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/hbexec.v"/>
+        <Attr Name="ImportTime" Val="1610571078"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/top_module.v"/>
+        <Attr Name="ImportTime" Val="1613536205"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okWireIn.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../OneDrive - University of St. Thomas/Research SPI core files/FrontPanelUSB/FrontPanelHDL/XEM7310-A75/okWireIn.v"/>
+        <Attr Name="ImportTime" Val="1613802374"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okTriggerIn.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../OneDrive - University of St. Thomas/Research SPI core files/FrontPanelUSB/FrontPanelHDL/XEM7310-A75/okTriggerIn.v"/>
+        <Attr Name="ImportTime" Val="1613802410"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okCoreHarness.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="UserDisabled" Val="1"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../OneDrive - University of St. Thomas/Research SPI core files/FrontPanelUSB/FrontPanelHDL/XEM7310-A75/okCoreHarness.v"/>
+        <Attr Name="ImportTime" Val="1613802197"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okBTPipeOut.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../OneDrive - University of St. Thomas/Research SPI core files/FrontPanelUSB/FrontPanelHDL/XEM7310-A75/okBTPipeOut.v"/>
+        <Attr Name="ImportTime" Val="1613802464"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/mux_1to8.v"/>
+        <Attr Name="ImportTime" Val="1611176365"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/top_level_module.v"/>
+        <Attr Name="ImportTime" Val="1611878907"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okWireOut.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../OneDrive - University of St. Thomas/Research SPI core files/FrontPanelUSB/FrontPanelHDL/XEM7310-A75/okWireOut.v"/>
+        <Attr Name="ImportTime" Val="1613802425"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okTriggerOut.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../OneDrive - University of St. Thomas/Research SPI core files/FrontPanelUSB/FrontPanelHDL/XEM7310-A75/okTriggerOut.v"/>
+        <Attr Name="ImportTime" Val="1613802439"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/read_AD796x_fifo_cmd.v">
+      <FileInfo>
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/read_AD796x_fifo_cmd.v"/>
+        <Attr Name="ImportTime" Val="1612412432"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/timescale.v">
+      <FileInfo SFType="VHeader">
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/timescale.v"/>
+        <Attr Name="ImportTime" Val="1609967031"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_defines.v">
+      <FileInfo SFType="VHeader">
+        <Attr Name="Library" Val="xil_defaultlib"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/spi_defines.v"/>
+        <Attr Name="ImportTime" Val="1611878297"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/import_ise_summary.txt">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/import_ise_summary.txt"/>
+        <Attr Name="ImportTime" Val="1613445668"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/XEM7310-A75/okLibrary.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../OneDrive - University of St. Thomas/Research SPI core files/FrontPanelUSB/FrontPanelHDL/XEM7310-A75/okLibrary.v"/>
+        <Attr Name="ImportTime" Val="1613803142"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/sources_1/imports/XEM7310-A75/okCoreHarness.v">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../OneDrive - University of St. Thomas/Research SPI core files/FrontPanelUSB/FrontPanelHDL/XEM7310-A75/okCoreHarness.v"/>
+        <Attr Name="ImportTime" Val="1525201188"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+        <Attr Name="UsedIn" Val="simulation"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="DesignMode" Val="RTL"/>
+      <Option Name="TopModule" Val="top_level_module"/>
+    </Config>
+  </FileSet>
+  <FileSet Name="constrs_in" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1">
+    <Filter Type="Constrs"/>
+    <File Path="$PSRCDIR/constrs_1/imports/SPI_Master/adc_daq_v1.ucf">
+      <FileInfo>
+        <Attr Name="UserDisabled" Val="1"/>
+        <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/adc_daq_v1.ucf"/>
+        <Attr Name="ImportTime" Val="1611176365"/>
+      </FileInfo>
+    </File>
+    <File Path="$PSRCDIR/constrs_1/imports/Downloads/xem7310.xdc">
+      <FileInfo>
+        <Attr Name="ImportPath" Val="$PPRDIR/../../../Downloads/xem7310.xdc"/>
+        <Attr Name="ImportTime" Val="1614222117"/>
+        <Attr Name="UsedIn" Val="synthesis"/>
+        <Attr Name="UsedIn" Val="implementation"/>
+      </FileInfo>
+    </File>
+    <Config>
+      <Option Name="ConstrsType" Val="XDC"/>
+    </Config>
+  </FileSet>
+  <Strategy Version="1" Minor="2">
+    <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
+    <Step Id="synth_design"/>
+  </Strategy>
+  <BlockFileSet Type="BlockSrcs" Name="fifo_generator_1"/>
+</GenRun>

@@ -18,6 +18,8 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
+`default_nettype wire
+
 module top_level_module(
 	input wire [4:0] okUH,
 	output wire[2:0] okHU,
@@ -157,7 +159,7 @@ module top_level_module(
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
 	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
 				 .hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep40trig[2]), .dout(dout), .lastWrite(lastWrite),
-				 .ep_ready(ep_ready), .mosi(mosi), .miso(miso), .sclk(sclk), .ss(slaveselect), .slow_pulse(led[0]));
+				 .ep_ready(ep_ready), .mosi(mosi), .miso(miso), .sclk(sclk), .ss(slaveselect), .slow_pulse(led/*[0]*/));
 	
 
 endmodule
