@@ -137,7 +137,7 @@ module top_module(
       .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
     );
   
-    /**/// SPI slave model
+    /**/ //SPI slave model
     spi_slave_model i_spi_slave (
       .rst(sync_rst), .ss(ss), .sclk(sclk), .mosi(mosi), .miso(miso)
     );//*/
