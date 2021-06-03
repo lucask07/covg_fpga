@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Thu Apr 29 21:53:20 2021
-# Process ID: 8492
+# Start of session at: Wed May  5 21:52:48 2021
+# Process ID: 13024
 # Current directory: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
 # Command line: vivado.exe -log top_level_module.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_level_module.tcl
 # Log file: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
@@ -15,18 +15,18 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 6536 
+INFO: Helper process launched with PID 12616 
 WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15361]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 404.535 ; gain = 117.574
+Starting RTL Elaboration : Time (s): cpu = 00:00:10 ; elapsed = 00:00:12 . Memory (MB): peak = 404.539 ; gain = 116.672
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:23]
 INFO: [Synth 8-6157] synthesizing module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:21]
 INFO: [Synth 8-226] default block is never used [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:30]
 INFO: [Synth 8-6155] done synthesizing module 'mux_1to8' (1#1) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:21]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:78]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:80]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:82]
+WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:86]
+WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:88]
+WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:90]
 INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
 	Parameter CAPACITANCE bound to: DONT_CARE - type: string 
 	Parameter DIFF_TERM bound to: FALSE - type: string 
@@ -280,12 +280,12 @@ INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized29' (28#1) [C:
 INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized30' (28#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
 INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized31' (28#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
 INFO: [Common 17-14] Message 'Synth 8-6155' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-WARNING: [Synth 8-350] instance 'okHI' of module 'okHost' requires 9 connections, but only 7 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:131]
+WARNING: [Synth 8-350] instance 'okHI' of module 'okHost' requires 9 connections, but only 7 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:139]
 	Parameter ADDRESS_WIDTH bound to: 30 - type: integer 
 	Parameter AW bound to: 30 - type: integer 
 	Parameter CW bound to: 34 - type: integer 
 WARNING: [Synth 8-693] zero replication count - replication ignored [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_top.v:137]
-WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 connections, but only 10 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:146]
+WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 connections, but only 10 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:149]
 	Parameter S0 bound to: 5'b00000 
 	Parameter S1 bound to: 5'b00001 
 	Parameter S2 bound to: 5'b00010 
@@ -319,8 +319,8 @@ WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 
 	Parameter Transfer_1 bound to: 5'b01101 
 	Parameter Transfer_2 bound to: 5'b01110 
 	Parameter IDLE_0 bound to: 5'b10001 
-WARNING: [Synth 8-689] width (8) of port connection 'slow_pulse' does not match port width (1) of module 'top_module' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:162]
-WARNING: [Synth 8-350] instance 'top' of module 'top_module' requires 17 connections, but only 16 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:160]
+WARNING: [Synth 8-689] width (8) of port connection 'slow_pulse' does not match port width (1) of module 'top_module' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:170]
+WARNING: [Synth 8-350] instance 'top' of module 'top_module' requires 20 connections, but only 19 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:168]
 WARNING: [Synth 8-3917] design top_level_module has port led[7] driven by constant 0
 WARNING: [Synth 8-3917] design top_level_module has port led[6] driven by constant 0
 WARNING: [Synth 8-3917] design top_level_module has port led[5] driven by constant 0
@@ -430,7 +430,7 @@ WARNING: [Synth 8-3331] design okBTPipeOut has unconnected port okHE[12]
 WARNING: [Synth 8-3331] design okBTPipeOut has unconnected port okHE[11]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:09 ; elapsed = 00:00:10 . Memory (MB): peak = 471.055 ; gain = 184.094
+Finished RTL Elaboration : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 470.773 ; gain = 182.906
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -439,16 +439,16 @@ Report Check Netlist:
 +------+------------------+-------+---------+-------+------------------+
 |1     |multi_driven_nets |      0|        0|Passed |Multi driven nets |
 +------+------------------+-------+---------+-------+------------------+
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_0:miso_pad_i to constant 0 [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:242]
-WARNING: [Synth 8-3295] tying undriven pin top:data_rdy_0 to constant 0 [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:160]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_0:miso_pad_i to constant 0 [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:245]
+WARNING: [Synth 8-3295] tying undriven pin top:data_rdy_0 to constant 0 [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:168]
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:10 ; elapsed = 00:00:11 . Memory (MB): peak = 471.055 ; gain = 184.094
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:17 ; elapsed = 00:00:19 . Memory (MB): peak = 470.773 ; gain = 182.906
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:10 ; elapsed = 00:00:11 . Memory (MB): peak = 471.055 ; gain = 184.094
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:17 ; elapsed = 00:00:19 . Memory (MB): peak = 470.773 ; gain = 182.906
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 147 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -483,17 +483,17 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM128X1S => RAM128X1S (MUXF7, RAMS64E, RAMS64E): 8 instances
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.020 . Memory (MB): peak = 821.664 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.022 . Memory (MB): peak = 822.730 ; gain = 0.000
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'top/FIFO' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:25 ; elapsed = 00:00:27 . Memory (MB): peak = 821.664 ; gain = 534.703
+Finished Constraint Validation : Time (s): cpu = 00:00:40 ; elapsed = 00:00:47 . Memory (MB): peak = 822.730 ; gain = 534.863
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:25 ; elapsed = 00:00:27 . Memory (MB): peak = 821.664 ; gain = 534.703
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:40 ; elapsed = 00:00:47 . Memory (MB): peak = 822.730 ; gain = 534.863
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -501,7 +501,7 @@ Start Applying 'set_property' XDC Constraints
 Applied set_property DONT_TOUCH = true for top/FIFO. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okHI/core0/core0/\a0/cb0 /U0/\inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:25 ; elapsed = 00:00:27 . Memory (MB): peak = 821.664 ; gain = 534.703
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:40 ; elapsed = 00:00:47 . Memory (MB): peak = 822.730 ; gain = 534.863
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'WbSignal_converter'
 INFO: [Synth 8-5546] ROM "cmd_word" won't be mapped to RAM because it is too sparse
@@ -557,7 +557,7 @@ WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/ian
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'read_AD796x_fifo_cmd'
 WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/read_AD796x_fifo_cmd.v:155]
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:26 ; elapsed = 00:00:29 . Memory (MB): peak = 821.664 ; gain = 534.703
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:43 ; elapsed = 00:00:50 . Memory (MB): peak = 822.730 ; gain = 534.863
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -592,7 +592,6 @@ Start Cross Boundary and Area Optimization
 Warning: Parallel synthesis criteria is not met 
 WARNING: [Synth 8-6014] Unused sequential element Wishbone_Master_0/o_rsp_stb_reg was removed.  [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/hbexec.v:261]
 WARNING: [Synth 8-6014] Unused sequential element Wishbone_Master_0/o_rsp_word_reg was removed.  [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/hbexec.v:262]
-WARNING: [Synth 8-6014] Unused sequential element i_spi_top_0/shift/s_out_reg was removed.  [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_shift.v:120]
 WARNING: [Synth 8-6014] Unused sequential element i_spi_top_0/wb_dat_o_reg was removed.  [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_top.v:154]
 INFO: [Synth 8-5545] ROM "out_pulse/cnt" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "out_pulse/pulse" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
@@ -634,10 +633,99 @@ INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[29] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[30] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[31] )
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[12]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[9]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[7]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[6]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[5]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[1]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[2]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[3]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[4]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[11]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[10]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[8]' (FDR) to 'top/data_converter_0/converted_dat_reg[0]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[31]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[30]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[29]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[28]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[27]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[26]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[25]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[24]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[23]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[22]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[21]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[20]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[19]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[18]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[17]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[16]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[15]' (LD) to 'top/data_converter_0/cmd_word_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[14]' (LD) to 'top/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/converted_dat_reg[0]' (FDR) to 'top/data_converter_0/converted_dat_reg[13]'
 INFO: [Synth 8-3886] merging instance 'top/CONVERT/cmd_word_reg[31]' (LD) to 'top/CONVERT/cmd_word_reg[30]'
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (\top/CONVERT/cmd_word_reg[30] )
-INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master/o_wb_data_reg[31]' (FDE) to 'top/Wishbone_Master/o_wb_data_reg[30]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\top/Wishbone_Master/o_wb_data_reg[30] )
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[31]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[29]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[28]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[27]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[26]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[25]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[24]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[23]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[22]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[21]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[20]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[19]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[18]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[17]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[16]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[15]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (\top/data_converter_0/cmd_word_reg[32] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\top/data_converter_0/cmd_word_reg[33] )
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[15]' (FDCE) to 'top/i_spi_top_0/divider_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master/o_wb_data_reg[31]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master/o_wb_data_reg[30]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[12]' (LD) to 'top/data_converter_0/cmd_word_reg[4]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[9]' (LD) to 'top/data_converter_0/cmd_word_reg[7]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[7]' (LD) to 'top/data_converter_0/cmd_word_reg[6]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[6]' (LD) to 'top/data_converter_0/cmd_word_reg[5]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[5]' (LD) to 'top/data_converter_0/cmd_word_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[1]' (LD) to 'top/data_converter_0/cmd_word_reg[2]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[2]' (LD) to 'top/data_converter_0/cmd_word_reg[3]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[3]' (LD) to 'top/data_converter_0/cmd_word_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[4]' (LD) to 'top/data_converter_0/cmd_word_reg[13]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[11]' (LD) to 'top/data_converter_0/cmd_word_reg[10]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[12]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[4]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[9]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[7]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[6]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[5]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[9]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[1]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[2]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[3]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[4]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[13]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[11]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[10]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[12]' (FDCE) to 'top/i_spi_top_0/divider_reg[4]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[13]' (FDCE) to 'top/i_spi_top_0/divider_reg[4]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[9]' (FDCE) to 'top/i_spi_top_0/divider_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[10]' (FDCE) to 'top/i_spi_top_0/divider_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[11]' (FDCE) to 'top/i_spi_top_0/divider_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[6]' (FDCE) to 'top/i_spi_top_0/divider_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[7]' (FDCE) to 'top/i_spi_top_0/divider_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[1]' (FDCE) to 'top/i_spi_top_0/divider_reg[2]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[2]' (FDCE) to 'top/i_spi_top_0/divider_reg[3]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[3]' (FDCE) to 'top/i_spi_top_0/divider_reg[5]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\top/Wishbone_Master_0/o_wb_data_reg[14] )
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[1]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[2]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[2]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[3]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[3]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[10]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[12]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[4]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[4]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[13]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[11]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[10]'
 WARNING: [Synth 8-3332] Sequential element (l008c72ad3b3ec61be52cde84a395c4fa_reg) is unused and will be removed from module okCore.
 WARNING: [Synth 8-3332] Sequential element (lbb5e4c7a1ee012efa72f8a060e42e0e9_reg[0]) is unused and will be removed from module okCore.
 WARNING: [Synth 8-3332] Sequential element (lbb5e4c7a1ee012efa72f8a060e42e0e9_reg[10]) is unused and will be removed from module okCore.
@@ -740,7 +828,7 @@ WARNING: [Synth 8-3332] Sequential element (eptrig_reg[13]) is unused and will b
 WARNING: [Synth 8-3332] Sequential element (eptrig_reg[14]) is unused and will be removed from module okTriggerIn.
 INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:30 ; elapsed = 00:00:33 . Memory (MB): peak = 821.664 ; gain = 534.703
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:51 ; elapsed = 00:00:58 . Memory (MB): peak = 822.730 ; gain = 534.863
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -754,13 +842,13 @@ Start Applying XDC Timing Constraints
 INFO: [Synth 8-5578] Moved timing constraint from pin 'okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst/src_arst' to pin 'okHI/core0/core0/a0/l62a5479e7989ce7f4d5507c695cc69cf_reg/Q'
 INFO: [Synth 8-5819] Moved 1 constraints on hierarchical pins to their respective driving/loading pins
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:46 ; elapsed = 00:00:49 . Memory (MB): peak = 821.664 ; gain = 534.703
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:10 ; elapsed = 00:01:19 . Memory (MB): peak = 822.730 ; gain = 534.863
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:00:48 ; elapsed = 00:00:52 . Memory (MB): peak = 855.707 ; gain = 568.746
+Finished Timing Optimization : Time (s): cpu = 00:01:16 ; elapsed = 00:01:24 . Memory (MB): peak = 857.563 ; gain = 569.695
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -772,7 +860,7 @@ Report RTL Partitions:
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:00:49 ; elapsed = 00:00:53 . Memory (MB): peak = 856.730 ; gain = 569.770
+Finished Technology Mapping : Time (s): cpu = 00:01:18 ; elapsed = 00:01:26 . Memory (MB): peak = 866.613 ; gain = 578.746
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -796,7 +884,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:00:50 ; elapsed = 00:00:54 . Memory (MB): peak = 856.730 ; gain = 569.770
+Finished IO Insertion : Time (s): cpu = 00:01:20 ; elapsed = 00:01:28 . Memory (MB): peak = 866.613 ; gain = 578.746
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -809,7 +897,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:00:50 ; elapsed = 00:00:54 . Memory (MB): peak = 856.730 ; gain = 569.770
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:20 ; elapsed = 00:01:28 . Memory (MB): peak = 866.613 ; gain = 578.746
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -821,25 +909,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:51 ; elapsed = 00:00:54 . Memory (MB): peak = 856.730 ; gain = 569.770
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:21 ; elapsed = 00:01:29 . Memory (MB): peak = 866.613 ; gain = 578.746
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:00:51 ; elapsed = 00:00:54 . Memory (MB): peak = 856.730 ; gain = 569.770
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:21 ; elapsed = 00:01:29 . Memory (MB): peak = 866.613 ; gain = 578.746
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:51 ; elapsed = 00:00:54 . Memory (MB): peak = 856.730 ; gain = 569.770
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:21 ; elapsed = 00:01:29 . Memory (MB): peak = 866.613 ; gain = 578.746
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:00:51 ; elapsed = 00:00:54 . Memory (MB): peak = 856.730 ; gain = 569.770
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:21 ; elapsed = 00:01:29 . Memory (MB): peak = 866.613 ; gain = 578.746
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -858,61 +946,61 @@ Report Cell Usage:
 +------+-----------------+------+
 |1     |fifo_generator_1 |     1|
 |2     |BUFG             |     4|
-|3     |CARRY4           |    74|
+|3     |CARRY4           |    78|
 |4     |DNA_PORT         |     1|
-|5     |LUT1             |    59|
-|6     |LUT2             |   120|
-|7     |LUT3             |   199|
-|8     |LUT4             |   315|
-|9     |LUT5             |   191|
-|10    |LUT6             |   500|
+|5     |LUT1             |    60|
+|6     |LUT2             |   110|
+|7     |LUT3             |   179|
+|8     |LUT4             |   410|
+|9     |LUT5             |   215|
+|10    |LUT6             |   581|
 |11    |LUT6_2           |    50|
 |12    |MMCME2_BASE      |     1|
-|13    |MUXF7            |     5|
+|13    |MUXF7            |     7|
 |14    |RAM128X1S        |     8|
 |15    |RAM32M           |     4|
 |16    |RAMB18E1         |     1|
 |17    |RAMB18E1_1       |     1|
 |18    |RAMB36E1         |     1|
-|19    |FDCE             |   344|
-|20    |FDPE             |    57|
-|21    |FDRE             |   853|
-|22    |FDSE             |    24|
-|23    |LD               |    32|
+|19    |FDCE             |   397|
+|20    |FDPE             |    73|
+|21    |FDRE             |   859|
+|22    |FDSE             |    26|
+|23    |LD               |    36|
 |24    |IBUF             |     6|
 |25    |IBUFG            |     1|
 |26    |IBUFGDS          |     1|
 |27    |IOBUF            |    33|
-|28    |OBUF             |    30|
+|28    |OBUF             |    33|
 +------+-----------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:00:51 ; elapsed = 00:00:54 . Memory (MB): peak = 856.730 ; gain = 569.770
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:21 ; elapsed = 00:01:29 . Memory (MB): peak = 866.613 ; gain = 578.746
 ---------------------------------------------------------------------------------
-Synthesis finished with 0 errors, 0 critical warnings and 886 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:00:30 ; elapsed = 00:00:42 . Memory (MB): peak = 856.730 ; gain = 219.160
-Synthesis Optimization Complete : Time (s): cpu = 00:00:51 ; elapsed = 00:00:54 . Memory (MB): peak = 856.730 ; gain = 569.770
+Synthesis finished with 0 errors, 0 critical warnings and 740 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:47 ; elapsed = 00:01:08 . Memory (MB): peak = 866.613 ; gain = 226.789
+Synthesis Optimization Complete : Time (s): cpu = 00:01:21 ; elapsed = 00:01:29 . Memory (MB): peak = 866.613 ; gain = 578.746
 INFO: [Project 1-571] Translating synthesized netlist
-INFO: [Netlist 29-17] Analyzing 218 Unisim elements for replacement
+INFO: [Netlist 29-17] Analyzing 228 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
 INFO: [Project 1-111] Unisim Transformation Summary:
-  A total of 130 instances were transformed.
+  A total of 134 instances were transformed.
   IBUFG => IBUF: 1 instances
   IBUFGDS => IBUFDS: 1 instances
   IOBUF => IOBUF (IBUF, OBUFT): 33 instances
-  LD => LDCE: 32 instances
+  LD => LDCE: 36 instances
   LUT6_2 => LUT6_2 (LUT5, LUT6): 50 instances
   MMCME2_BASE => MMCME2_ADV: 1 instances
   RAM128X1S => RAM128X1S (MUXF7, RAMS64E, RAMS64E): 8 instances
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-279 Infos, 237 Warnings, 0 Critical Warnings and 0 Errors encountered.
+368 Infos, 236 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:00:55 ; elapsed = 00:00:59 . Memory (MB): peak = 856.730 ; gain = 581.285
+synth_design: Time (s): cpu = 00:01:25 ; elapsed = 00:01:35 . Memory (MB): peak = 866.613 ; gain = 590.262
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.074 . Memory (MB): peak = 856.730 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Thu Apr 29 21:54:28 2021...
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.206 . Memory (MB): peak = 866.613 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Wed May  5 21:54:39 2021...

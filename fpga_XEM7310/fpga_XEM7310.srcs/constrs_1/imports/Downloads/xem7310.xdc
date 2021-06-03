@@ -536,14 +536,14 @@ set_property IOSTANDARD LVCMOS33 [get_ports {gp[2]}]
 set_property PACKAGE_PIN K4 [get_ports {gp[3]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {gp[3]}]
 # MC2-64 
-#set_property PACKAGE_PIN U15 [get_ports {gp[4]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {gp[4]}]
+set_property PACKAGE_PIN U15 [get_ports {gp[4]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {gp[4]}]
 # MC2-65 
-#set_property PACKAGE_PIN J4 [get_ports {gp[5]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {gp[5]}]
+set_property PACKAGE_PIN J4 [get_ports {gp[5]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {gp[5]}]
 # MC2-66 
-#set_property PACKAGE_PIN V15 [get_ports {gp[6]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {gp[6]}]
+set_property PACKAGE_PIN V15 [get_ports {gp[6]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {gp[6]}]
 # MC2-67 
 #set_property PACKAGE_PIN T16 [get_ports {gp[7]}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {gp[7]}]

@@ -21,15 +21,15 @@
 `include "timescale.v"
 
 module top_module(
-    input wire clk,
+     input wire clk,
 	 input wire fifoclk,
-    input wire rst,
-    input wire [31:0] ep_dataout,
-    input wire trigger,  
-    output wire hostinterrupt, //interrupt signal from fifo to tell host computer that FIFO is half full
-    input wire readFifo,
+     input wire rst,
+     input wire [31:0] ep_dataout,
+     input wire trigger,  
+     output wire hostinterrupt, //interrupt signal from fifo to tell host computer that FIFO is half full
+     input wire readFifo,
 	 input wire rstFifo,
-    output wire [31:0] dout,
+     output wire [31:0] dout,
 	 output wire [31:0] lastWrite, //this signal will give the value of the last word written into the FIFO (for debugging)
 	 output wire ep_ready, //this signal will tell the host that a block transfer is ready
 	 /**/output wire mosi,
@@ -37,7 +37,11 @@ module top_module(
 	 output wire sclk,
 	 output wire ss,//*/
 	 output wire slow_pulse,
-	 input wire data_rdy_0
+	 input wire data_rdy_0,
+	 output wire ss_0,
+     output wire sclk_0,
+     output wire mosi_0,
+     input wire [15:0] adc_val_0
     );
     
       wire cmd_stb;
@@ -100,6 +104,7 @@ module top_module(
 		
 	 assign sync_fifo_rst = s4;
 	 
+	 /* ---------------- ADS7950 ----------------*/
     
     /*Wishbone Master module*/
     hbexec Wishbone_Master (
@@ -137,7 +142,7 @@ module top_module(
       .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
     );
   
-    /**/ //SPI slave model
+     //SPI slave model
     spi_slave_model i_spi_slave (
       .rst(sync_rst), .ss(ss), .sclk(sclk), .mosi(mosi), .miso(miso)
     );//*/
@@ -202,7 +207,10 @@ module top_module(
 	 assign ep_ready = blockready;
 	 
 	 
-	 //instantiations and wires for AD796x and AD5453
+	 
+	 /* ---------------- ADC796x & AD5453 control ----------------*/
+	 
+	 //instantiations and wires for AD796x and AD5453 SPI control
 	 wire cmd_stb_0;
 	 wire [33:0] cmd_word_0;
 	 wire cmd_busy_0;
@@ -220,19 +228,19 @@ module top_module(
 	 wire int_o_0;
 	 wire rd_en_0; //read enable for AD796x FIFO
 	 
-	 wire ss_0;
+	 /*wire ss_0;
      wire sclk_0;
-     wire mosi_0;
+     wire mosi_0;*/
 	 
 	 //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
 	 read_AD796x_fifo_cmd data_converter_0(
-	 .clk(/*clk_ad796x_enable*/clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
+	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*adc_val_0*/16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0), .data_rdy(data_rdy_0)
 	 );
 	 
 	 //Wishbone Master module for AD796x and AD5453
     hbexec Wishbone_Master_0 (
-    .i_clk(/*clk_ad796x_enable*/clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_0), .i_cmd_word(cmd_word_0), .o_cmd_busy(cmd_busy_0), .o_rsp_stb(rsp_stb_0),
+    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_0), .i_cmd_word(cmd_word_0), .o_cmd_busy(cmd_busy_0), .o_rsp_stb(rsp_stb_0),
     .o_rsp_word(wb_cmd_dataout_0), .o_wb_cyc(cyc_0), .o_wb_stb(stb_0),
     .o_wb_we(we_0), .o_wb_addr(), .o_wb_data(dat_o_0), .o_wb_sel(sel_0),        
     .i_wb_ack(ack_0), .i_wb_stall(1'b0), .i_wb_err(err_0), .i_wb_data(dat_i_0)
@@ -240,7 +248,7 @@ module top_module(
     
     //SPI master core for AD796x and AD5453
     spi_top i_spi_top_0 (
-      .wb_clk_i(/*clk_ad796x_enable*/clk), .wb_rst_i(sync_rst), 
+      .wb_clk_i(clk), .wb_rst_i(sync_rst), 
       .wb_adr_i(adr_0[4:0]), .wb_dat_i(dat_o_0), .wb_dat_o(dat_i_0), 
       .wb_sel_i(sel_0), .wb_we_i(we_0), .wb_stb_i(stb_0), 
       .wb_cyc_i(cyc_0), .wb_ack_o(ack_0), .wb_err_o(err_0), .wb_int_o(int_o_0),
