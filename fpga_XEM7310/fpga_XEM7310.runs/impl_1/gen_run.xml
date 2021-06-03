@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<GenRun Id="impl_1" LaunchPart="xc7a75tfgg484-1" LaunchTime="1619751289">
+<GenRun Id="impl_1" LaunchPart="xc7a75tfgg484-1" LaunchTime="1620269689">
   <File Type="ROUTE-PWR" Name="top_level_module_power_routed.rpt"/>
   <File Type="PA-TCL" Name="top_level_module.tcl"/>
   <File Type="BITSTR-BMM" Name="top_level_module_bd.bmm"/>
@@ -39,6 +39,7 @@
   <File Type="ROUTE-TIMING-PB" Name="top_level_module_timing_summary_routed.pb"/>
   <File Type="ROUTE-TIMING-RPX" Name="top_level_module_timing_summary_routed.rpx"/>
   <File Type="ROUTE-CLK" Name="top_level_module_clock_utilization_routed.rpt"/>
+  <File Type="RDI-RDI" Name="top_level_module.vdi"/>
   <File Type="ROUTE-BUS-SKEW" Name="top_level_module_bus_skew_routed.rpt"/>
   <File Type="ROUTE-BUS-SKEW-PB" Name="top_level_module_bus_skew_routed.pb"/>
   <File Type="ROUTE-BUS-SKEW-RPX" Name="top_level_module_bus_skew_routed.rpx"/>
@@ -48,7 +49,6 @@
   <File Type="BITSTR-RBT" Name="top_level_module.rbt"/>
   <File Type="BITSTR-NKY" Name="top_level_module.nky"/>
   <File Type="BG-DRC" Name="top_level_module.drc"/>
-  <File Type="RDI-RDI" Name="top_level_module.vdi"/>
   <File Type="WBT-USG" Name="usage_statistics_webtalk.html"/>
   <FileSet Name="sources" Type="DesignSrcs" RelSrcDir="$PSRCDIR/sources_1">
     <Filter Type="Srcs"/>

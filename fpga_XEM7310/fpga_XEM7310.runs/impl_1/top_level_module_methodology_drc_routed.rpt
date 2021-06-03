@@ -1,7 +1,7 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-| Date         : Thu Apr 29 21:57:44 2021
+| Date         : Wed May  5 21:59:23 2021
 | Host         : LAPTOP-RK0H8TS5 running 64-bit major release  (build 9200)
 | Command      : report_methodology -file top_level_module_methodology_drc_routed.rpt -pb top_level_module_methodology_drc_routed.pb -rpx top_level_module_methodology_drc_routed.rpx
 | Design       : top_level_module
@@ -23,7 +23,7 @@ Table of Contents
           Floorplan: design_1
       Design limits: <entire design considered>
              Max violations: <unlimited>
-             Violations found: 73
+             Violations found: 80
 +-----------+----------+------------------------------------------------------+------------+
 | Rule      | Severity | Description                                          | Violations |
 +-----------+----------+------------------------------------------------------+------------+
@@ -31,8 +31,8 @@ Table of Contents
 | TIMING-9  | Warning  | Unknown CDC Logic                                    | 1          |
 | TIMING-10 | Warning  | Missing property on synchronizer                     | 1          |
 | TIMING-17 | Warning  | Non-clocked sequential cell                          | 1          |
-| TIMING-18 | Warning  | Missing input or output delay                        | 30         |
-| TIMING-20 | Warning  | Non-clocked latch                                    | 32         |
+| TIMING-18 | Warning  | Missing input or output delay                        | 33         |
+| TIMING-20 | Warning  | Non-clocked latch                                    | 36         |
 | TIMING-24 | Warning  | Overridden Max delay datapath only                   | 2          |
 | TIMING-28 | Warning  | Auto-derived clock referenced by a timing constraint | 1          |
 | XDCH-1    | Warning  | Hold option missing in multicycle path constraint    | 2          |
@@ -182,40 +182,55 @@ Related violations: <none>
 
 TIMING-18#23 Warning
 Missing input or output delay  
-An output delay is missing on led[0] relative to clock(s) sys_clk
+An output delay is missing on gp[4] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#24 Warning
 Missing input or output delay  
-An output delay is missing on led[1] relative to clock(s) sys_clk
+An output delay is missing on gp[5] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#25 Warning
 Missing input or output delay  
-An output delay is missing on led[2] relative to clock(s) sys_clk
+An output delay is missing on gp[6] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#26 Warning
 Missing input or output delay  
-An output delay is missing on led[3] relative to clock(s) sys_clk
+An output delay is missing on led[0] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#27 Warning
 Missing input or output delay  
-An output delay is missing on led[4] relative to clock(s) sys_clk
+An output delay is missing on led[1] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#28 Warning
 Missing input or output delay  
-An output delay is missing on led[5] relative to clock(s) sys_clk
+An output delay is missing on led[2] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#29 Warning
 Missing input or output delay  
-An output delay is missing on led[6] relative to clock(s) sys_clk
+An output delay is missing on led[3] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#30 Warning
+Missing input or output delay  
+An output delay is missing on led[4] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#31 Warning
+Missing input or output delay  
+An output delay is missing on led[5] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#32 Warning
+Missing input or output delay  
+An output delay is missing on led[6] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#33 Warning
 Missing input or output delay  
 An output delay is missing on led[7] relative to clock(s) sys_clk
 Related violations: <none>
@@ -378,6 +393,26 @@ Related violations: <none>
 TIMING-20#32 Warning
 Non-clocked latch  
 The latch top/CONVERT/cmd_word_reg[9] cannot be properly analyzed as its control pin top/CONVERT/cmd_word_reg[9]/G is not reached by a timing clock
+Related violations: <none>
+
+TIMING-20#33 Warning
+Non-clocked latch  
+The latch top/data_converter_0/cmd_word_reg[0] cannot be properly analyzed as its control pin top/data_converter_0/cmd_word_reg[0]/G is not reached by a timing clock
+Related violations: <none>
+
+TIMING-20#34 Warning
+Non-clocked latch  
+The latch top/data_converter_0/cmd_word_reg[10] cannot be properly analyzed as its control pin top/data_converter_0/cmd_word_reg[10]/G is not reached by a timing clock
+Related violations: <none>
+
+TIMING-20#35 Warning
+Non-clocked latch  
+The latch top/data_converter_0/cmd_word_reg[13] cannot be properly analyzed as its control pin top/data_converter_0/cmd_word_reg[13]/G is not reached by a timing clock
+Related violations: <none>
+
+TIMING-20#36 Warning
+Non-clocked latch  
+The latch top/data_converter_0/cmd_word_reg[8] cannot be properly analyzed as its control pin top/data_converter_0/cmd_word_reg[8]/G is not reached by a timing clock
 Related violations: <none>
 
 TIMING-24#1 Warning
