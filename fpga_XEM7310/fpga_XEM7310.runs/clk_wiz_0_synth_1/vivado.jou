@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Wed Jun  2 11:03:54 2021
-# Process ID: 8084
+# Start of session at: Fri Jun  4 18:48:14 2021
+# Process ID: 13264
 # Current directory: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/clk_wiz_0_synth_1
 # Command line: vivado.exe -log clk_wiz_0.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source clk_wiz_0.tcl
 # Log file: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/clk_wiz_0_synth_1/clk_wiz_0.vds

@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
+// Company: UST
+// Engineer: Ian Delgadillo Bonequi
 // 
 // Create Date: 06/02/2021 12:41:30 PM
 // Design Name: 
