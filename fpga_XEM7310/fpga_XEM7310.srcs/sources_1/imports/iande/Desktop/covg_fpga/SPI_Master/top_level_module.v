@@ -52,6 +52,9 @@
 //
 // TriggerOut 0x60
 //      0 - status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
+//      1 - status signal telling host that AD7961_0 fifo is completely full
+//      2 - status signal telling host that AD7961_0 fifo is half full
+//      3 - status signal telling host that AD7961_0 fifo is empty
 //
 // BTPipeOut - 0xA0
 //      31:0 - pipeOut to transfer data in bulk from the ADS7950 FIF2
@@ -103,7 +106,7 @@ module top_level_module(
 	output wire [6:0] gp,
 	
 	
-	//ADC796x
+	//AD796x (sufficient for only one channel/instantiation of AD7961–more to be added)
     output wire [3:0] adc_en0,          // Enable pins output
     output wire adc_en2,                // Enable pins output
     
@@ -165,7 +168,10 @@ module top_level_module(
 	wire adc_pll_locked;
 	
 	clk_wiz_0 adc_pll(
-	.clk_in1(clk_sys), .reset(ep40trig[3]), .clk_out1(adc_clk), .locked(adc_pll_locked)
+	.clk_in1(clk_sys), //in at 200 MHz
+	.reset(ep40trig[3]), 
+	.clk_out1(adc_clk), //out at 200 MHz
+	.locked(adc_pll_locked)
 	);
 	 
 	 //FrontPanel (HostInterface) wires	
@@ -180,15 +186,15 @@ module top_level_module(
 	wire [31:0] ep00wire, ep01wire;
 	wire [31:0] ep40trig;
 	
-	//wires to capture output from the user HDL
+	//wires to capture output from the HDL regarding last data written to ADS7952 Fifo and when the data is ready
 	wire [31:0] lastWrite;
 	wire hostinterrupt;
 	wire ep_ready;
 	
-	//output data from the FIFO via top user HDL module
+	//output data from the ADS7952 FIFO
 	wire [31:0] dout;
 	
-	//wires to capture output from BTPipeOut (initiating block reads from FIFO)
+	//wires to capture output from BTPipeOut (initiating block reads from ADS7952 FIFO)
 	wire readFifo;
 	wire pipestrobe;
 	
@@ -209,7 +215,7 @@ module top_level_module(
              
     /* ---------------- Ok Endpoints ----------------*/
 				 
-	//wire to hold the data/commands from the host – this will be routed to the wishbone formatter/state machine
+	//wire to hold the data/commands from the host – this will be routed to the wishbone formatter/state machine for the ADS7952
 	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
 	
 	// Wire in to select what slave the SPI data is routed to
@@ -218,12 +224,12 @@ module top_level_module(
 	wire [3:0] adc_reset; //asynchronous adc (AD796x resets)  
 
     okWireIn wi2 (.okHE(okHE), .ep_addr(8'h02), 
-      .ep_dataout({29'b0, adc_en2, adc_en0, adc_reset}));
+      .ep_dataout({26'b0, adc_en2, adc_en0, adc_reset}));
 	
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
 	//ep40trig[1] will be used as the master reset for the rest of the design
-	//ep40trig[2] will be used as the reset for the FIFO
+	//ep40trig[2] will be used as the reset for the ADS7952 FIFO
 	//ep40trig[3] will be used as the reset for the "fast" clock pll
 	//ep40trig[4] is the reset for adc7961_0_fifo
 	okTriggerIn trigIn40 (.okHE(okHE),
@@ -233,9 +239,13 @@ module top_level_module(
 	okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 	
 	//status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
-	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), .ep_trigger({31'b0, hostinterrupt}));
+	//bit 1 is status signal telling host that AD7961_0 fifo is completely full
+	//bit 2 is status signal telling host that AD7961_0 fifo is half full
+	//bit 3 is status signal telling host that AD7961_0 fifo is empty
+	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), 
+	                   .ep_trigger({28'b0, adc_fifo_empty[0], adc_fifo_halffull[0], adc_fifo_full[0], hostinterrupt}));
 	
-	//pipeOut to transfer data in bulk from the FIFO
+	//pipeOut to transfer data in bulk from the ADS7952 FIFO
 	okBTPipeOut pipeOutA0 (.okHE(okHE), .okEH(okEHx[2*65 +: 65]),
                        .ep_addr(8'hA0), .ep_datain(dout), .ep_read(readFifo),
                        .ep_blockstrobe(pipestrobe), .ep_ready(ep_ready));  
@@ -291,16 +301,21 @@ module top_level_module(
     .data_o(adc_val[0])
     );
     
-    fifo_ad796x adc7961_0_fifo (//32 bit wide read and write ports 
-      .rst(ep40trig[4]/*adc_fifo_reset[0]*/),
+    //sychronized AD796x fifo resets
+    wire [3:0] adc_fifo_reset;
+    reset_synchronizer sync_adc_fifo_rst_0 (.clk(clk_sys), .async_rst(ep40trig[4]), .sync_rst(adc_fifo_reset[0]));
+    
+    
+    fifo_AD796x adc7961_0_fifo (//32 bit wide read and write ports 
+      .rst(adc_fifo_reset[0]),
       .wr_clk(clk_sys),
       .rd_clk(okClk),
-      .din({16'd0, adc_val[0]}),         // Bus [31:0] (from ADC)
+      .din({adc_val[0]}),         // Bus [15:0] (from ADC)
       .wr_en(pipe_out_write_adc[0]),// from ADC 
       .rd_en(adc_pipe_ep_read[0]),      // from OKHost
       .dout(adc_pipe_ep_datain[0]),     // Bus [31:0] (to OKHost)
       .full(adc_fifo_full[0]),     // status 
       .empty(adc_fifo_empty[0]),   // status 
-      .prog_full(adc_fifo_halffull[0]));
+      .prog_full(adc_fifo_halffull[0]));//status
 	
 endmodule
