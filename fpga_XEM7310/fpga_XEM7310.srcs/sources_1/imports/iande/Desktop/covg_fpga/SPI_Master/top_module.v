@@ -41,7 +41,24 @@ module top_module(
 	 output wire ss_0,
      output wire sclk_0,
      output wire mosi_0,
-     input wire [15:0] adc_val_0
+     input wire [15:0] adc_val_0,
+     input wire data_rdy_1,
+     output wire ss_1,
+     output wire sclk_1,
+     output wire mosi_1,
+     input wire [15:0] adc_val_1
+     /*
+     input wire data_rdy_2,
+     output wire ss_2,
+     output wire sclk_2,
+     output wire mosi_2,
+     input wire [15:0] adc_val_2,
+     input wire data_rdy_3,
+     output wire ss_3,
+     output wire sclk_3,
+     output wire mosi_3,
+     input wire [15:0] adc_val_3
+     */
     );
     
       wire cmd_stb;
@@ -254,5 +271,135 @@ module top_module(
       .wb_cyc_i(cyc_0), .wb_ack_o(ack_0), .wb_err_o(err_0), .wb_int_o(int_o_0),
       .ss_pad_o(ss_0), .sclk_pad_o(sclk_0), .mosi_pad_o(mosi_0), .miso_pad_i() 
     );
+    
+    
+    //instantiations and wires for AD796x and AD5453 SPI control
+    wire cmd_stb_1;
+    wire [33:0] cmd_word_1;
+    wire cmd_busy_1;
+    wire rsp_stb_1;
+    wire [33:0] wb_cmd_dataout_1;
+    wire [7:0] adr_1;
+    wire [31:0] dat_i_1; 
+    wire [31:0] dat_o_1;
+    wire we_1;
+    wire [3:0] sel_1;
+    wire stb_1;
+    wire cyc_1;
+    wire ack_1;
+    wire err_1;
+    wire int_o_1;
+    wire rd_en_1; //signaling data is being grabbed by stae machine/controller
+     
+     
+    //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
+    read_AD796x_fifo_cmd data_converter_1(
+    .clk(clk), .rst(sync_rst), .int_o(int_o_1), .empty(1'b0), .adc_dat_i(/*adc_val_1*/16'h7fff), .adr(adr_1), .cmd_stb(cmd_stb_1), .cmd_word(cmd_word_1),
+    .rd_en(rd_en_1), .data_rdy(data_rdy_1)
+    );
+     
+    //Wishbone Master module for AD796x and AD5453
+    hbexec Wishbone_Master_1 (
+    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_1), .i_cmd_word(cmd_word_1), .o_cmd_busy(cmd_busy_1), .o_rsp_stb(rsp_stb_1),
+    .o_rsp_word(wb_cmd_dataout_1), .o_wb_cyc(cyc_1), .o_wb_stb(stb_1),
+    .o_wb_we(we_1), .o_wb_addr(), .o_wb_data(dat_o_1), .o_wb_sel(sel_1),        
+    .i_wb_ack(ack_1), .i_wb_stall(1'b0), .i_wb_err(err_1), .i_wb_data(dat_i_1)
+    );
+    
+    //SPI master core for AD796x and AD5453
+    spi_top i_spi_top_1 (
+     .wb_clk_i(clk), .wb_rst_i(sync_rst), 
+     .wb_adr_i(adr_1[4:0]), .wb_dat_i(dat_o_1), .wb_dat_o(dat_i_1), 
+     .wb_sel_i(sel_1), .wb_we_i(we_1), .wb_stb_i(stb_1), 
+     .wb_cyc_i(cyc_1), .wb_ack_o(ack_1), .wb_err_o(err_1), .wb_int_o(int_o_1),
+     .ss_pad_o(ss_1), .sclk_pad_o(sclk_1), .mosi_pad_o(mosi_1), .miso_pad_i() 
+    );
+    /*
+    //instantiations and wires for AD796x and AD5453 SPI control
+    wire cmd_stb_2;
+    wire [33:0] cmd_word_2;
+    wire cmd_busy_2;
+    wire rsp_stb_2;
+    wire [33:0] wb_cmd_dataout_2;
+    wire [7:0] adr_2;
+    wire [31:0] dat_i_2; 
+    wire [31:0] dat_o_2;
+    wire we_2;
+    wire [3:0] sel_2;
+    wire stb_2;
+    wire cyc_2;
+    wire ack_2;
+    wire err_2;
+    wire int_o_2;
+    wire rd_en_2; //signaling data is being grabbed by stae machine/controller
+     
+     
+    //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
+    read_AD796x_fifo_cmd data_converter_2(
+    .clk(clk), .rst(sync_rst), .int_o(int_o_2), .empty(1'b0), .adc_dat_i(adc_val_2), .adr(adr_2), .cmd_stb(cmd_stb_2), .cmd_word(cmd_word_2),
+    .rd_en(rd_en_2), .data_rdy(data_rdy_2)
+    );
+     
+    //Wishbone Master module for AD796x and AD5453
+    hbexec Wishbone_Master_2 (
+    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_2), .i_cmd_word(cmd_word_2), .o_cmd_busy(cmd_busy_2), .o_rsp_stb(rsp_stb_2),
+    .o_rsp_word(wb_cmd_dataout_2), .o_wb_cyc(cyc_2), .o_wb_stb(stb_2),
+    .o_wb_we(we_2), .o_wb_addr(), .o_wb_data(dat_o_2), .o_wb_sel(sel_2),        
+    .i_wb_ack(ack_2), .i_wb_stall(1'b0), .i_wb_err(err_2), .i_wb_data(dat_i_2)
+    );
+    
+    //SPI master core for AD796x and AD5453
+    spi_top i_spi_top_2 (
+     .wb_clk_i(clk), .wb_rst_i(sync_rst), 
+     .wb_adr_i(adr_2[4:0]), .wb_dat_i(dat_o_2), .wb_dat_o(dat_i_2), 
+     .wb_sel_i(sel_2), .wb_we_i(we_2), .wb_stb_i(stb_2), 
+     .wb_cyc_i(cyc_2), .wb_ack_o(ack_2), .wb_err_o(err_2), .wb_int_o(int_o_2),
+     .ss_pad_o(ss_2), .sclk_pad_o(sclk_2), .mosi_pad_o(mosi_2), .miso_pad_i() 
+    );
+    
+    //instantiations and wires for AD796x and AD5453 SPI control
+    wire cmd_stb_3;
+    wire [33:0] cmd_word_3;
+    wire cmd_busy_3;
+    wire rsp_stb_3;
+    wire [33:0] wb_cmd_dataout_3;
+    wire [7:0] adr_3;
+    wire [31:0] dat_i_3; 
+    wire [31:0] dat_o_3;
+    wire we_3;
+    wire [3:0] sel_3;
+    wire stb_3;
+    wire cyc_3;
+    wire ack_3;
+    wire err_3;
+    wire int_o_3;
+    wire rd_en_3; //signaling data is being grabbed by stae machine/controller
+     
+     
+    //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
+    read_AD796x_fifo_cmd data_converter_3(
+    .clk(clk), .rst(sync_rst), .int_o(int_o_3), .empty(1'b0), .adc_dat_i(adc_val_3), .adr(adr_3), .cmd_stb(cmd_stb_3), .cmd_word(cmd_word_3),
+    .rd_en(rd_en_3), .data_rdy(data_rdy_3)
+    );
+     
+    //Wishbone Master module for AD796x and AD5453
+    hbexec Wishbone_Master_3 (
+    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_3), .i_cmd_word(cmd_word_3), .o_cmd_busy(cmd_busy_3), .o_rsp_stb(rsp_stb_3),
+    .o_rsp_word(wb_cmd_dataout_3), .o_wb_cyc(cyc_3), .o_wb_stb(stb_3),
+    .o_wb_we(we_3), .o_wb_addr(), .o_wb_data(dat_o_3), .o_wb_sel(sel_3),        
+    .i_wb_ack(ack_3), .i_wb_stall(1'b0), .i_wb_err(err_3), .i_wb_data(dat_i_3)
+    );
+    
+    //SPI master core for AD796x and AD5453
+    spi_top i_spi_top_3 (
+     .wb_clk_i(clk), .wb_rst_i(sync_rst), 
+     .wb_adr_i(adr_3[4:0]), .wb_dat_i(dat_o_3), .wb_dat_o(dat_i_3), 
+     .wb_sel_i(sel_3), .wb_we_i(we_3), .wb_stb_i(stb_3), 
+     .wb_cyc_i(cyc_3), .wb_ack_o(ack_3), .wb_err_o(err_3), .wb_int_o(int_o_3),
+     .ss_pad_o(ss_3), .sclk_pad_o(sclk_3), .mosi_pad_o(mosi_3), .miso_pad_i() 
+    );
+    
+    */
+    
     
 endmodule
