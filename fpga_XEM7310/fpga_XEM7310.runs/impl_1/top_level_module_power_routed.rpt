@@ -1,0 +1,425 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version     : Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
+| Date             : Wed Jun  9 12:48:11 2021
+| Host             : LAPTOP-RK0H8TS5 running 64-bit major release  (build 9200)
+| Command          : report_power -file top_level_module_power_routed.rpt -pb top_level_module_power_summary_routed.pb -rpx top_level_module_power_routed.rpx
+| Design           : top_level_module
+| Device           : xc7a75tfgg484-1
+| Design State     : routed
+| Grade            : commercial
+| Process          : typical
+| Characterization : Production
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Power Report
+
+Table of Contents
+-----------------
+1. Summary
+1.1 On-Chip Components
+1.2 Power Supply Summary
+1.3 Confidence Level
+2. Settings
+2.1 Environment
+2.2 Clock Constraints
+3. Detailed Reports
+3.1 By Hierarchy
+
+1. Summary
+----------
+
++--------------------------+--------------+
+| Total On-Chip Power (W)  | 0.632        |
+| Design Power Budget (W)  | Unspecified* |
+| Power Budget Margin (W)  | NA           |
+| Dynamic (W)              | 0.510        |
+| Device Static (W)        | 0.123        |
+| Total Off-Chip Power (W) | 0.005        |
+| Effective TJA (C/W)      | 2.7          |
+| Max Ambient (C)          | 83.3         |
+| Junction Temperature (C) | 26.7         |
+| Confidence Level         | Low          |
+| Setting File             | ---          |
+| Simulation Activity File | ---          |
+| Design Nets Matched      | NA           |
++--------------------------+--------------+
+* Specify Design Power Budget using, set_operating_conditions -design_power_budget <value in Watts>
+
+
+1.1 On-Chip Components
+----------------------
+
++--------------------------+-----------+----------+-----------+-----------------+
+| On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
++--------------------------+-----------+----------+-----------+-----------------+
+| Clocks                   |     0.026 |        8 |       --- |             --- |
+| Slice Logic              |     0.012 |     4875 |       --- |             --- |
+|   LUT as Logic           |     0.010 |     2051 |     47200 |            4.35 |
+|   Register               |    <0.001 |     2054 |     94400 |            2.18 |
+|   CARRY4                 |    <0.001 |      132 |     15850 |            0.83 |
+|   LUT as Distributed RAM |    <0.001 |       32 |     19000 |            0.17 |
+|   F7/F8 Muxes            |    <0.001 |       51 |     63400 |            0.08 |
+|   BUFG                   |    <0.001 |        3 |        32 |            9.38 |
+|   Others                 |     0.000 |      270 |       --- |             --- |
+|   LUT as Shift Register  |     0.000 |        7 |     19000 |            0.04 |
+| Signals                  |     0.016 |     4089 |       --- |             --- |
+| Block RAM                |     0.042 |     32.5 |       105 |           30.95 |
+| MMCM                     |     0.106 |        1 |         6 |           16.67 |
+| PLL                      |     0.111 |        1 |         6 |           16.67 |
+| I/O                      |     0.197 |       96 |       285 |           33.68 |
+| Static Power             |     0.123 |          |           |                 |
+| Total                    |     0.632 |          |           |                 |
++--------------------------+-----------+----------+-----------+-----------------+
+
+
+1.2 Power Supply Summary
+------------------------
+
++-----------+-------------+-----------+-------------+------------+
+| Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
++-----------+-------------+-----------+-------------+------------+
+| Vccint    |       1.000 |     0.125 |       0.108 |      0.017 |
+| Vccaux    |       1.800 |     0.141 |       0.123 |      0.018 |
+| Vcco33    |       3.300 |     0.008 |       0.004 |      0.004 |
+| Vcco25    |       2.500 |     0.069 |       0.065 |      0.004 |
+| Vcco18    |       1.800 |     0.008 |       0.004 |      0.004 |
+| Vcco15    |       1.500 |     0.004 |       0.000 |      0.004 |
+| Vcco135   |       1.350 |     0.000 |       0.000 |      0.000 |
+| Vcco12    |       1.200 |     0.000 |       0.000 |      0.000 |
+| Vccaux_io |       1.800 |     0.000 |       0.000 |      0.000 |
+| Vccbram   |       1.000 |     0.005 |       0.004 |      0.001 |
+| MGTAVcc   |       1.000 |     0.000 |       0.000 |      0.000 |
+| MGTAVtt   |       1.200 |     0.000 |       0.000 |      0.000 |
+| Vccadc    |       1.800 |     0.020 |       0.000 |      0.020 |
++-----------+-------------+-----------+-------------+------------+
+
+
+1.3 Confidence Level
+--------------------
+
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| User Input Data             | Confidence | Details                                                | Action                                                                                                     |
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+| Design implementation state | High       | Design is routed                                       |                                                                                                            |
+| Clock nodes activity        | High       | User specified more than 95% of clocks                 |                                                                                                            |
+| I/O nodes activity          | Low        | More than 75% of inputs are missing user specification | Provide missing input activity with simulation results or by editing the "By Resource Type -> I/Os" view   |
+| Internal nodes activity     | Medium     | User specified less than 25% of internal nodes         | Provide missing internal nodes activity with simulation results or by editing the "By Resource Type" views |
+| Device models               | High       | Device models are Production                           |                                                                                                            |
+|                             |            |                                                        |                                                                                                            |
+| Overall confidence level    | Low        |                                                        |                                                                                                            |
++-----------------------------+------------+--------------------------------------------------------+------------------------------------------------------------------------------------------------------------+
+
+
+2. Settings
+-----------
+
+2.1 Environment
+---------------
+
++-----------------------+--------------------------+
+| Ambient Temp (C)      | 25.0                     |
+| ThetaJA (C/W)         | 2.7                      |
+| Airflow (LFM)         | 250                      |
+| Heat Sink             | medium (Medium Profile)  |
+| ThetaSA (C/W)         | 4.6                      |
+| Board Selection       | medium (10"x10")         |
+| # of Board Layers     | 12to15 (12 to 15 Layers) |
+| Board Temperature (C) | 25.0                     |
++-----------------------+--------------------------+
+
+
+2.2 Clock Constraints
+---------------------
+
++--------------------+---------------------------------+-----------------+
+| Clock              | Domain                          | Constraint (ns) |
++--------------------+---------------------------------+-----------------+
+| clk_out1_clk_wiz_0 | adc_pll/inst/clk_out1_clk_wiz_0 |             5.0 |
+| clkfbout_clk_wiz_0 | adc_pll/inst/clkfbout_clk_wiz_0 |             5.0 |
+| mmcm0_clk0         | okHI/mmcm0_clk0                 |             9.9 |
+| mmcm0_clkfb        | okHI/mmcm0_clkfb                |             9.9 |
+| okUH0              | okUH[0]                         |             9.9 |
+| sys_clk            | sys_clkp                        |             5.0 |
++--------------------+---------------------------------+-----------------+
+
+
+3. Detailed Reports
+-------------------
+
+3.1 By Hierarchy
+----------------
+
++----------------------------------------------------------------------------------------------------------+-----------+
+| Name                                                                                                     | Power (W) |
++----------------------------------------------------------------------------------------------------------+-----------+
+| top_level_module                                                                                         |     0.510 |
+|   adc7961_0                                                                                              |     0.088 |
+|   adc7961_0_fifo                                                                                         |     0.026 |
+|     U0                                                                                                   |     0.026 |
+|       inst_fifo_gen                                                                                      |     0.026 |
+|         gconvfifo.rf                                                                                     |     0.026 |
+|           grf.rf                                                                                         |     0.026 |
+|             gntv_or_sync_fifo.gcx.clkx                                                                   |     0.003 |
+|               rd_pntr_cdc_inst                                                                           |     0.002 |
+|               wr_pntr_cdc_inst                                                                           |    <0.001 |
+|             gntv_or_sync_fifo.gl0.rd                                                                     |    <0.001 |
+|               gras.rsts                                                                                  |    <0.001 |
+|                 c0                                                                                       |    <0.001 |
+|                 c1                                                                                       |    <0.001 |
+|               rpntr                                                                                      |    <0.001 |
+|             gntv_or_sync_fifo.gl0.wr                                                                     |     0.001 |
+|               gwas.gpf.wrpf                                                                              |    <0.001 |
+|               gwas.wsts                                                                                  |    <0.001 |
+|                 c1                                                                                       |    <0.001 |
+|                 c2                                                                                       |    <0.001 |
+|               wpntr                                                                                      |     0.001 |
+|             gntv_or_sync_fifo.mem                                                                        |     0.021 |
+|               gbm.gbmg.gbmga.ngecc.bmg                                                                   |     0.021 |
+|                 inst_blk_mem_gen                                                                         |     0.021 |
+|                   gnbram.gnativebmg.native_blk_mem_gen                                                   |     0.021 |
+|                     valid.cstr                                                                           |     0.021 |
+|                       has_mux_b.B                                                                        |    <0.001 |
+|                       ramloop[0].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[10].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[11].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[12].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[13].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[14].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[1].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[2].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[3].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[4].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[5].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[6].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[7].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[8].ram.r                                                                   |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[9].ram.r                                                                   |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|             rstblk                                                                                       |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_rrst_wr                      |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_wrst_rd                      |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_sync_rst_inst_wrst                       |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.xpm_cdc_sync_rst_inst_wrst                               |    <0.001 |
+|   adc7961_1                                                                                              |     0.088 |
+|   adc7961_1_fifo                                                                                         |     0.026 |
+|     U0                                                                                                   |     0.026 |
+|       inst_fifo_gen                                                                                      |     0.026 |
+|         gconvfifo.rf                                                                                     |     0.026 |
+|           grf.rf                                                                                         |     0.026 |
+|             gntv_or_sync_fifo.gcx.clkx                                                                   |     0.002 |
+|               rd_pntr_cdc_inst                                                                           |     0.001 |
+|               wr_pntr_cdc_inst                                                                           |    <0.001 |
+|             gntv_or_sync_fifo.gl0.rd                                                                     |    <0.001 |
+|               gras.rsts                                                                                  |    <0.001 |
+|                 c0                                                                                       |    <0.001 |
+|                 c1                                                                                       |    <0.001 |
+|               rpntr                                                                                      |    <0.001 |
+|             gntv_or_sync_fifo.gl0.wr                                                                     |     0.001 |
+|               gwas.wsts                                                                                  |    <0.001 |
+|                 c1                                                                                       |    <0.001 |
+|                 c2                                                                                       |    <0.001 |
+|               wpntr                                                                                      |     0.001 |
+|             gntv_or_sync_fifo.mem                                                                        |     0.021 |
+|               gbm.gbmg.gbmga.ngecc.bmg                                                                   |     0.021 |
+|                 inst_blk_mem_gen                                                                         |     0.021 |
+|                   gnbram.gnativebmg.native_blk_mem_gen                                                   |     0.021 |
+|                     valid.cstr                                                                           |     0.021 |
+|                       has_mux_b.B                                                                        |    <0.001 |
+|                       ramloop[0].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[10].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[11].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[12].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[13].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[14].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[1].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[2].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[3].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[4].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[5].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[6].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[7].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[8].ram.r                                                                   |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[9].ram.r                                                                   |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|             rstblk                                                                                       |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_rrst_wr                      |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_wrst_rd                      |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_sync_rst_inst_wrst                       |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.xpm_cdc_sync_rst_inst_wrst                               |    <0.001 |
+|   adc_pll                                                                                                |     0.112 |
+|     inst                                                                                                 |     0.112 |
+|   okHI                                                                                                   |     0.133 |
+|     core0                                                                                                |     0.016 |
+|       core0                                                                                              |     0.016 |
+|         a0/cb0                                                                                           |    <0.001 |
+|           U0                                                                                             |    <0.001 |
+|             inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst |    <0.001 |
+|         a0/pc0/address_loop[0].output_data.pc_vector_mux_lut                                             |    <0.001 |
+|         a0/pc0/address_loop[10].output_data.pc_vector_mux_lut                                            |    <0.001 |
+|         a0/pc0/address_loop[2].output_data.pc_vector_mux_lut                                             |    <0.001 |
+|         a0/pc0/address_loop[4].output_data.pc_vector_mux_lut                                             |    <0.001 |
+|         a0/pc0/address_loop[6].output_data.pc_vector_mux_lut                                             |    <0.001 |
+|         a0/pc0/address_loop[8].output_data.pc_vector_mux_lut                                             |    <0.001 |
+|         a0/pc0/alu_decode0_lut                                                                           |    <0.001 |
+|         a0/pc0/alu_decode1_lut                                                                           |    <0.001 |
+|         a0/pc0/alu_decode2_lut                                                                           |    <0.001 |
+|         a0/pc0/carry_flag_lut                                                                            |    <0.001 |
+|         a0/pc0/data_path_loop[0].arith_logical_lut                                                       |    <0.001 |
+|         a0/pc0/data_path_loop[0].lsb_shift_rotate.shift_rotate_lut                                       |    <0.001 |
+|         a0/pc0/data_path_loop[0].medium_spm.spm_ram                                                      |    <0.001 |
+|         a0/pc0/data_path_loop[0].output_data.sy_kk_mux_lut                                               |    <0.001 |
+|         a0/pc0/data_path_loop[0].second_operand.out_port_lut                                             |    <0.001 |
+|         a0/pc0/data_path_loop[1].arith_logical_lut                                                       |    <0.001 |
+|         a0/pc0/data_path_loop[1].medium_spm.spm_ram                                                      |    <0.001 |
+|         a0/pc0/data_path_loop[2].arith_logical_lut                                                       |    <0.001 |
+|         a0/pc0/data_path_loop[2].medium_spm.spm_ram                                                      |    <0.001 |
+|         a0/pc0/data_path_loop[2].mid_shift_rotate.shift_rotate_lut                                       |    <0.001 |
+|         a0/pc0/data_path_loop[2].output_data.sy_kk_mux_lut                                               |    <0.001 |
+|         a0/pc0/data_path_loop[2].second_operand.out_port_lut                                             |    <0.001 |
+|         a0/pc0/data_path_loop[3].arith_logical_lut                                                       |    <0.001 |
+|         a0/pc0/data_path_loop[3].medium_spm.spm_ram                                                      |    <0.001 |
+|         a0/pc0/data_path_loop[4].arith_logical_lut                                                       |    <0.001 |
+|         a0/pc0/data_path_loop[4].medium_spm.spm_ram                                                      |    <0.001 |
+|         a0/pc0/data_path_loop[4].mid_shift_rotate.shift_rotate_lut                                       |    <0.001 |
+|         a0/pc0/data_path_loop[4].output_data.sy_kk_mux_lut                                               |    <0.001 |
+|         a0/pc0/data_path_loop[4].second_operand.out_port_lut                                             |    <0.001 |
+|         a0/pc0/data_path_loop[5].arith_logical_lut                                                       |    <0.001 |
+|         a0/pc0/data_path_loop[5].medium_spm.spm_ram                                                      |    <0.001 |
+|         a0/pc0/data_path_loop[6].arith_logical_lut                                                       |    <0.001 |
+|         a0/pc0/data_path_loop[6].medium_spm.spm_ram                                                      |    <0.001 |
+|         a0/pc0/data_path_loop[6].msb_shift_rotate.shift_rotate_lut                                       |    <0.001 |
+|         a0/pc0/data_path_loop[6].output_data.sy_kk_mux_lut                                               |    <0.001 |
+|         a0/pc0/data_path_loop[6].second_operand.out_port_lut                                             |    <0.001 |
+|         a0/pc0/data_path_loop[7].arith_logical_lut                                                       |    <0.001 |
+|         a0/pc0/data_path_loop[7].medium_spm.spm_ram                                                      |    <0.001 |
+|         a0/pc0/lower_reg_banks                                                                           |    <0.001 |
+|         a0/pc0/move_type_lut                                                                             |    <0.001 |
+|         a0/pc0/pc_mode1_lut                                                                              |    <0.001 |
+|         a0/pc0/push_pop_lut                                                                              |    <0.001 |
+|         a0/pc0/register_enable_lut                                                                       |    <0.001 |
+|         a0/pc0/register_enable_type_lut                                                                  |    <0.001 |
+|         a0/pc0/reset_lut                                                                                 |    <0.001 |
+|         a0/pc0/stack_ram_high                                                                            |    <0.001 |
+|         a0/pc0/stack_ram_low                                                                             |    <0.001 |
+|         a0/pc0/t_state_lut                                                                               |    <0.001 |
+|         a0/pc0/upper_reg_banks                                                                           |    <0.001 |
+|         a0/pc0/use_zero_flag_lut                                                                         |    <0.001 |
+|     iob_regs[0].iobf0                                                                                    |    <0.001 |
+|     iob_regs[10].iobf0                                                                                   |    <0.001 |
+|     iob_regs[11].iobf0                                                                                   |    <0.001 |
+|     iob_regs[12].iobf0                                                                                   |    <0.001 |
+|     iob_regs[13].iobf0                                                                                   |    <0.001 |
+|     iob_regs[14].iobf0                                                                                   |    <0.001 |
+|     iob_regs[15].iobf0                                                                                   |    <0.001 |
+|     iob_regs[16].iobf0                                                                                   |    <0.001 |
+|     iob_regs[17].iobf0                                                                                   |    <0.001 |
+|     iob_regs[18].iobf0                                                                                   |    <0.001 |
+|     iob_regs[19].iobf0                                                                                   |    <0.001 |
+|     iob_regs[1].iobf0                                                                                    |    <0.001 |
+|     iob_regs[20].iobf0                                                                                   |    <0.001 |
+|     iob_regs[21].iobf0                                                                                   |    <0.001 |
+|     iob_regs[22].iobf0                                                                                   |    <0.001 |
+|     iob_regs[23].iobf0                                                                                   |    <0.001 |
+|     iob_regs[24].iobf0                                                                                   |    <0.001 |
+|     iob_regs[25].iobf0                                                                                   |    <0.001 |
+|     iob_regs[26].iobf0                                                                                   |    <0.001 |
+|     iob_regs[27].iobf0                                                                                   |    <0.001 |
+|     iob_regs[28].iobf0                                                                                   |    <0.001 |
+|     iob_regs[29].iobf0                                                                                   |    <0.001 |
+|     iob_regs[2].iobf0                                                                                    |    <0.001 |
+|     iob_regs[30].iobf0                                                                                   |    <0.001 |
+|     iob_regs[31].iobf0                                                                                   |    <0.001 |
+|     iob_regs[3].iobf0                                                                                    |    <0.001 |
+|     iob_regs[4].iobf0                                                                                    |    <0.001 |
+|     iob_regs[5].iobf0                                                                                    |    <0.001 |
+|     iob_regs[6].iobf0                                                                                    |    <0.001 |
+|     iob_regs[7].iobf0                                                                                    |    <0.001 |
+|     iob_regs[8].iobf0                                                                                    |    <0.001 |
+|     iob_regs[9].iobf0                                                                                    |    <0.001 |
+|     tbuf                                                                                                 |    <0.001 |
+|   pipeOutA0                                                                                              |    <0.001 |
+|   pipeOutA1                                                                                              |    <0.001 |
+|   pipeOutA2                                                                                              |    <0.001 |
+|   sync_adc_fifo_rst_0                                                                                    |    <0.001 |
+|   sync_adc_fifo_rst_1                                                                                    |    <0.001 |
+|   sync_adc_rst_0                                                                                         |    <0.001 |
+|   sync_adc_rst_1                                                                                         |    <0.001 |
+|   top                                                                                                    |     0.017 |
+|     CONVERT                                                                                              |    <0.001 |
+|     FIFO                                                                                                 |     0.004 |
+|       U0                                                                                                 |     0.004 |
+|         inst_fifo_gen                                                                                    |     0.004 |
+|           gconvfifo.rf                                                                                   |     0.004 |
+|             grf.rf                                                                                       |     0.004 |
+|               gntv_or_sync_fifo.gcx.clkx                                                                 |     0.001 |
+|                 rd_pntr_cdc_inst                                                                         |    <0.001 |
+|                 wr_pntr_cdc_inst                                                                         |    <0.001 |
+|               gntv_or_sync_fifo.gl0.rd                                                                   |    <0.001 |
+|                 gras.rsts                                                                                |    <0.001 |
+|                 rpntr                                                                                    |    <0.001 |
+|               gntv_or_sync_fifo.gl0.wr                                                                   |    <0.001 |
+|                 gwas.gpf.wrpf                                                                            |    <0.001 |
+|                 gwas.wsts                                                                                |    <0.001 |
+|                 wpntr                                                                                    |    <0.001 |
+|               gntv_or_sync_fifo.mem                                                                      |     0.001 |
+|                 gbm.gbmg.gbmga.ngecc.bmg                                                                 |     0.001 |
+|                   inst_blk_mem_gen                                                                       |     0.001 |
+|                     gnbram.gnativebmg.native_blk_mem_gen                                                 |     0.001 |
+|                       valid.cstr                                                                         |     0.001 |
+|                         ramloop[0].ram.r                                                                 |     0.001 |
+|                           prim_noinit.ram                                                                |     0.001 |
+|               rstblk                                                                                     |    <0.001 |
+|                 ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_rrst_wr                    |    <0.001 |
+|                 ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_wrst_rd                    |    <0.001 |
+|                 ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_sync_rst_inst_wrst                     |    <0.001 |
+|                 ngwrdrst.grst.g7serrst.gsckt_wrst.xpm_cdc_sync_rst_inst_wrst                             |    <0.001 |
+|     Wishbone_Master                                                                                      |     0.002 |
+|     Wishbone_Master_0                                                                                    |    <0.001 |
+|     data_converter_0                                                                                     |    <0.001 |
+|     i_spi_top                                                                                            |     0.004 |
+|       clgen                                                                                              |    <0.001 |
+|       shift                                                                                              |     0.002 |
+|     i_spi_top_0                                                                                          |     0.004 |
+|       clgen                                                                                              |    <0.001 |
+|       shift                                                                                              |     0.003 |
+|     out_pulse                                                                                            |     0.001 |
+|   trigIn40                                                                                               |    <0.001 |
+|   trigOut60                                                                                              |    <0.001 |
+|   wi0                                                                                                    |    <0.001 |
+|   wi1                                                                                                    |    <0.001 |
+|   wi2                                                                                                    |    <0.001 |
+|   wireOR                                                                                                 |    <0.001 |
+|   wo0                                                                                                    |    <0.001 |
+|   wo1                                                                                                    |    <0.001 |
++----------------------------------------------------------------------------------------------------------+-----------+
+
+
