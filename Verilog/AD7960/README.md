@@ -8,8 +8,7 @@ It took a good long while of sifting through many Xilinx forum threads before I 
 
 User avrumw states in the thread that the "best" way to output a clock is to use ODDR primitive, and this made me more confident in the whole idea of using the ODDR primitive when outputting the AD7961 differential clock.  I kept researching and I found out about the idea of "clock forwarding", which were the key words I was missing the whole time.  This is the name given to the whole idea of using the ODDR primitive -> OBUFDS to output the clock.
 
-Here are some more threads that I found particularly helpful in explaining why the ODDR is used for [clock forwarding]
-(https://forums.xilinx.com/t5/Timing-Analysis/Why-ODDR-for-forwarded-clock/td-p/756737)
+Here are some more threads that I found particularly helpful in explaining why the ODDR is used for [clock forwarding](https://forums.xilinx.com/t5/Timing-Analysis/Why-ODDR-for-forwarded-clock/td-p/756737)
 [and](https://forums.xilinx.com/t5/Other-FPGA-Architecture/Output-differential-clock-kintex-7/m-p/771628#M22049) (the post by user avrumw is the one I found especially useful [here)](https://forums.xilinx.com/t5/Other-FPGA-Architecture/LVDS-CLK-P-N-be-routed-to-MRCC-SRCC-or-regular-differential-IOs/td-p/913220)
 
 And here is another relevant error solution by Xilinx which explained clock forwarding that I found very [useful](
