@@ -1,16 +1,14 @@
 import sys
-from fpga import FPGA
 import time
-import numpy as np
-import pickle as pkl
 import os
-from drivers.utils import rev_lookup, bin, test_bit, twos_comp
 from collections import namedtuple
 
 cwd = os.getcwd() # gets the current working directory
 path = os.path.join(cwd, "covg_fpga/python")
 sys.path.append(path)
 
+from fpga import FPGA
+from drivers.utils import rev_lookup, bin, test_bit, twos_comp
 ################## Opal Kelly End Points ##################
 ep = namedtuple('ep', 'addr bits type') # address of the DEVICE_ID reg so we can read it
 
@@ -68,7 +66,6 @@ dev_ID_val = 0x4000 # 16 bits, Fig 87. Hex = 0x4000 [address 0x10]
     # bits 14-9: access reg. by writing the address (0x10 == 0'b010000)
     # bits 8-2: reserved - 000000
     # bits 1-0: DEV_ID register - read only so write 00
-
 
 ################## Define functions ##################
 
