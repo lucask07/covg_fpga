@@ -127,9 +127,9 @@ module top_level_module(
 	wire readFifo;
 	wire pipestrobe;
 	
-	//wires to capture slave select signals the SPI master
-	wire [7:0] slaveselects;
-	assign ss = slaveselects[0];//slave select signal for ADS7950
+	//wire to capture slave select signal from the SPI master
+	wire slaveselect;
+	assign ss = slaveselect;//slave select signal for ADS7950
 	
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
@@ -170,7 +170,7 @@ module top_level_module(
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
 	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
 				 .hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep40trig[2]), .dout(dout), .lastWrite(lastWrite),
-				 .ep_ready(ep_ready), .mosi(mosi), .miso(miso), .sclk(sclk), .ss(slaveselects), .slow_pulse(led[0]));
+				 .ep_ready(ep_ready), .mosi(mosi), .miso(miso), .sclk(sclk), .ss(slaveselect), .slow_pulse(led[0]));
 	
 
 endmodule

@@ -130,6 +130,16 @@ SS 0x18 32 R/W Slave select register: w/ offset 6
 
 '''
 
+def send_val(to_send): 
+    # now send SPI command 
+    # to_send a 14 bit word (1/2 scale is 1ffff)
+    value = 0x40000000 | to_send
+
+    for val in [0x80000001, value,  # Tx register, data to send  
+                0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
+        f.set_wire(control.addr, val, mask = 0xffffffff)
+        send_trig(valid) 
+
 if __name__ == "__main__":
 
     f = FPGA()
@@ -137,73 +147,30 @@ if __name__ == "__main__":
 
     # FPGA reset 
 
-    mode = 'manual'
-    mode = 'auto-1'
-
     # MUX control (0 picks ADS7952)
     ads7952 = 0
     dacs = [1,2,3,4]
-    f.set_wire(0x01, ads7952, mask = 0xffffffff)
+    f.set_wire(0x01, dacs[0], mask = 0xffffffff)
 
     # SPI Master configuration: divide reg, ctrl reg, SS register 
     # MSB: 8 - set address, 4 - write data  
 
-    creg_val = 0x40003610 # Char length of 16; set both Tx_NEG, Rx_NEG; set ASS, IE. ADS7952
+    # creg_val = 0x40003610 # Char length of 16; set both Tx_NEG, Rx_NEG; set ASS, IE. ADS7952
+    creg_val = 0x40003010 # Char length of 16; clear both Tx_NEG, Rx_NEG; set ASS, IE. AD5453    
+    # val = 0x40001fff # AD5453 (half-scale)
 
-    for val in [0x80000051, 0x40000004,  # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
+    for val in [0x80000051, 0x40000000,  # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
                 0x80000041, creg_val,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
                 0x80000061, 0x40000001]: # slave select (just setting bit0)
 
         f.set_wire(control.addr, val, mask = 0xffffffff)
         send_trig(valid) 
 
-    if mode == 'manual':
-        # now send SPI command 
-        #val = 0x40001840 # ADS manual read of channel 0
-        val = 0x400018C0 # ADS manual read of channel 1
-        val = 0x400018C0 # ADS manual read of channel 3
+    # now send SPI command 
+    value = 0x40001000 # AD5453 (half-scale)
 
-        for val in [0x80000001, val,  # Tx register, data to send  
-                    0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
-            f.set_wire(control.addr, val, mask = 0xffffffff)
-            send_trig(valid) 
-
-        # TODO: test block throttle pipe, use an auto mode to cycle through ~4 channels 
-        # 128 transfers and then will be ready to read a block 
-
-        # TODO: 
-        # 1) setup auto mode by sending wire in commands to the wishbone master
-        # 2) wait for trigger out "half full"
-        # 3) read block throttle pipe  
-
-        # test wire out using manual reads of CH0 and CH3 
-        a = read_wire(one_deep_fifo)
-        v,chan = to_voltage(a)
-        print('Measured voltage on channel {} = {} [V]'.format(chan, v))
-
-    elif mode == 'auto-1':
-
-        # setup 
-        for val in [0x80000001, 0x40008000,  # enter auto-1 program sequence
-                    0x80000041, creg_val | (1 << 8),
-                    0x80000001, 0x4000000f,  # channels 0,1,2,3   
-                    0x80000041, creg_val | (1 << 8),
-                    0x80000001, 0x40002840,  # enter auto-1  
-                    0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
-            
-            f.set_wire(control.addr, val, mask = 0xffffffff)
-            send_trig(valid) 
-
-        # now cycle through 
-        for i in range(128):
-            for val in [0x80000001, 0x40002040,  # retain
-                        0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
-                
-
-                f.set_wire(control.addr, val, mask = 0xffffffff)
-                send_trig(valid) 
-
-            a = read_wire(one_deep_fifo)
-            v,chan = to_voltage(a)
-            print('Measured voltage on channel {} = {} [V]'.format(chan, v))
+    for val in [0x80000001, value,  # Tx register, data to send  
+                0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
+        f.set_wire(control.addr, val, mask = 0xffffffff)
+        send_trig(valid) 
 
