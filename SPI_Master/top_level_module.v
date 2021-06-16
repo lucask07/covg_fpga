@@ -63,8 +63,13 @@ module top_level_module(
 	output wire gp_mosi,
 	input wire gp_miso,
 	output wire gp_ss,
-	output wire gp_sclk
+	output wire gp_sclk,
+	output wire convst,
+	output wire ads_reset
 	);
+	
+	assign convst = ep01wire[3];
+	assign ads_reset = ep01wire[4];
 	
 	wire mosi;
 	wire miso;
