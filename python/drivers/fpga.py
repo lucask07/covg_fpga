@@ -28,7 +28,7 @@ PIPE_RESULTS = True
 WIRE_RESULTS = False
 
 class FPGA():
-    def __init__(self, bitfile = '../SPI_Master/top_level_module.bit'):
+    def __init__(self, bitfile = 'C:\\Users\\coris\\OneDrive - University of St. Thomas\\Internship\\Counters Modification\\covg_fpga\SPI_Master\\top_level_module.bit'):
         self.bitfile = bitfile
         self.i2c = {'m_pBuf': [], 'm_nDataStart': 7}
         return

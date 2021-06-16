@@ -2,8 +2,12 @@ import sys
 from fpga import FPGA
 import time
 import numpy as np
-import matplotlib.pyplot as plt 
+# import matplotlib.pyplot as plt 
 import pickle as pkl
+import os
+cwd = os.getcwd()
+path = os.path.join(cwd, "covg_fpga/python/drivers")
+sys.path.append(path)
 from drivers.utils import rev_lookup, bin, test_bit, twos_comp
 
 from collections import namedtuple
@@ -157,6 +161,8 @@ if __name__ == "__main__":
         f.set_wire(control.addr, val, mask = 0xffffffff)
         send_trig(valid) 
 
+    print('mode is: {}' .format(mode))
+
     if mode == 'manual':
         # now send SPI command 
         #val = 0x40001840 # ADS manual read of channel 0
@@ -207,3 +213,13 @@ if __name__ == "__main__":
             v,chan = to_voltage(a)
             print('Measured voltage on channel {} = {} [V]'.format(chan, v))
 
+'''
+val = 0x400018C0 # ADS manual read of channel 3
+creg_val = 0x40003610 
+
+for val in [0x80000001, 0x40002040,  # Tx register, data to send  
+            0x80000041, creg_val | (1 << 8)]: # Control register - GO (bit 8)
+    f.set_wire(control.addr, val, mask = 0xffffffff)
+    send_trig(valid) 
+
+'''
