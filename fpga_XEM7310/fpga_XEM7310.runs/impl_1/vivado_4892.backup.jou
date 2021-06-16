@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Wed Jun  9 10:11:41 2021
-# Process ID: 11800
+# Start of session at: Thu Jun 10 10:07:55 2021
+# Process ID: 4892
 # Current directory: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/impl_1
 # Command line: vivado.exe -log top_level_module.vdi -applog -product Vivado -messageDb vivado.pb -mode batch -source top_level_module.tcl -notrace
 # Log file: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/impl_1/top_level_module.vdi

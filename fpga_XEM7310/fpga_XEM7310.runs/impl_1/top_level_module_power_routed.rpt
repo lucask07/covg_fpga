@@ -1,7 +1,7 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-| Date             : Wed Jun  9 12:48:11 2021
+| Date             : Thu Jun 10 10:25:46 2021
 | Host             : LAPTOP-RK0H8TS5 running 64-bit major release  (build 9200)
 | Command          : report_power -file top_level_module_power_routed.rpt -pb top_level_module_power_summary_routed.pb -rpx top_level_module_power_routed.rpx
 | Design           : top_level_module
@@ -30,15 +30,15 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.632        |
+| Total On-Chip Power (W)  | 0.857        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.510        |
-| Device Static (W)        | 0.123        |
-| Total Off-Chip Power (W) | 0.005        |
+| Dynamic (W)              | 0.732        |
+| Device Static (W)        | 0.125        |
+| Total Off-Chip Power (W) | 0.010        |
 | Effective TJA (C/W)      | 2.7          |
-| Max Ambient (C)          | 83.3         |
-| Junction Temperature (C) | 26.7         |
+| Max Ambient (C)          | 82.7         |
+| Junction Temperature (C) | 27.3         |
 | Confidence Level         | Low          |
 | Setting File             | ---          |
 | Simulation Activity File | ---          |
@@ -53,23 +53,23 @@ Table of Contents
 +--------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                  | Power (W) | Used     | Available | Utilization (%) |
 +--------------------------+-----------+----------+-----------+-----------------+
-| Clocks                   |     0.026 |        8 |       --- |             --- |
-| Slice Logic              |     0.012 |     4875 |       --- |             --- |
-|   LUT as Logic           |     0.010 |     2051 |     47200 |            4.35 |
-|   Register               |    <0.001 |     2054 |     94400 |            2.18 |
-|   CARRY4                 |    <0.001 |      132 |     15850 |            0.83 |
+| Clocks                   |     0.036 |        8 |       --- |             --- |
+| Slice Logic              |     0.013 |     6397 |       --- |             --- |
+|   LUT as Logic           |     0.012 |     2620 |     47200 |            5.55 |
+|   Register               |    <0.001 |     2669 |     94400 |            2.83 |
+|   CARRY4                 |    <0.001 |      192 |     15850 |            1.21 |
 |   LUT as Distributed RAM |    <0.001 |       32 |     19000 |            0.17 |
-|   F7/F8 Muxes            |    <0.001 |       51 |     63400 |            0.08 |
-|   BUFG                   |    <0.001 |        3 |        32 |            9.38 |
-|   Others                 |     0.000 |      270 |       --- |             --- |
-|   LUT as Shift Register  |     0.000 |        7 |     19000 |            0.04 |
-| Signals                  |     0.016 |     4089 |       --- |             --- |
-| Block RAM                |     0.042 |     32.5 |       105 |           30.95 |
+|   F7/F8 Muxes            |    <0.001 |       87 |     63400 |            0.14 |
+|   BUFG                   |    <0.001 |        5 |        32 |           15.63 |
+|   Others                 |     0.000 |      468 |       --- |             --- |
+|   LUT as Shift Register  |     0.000 |       11 |     19000 |            0.06 |
+| Signals                  |     0.020 |     5354 |       --- |             --- |
+| Block RAM                |     0.081 |     62.5 |       105 |           59.52 |
 | MMCM                     |     0.106 |        1 |         6 |           16.67 |
 | PLL                      |     0.111 |        1 |         6 |           16.67 |
-| I/O                      |     0.197 |       96 |       285 |           33.68 |
-| Static Power             |     0.123 |          |           |                 |
-| Total                    |     0.632 |          |           |                 |
+| I/O                      |     0.364 |      112 |       285 |           39.30 |
+| Static Power             |     0.125 |          |           |                 |
+| Total                    |     0.857 |          |           |                 |
 +--------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -79,16 +79,16 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) |
 +-----------+-------------+-----------+-------------+------------+
-| Vccint    |       1.000 |     0.125 |       0.108 |      0.017 |
-| Vccaux    |       1.800 |     0.141 |       0.123 |      0.018 |
-| Vcco33    |       3.300 |     0.008 |       0.004 |      0.004 |
-| Vcco25    |       2.500 |     0.069 |       0.065 |      0.004 |
+| Vccint    |       1.000 |     0.180 |       0.162 |      0.018 |
+| Vccaux    |       1.800 |     0.147 |       0.129 |      0.018 |
+| Vcco33    |       3.300 |     0.007 |       0.003 |      0.004 |
+| Vcco25    |       2.500 |     0.133 |       0.129 |      0.004 |
 | Vcco18    |       1.800 |     0.008 |       0.004 |      0.004 |
 | Vcco15    |       1.500 |     0.004 |       0.000 |      0.004 |
 | Vcco135   |       1.350 |     0.000 |       0.000 |      0.000 |
 | Vcco12    |       1.200 |     0.000 |       0.000 |      0.000 |
 | Vccaux_io |       1.800 |     0.000 |       0.000 |      0.000 |
-| Vccbram   |       1.000 |     0.005 |       0.004 |      0.001 |
+| Vccbram   |       1.000 |     0.009 |       0.007 |      0.002 |
 | MGTAVcc   |       1.000 |     0.000 |       0.000 |      0.000 |
 | MGTAVtt   |       1.200 |     0.000 |       0.000 |      0.000 |
 | Vccadc    |       1.800 |     0.020 |       0.000 |      0.020 |
@@ -153,14 +153,14 @@ Table of Contents
 +----------------------------------------------------------------------------------------------------------+-----------+
 | Name                                                                                                     | Power (W) |
 +----------------------------------------------------------------------------------------------------------+-----------+
-| top_level_module                                                                                         |     0.510 |
-|   adc7961_0                                                                                              |     0.088 |
-|   adc7961_0_fifo                                                                                         |     0.026 |
-|     U0                                                                                                   |     0.026 |
-|       inst_fifo_gen                                                                                      |     0.026 |
-|         gconvfifo.rf                                                                                     |     0.026 |
-|           grf.rf                                                                                         |     0.026 |
-|             gntv_or_sync_fifo.gcx.clkx                                                                   |     0.003 |
+| top_level_module                                                                                         |     0.732 |
+|   adc7961_0                                                                                              |     0.086 |
+|   adc7961_0_fifo                                                                                         |     0.025 |
+|     U0                                                                                                   |     0.025 |
+|       inst_fifo_gen                                                                                      |     0.025 |
+|         gconvfifo.rf                                                                                     |     0.025 |
+|           grf.rf                                                                                         |     0.025 |
+|             gntv_or_sync_fifo.gcx.clkx                                                                   |     0.002 |
 |               rd_pntr_cdc_inst                                                                           |     0.002 |
 |               wr_pntr_cdc_inst                                                                           |    <0.001 |
 |             gntv_or_sync_fifo.gl0.rd                                                                     |    <0.001 |
@@ -173,7 +173,7 @@ Table of Contents
 |               gwas.wsts                                                                                  |    <0.001 |
 |                 c1                                                                                       |    <0.001 |
 |                 c2                                                                                       |    <0.001 |
-|               wpntr                                                                                      |     0.001 |
+|               wpntr                                                                                      |    <0.001 |
 |             gntv_or_sync_fifo.mem                                                                        |     0.021 |
 |               gbm.gbmg.gbmga.ngecc.bmg                                                                   |     0.021 |
 |                 inst_blk_mem_gen                                                                         |     0.021 |
@@ -215,14 +215,14 @@ Table of Contents
 |               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_wrst_rd                      |    <0.001 |
 |               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_sync_rst_inst_wrst                       |    <0.001 |
 |               ngwrdrst.grst.g7serrst.gsckt_wrst.xpm_cdc_sync_rst_inst_wrst                               |    <0.001 |
-|   adc7961_1                                                                                              |     0.088 |
-|   adc7961_1_fifo                                                                                         |     0.026 |
-|     U0                                                                                                   |     0.026 |
-|       inst_fifo_gen                                                                                      |     0.026 |
-|         gconvfifo.rf                                                                                     |     0.026 |
-|           grf.rf                                                                                         |     0.026 |
+|   adc7961_1                                                                                              |     0.086 |
+|   adc7961_1_fifo                                                                                         |     0.025 |
+|     U0                                                                                                   |     0.025 |
+|       inst_fifo_gen                                                                                      |     0.025 |
+|         gconvfifo.rf                                                                                     |     0.025 |
+|           grf.rf                                                                                         |     0.025 |
 |             gntv_or_sync_fifo.gcx.clkx                                                                   |     0.002 |
-|               rd_pntr_cdc_inst                                                                           |     0.001 |
+|               rd_pntr_cdc_inst                                                                           |     0.002 |
 |               wr_pntr_cdc_inst                                                                           |    <0.001 |
 |             gntv_or_sync_fifo.gl0.rd                                                                     |    <0.001 |
 |               gras.rsts                                                                                  |    <0.001 |
@@ -230,10 +230,133 @@ Table of Contents
 |                 c1                                                                                       |    <0.001 |
 |               rpntr                                                                                      |    <0.001 |
 |             gntv_or_sync_fifo.gl0.wr                                                                     |     0.001 |
+|               gwas.gpf.wrpf                                                                              |    <0.001 |
 |               gwas.wsts                                                                                  |    <0.001 |
 |                 c1                                                                                       |    <0.001 |
 |                 c2                                                                                       |    <0.001 |
-|               wpntr                                                                                      |     0.001 |
+|               wpntr                                                                                      |    <0.001 |
+|             gntv_or_sync_fifo.mem                                                                        |     0.021 |
+|               gbm.gbmg.gbmga.ngecc.bmg                                                                   |     0.021 |
+|                 inst_blk_mem_gen                                                                         |     0.021 |
+|                   gnbram.gnativebmg.native_blk_mem_gen                                                   |     0.021 |
+|                     valid.cstr                                                                           |     0.021 |
+|                       has_mux_b.B                                                                        |    <0.001 |
+|                       ramloop[0].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[10].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[11].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[12].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[13].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[14].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[1].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[2].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[3].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[4].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[5].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[6].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[7].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[8].ram.r                                                                   |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[9].ram.r                                                                   |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|             rstblk                                                                                       |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_rrst_wr                      |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_wrst_rd                      |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_sync_rst_inst_wrst                       |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.xpm_cdc_sync_rst_inst_wrst                               |    <0.001 |
+|   adc7961_2                                                                                              |     0.088 |
+|   adc7961_2_fifo                                                                                         |     0.025 |
+|     U0                                                                                                   |     0.025 |
+|       inst_fifo_gen                                                                                      |     0.025 |
+|         gconvfifo.rf                                                                                     |     0.025 |
+|           grf.rf                                                                                         |     0.025 |
+|             gntv_or_sync_fifo.gcx.clkx                                                                   |     0.002 |
+|               rd_pntr_cdc_inst                                                                           |     0.002 |
+|               wr_pntr_cdc_inst                                                                           |    <0.001 |
+|             gntv_or_sync_fifo.gl0.rd                                                                     |    <0.001 |
+|               gras.rsts                                                                                  |    <0.001 |
+|                 c0                                                                                       |    <0.001 |
+|                 c1                                                                                       |    <0.001 |
+|               rpntr                                                                                      |    <0.001 |
+|             gntv_or_sync_fifo.gl0.wr                                                                     |     0.001 |
+|               gwas.gpf.wrpf                                                                              |    <0.001 |
+|               gwas.wsts                                                                                  |    <0.001 |
+|                 c1                                                                                       |    <0.001 |
+|                 c2                                                                                       |    <0.001 |
+|               wpntr                                                                                      |    <0.001 |
+|             gntv_or_sync_fifo.mem                                                                        |     0.021 |
+|               gbm.gbmg.gbmga.ngecc.bmg                                                                   |     0.021 |
+|                 inst_blk_mem_gen                                                                         |     0.021 |
+|                   gnbram.gnativebmg.native_blk_mem_gen                                                   |     0.021 |
+|                     valid.cstr                                                                           |     0.021 |
+|                       has_mux_b.B                                                                        |    <0.001 |
+|                       ramloop[0].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[10].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[11].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[12].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[13].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[14].ram.r                                                                  |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[1].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[2].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[3].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[4].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[5].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[6].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.002 |
+|                       ramloop[7].ram.r                                                                   |     0.002 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[8].ram.r                                                                   |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|                       ramloop[9].ram.r                                                                   |     0.001 |
+|                         prim_noinit.ram                                                                  |     0.001 |
+|             rstblk                                                                                       |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_rrst_wr                      |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_wrst_rd                      |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_sync_rst_inst_wrst                       |    <0.001 |
+|               ngwrdrst.grst.g7serrst.gsckt_wrst.xpm_cdc_sync_rst_inst_wrst                               |    <0.001 |
+|   adc7961_3                                                                                              |     0.086 |
+|   adc7961_3_fifo                                                                                         |     0.025 |
+|     U0                                                                                                   |     0.025 |
+|       inst_fifo_gen                                                                                      |     0.025 |
+|         gconvfifo.rf                                                                                     |     0.025 |
+|           grf.rf                                                                                         |     0.025 |
+|             gntv_or_sync_fifo.gcx.clkx                                                                   |     0.002 |
+|               rd_pntr_cdc_inst                                                                           |     0.002 |
+|               wr_pntr_cdc_inst                                                                           |    <0.001 |
+|             gntv_or_sync_fifo.gl0.rd                                                                     |    <0.001 |
+|               gras.rsts                                                                                  |    <0.001 |
+|                 c0                                                                                       |    <0.001 |
+|                 c1                                                                                       |    <0.001 |
+|               rpntr                                                                                      |    <0.001 |
+|             gntv_or_sync_fifo.gl0.wr                                                                     |     0.001 |
+|               gwas.gpf.wrpf                                                                              |    <0.001 |
+|               gwas.wsts                                                                                  |    <0.001 |
+|                 c1                                                                                       |    <0.001 |
+|                 c2                                                                                       |    <0.001 |
+|               wpntr                                                                                      |    <0.001 |
 |             gntv_or_sync_fifo.mem                                                                        |     0.021 |
 |               gbm.gbmg.gbmga.ngecc.bmg                                                                   |     0.021 |
 |                 inst_blk_mem_gen                                                                         |     0.021 |
@@ -277,6 +400,9 @@ Table of Contents
 |               ngwrdrst.grst.g7serrst.gsckt_wrst.xpm_cdc_sync_rst_inst_wrst                               |    <0.001 |
 |   adc_pll                                                                                                |     0.112 |
 |     inst                                                                                                 |     0.112 |
+|   mux_csb                                                                                                |    <0.001 |
+|   mux_sclk                                                                                               |    <0.001 |
+|   mux_sdi                                                                                                |    <0.001 |
 |   okHI                                                                                                   |     0.133 |
 |     core0                                                                                                |     0.016 |
 |       core0                                                                                              |     0.016 |
@@ -369,11 +495,17 @@ Table of Contents
 |   pipeOutA0                                                                                              |    <0.001 |
 |   pipeOutA1                                                                                              |    <0.001 |
 |   pipeOutA2                                                                                              |    <0.001 |
+|   pipeOutA3                                                                                              |    <0.001 |
+|   pipeOutA4                                                                                              |    <0.001 |
 |   sync_adc_fifo_rst_0                                                                                    |    <0.001 |
 |   sync_adc_fifo_rst_1                                                                                    |    <0.001 |
+|   sync_adc_fifo_rst_2                                                                                    |    <0.001 |
+|   sync_adc_fifo_rst_3                                                                                    |    <0.001 |
 |   sync_adc_rst_0                                                                                         |    <0.001 |
 |   sync_adc_rst_1                                                                                         |    <0.001 |
-|   top                                                                                                    |     0.017 |
+|   sync_adc_rst_2                                                                                         |    <0.001 |
+|   sync_adc_rst_3                                                                                         |    <0.001 |
+|   top                                                                                                    |     0.018 |
 |     CONVERT                                                                                              |    <0.001 |
 |     FIFO                                                                                                 |     0.004 |
 |       U0                                                                                                 |     0.004 |
@@ -390,12 +522,12 @@ Table of Contents
 |                 gwas.gpf.wrpf                                                                            |    <0.001 |
 |                 gwas.wsts                                                                                |    <0.001 |
 |                 wpntr                                                                                    |    <0.001 |
-|               gntv_or_sync_fifo.mem                                                                      |     0.001 |
-|                 gbm.gbmg.gbmga.ngecc.bmg                                                                 |     0.001 |
-|                   inst_blk_mem_gen                                                                       |     0.001 |
-|                     gnbram.gnativebmg.native_blk_mem_gen                                                 |     0.001 |
-|                       valid.cstr                                                                         |     0.001 |
-|                         ramloop[0].ram.r                                                                 |     0.001 |
+|               gntv_or_sync_fifo.mem                                                                      |     0.002 |
+|                 gbm.gbmg.gbmga.ngecc.bmg                                                                 |     0.002 |
+|                   inst_blk_mem_gen                                                                       |     0.002 |
+|                     gnbram.gnativebmg.native_blk_mem_gen                                                 |     0.002 |
+|                       valid.cstr                                                                         |     0.002 |
+|                         ramloop[0].ram.r                                                                 |     0.002 |
 |                           prim_noinit.ram                                                                |     0.001 |
 |               rstblk                                                                                     |    <0.001 |
 |                 ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.xpm_cdc_single_inst_rrst_wr                    |    <0.001 |

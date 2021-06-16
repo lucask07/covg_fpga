@@ -43,6 +43,9 @@
 //      2 - used as the reset for the ADS7952 FIFO
 //      3 - reset for "fast" clock pll
 //      4 - reset of adc7961_0_fifo
+//      5 - reset of adc7961_1_fifo
+//      6 - reset of adc7961_2_fifo
+//      7 - reset of adc7961_3_fifo
 //
 // WireOut 0x20
 //  31:0 - wire to hold the value of the last word written to the ADS7952 FIFO (to help with debugging/observation)
@@ -55,12 +58,27 @@
 //      1 - status signal telling host that AD7961_0 fifo is completely full
 //      2 - status signal telling host that AD7961_0 fifo is half full
 //      3 - status signal telling host that AD7961_0 fifo is empty
+//      4 - status signal telling host that AD7961_1 fifo is completely full
+//      5 - status signal telling host that AD7961_1 fifo is half full
+//      6 - status signal telling host that AD7961_1 fifo is empty
+//      7 - status signal telling host that AD7961_2 fifo is completely full
+//      8 - status signal telling host that AD7961_2 fifo is half full
+//      9 - status signal telling host that AD7961_2 fifo is empty
+//      10 - status signal telling host that AD7961_3 fifo is completely full
+//      11 - status signal telling host that AD7961_3 fifo is half full
+//      12 - status signal telling host that AD7961_3 fifo is empty
 //
 // BTPipeOut - 0xA0
 //      31:0 - pipeOut to transfer data in bulk from the ADS7952 FIFO
 //
 // PipeOut - 0xA1
-//      31:0 - two 16 bit words of data from the AD7961s
+//      31:0 - two 16 bit words of data from the AD7961[0]
+// PipeOut - 0xA2
+//      31:0 - two 16 bit words of data from the AD7961[1]
+// PipeOut - 0xA3
+//      31:0 - two 16 bit words of data from the AD7961[2]
+// PipeOut - 0xA4
+//      31:0 - two 16 bit words of data from the AD7961[3]
 //
 //
 //
@@ -109,7 +127,7 @@ module top_level_module(
 	output wire [6:0] gp,
 	
 	
-	//AD796x (sufficient for only one channel/instantiation of AD7961–more to be added)
+	//AD796x
     output wire [3:0] adc_en0,          // Enable pins output
     output wire adc_en2,                // Enable pins output
     
@@ -131,8 +149,8 @@ module top_level_module(
     output wire A1_CNV_P,                 // Convert Out, Positive Pair
     output wire A1_CNV_N,                 // Convert Out, Negative Pair
     output wire A1_CLK_P,                 // Clock Out, Positive Pair
-    output wire A1_CLK_N                 // Clock Out, Negative Pair
-    /*
+    output wire A1_CLK_N,                 // Clock Out, Negative Pair
+    
     input wire A2_D_P,                // Data In, Positive Pair
     input wire A2_D_N,                    // Data In, Negative Pair
     input wire A2_DCO_P,                  // Echoed Clock In, Positive Pair
@@ -151,8 +169,8 @@ module top_level_module(
     output wire A3_CNV_P,                 // Convert Out, Positive Pair
     output wire A3_CNV_N,                 // Convert Out, Negative Pair
     output wire A3_CLK_P,                 // Clock Out, Positive Pair
-    output wire A3_CLK_N,                 // Clock Out, Negative Pair
-      
+    output wire A3_CLK_N                 // Clock Out, Negative Pair
+    /*
     input wire LS0_EN
     */
 	
@@ -172,6 +190,15 @@ module top_level_module(
     wire mosi_1;
     wire ss_1;
     wire sclk_1;
+    
+    wire mosi_2;
+    wire ss_2;
+    wire sclk_2;
+        
+    wire mosi_3;
+    wire ss_3;
+    wire sclk_3;
+    
 	
 	// connect SPI signals to the general purpose outputs for debug
 	assign gp[0] = mosi;
@@ -220,7 +247,7 @@ module top_level_module(
 	wire [64:0] okEH;
 	
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
-	wire [6*65-1:0] okEHx;
+	wire [8*65-1:0] okEHx;
 	
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire, ep01wire;
@@ -247,7 +274,7 @@ module top_level_module(
 	assign sys_rst = (pushreset | ep40trig[1]);
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(6)) wireOR (okEH, okEHx);
+	okWireOR # (.N(8)) wireOR (okEH, okEHx);
     
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
@@ -285,8 +312,20 @@ module top_level_module(
 	//bit 1 is status signal telling host that AD7961_0 fifo is completely full
 	//bit 2 is status signal telling host that AD7961_0 fifo is half full
 	//bit 3 is status signal telling host that AD7961_0 fifo is empty
+	//bit 4 is status signal telling host that AD7961_1 fifo is completely full
+    //bit 5 is status signal telling host that AD7961_1 fifo is half full
+    //bit 6 is status signal telling host that AD7961_1 fifo is empty
+    //bit 7 is status signal telling host that AD7961_2 fifo is completely full
+    //bit 8 is status signal telling host that AD7961_2 fifo is half full
+    //bit 9 is status signal telling host that AD7961_2 fifo is empty
+    //bit 10 is status signal telling host that AD7961_3 fifo is completely full
+    //bit 11 is status signal telling host that AD7961_3 fifo is half full
+    //bit 12 is status signal telling host that AD7961_3 fifo is empty
 	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), 
-	                   .ep_trigger({28'b0, adc_fifo_empty[0], adc_fifo_halffull[0], adc_fifo_full[0], hostinterrupt}));
+                           .ep_trigger({19'b0, adc_fifo_empty[3], adc_fifo_halffull[3], adc_fifo_full[3],
+                           adc_fifo_empty[2], adc_fifo_halffull[2], adc_fifo_full[2],
+                           adc_fifo_empty[1], adc_fifo_halffull[1], adc_fifo_full[1],
+                           adc_fifo_empty[0], adc_fifo_halffull[0], adc_fifo_full[0], hostinterrupt}));
 	
 	//pipeOut to transfer data in bulk from the ADS7952 FIFO
 	okBTPipeOut pipeOutA0 (.okHE(okHE), .okEH(okEHx[2*65 +: 65]),
@@ -306,6 +345,17 @@ module top_level_module(
     okPipeOut pipeOutA2(.okHE(okHE), .okEH(okEHx[5*65 +: 65]), 
               .ep_addr(8'hA2), .ep_read(adc_pipe_ep_read[1]), 
               .ep_datain(adc_pipe_ep_datain[1]));
+   
+   //pipeOut for data from AD7961_2
+   okPipeOut pipeOutA3(.okHE(okHE), .okEH(okEHx[6*65 +: 65]), 
+             .ep_addr(8'hA3), .ep_read(adc_pipe_ep_read[2]), 
+             .ep_datain(adc_pipe_ep_datain[2]));
+             
+   //pipeOut for data from AD7961_3
+   okPipeOut pipeOutA4(.okHE(okHE), .okEH(okEHx[7*65 +: 65]), 
+             .ep_addr(8'hA4), .ep_read(adc_pipe_ep_read[3]), 
+             .ep_datain(adc_pipe_ep_datain[3]));
+   
     
 	
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
@@ -313,12 +363,16 @@ module top_level_module(
 				 .hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep40trig[2]), .dout(dout), .lastWrite(lastWrite),
 				 .ep_ready(ep_ready), .mosi(mosi), .miso(miso), .sclk(sclk), .ss(slaveselect), .slow_pulse(led/*[0]*/), 
 				 .ss_0(ss_0), .mosi_0(mosi_0), .sclk_0(sclk_0), .data_rdy_0(pipe_out_write_adc[0]), .adc_val_0(adc_val[0]),
-				 .ss_1(ss_1), .mosi_1(mosi_1), .sclk_1(sclk_1), .data_rdy_1(pipe_out_write_adc[1]), .adc_val_1(adc_val[1]));
+				 .ss_1(ss_1), .mosi_1(mosi_1), .sclk_1(sclk_1), .data_rdy_1(pipe_out_write_adc[1]), .adc_val_1(adc_val[1]),
+				 .ss_2(ss_2), .mosi_2(mosi_2), .sclk_2(sclk_2), .data_rdy_2(pipe_out_write_adc[2]), .adc_val_2(adc_val[2]),
+				 .ss_3(ss_3), .mosi_3(mosi_3), .sclk_3(sclk_3), .data_rdy_3(pipe_out_write_adc[3]), .adc_val_3(adc_val[3]));
 	
 	/* ---------------- ADC796x ----------------*/
 	wire [3:0] adc_sync_rst;
-	reset_synchronizer sync_adc_rst_0 (.clk(clk_sys), .async_rst(adc_reset[0]), .sync_rst(adc_sync_rst[0]));
-	reset_synchronizer sync_adc_rst_1 (.clk(clk_sys), .async_rst(adc_reset[1]), .sync_rst(adc_sync_rst[1]));
+	reset_sync_low sync_adc_rst_0 (.clk(clk_sys), .async_rst(adc_reset[0]), .sync_rst(adc_sync_rst[0]));
+	reset_sync_low sync_adc_rst_1 (.clk(clk_sys), .async_rst(adc_reset[1]), .sync_rst(adc_sync_rst[1]));
+	reset_sync_low sync_adc_rst_2 (.clk(clk_sys), .async_rst(adc_reset[2]), .sync_rst(adc_sync_rst[2]));
+	reset_sync_low sync_adc_rst_3 (.clk(clk_sys), .async_rst(adc_reset[3]), .sync_rst(adc_sync_rst[3]));
 	
 	
 	
@@ -357,7 +411,7 @@ module top_level_module(
     reset_synchronizer sync_adc_fifo_rst_0 (.clk(clk_sys), .async_rst(ep40trig[4]), .sync_rst(adc_fifo_reset[0]));
     
     
-    fifo_AD796x adc7961_0_fifo (//32 bit wide read and write ports 
+    fifo_AD796x adc7961_0_fifo (//32 bit wide read and 16 bit wide write ports 
       .rst(adc_fifo_reset[0]),
       .wr_clk(clk_sys),
       .rd_clk(okClk),
@@ -392,7 +446,7 @@ module top_level_module(
       reset_synchronizer sync_adc_fifo_rst_1 (.clk(clk_sys), .async_rst(ep40trig[5]), .sync_rst(adc_fifo_reset[1]));
       
       
-    fifo_AD796x adc7961_1_fifo (//32 bit wide read and write ports 
+    fifo_AD796x adc7961_1_fifo (//32 bit wide read and 16 bit wide write ports 
         .rst(adc_fifo_reset[1]),
         .wr_clk(clk_sys),
         .rd_clk(okClk),
@@ -404,7 +458,7 @@ module top_level_module(
         .empty(adc_fifo_empty[1]),   // status 
         .prog_full(adc_fifo_halffull[1]));//status
         
-    /*
+    
     AD7961 adc7961_2(
       .m_clk_i(clk_sys),                // 200 MHz Clock, used for timing (only for 5 MSPS tracking)
       .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
@@ -427,7 +481,7 @@ module top_level_module(
       reset_synchronizer sync_adc_fifo_rst_2 (.clk(clk_sys), .async_rst(ep40trig[6]), .sync_rst(adc_fifo_reset[2]));
       
       
-   fifo_AD796x adc7961_2_fifo (//32 bit wide read and write ports 
+   fifo_AD796x adc7961_2_fifo (//32 bit wide read and 16 bit wide write ports
        .rst(adc_fifo_reset[2]),
        .wr_clk(clk_sys),
        .rd_clk(okClk),
@@ -443,7 +497,7 @@ module top_level_module(
         .m_clk_i(clk_sys),                // 200 MHz Clock, used for timing (only for 5 MSPS tracking)
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
         .reset_n_i(adc_sync_rst[3]),          // Reset signal, active low
-        .en_i({1'b0, adc_en2, 1'b0, adc_en0[2]}),                // Enable pins input  LJK: assigned to en_o within module (all that's done)
+        .en_i({1'b0, adc_en2, 1'b0, adc_en0[3]}),                // Enable pins input  LJK: assigned to en_o within module (all that's done)
         .d_pos_i(A3_D_P),                    // Data In, Positive Pair
         .d_neg_i(A3_D_N),                    // Data In, Negative Pair
         .dco_pos_i(A3_DCO_P),                  // Echoed Clock In, Positive Pair
@@ -461,7 +515,7 @@ module top_level_module(
         reset_synchronizer sync_adc_fifo_rst_3 (.clk(clk_sys), .async_rst(ep40trig[7]), .sync_rst(adc_fifo_reset[3]));
          
          
-  fifo_AD796x adc7961_3_fifo (//32 bit wide read and write ports 
+   fifo_AD796x adc7961_3_fifo (//32 bit wide read and 16 bit wide write ports
       .rst(adc_fifo_reset[3]),
       .wr_clk(clk_sys),
       .rd_clk(okClk),
@@ -472,6 +526,6 @@ module top_level_module(
       .full(adc_fifo_full[3]),     // status 
       .empty(adc_fifo_empty[3]),   // status 
       .prog_full(adc_fifo_halffull[3]));//status        
-    */
+    
 	
 endmodule

@@ -46,8 +46,7 @@ module top_module(
      output wire ss_1,
      output wire sclk_1,
      output wire mosi_1,
-     input wire [15:0] adc_val_1
-     /*
+     input wire [15:0] adc_val_1,
      input wire data_rdy_2,
      output wire ss_2,
      output wire sclk_2,
@@ -58,7 +57,7 @@ module top_module(
      output wire sclk_3,
      output wire mosi_3,
      input wire [15:0] adc_val_3
-     */
+     
     );
     
       wire cmd_stb;
@@ -314,7 +313,7 @@ module top_module(
      .wb_cyc_i(cyc_1), .wb_ack_o(ack_1), .wb_err_o(err_1), .wb_int_o(int_o_1),
      .ss_pad_o(ss_1), .sclk_pad_o(sclk_1), .mosi_pad_o(mosi_1), .miso_pad_i() 
     );
-    /*
+    
     //instantiations and wires for AD796x and AD5453 SPI control
     wire cmd_stb_2;
     wire [33:0] cmd_word_2;
@@ -336,7 +335,7 @@ module top_module(
      
     //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
     read_AD796x_fifo_cmd data_converter_2(
-    .clk(clk), .rst(sync_rst), .int_o(int_o_2), .empty(1'b0), .adc_dat_i(adc_val_2), .adr(adr_2), .cmd_stb(cmd_stb_2), .cmd_word(cmd_word_2),
+    .clk(clk), .rst(sync_rst), .int_o(int_o_2), .empty(1'b0), .adc_dat_i(/*adc_val_2*/16'h7fff), .adr(adr_2), .cmd_stb(cmd_stb_2), .cmd_word(cmd_word_2),
     .rd_en(rd_en_2), .data_rdy(data_rdy_2)
     );
      
@@ -378,7 +377,7 @@ module top_module(
      
     //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
     read_AD796x_fifo_cmd data_converter_3(
-    .clk(clk), .rst(sync_rst), .int_o(int_o_3), .empty(1'b0), .adc_dat_i(adc_val_3), .adr(adr_3), .cmd_stb(cmd_stb_3), .cmd_word(cmd_word_3),
+    .clk(clk), .rst(sync_rst), .int_o(int_o_3), .empty(1'b0), .adc_dat_i(/*adc_val_3*/16'h7fff), .adr(adr_3), .cmd_stb(cmd_stb_3), .cmd_word(cmd_word_3),
     .rd_en(rd_en_3), .data_rdy(data_rdy_3)
     );
      
@@ -398,8 +397,5 @@ module top_module(
      .wb_cyc_i(cyc_3), .wb_ack_o(ack_3), .wb_err_o(err_3), .wb_int_o(int_o_3),
      .ss_pad_o(ss_3), .sclk_pad_o(sclk_3), .mosi_pad_o(mosi_3), .miso_pad_i() 
     );
-    
-    */
-    
     
 endmodule
