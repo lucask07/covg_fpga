@@ -8,9 +8,14 @@ path = os.path.join(cwd, "covg_fpga/python/drivers")
 sys.path.append(path)
 
 from fpga import FPGA
+'''
 path1 = os.path.join(cwd, "covg_fpga/python/drivers")
 sys.path.append(path1)
 from utils import rev_lookup, bin, test_bit, twos_comp
+'''
+# does this work? Otherwise revert to green comments
+from drivers.utils import rev_lookup, bin, test_bit, twos_comp
+
 ################## Opal Kelly End Points ##################
 ep = namedtuple('ep', 'addr bits type') # address of the DEVICE_ID reg so we can read it
 

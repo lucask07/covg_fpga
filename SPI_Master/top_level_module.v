@@ -58,8 +58,18 @@ module top_level_module(
 	
 	input wire pushreset,//pushbutton reset
 	output wire [7:0] led, //LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
-	output wire [3:0] gp
+	
+	// output wire [3:0] gp
+	output wire gp_mosi,
+	input wire gp_miso,
+	output wire gp_ss,
+	output wire gp_sclk,
+	output wire convst,
+	output wire ads_reset
 	);
+	
+	assign convst = ep01wire[3];
+	assign ads_reset = ep01wire[4];
 	
 	wire mosi;
 	wire miso;
@@ -67,11 +77,16 @@ module top_level_module(
 	wire sclk;
 	
 	// connect SPI signals to the general purpose outputs for debug
-	assign gp[0] = mosi;
-	assign gp[1] = miso;
-	assign gp[2] = ss;
-	assign gp[3] = sclk;
-	 
+	//assign gp[0] = mosi;
+	assign gp_mosi = mosi; 
+	//assign gp[1] = miso; // gp[1] is input for ADS8686 bring-up. do not echo
+	
+	//assign gp[2] = ss;
+	assign gp_ss = ss;
+	
+	//assign gp[3] = sclk;
+	assign gp_sclk = sclk;	
+	
 	// MUX for routing the SPI master  [select mosi default, outputs]
 	mux_1to8 mux_sdi (ep01wire[2:0], mosi, 1'b0, {d3_sdi, d2_sdi, d1_sdi, d0_sdi, adcs_sdi});
 	// MUX for routing the SPI master  [select ss default, outputs]
@@ -80,7 +95,10 @@ module top_level_module(
 	mux_1to8 mux_sclk (ep01wire[2:0], sclk, 1'b0, {d3_sclk, d2_sclk, d1_sclk, d0_sclk, adcs_sclk});
 
 	// no mux needed since DACs do not output data
-	assign miso = adcs_sdo;
+	
+	// LJK -- ADS8686 bringup ---------
+	// assign miso = adcs_sdo;
+	assign miso = gp_miso;
 	 
 	//System Clock from input differential pair 
 	wire clk_sys;
