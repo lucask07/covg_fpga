@@ -297,13 +297,13 @@ set_property PACKAGE_PIN AA1 [get_ports {gp[3]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {gp[3]}]
 ## MC1-64 
 set_property PACKAGE_PIN Y13 [get_ports {gp[4]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {gp[4]}]
+set_property IOSTANDARD LVCMOS25 [get_ports {gp[4]}]
 ## MC1-65 
 set_property PACKAGE_PIN AB1 [get_ports {gp[5]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {gp[5]}]
 ## MC1-66 
 set_property PACKAGE_PIN AA14 [get_ports {gp[6]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {gp[6]}]
+set_property IOSTANDARD LVCMOS25 [get_ports {gp[6]}]
 ## MC1-67 
 #set_property PACKAGE_PIN AB16 [get_ports {gp[7]}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {gp[7]}]
@@ -524,65 +524,65 @@ set_property IOSTANDARD LVCMOS25 [get_ports {adc_en0[1]}]
 set_property PACKAGE_PIN B1 [get_ports {A1_CLK_P}]
 set_property IOSTANDARD LVDS_25 [get_ports {A1_CLK_P}]
 # MC2-60 
-#set_property PACKAGE_PIN C2 [get_ports {A3_CNV_P}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_CNV_P}]
+set_property PACKAGE_PIN C2 [get_ports {A3_CNV_P}]
+set_property IOSTANDARD LVDS_25 [get_ports {A3_CNV_P}]
 # MC2-61 
 set_property PACKAGE_PIN A1 [get_ports {A1_CLK_N}]
 set_property IOSTANDARD LVDS_25 [get_ports {A1_CLK_N}]
 # MC2-62 
-#set_property PACKAGE_PIN B2 [get_ports {A3_CNV_N}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_CNV_N}]
+set_property PACKAGE_PIN B2 [get_ports {A3_CNV_N}]
+set_property IOSTANDARD LVDS_25 [get_ports {A3_CNV_N}]
 # MC2-63 
-#set_property PACKAGE_PIN K4 [get_ports {A2_CNV_P}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A2_CNV_P}]
+set_property PACKAGE_PIN K4 [get_ports {A2_DCO_P}]
+set_property IOSTANDARD LVDS_25 [get_ports {A2_DCO_P}]
 # MC2-64 
-#set_property PACKAGE_PIN U15 [get_ports {A3_D_P}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_D_P}]
+set_property PACKAGE_PIN U15 [get_ports {A3_D_P}]
+set_property IOSTANDARD LVDS_25 [get_ports {A3_D_P}]
 # MC2-65 
-#set_property PACKAGE_PIN J4 [get_ports {A2_CNV_N}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A2_CNV_N}]
+set_property PACKAGE_PIN J4 [get_ports {A2_DCO_N}]
+set_property IOSTANDARD LVDS_25 [get_ports {A2_DCO_N}]
 # MC2-66 
-#set_property PACKAGE_PIN V15 [get_ports {A3_D_N}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_D_N}]
+set_property PACKAGE_PIN V15 [get_ports {A3_D_N}]
+set_property IOSTANDARD LVDS_25 [get_ports {A3_D_N}]
 # MC2-67 
-#set_property PACKAGE_PIN T16 [get_ports {A2_D_P}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A2_D_P}]
+set_property PACKAGE_PIN T16 [get_ports {A2_D_P}]
+set_property IOSTANDARD LVDS_25 [get_ports {A2_D_P}]
 # MC2-68 
-#set_property PACKAGE_PIN T14 [get_ports {A3_DCO_P}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_DCO_P}]
+set_property PACKAGE_PIN T14 [get_ports {A2_CNV_P}]
+set_property IOSTANDARD LVDS_25 [get_ports {A2_CNV_P}]
 # MC2-69 
-#set_property PACKAGE_PIN U16 [get_ports {A2_D_N}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A2_D_N}]
+set_property PACKAGE_PIN U16 [get_ports {A2_D_N}]
+set_property IOSTANDARD LVDS_25 [get_ports {A2_D_N}]
 # MC2-70 
-#set_property PACKAGE_PIN T15 [get_ports {A3_DCO_N}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_DCO_N}]
+set_property PACKAGE_PIN T15 [get_ports {A2_CNV_N}]
+set_property IOSTANDARD LVDS_25 [get_ports {A2_CNV_N}]
 # MC2-71 
-#set_property PACKAGE_PIN V13 [get_ports {A2_DCO_P}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A2_DCO_P}]
+set_property PACKAGE_PIN V13 [get_ports {A3_DCO_P}]
+set_property IOSTANDARD LVDS_25 [get_ports {A3_DCO_P}]
 # MC2-72 
 set_property PACKAGE_PIN W14 [get_ports {adc_en0[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {adc_en0[2]}]
+set_property IOSTANDARD LVCMOS25 [get_ports {adc_en0[2]}]
 # MC2-73 
-#set_property PACKAGE_PIN V14 [get_ports {A2_DCO_N}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A2_DCO_N}]
+set_property PACKAGE_PIN V14 [get_ports {A3_DCO_N}]
+set_property IOSTANDARD LVDS_25 [get_ports {A3_DCO_N}]
 # MC2-74 
 #set_property PACKAGE_PIN Y14 [get_ports {A3_EN0}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_EN0}]
+#set_property IOSTANDARD LVDS_25 [get_ports {A3_EN0}]
 # MC2-75 
-#set_property PACKAGE_PIN Y11 [get_ports {A2_CLK_N}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A2_CLK_N}]
+set_property PACKAGE_PIN Y11 [get_ports {A2_CLK_P}]
+set_property IOSTANDARD LVDS_25 [get_ports {A2_CLK_P}]
 # MC2-76 
-#set_property PACKAGE_PIN Y12 [get_ports {A2_CLK_P}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A2_CLK_P}]
+set_property PACKAGE_PIN Y12 [get_ports {A2_CLK_N}]
+set_property IOSTANDARD LVDS_25 [get_ports {A2_CLK_N}]
 # MC2-77 
-#set_property PACKAGE_PIN H4 [get_ports {A3_CLK_P}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_CLK_P}]
+set_property PACKAGE_PIN H4 [get_ports {A3_CLK_P}]
+set_property IOSTANDARD LVDS_25 [get_ports {A3_CLK_P}]
 # MC2-78 
 #set_property PACKAGE_PIN  [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
 # MC2-79 
-#set_property PACKAGE_PIN G4 [get_ports {A3_CLK_N}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {A3_CLK_N}]
+set_property PACKAGE_PIN G4 [get_ports {A3_CLK_N}]
+set_property IOSTANDARD LVDS_25 [get_ports {A3_CLK_N}]
 # MC2-80 
 #set_property PACKAGE_PIN  [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]

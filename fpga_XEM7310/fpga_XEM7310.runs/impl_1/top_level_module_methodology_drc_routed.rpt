@@ -1,7 +1,7 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-| Date         : Wed Jun  9 12:48:06 2021
+| Date         : Thu Jun 10 10:25:42 2021
 | Host         : LAPTOP-RK0H8TS5 running 64-bit major release  (build 9200)
 | Command      : report_methodology -file top_level_module_methodology_drc_routed.rpt -pb top_level_module_methodology_drc_routed.pb -rpx top_level_module_methodology_drc_routed.rpx
 | Design       : top_level_module
@@ -23,17 +23,18 @@ Table of Contents
           Floorplan: design_1
       Design limits: <entire design considered>
              Max violations: <unlimited>
-             Violations found: 141
+             Violations found: 205
 +-----------+----------+------------------------------------------------------+------------+
 | Rule      | Severity | Description                                          | Violations |
 +-----------+----------+------------------------------------------------------+------------+
-| LUTAR-1   | Warning  | LUT drives async reset alert                         | 5          |
+| LUTAR-1   | Warning  | LUT drives async reset alert                         | 7          |
 | TIMING-9  | Warning  | Unknown CDC Logic                                    | 1          |
 | TIMING-10 | Warning  | Missing property on synchronizer                     | 1          |
-| TIMING-17 | Warning  | Non-clocked sequential cell                          | 43         |
-| TIMING-18 | Warning  | Missing input or output delay                        | 46         |
+| TIMING-16 | Warning  | Large setup violation                                | 8          |
+| TIMING-17 | Warning  | Non-clocked sequential cell                          | 85         |
+| TIMING-18 | Warning  | Missing input or output delay                        | 54         |
 | TIMING-20 | Warning  | Non-clocked latch                                    | 36         |
-| TIMING-24 | Warning  | Overridden Max delay datapath only                   | 6          |
+| TIMING-24 | Warning  | Overridden Max delay datapath only                   | 10         |
 | TIMING-28 | Warning  | Auto-derived clock referenced by a timing constraint | 1          |
 | XDCH-1    | Warning  | Hold option missing in multicycle path constraint    | 2          |
 +-----------+----------+------------------------------------------------------+------------+
@@ -52,15 +53,25 @@ Related violations: <none>
 
 LUTAR-1#3 Warning
 LUT drives async reset alert  
-LUT cell okHI/core0/core0/a0/cb0/U0/DEVICE_7SERIES.NO_BMM_INFO.SDP.WIDE_PRIM18.ram_i_3, with 2 or more inputs, drives asynchronous preset/clear pin(s) okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[0]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[1]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[2]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[3]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[4]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[5]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[1]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[2]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[3]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[4]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[5]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/wpntr/gcc0.gc0.count_d1_reg[0]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/wpntr/gcc0.gc0.count_d1_reg[1]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/wpntr/gcc0.gc0.count_d1_reg[2]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/wpntr/gcc0.gc0.count_d1_reg[3]/CLR (the first 15 of 26 listed). The LUT may glitch and trigger an unexpected reset, even if it is a properly timed path.
+LUT cell adc7961_2/serial_buffer[15]_i_3__1, with 2 or more inputs, drives asynchronous preset/clear pin(s) adc7961_2/sclk_cnt_reg[0]/CLR, adc7961_2/sclk_cnt_reg[1]/CLR, adc7961_2/sclk_cnt_reg[2]/CLR, adc7961_2/sclk_cnt_reg[3]/CLR, adc7961_2/sclk_echo_cnt_reg[0]/CLR, adc7961_2/sclk_echo_cnt_reg[1]/CLR, adc7961_2/sclk_echo_cnt_reg[2]/CLR, adc7961_2/sclk_echo_cnt_reg[3]/CLR, adc7961_2/serial_buffer_reg[0]/CLR, adc7961_2/serial_buffer_reg[10]/CLR, adc7961_2/serial_buffer_reg[11]/CLR, adc7961_2/serial_buffer_reg[12]/CLR, adc7961_2/serial_buffer_reg[13]/CLR, adc7961_2/serial_buffer_reg[14]/CLR, adc7961_2/serial_buffer_reg[15]/CLR (the first 15 of 26 listed). The LUT may glitch and trigger an unexpected reset, even if it is a properly timed path.
 Related violations: <none>
 
 LUTAR-1#4 Warning
 LUT drives async reset alert  
-LUT cell okHI/core0/core0/l9ca09c625f64b90bed25f2b6c26f6e53[3]_i_2, with 2 or more inputs, drives asynchronous preset/clear pin(s) okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[0]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[10]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[11]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[12]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[13]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[14]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[15]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[16]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[17]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[18]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[19]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[1]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[20]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[21]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[22]/CLR (the first 15 of 60 listed). The LUT may glitch and trigger an unexpected reset, even if it is a properly timed path.
+LUT cell adc7961_3/serial_buffer[15]_i_3__2, with 2 or more inputs, drives asynchronous preset/clear pin(s) adc7961_3/sclk_cnt_reg[0]/CLR, adc7961_3/sclk_cnt_reg[1]/CLR, adc7961_3/sclk_cnt_reg[2]/CLR, adc7961_3/sclk_cnt_reg[3]/CLR, adc7961_3/sclk_echo_cnt_reg[0]/CLR, adc7961_3/sclk_echo_cnt_reg[1]/CLR, adc7961_3/sclk_echo_cnt_reg[2]/CLR, adc7961_3/sclk_echo_cnt_reg[3]/CLR, adc7961_3/serial_buffer_reg[0]/CLR, adc7961_3/serial_buffer_reg[10]/CLR, adc7961_3/serial_buffer_reg[11]/CLR, adc7961_3/serial_buffer_reg[12]/CLR, adc7961_3/serial_buffer_reg[13]/CLR, adc7961_3/serial_buffer_reg[14]/CLR, adc7961_3/serial_buffer_reg[15]/CLR (the first 15 of 26 listed). The LUT may glitch and trigger an unexpected reset, even if it is a properly timed path.
 Related violations: <none>
 
 LUTAR-1#5 Warning
+LUT drives async reset alert  
+LUT cell okHI/core0/core0/a0/cb0/U0/DEVICE_7SERIES.NO_BMM_INFO.SDP.WIDE_PRIM18.ram_i_3, with 2 or more inputs, drives asynchronous preset/clear pin(s) okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[0]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[1]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[2]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[3]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[4]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_d1_reg[5]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[1]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[2]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[3]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[4]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.rd/rpntr/gc0.count_reg[5]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/wpntr/gcc0.gc0.count_d1_reg[0]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/wpntr/gcc0.gc0.count_d1_reg[1]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/wpntr/gcc0.gc0.count_d1_reg[2]/CLR, okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/wpntr/gcc0.gc0.count_d1_reg[3]/CLR (the first 15 of 26 listed). The LUT may glitch and trigger an unexpected reset, even if it is a properly timed path.
+Related violations: <none>
+
+LUTAR-1#6 Warning
+LUT drives async reset alert  
+LUT cell okHI/core0/core0/l9ca09c625f64b90bed25f2b6c26f6e53[3]_i_2, with 2 or more inputs, drives asynchronous preset/clear pin(s) okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[0]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[10]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[11]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[12]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[13]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[14]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[15]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[16]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[17]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[18]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[19]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[1]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[20]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[21]/CLR, okHI/core0/core0/a0/l0c94b19b36beba84283b1c1a65aa73f3_reg[22]/CLR (the first 15 of 60 listed). The LUT may glitch and trigger an unexpected reset, even if it is a properly timed path.
+Related violations: <none>
+
+LUTAR-1#7 Warning
 LUT drives async reset alert  
 LUT cell top/s1_i_1, with 2 or more inputs, drives asynchronous preset/clear pin(s) top/s1_reg/PRE, top/s2_reg/PRE. The LUT may glitch and trigger an unexpected reset, even if it is a properly timed path.
 Related violations: <none>
@@ -73,6 +84,46 @@ Related violations: <none>
 TIMING-10#1 Warning
 Missing property on synchronizer  
 One or more logic synchronizer has been detected between 2 clock domains but the synchronizer does not have the property ASYNC_REG defined on one or both registers. It is recommended to run report_cdc for a complete and detailed CDC coverage
+Related violations: <none>
+
+TIMING-16#1 Warning
+Large setup violation  
+There is a large setup violation of -1.032 ns between adc7961_1/adc_tcyc_cnt_reg[7]/C (clocked by sys_clk) and adc7961_1_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[11].ram.r/prim_noinit.ram/DEVICE_7SERIES.NO_BMM_INFO.SDP.SIMPLE_PRIM36.ram/ENARDEN (clocked by sys_clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#2 Warning
+Large setup violation  
+There is a large setup violation of -1.063 ns between adc7961_1/adc_tcyc_cnt_reg[7]/C (clocked by sys_clk) and adc7961_1_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[13].ram.r/prim_noinit.ram/DEVICE_7SERIES.NO_BMM_INFO.SDP.SIMPLE_PRIM36.ram/ENARDEN (clocked by sys_clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#3 Warning
+Large setup violation  
+There is a large setup violation of -1.079 ns between adc7961_1/adc_tcyc_cnt_reg[7]/C (clocked by sys_clk) and adc7961_1_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[14].ram.r/prim_noinit.ram/DEVICE_7SERIES.NO_BMM_INFO.SDP.SIMPLE_PRIM36.ram/ENARDEN (clocked by sys_clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#4 Warning
+Large setup violation  
+There is a large setup violation of -1.183 ns between adc7961_2/adc_tcyc_cnt_reg[29]/C (clocked by sys_clk) and adc7961_2_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[10].ram.r/prim_noinit.ram/DEVICE_7SERIES.NO_BMM_INFO.SDP.SIMPLE_PRIM36.ram/WEA[0] (clocked by sys_clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#5 Warning
+Large setup violation  
+There is a large setup violation of -1.237 ns between adc7961_1/adc_tcyc_cnt_reg[7]/C (clocked by sys_clk) and adc7961_1_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[10].ram.r/prim_noinit.ram/DEVICE_7SERIES.NO_BMM_INFO.SDP.SIMPLE_PRIM36.ram/ENARDEN (clocked by sys_clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#6 Warning
+Large setup violation  
+There is a large setup violation of -1.250 ns between adc7961_2/adc_tcyc_cnt_reg[29]/C (clocked by sys_clk) and adc7961_2_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[14].ram.r/prim_noinit.ram/DEVICE_7SERIES.NO_BMM_INFO.SDP.SIMPLE_PRIM36.ram/ENARDEN (clocked by sys_clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#7 Warning
+Large setup violation  
+There is a large setup violation of -1.395 ns between adc7961_2/adc_tcyc_cnt_reg[29]/C (clocked by sys_clk) and adc7961_2_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[10].ram.r/prim_noinit.ram/DEVICE_7SERIES.NO_BMM_INFO.SDP.SIMPLE_PRIM36.ram/ENARDEN (clocked by sys_clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
+Related violations: <none>
+
+TIMING-16#8 Warning
+Large setup violation  
+There is a large setup violation of -1.416 ns between adc7961_2/adc_tcyc_cnt_reg[29]/C (clocked by sys_clk) and adc7961_2_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[12].ram.r/prim_noinit.ram/DEVICE_7SERIES.NO_BMM_INFO.SDP.SIMPLE_PRIM36.ram/ENARDEN (clocked by sys_clk). Large setup violations at the end of those stages might be difficult to fix during the post-placement implementation flow and could be the result of non-optimal XDC constraints or non-optimal design architecture
 Related violations: <none>
 
 TIMING-17#1 Warning
@@ -287,6 +338,216 @@ Related violations: <none>
 
 TIMING-17#43 Warning
 Non-clocked sequential cell  
+The clock pin adc7961_2/sclk_echo_cnt_reg[0]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#44 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/sclk_echo_cnt_reg[1]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#45 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/sclk_echo_cnt_reg[2]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#46 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/sclk_echo_cnt_reg[3]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#47 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/sclk_echo_cnt_reg[4]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#48 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[0]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#49 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[10]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#50 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[11]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#51 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[12]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#52 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[13]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#53 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[14]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#54 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[15]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#55 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[1]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#56 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[2]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#57 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[3]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#58 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[4]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#59 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[5]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#60 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[6]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#61 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[7]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#62 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[8]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#63 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_2/serial_buffer_reg[9]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#64 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/sclk_echo_cnt_reg[0]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#65 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/sclk_echo_cnt_reg[1]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#66 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/sclk_echo_cnt_reg[2]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#67 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/sclk_echo_cnt_reg[3]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#68 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/sclk_echo_cnt_reg[4]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#69 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[0]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#70 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[10]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#71 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[11]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#72 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[12]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#73 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[13]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#74 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[14]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#75 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[15]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#76 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[1]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#77 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[2]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#78 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[3]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#79 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[4]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#80 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[5]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#81 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[6]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#82 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[7]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#83 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[8]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#84 Warning
+Non-clocked sequential cell  
+The clock pin adc7961_3/serial_buffer_reg[9]/C is not reached by a timing clock
+Related violations: <none>
+
+TIMING-17#85 Warning
+Non-clocked sequential cell  
 The clock pin okHI/core0/core0/a0/d0/dna0/CLK is not reached by a timing clock
 Related violations: <none>
 
@@ -347,175 +608,215 @@ Related violations: <none>
 
 TIMING-18#12 Warning
 Missing input or output delay  
-An output delay is missing on adc_en0[0] relative to clock(s) okUH0
+An output delay is missing on A2_CLK_N relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#13 Warning
 Missing input or output delay  
-An output delay is missing on adc_en0[1] relative to clock(s) okUH0
+An output delay is missing on A2_CLK_P relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#14 Warning
 Missing input or output delay  
-An output delay is missing on adc_en0[2] relative to clock(s) okUH0
+An output delay is missing on A2_CNV_N relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#15 Warning
 Missing input or output delay  
-An output delay is missing on adc_en0[3] relative to clock(s) okUH0
+An output delay is missing on A2_CNV_P relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#16 Warning
 Missing input or output delay  
-An output delay is missing on adc_en2 relative to clock(s) okUH0
+An output delay is missing on A3_CLK_N relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#17 Warning
 Missing input or output delay  
-An output delay is missing on adcs_csb relative to clock(s) okUH0, sys_clk
+An output delay is missing on A3_CLK_P relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#18 Warning
 Missing input or output delay  
-An output delay is missing on adcs_sclk relative to clock(s) okUH0, sys_clk
+An output delay is missing on A3_CNV_N relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#19 Warning
 Missing input or output delay  
-An output delay is missing on adcs_sdi relative to clock(s) okUH0, sys_clk
+An output delay is missing on A3_CNV_P relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#20 Warning
 Missing input or output delay  
-An output delay is missing on d0_csb relative to clock(s) okUH0, sys_clk
+An output delay is missing on adc_en0[0] relative to clock(s) okUH0
 Related violations: <none>
 
 TIMING-18#21 Warning
 Missing input or output delay  
-An output delay is missing on d0_sclk relative to clock(s) okUH0, sys_clk
+An output delay is missing on adc_en0[1] relative to clock(s) okUH0
 Related violations: <none>
 
 TIMING-18#22 Warning
 Missing input or output delay  
-An output delay is missing on d0_sdi relative to clock(s) okUH0, sys_clk
+An output delay is missing on adc_en0[2] relative to clock(s) okUH0
 Related violations: <none>
 
 TIMING-18#23 Warning
 Missing input or output delay  
-An output delay is missing on d1_csb relative to clock(s) okUH0, sys_clk
+An output delay is missing on adc_en0[3] relative to clock(s) okUH0
 Related violations: <none>
 
 TIMING-18#24 Warning
 Missing input or output delay  
-An output delay is missing on d1_sclk relative to clock(s) okUH0, sys_clk
+An output delay is missing on adc_en2 relative to clock(s) okUH0
 Related violations: <none>
 
 TIMING-18#25 Warning
 Missing input or output delay  
-An output delay is missing on d1_sdi relative to clock(s) okUH0, sys_clk
+An output delay is missing on adcs_csb relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#26 Warning
 Missing input or output delay  
-An output delay is missing on d2_csb relative to clock(s) okUH0, sys_clk
+An output delay is missing on adcs_sclk relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#27 Warning
 Missing input or output delay  
-An output delay is missing on d2_sclk relative to clock(s) okUH0, sys_clk
+An output delay is missing on adcs_sdi relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#28 Warning
 Missing input or output delay  
-An output delay is missing on d2_sdi relative to clock(s) okUH0, sys_clk
+An output delay is missing on d0_csb relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#29 Warning
 Missing input or output delay  
-An output delay is missing on d3_csb relative to clock(s) okUH0, sys_clk
+An output delay is missing on d0_sclk relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#30 Warning
 Missing input or output delay  
-An output delay is missing on d3_sclk relative to clock(s) okUH0, sys_clk
+An output delay is missing on d0_sdi relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#31 Warning
 Missing input or output delay  
-An output delay is missing on d3_sdi relative to clock(s) okUH0, sys_clk
+An output delay is missing on d1_csb relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#32 Warning
 Missing input or output delay  
-An output delay is missing on gp[0] relative to clock(s) sys_clk
+An output delay is missing on d1_sclk relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#33 Warning
 Missing input or output delay  
-An output delay is missing on gp[1] relative to clock(s) sys_clk
+An output delay is missing on d1_sdi relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#34 Warning
 Missing input or output delay  
-An output delay is missing on gp[2] relative to clock(s) sys_clk
+An output delay is missing on d2_csb relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#35 Warning
 Missing input or output delay  
-An output delay is missing on gp[3] relative to clock(s) sys_clk
+An output delay is missing on d2_sclk relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#36 Warning
 Missing input or output delay  
-An output delay is missing on gp[4] relative to clock(s) sys_clk
+An output delay is missing on d2_sdi relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#37 Warning
 Missing input or output delay  
-An output delay is missing on gp[5] relative to clock(s) sys_clk
+An output delay is missing on d3_csb relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#38 Warning
 Missing input or output delay  
-An output delay is missing on gp[6] relative to clock(s) sys_clk
+An output delay is missing on d3_sclk relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#39 Warning
 Missing input or output delay  
-An output delay is missing on led[0] relative to clock(s) sys_clk
+An output delay is missing on d3_sdi relative to clock(s) okUH0, sys_clk
 Related violations: <none>
 
 TIMING-18#40 Warning
 Missing input or output delay  
-An output delay is missing on led[1] relative to clock(s) sys_clk
+An output delay is missing on gp[0] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#41 Warning
 Missing input or output delay  
-An output delay is missing on led[2] relative to clock(s) sys_clk
+An output delay is missing on gp[1] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#42 Warning
 Missing input or output delay  
-An output delay is missing on led[3] relative to clock(s) sys_clk
+An output delay is missing on gp[2] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#43 Warning
 Missing input or output delay  
-An output delay is missing on led[4] relative to clock(s) sys_clk
+An output delay is missing on gp[3] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#44 Warning
 Missing input or output delay  
-An output delay is missing on led[5] relative to clock(s) sys_clk
+An output delay is missing on gp[4] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#45 Warning
 Missing input or output delay  
-An output delay is missing on led[6] relative to clock(s) sys_clk
+An output delay is missing on gp[5] relative to clock(s) sys_clk
 Related violations: <none>
 
 TIMING-18#46 Warning
+Missing input or output delay  
+An output delay is missing on gp[6] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#47 Warning
+Missing input or output delay  
+An output delay is missing on led[0] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#48 Warning
+Missing input or output delay  
+An output delay is missing on led[1] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#49 Warning
+Missing input or output delay  
+An output delay is missing on led[2] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#50 Warning
+Missing input or output delay  
+An output delay is missing on led[3] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#51 Warning
+Missing input or output delay  
+An output delay is missing on led[4] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#52 Warning
+Missing input or output delay  
+An output delay is missing on led[5] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#53 Warning
+Missing input or output delay  
+An output delay is missing on led[6] relative to clock(s) sys_clk
+Related violations: <none>
+
+TIMING-18#54 Warning
 Missing input or output delay  
 An output delay is missing on led[7] relative to clock(s) sys_clk
 Related violations: <none>
@@ -702,32 +1003,52 @@ Related violations: <none>
 
 TIMING-24#1 Warning
 Overridden Max delay datapath only  
-A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks mmcm0_clk0 and sys_clk overrides a set_max_delay -datapath_only (position 19). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks mmcm0_clk0 and sys_clk overrides a set_max_delay -datapath_only (position 23). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
 Related violations: <none>
 
 TIMING-24#2 Warning
 Overridden Max delay datapath only  
-A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks mmcm0_clk0 and sys_clk overrides a set_max_delay -datapath_only (position 21). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks mmcm0_clk0 and sys_clk overrides a set_max_delay -datapath_only (position 25). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
 Related violations: <none>
 
 TIMING-24#3 Warning
 Overridden Max delay datapath only  
-A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks mmcm0_clk0 and sys_clk overrides a set_max_delay -datapath_only (position 23). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks mmcm0_clk0 and sys_clk overrides a set_max_delay -datapath_only (position 27). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
 Related violations: <none>
 
 TIMING-24#4 Warning
 Overridden Max delay datapath only  
-A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks sys_clk and mmcm0_clk0 overrides a set_max_delay -datapath_only (position 15). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks mmcm0_clk0 and sys_clk overrides a set_max_delay -datapath_only (position 29). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
 Related violations: <none>
 
 TIMING-24#5 Warning
 Overridden Max delay datapath only  
-A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks sys_clk and mmcm0_clk0 overrides a set_max_delay -datapath_only (position 17). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks mmcm0_clk0 and sys_clk overrides a set_max_delay -datapath_only (position 31). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
 Related violations: <none>
 
 TIMING-24#6 Warning
 Overridden Max delay datapath only  
-A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks sys_clk and mmcm0_clk0 overrides a set_max_delay -datapath_only (position 25). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks sys_clk and mmcm0_clk0 overrides a set_max_delay -datapath_only (position 15). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+Related violations: <none>
+
+TIMING-24#7 Warning
+Overridden Max delay datapath only  
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks sys_clk and mmcm0_clk0 overrides a set_max_delay -datapath_only (position 17). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+Related violations: <none>
+
+TIMING-24#8 Warning
+Overridden Max delay datapath only  
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks sys_clk and mmcm0_clk0 overrides a set_max_delay -datapath_only (position 19). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+Related violations: <none>
+
+TIMING-24#9 Warning
+Overridden Max delay datapath only  
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks sys_clk and mmcm0_clk0 overrides a set_max_delay -datapath_only (position 21). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
+Related violations: <none>
+
+TIMING-24#10 Warning
+Overridden Max delay datapath only  
+A set_clock_groups or a set_false path (see constraint position 13 in the Timing Constraints window in Vivado IDE) between clocks sys_clk and mmcm0_clk0 overrides a set_max_delay -datapath_only (position 33). It is not recommended to override a set_max_delay -datapath_only constraint. Replace the set_clock_groups or set_false_path between clocks with point-to-point set_false_path constraints
 Related violations: <none>
 
 TIMING-28#1 Warning
