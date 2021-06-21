@@ -2,6 +2,7 @@ import sys
 import time
 import os
 from collections import namedtuple
+import logging
 
 cwd = os.getcwd() # gets the current working directory
 path = os.path.join(cwd, "covg_fpga/python/drivers")
@@ -13,8 +14,9 @@ path1 = os.path.join(cwd, "covg_fpga/python/drivers")
 sys.path.append(path1)
 from utils import rev_lookup, bin, test_bit, twos_comp
 
-# Doesn't seem to work on my machine...
-# from drivers.utils import rev_lookup, bin, test_bit, twos_comp
+############# TODO: Integrate the Logging feature/lib ############
+logging.basicConfig(format = '%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+logging.warning('is when this event was logged')
 
 ################## Opal Kelly End Points ##################
 ep = namedtuple('ep', 'addr bits type') # address of the DEVICE_ID reg so we can read it
@@ -40,20 +42,20 @@ adc_pipe = ep(0xA0, [i for i in range(32)], 'po')
 ################## SPI Controller configuration ##################
 
 wb_wr_msbs = 0x40000000  # the value to indicate a wishbone transfer (don't change)
-spi_ctrl_creg_val = 0x3610 # Char length of 16. Will set Tx_NEG, Rx_NEG; set ASS, IE.  ADS8686
+spi_ctrl_creg = 0x3010 # Char length of 16. Will set Tx_POS, Rx_POS; set ASS, IE. 
 spi_ctrl_divider = 0x0018 # clock divider
 spi_ctrl_ss = 0x0001 # determine which of eight slave select lines are active
 
 ################## Register Addresses for the ADS8686 ##########################
-config_val = 0x0400 # 16 bits, Fig 77. 
+config_val = 0x400 # 16 bits, Fig 77. 
 ''' Hex = 0x8400 '''
     # bit 15: write access = 1
     # bits 14-9: accesses reg. by writing the address (which is 0x2 == 0'b000010)
     # bits 8-7: read only... so put 0's
     # bits 6-0: disable burst mode, sequencer, oversampling, status register output control, and crc control
 
-chan_sel_val = 0x0600 # 16 bits, Fig 78.
-''' Hex 0x86BB or 0x08BB? '''
+chan_sel_val = 0x600 # 16 bits, Fig 78.
+''' Hex 0x8600 '''
     # bit 15: write access
     # bits 14-9: access reg. by writing the address (which is 0x3 == 0'b000011)
     # bit 8: reserved - 0
@@ -62,8 +64,8 @@ chan_sel_val = 0x0600 # 16 bits, Fig 78.
     # bits 3-0: A channel select. Keep It Simple so go with 0000b to selet AIN_0A
         # write 1011b (should give us the fixed result 0x5555)
 
-'''0x0CFF - 0x0CEF, 0x0CAA, 0x8CAA yield address 0x10 or occasionally 0x8... Why?? '''
-rangeB1_val = 0x0CFF # 16 bits, Figure 81
+'''yield address 0x10 or occasionally 0x8... Why?? '''
+rangeB1_val = 0xC00 # 16 bits, Figure 81
     # bit 15: read - 0
     # bits 14-9: register address (0x6 = 0b000110b)
     # bit 8: reserved - 0
@@ -73,15 +75,15 @@ rangeB1_val = 0x0CFF # 16 bits, Figure 81
     # bits 1-0: voltage selection for +/- 5V = 10b
 
 ################# No response from the board ##################
-dev_ID_val = 0x2002 # 16 bits, Fig 87. Hex = 0x4000 [address 0x10]
-''' Hex 0xA002? ''' 
+dev_ID_val = 0x2000 # 16 bits, Fig 87. Hex = 0x4000 [address 0x10]
+''' Hex 0xA000? ''' 
     # bit 15: write access
     # bits 14-9: access reg. by writing the address (0x10 == 0'b010000)
     # bits 8-2: reserved - 000000
     # bits 1-0: DEV_ID register - read only so write 00
 
-rangeA1_val = 0x08FF # 16 bits, Fig 79. 
-''' Hex = 0x08AA? or 0x88AA? or 0x88FF? '''
+rangeA1_val = 0x800 # 16 bits, Fig 79. 
+''' Hex = 0x8800? '''
     # bit 15: read (0)
     # bits 14-9: access reg. by writing address (0x4 == 0b000100)
     # bit 8: reserved - 0
@@ -90,8 +92,8 @@ rangeA1_val = 0x08FF # 16 bits, Fig 79.
     # bits 3-2: voltage selection for +/- 5V = 10b
     # bits 1-0: voltage selection for +/- 5V = 10b
 
-rangeA2_val = 0x0AFF # 16 bits, Figure 80
-''' Hex = 0x0AAA? or 0x8AAA? '''
+rangeA2_val = 0xA00 # 16 bits, Figure 80
+''' Hex 0x8A00? '''
     # bit 15: read (0)
     # bits 14-9: register addresss (0x5 == 0b000101)
     # bit 8: reserved - 0
@@ -100,8 +102,8 @@ rangeA2_val = 0x0AFF # 16 bits, Figure 80
     # bits 3-2: voltage selection for +/- 5V = 10b
     # bits 1-0: voltage selection for +/- 5V = 10b
 
-rangeB2_val = 0x0EFF # 16 bits, Figure 82
-''' Hex 0x0EAA? or 0x8EAA? '''
+rangeB2_val = 0xE00 # 16 bits, Figure 82
+''' Hex 0x8E00? '''
     # bit 15: read - 0
     # bits 14-9: register address (0x7 = 0b000111b)
     # bit 8: reserved - 0
@@ -111,14 +113,13 @@ rangeB2_val = 0x0EFF # 16 bits, Figure 82
     # bits 1-0: voltage selection for +/- 5V = 10b
 
 lpf_val = 0x1A00 # 16 bits, Fig 86
-''' Hex 0x1A01? or 0x1A02? '''
     # bit 15: read - 0
     # bits 14-9: register address (0xD = 0b001101)
     # bits 8-2: reserved - 0
     # bits 1-0: set the cutoff frequency for the low pass filter: 00b = 39kHz, 01b = 15kHz, and 10b = 376kHz
 
 stack0_val = 0x4000 # 16 bits, Fig 88.
-''' Hex 0xC000? or 0x40BB? or 0xC0BB? '''
+''' Hex 0xC000? or 0xC000? '''
     # bit 15: read (0)
     # bits 14-9: register address (0x20 == 0b100000)
     # bit 8: reserved - 0
@@ -151,7 +152,7 @@ def SPI_config():
     3) the slave select lines
     '''
     for val in [0x80000051, wb_wr_msbs | spi_ctrl_divider, # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
-                0x80000041, wb_wr_msbs | spi_ctrl_creg_val,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
+                0x80000041, wb_wr_msbs | spi_ctrl_creg,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
                 0x80000061, wb_wr_msbs | spi_ctrl_ss]: # slave select (just setting bit0) [the controller has 8 ss lines]
         f.set_wire(control.addr, val, mask = 0xffffffff)
         send_trig(valid) 
@@ -164,8 +165,8 @@ def send_SPI(value_tosend): # what needs to be written to the ADS?
 
     send = wb_wr_msbs | value_tosend
 
-    for val in [0x80000001, send,  # go to the Tx register, store data to send (from cmd) 
-                0x80000041, wb_wr_msbs | (spi_ctrl_creg_val | (1 << 8))]: # Tells the Control register - GO (bit 8) - sends val to ADS8686
+    for val in [0x80000001, send, # go to the Tx register, store data to send (from cmd), then send blank command
+                0x80000041, wb_wr_msbs | (spi_ctrl_creg | (1 << 8))]: # Tells the Control register - GO (bit 8) - sends val to ADS8686
         f.set_wire(control.addr, val, mask = 0xffffffff) # sets the wire to the ADS8686 w/val and adds mask to get correct data back
         send_trig(valid)
 
@@ -184,19 +185,6 @@ f.set_wire(mux_control.addr, 1, mask = mux_control.bits)
 
 ################## Configure the SPI controller ##################
 SPI_config()
-
-################## Send commands to the device ##################
-def call_fx(cmd):  
-    # read the device ID -- this should return 2 (or maybe 0x2002)
-    send_SPI(cmd)
-    time.sleep(0.001)
-    addr = send_SPI(cmd) # sets up the configuration register
-    return addr
-
-########### Checks a SPI command when the whole file is ran ###########
-if __name__ == 'main':
-    res = call_fx(config_val)
-    print('Final value read is 0x{:02X}'.format(res))
 
 '''
 Wishbone information 
@@ -220,66 +208,18 @@ Wishbone information
 //  2'b11   Special command
 '''
 
+'''
+---> Not used because of the ads8686_script.py file
+################## Send commands to the device ##################
+def call_fx(cmd):  
+    # read the device ID -- this should return 2 (or maybe 0x2002)
+    send_SPI(cmd)
+    time.sleep(0.001)
+    addr = send_SPI(cmd) # sets up the configuration register
+    return addr
 
-
-''' Building the address into a generated command we can pass into loc of the build_cmd function
-# build into a fx that decides where we need to go for a specific operation
-address = 0x51 # where do we want to go?
-reg = "ctrl"
-# SDI will change based on our operation... for now want to access config. to start data aquisition
-write_val= 0x40000000 # gives us the base for a write command
-read_val = 0x80000000 # gives us the base for a read command
-### eventually we'll be reading/writing more than once and will need this ###
-# gets user input to choose a read/write command
-def get_cmd(command):
-    while True:
-        if(command == "w"):
-            return command # write command selected
-        elif(command == "r"):
-            return command # read command selected
-        else:
-            return 0 # if no command is selected, leave null
-command = 0 
-command = get_cmd(command)
-# check what command was entered
-print("Your command is: %s" % command)
-def choose_address(address): # chooses the correct address for the task we want to complete
-    if(reg == "ctrl" && command == "read"):
-        address = 0x41
-        return address # hand this back so we can create the command
-    elif(reg == "ctrl" && command == "write"):
-        address = 0x3610 # see creg_val
-        return address
-    elif(reg == "div" && command == "read"):
-        address = 0x51
-        return address
-    elif(reg == "div" && command == "write"):
-        address = 0x4
-        return address
-    elif(reg == "ss" && command == "read"):
-        address = 0x61
-        return address
-    # can this have the same address as data_reg???
-    elif(reg == "ss" && command == "write"):
-        address = 0x1
-        return address
-    # can this have the same address as ss during write???
-    elif(reg == "data" && command == "write"): # Remember: Rx and Tx are in the same register (0x00) to send/store data
-        address = 0x1
-        return address
-    
-    else
-        print("Error: no valid command and/or register was detected")
-    
-    # One possible command is missing: data-r. Do we need it?
-def build_cmd(command, read_cmd, write_cmd, loc): 
-    if(command == "read"): # implement a read command and send via SPI
-        read_cmd = 0x80000000 + loc # gives us what we want to do and where we want to go
-        return read_cmd
-    else: # otherwise, we're using a write command
-        write_cmd = 0x40000000 + loc # gives us what we want to do and where we want to go
-        return write_cmd
-# build the command we want to R/W data
-cmd = build_cmd(command, write_val, read_val, address)
-print("your command is: %d" % cmd)
+########### Checks a SPI command when the whole file is ran ###########
+if __name__ == 'main':
+    res = call_fx(config_val)
+    print('Final value read is 0x{:02X}'.format(res))
 '''
