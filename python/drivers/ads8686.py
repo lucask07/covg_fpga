@@ -15,8 +15,10 @@ sys.path.append(path1)
 from utils import rev_lookup, bin, test_bit, twos_comp
 
 ############# TODO: Integrate the Logging feature/lib ############
-logging.basicConfig(format = '%(asctime)s %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-logging.warning('is when this event was logged')
+logging.basicConfig(filename = 'ads8686data.log', encoding = 'utf-8', level = logging.INFO)
+logging.info('------------------------------------------------------------------------------------------')
+logging.warning('this is a way')
+logging.critical('to check if logging works')
 
 ################## Opal Kelly End Points ##################
 ep = namedtuple('ep', 'addr bits type') # address of the DEVICE_ID reg so we can read it
@@ -39,22 +41,31 @@ hall_full = ep(0x60, 0, 'to')
 # pipeout (bits are meaningless)
 adc_pipe = ep(0xA0, [i for i in range(32)], 'po') 
 
-################## SPI Controller configuration ##################
+############### SPI Controller Addresses and Configuration ###############
+# SPI Register Addresses
+ssreg_addr = 0x61 # ss register
+divreg_addr = 0x51 # clk divider register
+creg_addr = 0x41 # control register
+Txreg_addr = 0x01 # Tx/Rx register (at the same address! But has dual functionality)
 
-wb_wr_msbs = 0x40000000  # the value to indicate a wishbone transfer (don't change)
-spi_ctrl_creg = 0x3010 # Char length of 16. Will set Tx_POS, Rx_POS; set ASS, IE. 
-spi_ctrl_divider = 0x0018 # clock divider
-spi_ctrl_ss = 0x0001 # determine which of eight slave select lines are active
+# Configuring the SPI controller
+creg_set = 0x3010 # Char length of 16. Samples Tx/Rx on POS edge; sets ASS, IE
+clk_div = 0x18 # Takes the given clk at 10MHz and divides it so you get a 2MHz clk instead
+ss = 0x1 # sets the active ss line by setting the LSB of a SPI command to 1 during configuration
+
+# SPI write and read commands
+wb_w = 0x40000000  # indicates a wishbone transfer via writing to a chip (ADS8686) register (don't change)
+wb_r = 0x80000000 # indicates a wishbone transfer by reading a chip register (don't change)
 
 ################## Register Addresses for the ADS8686 ##########################
-config_val = 0x400 # 16 bits, Fig 77. 
+config = 0x400 # 16 bits, Fig 77. 
 ''' Hex = 0x8400 '''
     # bit 15: write access = 1
     # bits 14-9: accesses reg. by writing the address (which is 0x2 == 0'b000010)
     # bits 8-7: read only... so put 0's
     # bits 6-0: disable burst mode, sequencer, oversampling, status register output control, and crc control
 
-chan_sel_val = 0x600 # 16 bits, Fig 78.
+chan_sel = 0x600 # 16 bits, Fig 78.
 ''' Hex 0x8600 '''
     # bit 15: write access
     # bits 14-9: access reg. by writing the address (which is 0x3 == 0'b000011)
@@ -65,7 +76,7 @@ chan_sel_val = 0x600 # 16 bits, Fig 78.
         # write 1011b (should give us the fixed result 0x5555)
 
 '''yield address 0x10 or occasionally 0x8... Why?? '''
-rangeB1_val = 0xC00 # 16 bits, Figure 81
+rangeB1 = 0xC00 # 16 bits, Figure 81
     # bit 15: read - 0
     # bits 14-9: register address (0x6 = 0b000110b)
     # bit 8: reserved - 0
@@ -75,14 +86,14 @@ rangeB1_val = 0xC00 # 16 bits, Figure 81
     # bits 1-0: voltage selection for +/- 5V = 10b
 
 ################# No response from the board ##################
-dev_ID_val = 0x2000 # 16 bits, Fig 87. Hex = 0x4000 [address 0x10]
+devID = 0x2000 # 16 bits, Fig 87. Hex = 0x4000 [address 0x10]
 ''' Hex 0xA000? ''' 
     # bit 15: write access
     # bits 14-9: access reg. by writing the address (0x10 == 0'b010000)
     # bits 8-2: reserved - 000000
     # bits 1-0: DEV_ID register - read only so write 00
 
-rangeA1_val = 0x800 # 16 bits, Fig 79. 
+rangeA1 = 0x800 # 16 bits, Fig 79. 
 ''' Hex = 0x8800? '''
     # bit 15: read (0)
     # bits 14-9: access reg. by writing address (0x4 == 0b000100)
@@ -92,7 +103,7 @@ rangeA1_val = 0x800 # 16 bits, Fig 79.
     # bits 3-2: voltage selection for +/- 5V = 10b
     # bits 1-0: voltage selection for +/- 5V = 10b
 
-rangeA2_val = 0xA00 # 16 bits, Figure 80
+rangeA2 = 0xA00 # 16 bits, Figure 80
 ''' Hex 0x8A00? '''
     # bit 15: read (0)
     # bits 14-9: register addresss (0x5 == 0b000101)
@@ -102,7 +113,7 @@ rangeA2_val = 0xA00 # 16 bits, Figure 80
     # bits 3-2: voltage selection for +/- 5V = 10b
     # bits 1-0: voltage selection for +/- 5V = 10b
 
-rangeB2_val = 0xE00 # 16 bits, Figure 82
+rangeB2 = 0xE00 # 16 bits, Figure 82
 ''' Hex 0x8E00? '''
     # bit 15: read - 0
     # bits 14-9: register address (0x7 = 0b000111b)
@@ -112,13 +123,13 @@ rangeB2_val = 0xE00 # 16 bits, Figure 82
     # bits 3-2: voltage selection for +/- 5V = 10b
     # bits 1-0: voltage selection for +/- 5V = 10b
 
-lpf_val = 0x1A00 # 16 bits, Fig 86
+lpf = 0x1A00 # 16 bits, Fig 86
     # bit 15: read - 0
     # bits 14-9: register address (0xD = 0b001101)
     # bits 8-2: reserved - 0
     # bits 1-0: set the cutoff frequency for the low pass filter: 00b = 39kHz, 01b = 15kHz, and 10b = 376kHz
 
-stack0_val = 0x4000 # 16 bits, Fig 88.
+stack0 = 0x4000 # 16 bits, Fig 88.
 ''' Hex 0xC000? or 0xC000? '''
     # bit 15: read (0)
     # bits 14-9: register address (0x20 == 0b100000)
@@ -141,38 +152,32 @@ def read_wire(ep_bit): # reads the wire and returns the value back
     a = f.xem.GetWireOutValue(ep_bit.addr) 
     return a # returns the wire value into the var a
 
-
 def SPI_config():
-    '''
-    Configure the SPI controller within the FPGA 
-    only need to run once.
-    Configures 
-    1) clock divider, 
-    2) the control register and 
-    3) the slave select lines
-    '''
-    for val in [0x80000051, wb_wr_msbs | spi_ctrl_divider, # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
-                0x80000041, wb_wr_msbs | spi_ctrl_creg,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
-                0x80000061, wb_wr_msbs | spi_ctrl_ss]: # slave select (just setting bit0) [the controller has 8 ss lines]
+    ''' Configures the SPI controller by setting the clock divider, control register, and ss
+    register. ONLY RUN 1x to avoid improper configuration! '''
+    for val in [wb_r | divreg_addr, wb_w | clk_div, # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
+                wb_r | creg_addr,   wb_w | creg_set,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
+                wb_r | ssreg_addr,  wb_w | ss]: # slave select (just setting bit0) [the controller has 8 ss lines]
+        # sets a wire to the FPGA to send each command and then triggers the Opal Kelly
         f.set_wire(control.addr, val, mask = 0xffffffff)
         send_trig(valid) 
 
-def send_SPI(value_tosend): # what needs to be written to the ADS?
-    '''
-    Send 16 bits (2 bytes) of SPI data
-    Read any result sent back along SDO
-    '''
+# Expects a 8-digit hex command!!
+def sendSPI(message): # what needs to be written to the ADS?
+    ''' Send 16 bits (2 bytes) of SPI data and read any result sent back along SDO.
+    Writes to a register by storing the message in the Tx register, then tells
+    the control register to go (1 in LSB) and receives the read value '''
 
-    send = wb_wr_msbs | value_tosend
+    for i in range(2):
+        for val in [wb_r | Txreg_addr, wb_w | message, # go to the Tx register, store data to send (from cmd)
+                    wb_r | creg_addr,  wb_w | (creg_set | (1 << 8))]: # Tells the Control register - GO (bit 8)
+            f.set_wire(control.addr, val, mask = 0xffffffff) # sets the wire to the ADS8686 and adds mask to get correct data back
+            send_trig(valid)
 
-    for val in [0x80000001, send, # go to the Tx register, store data to send (from cmd), then send blank command
-                0x80000041, wb_wr_msbs | (spi_ctrl_creg | (1 << 8))]: # Tells the Control register - GO (bit 8) - sends val to ADS8686
-        f.set_wire(control.addr, val, mask = 0xffffffff) # sets the wire to the ADS8686 w/val and adds mask to get correct data back
-        send_trig(valid)
-
-    a = read_wire(one_deep_fifo)
-    print('Value read is 0x{:02X}'.format(a))
-    return a    
+    # Now read the result back, store it, print to the console, and return
+    addr = read_wire(one_deep_fifo)
+    print('Value read is 0x{:02X}'.format(addr))
+    return addr 
 
 ################## Actual executing code ##################
 
@@ -206,20 +211,4 @@ Wishbone information
 //      bit[1] is an address difference bit
 //      bit[0] is an increment bit
 //  2'b11   Special command
-'''
-
-'''
----> Not used because of the ads8686_script.py file
-################## Send commands to the device ##################
-def call_fx(cmd):  
-    # read the device ID -- this should return 2 (or maybe 0x2002)
-    send_SPI(cmd)
-    time.sleep(0.001)
-    addr = send_SPI(cmd) # sets up the configuration register
-    return addr
-
-########### Checks a SPI command when the whole file is ran ###########
-if __name__ == 'main':
-    res = call_fx(config_val)
-    print('Final value read is 0x{:02X}'.format(res))
 '''
