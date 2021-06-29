@@ -6,13 +6,24 @@ logging.basicConfig(filename = 'ads8686data.log', encoding = 'utf-8', level = lo
 logging.info('------------------------------------------------------------------------------------------')
 
 ############ List and Class of Registers Addresses for the ADS8686 #############
-class regs: # define a class that sorts registers by their order (r1, r2, etc), name, reset value, address, and default value after reset
+reglist = [] # leave blank, will be filled by iter() and for loop
+dictofRegs = {} # now make a blank dictionary that will help us connect the reglist we have and use indices so we can grab the right class object to get it's reset code, etc
+
+class regs(object): # define a class that sorts registers by their order (r1, r2, etc), name, reset value, address, and default value after reset    
+    # for each item created for the class, append it into the reglist object
+    def addItem(self, reglist):
+        reglist.append(self.name) # add the name of the reg to the list
+        loc = reglist.index(self.name) # get the index of the object you just added
+        dictofRegs[self.name] = loc # now add the reg name AND its index to the dictionary
+
     def __init__(self, name, addr, reset, default):
         # list the attributes specific to each object (passed in as self) to the class
         self.name = name
         self.addr = addr
         self.reset = reset
         self.default = default
+        regs.addItem(self, reglist)
+
     '''
     NOTE: the default value of the devID reg according to the datasheet is 0x2002. It is located at address 0x10.
         --> However, value read back from FPGA is 0x2.
@@ -23,9 +34,6 @@ class regs: # define a class that sorts registers by their order (r1, r2, etc), 
                 to help with logging and debugging
     '''
     
-r0 = regs('not_real', 0x0, 0x0, 0x0) # put in a dummy register that has a fake reset code and reserved address for testing
-
-# the 43 registers of the ADS8686, change for other boards
 r1 = regs('config', 0x2, 0x400, 0x0)
 r2 = regs('chan_sel', 0x3, 0x600, 0x0)
 r3 = regs('rangeA1', 0x4, 0x800, 0xFF)
@@ -70,10 +78,52 @@ r41 = regs('seq29', 0x3D, 0x7A00, 0x0)
 r42 = regs('seq30', 0x3E, 0x7C00, 0x0)
 r43 = regs('seq31', 0x3F, 0x7E00, 0x0)
 
-# list of all r values from regs class to connect to the named tuple object
-reglist = [r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16, r17,
-r18, r19, r20, r21, r22, r23, r24, r25, r26, r27, r28, r29, r30, r31, r32, r33, r34, r35, 
-r36, r37, r38, r39, r40, r41, r42, r43]
+class chip(): # new class that attaches the index of the dictionary to the object within the regs class so we can grab names, reset codes, etc of registers
+    dictofRegs[0] = regs('not_real', 0x0, 0x0, 0x0) # put in a dummy register that has a fake reset code and reserved address for testing
+    # the 43 registers of the ADS8686, change for other boards
+    dictofRegs[1] = regs('config', 0x2, 0x400, 0x0)
+    dictofRegs[2] = regs('chan_sel', 0x3, 0x600, 0x0)
+    dictofRegs[3] = regs('rangeA1', 0x4, 0x800, 0xFF)
+    dictofRegs[4] = regs('rangeA2', 0x5, 0xA00, 0xFF)
+    dictofRegs[5] = regs('rangeB1', 0x6, 0xC00, 0xFF)
+    dictofRegs[6] = regs('rangeB2', 0x7, 0xE00, 0xFF)
+    dictofRegs[7] = regs('status', 0x8, 0x0, 0x0)
+    dictofRegs[8] = regs('over_rangeA', 0xA, 0x1400, 0x0)
+    dictofRegs[9] = regs('over_rangeB', 0xB, 0x1600, 0x0)
+    dictofRegs[10] = regs('lpf_config', 0xD, 0x1A00, 0x0)
+    dictofRegs[11] = regs('devID', 0x10, 0x2000, 0x2)
+    dictofRegs[12] = regs('seq0', 0x20, 0x4000, 0x0)
+    dictofRegs[13] = regs('seq1', 0x21, 0x4200, 0x11)
+    dictofRegs[14] = regs('seq2', 0x22, 0x4400, 0x22)
+    dictofRegs[15] = regs('seq3', 0x23, 0x4600, 0x33)
+    dictofRegs[16] = regs('seq4', 0x24, 0x4800, 0x44)
+    dictofRegs[17] = regs('seq5', 0x25, 0x4A00, 0x55)
+    dictofRegs[18] = regs('seq6', 0x26, 0x4C00, 0x66)
+    dictofRegs[19] = regs('seq7', 0x27, 0x4F00, 0x77)
+    dictofRegs[20] = regs('seq8', 0x28, 0x5000, 0x0)
+    dictofRegs[21] = regs('seq9', 0x29, 0x5200, 0x0)
+    dictofRegs[22] = regs('seq10', 0x2A, 0x5400, 0x0)
+    dictofRegs[23] = regs('seq11', 0x2B, 0x5600, 0x0)
+    dictofRegs[24] = regs('seq12', 0x2C, 0x5800, 0x0)
+    dictofRegs[25] = regs('seq13', 0x2D, 0x5A00, 0x0)
+    dictofRegs[26] = regs('seq14', 0x2E, 0x5C00, 0x0)
+    dictofRegs[27] = regs('seq15', 0x2F, 0x5E00, 0x0)
+    dictofRegs[28] = regs('seq16', 0x30, 0x6000, 0x0)
+    dictofRegs[29] = regs('seq17', 0x31, 0x6200, 0x0)
+    dictofRegs[30] = regs('seq18', 0x32, 0x6400, 0x0)
+    dictofRegs[31] = regs('seq19', 0x33, 0x6600, 0x0)
+    dictofRegs[32] = regs('seq20', 0x34, 0x6800, 0x0)
+    dictofRegs[33] = regs('seq21', 0x35, 0x6A00, 0x0)
+    dictofRegs[34] = regs('seq22', 0x36, 0x6C00, 0x0)
+    dictofRegs[35] = regs('seq23', 0x37, 0x6E00, 0x0)
+    dictofRegs[36] = regs('seq24', 0x38, 0x7000, 0x0)
+    dictofRegs[37] = regs('seq25', 0x39, 0x7200, 0x0)
+    dictofRegs[38] = regs('seq26', 0x3A, 0x7400, 0x0)
+    dictofRegs[39] = regs('seq27', 0x3B, 0x7600, 0x0)
+    dictofRegs[40] = regs('seq28', 0x3C, 0x7800, 0x0)
+    dictofRegs[41] = regs('seq29', 0x3D, 0x7A00, 0x0)
+    dictofRegs[42] = regs('seq30', 0x3E, 0x7C00, 0x0)
+    dictofRegs[43] = regs('seq31', 0x3F, 0x7E00, 0x0)
 
 ############### SPI Controller Addresses and Configuration ###############
 # SPI Register Addresses
@@ -122,26 +172,26 @@ def sendSPI(message): # what needs to be written to the ADS?
 
     return addr 
 
-def writeReg(msg, reg_number):
+def writeReg(msg, reg_name):
     print('--'*40) # for a clean terminal
-    which_reg = reglist[reg_number].name
-    if(msg == 'r'): # if we don't have a blank message, we're sending a message
-        print('Reading the %s register'%which_reg) # for debugging and to keep track: tell us which reg we are looking at
-        cmd = reglist[reg_number].reset
+    reg_number = reglist.index(reg_name) + 1 # 0 indexing used for dictionaries, need to add 1 to get the correct reg
+    if(msg == 'r'): # if we want to read a register
+        print('Reading the %s register'%dictofRegs.get(reg_number).name) # for debugging and to keep track: tell us which reg we are looking at
+        cmd = dictofRegs.get(reg_number).reset
         cmd = (cmd | wb_w) # concatenate the reg addr w/a wishbone write (no message) to build a complete SPI command
-    else: # otherwise, we're reading the register
-        print('Write 0x{:X} to the {} register'.format(msg, which_reg)) # for debugging and to keep track: tell us which reg we are looking at
-        cmd = reglist[reg_number].reset
+    else: # otherwise, we're sending a message
+        print('Write 0x{:X} to the {} register'.format(msg, dictofRegs.get(reg_number).name)) # for debugging and to keep track: tell us which reg we are looking at
+        cmd = dictofRegs.get(reg_number).reset
         cmd = (cmd | wb_w | msg | msg_w) # concatenate the reg addr w/a wishbone write and message to build a complete SPI command
     
     print('Your command is 0x{:X}'.format(cmd))
     check = sendSPI(cmd) # store the sent result
 
     # check if the read address matches the defauly value and log the result
-    if(check == reglist[reg_number].default): # if the correct address was read back
-        logging.info('  {} register: Default 0x{:X}, read {}'.format(which_reg, reglist[reg_number].default, hex(check)))
+    if(check == dictofRegs.get(reg_number).default): # if the correct address was read back
+        logging.info('  {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_number).name, dictofRegs.get(reg_number).default, hex(check)))
     else: # if another register address was given
-        logging.warning('  {} register: Default 0x{:X}, read {}'.format(which_reg, reglist[reg_number].default, hex(check)))
+        logging.warning('  {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_number).name, dictofRegs.get(reg_number).default, hex(check)))
 
 def readAll(): # reads all 43 reg's and prints their values
     for i in range(len(reglist)):
@@ -154,7 +204,7 @@ def readAll(): # reads all 43 reg's and prints their values
 
 # eventually these vars will be passed in from another file, place here for testing
 view = 'clkfreq'
-choice = 10
+choice = 10_000_000
 
 def changeSettings(view, choice): 
     # makes creg_set and clk_div changeable and then returned to update their values (not permanent??)
@@ -204,8 +254,8 @@ def changeSettings(view, choice):
             current_freq = int(50_000_000/(int(clk_div) + 1)) # calculate the current frequency (see spi.doc for equation)
             print('The clock is set to operate at the minimum setting of %d Hz'%current_freq)
         else: # a valid frequency was entered, so calculate the new clk_div value, set it, and tell the suer the new operating frequency
-            # new_freq = int(choice) # take the input and turn it into a int, not a string
-            calc = int(np.log2((50_000_000/int(choice)) - 1)) # find the new value of the clock divider
+            calc = int(((1/(choice/50_000_000)) - 1)) # find the new value of the clock divider
+            print('calc: %d'%calc)
             current_freq = int(50_000_000/(int(calc) + 1)) # calculate the new frequency and notify the user
             clk_div = hex(calc) # update the clk_div setting
             print('The new frequency will run at %d Hz. Please reset to reconfigure the board'%current_freq)
@@ -216,7 +266,7 @@ def changeSettings(view, choice):
         print('Neither clkedge or clkfreq were entered. Please call the function again.')        
 
 ################ Run these statements when the program is initialized ################
-readAll()
+# readAll
 
 '''
 ################## Register Addresses for the ADS8686 ##########################
