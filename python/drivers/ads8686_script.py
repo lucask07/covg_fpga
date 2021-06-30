@@ -1,5 +1,8 @@
 import numpy as np
+from utils import rev_lookup, bin, test_bit, twos_comp, two2dec
 import logging
+
+# import ads8686
 
 ############# Set up the Logging feature/lib ############
 logging.basicConfig(filename = 'ads8686data.log', encoding = 'utf-8', level = logging.INFO)
@@ -13,8 +16,6 @@ class regs(object): # define a class that sorts registers by their order (r1, r2
     # for each item created for the class, append it into the reglist object
     def addItem(self, reglist):
         reglist.append(self.name) # add the name of the reg to the list
-        loc = reglist.index(self.name) # get the index of the object you just added
-        dictofRegs[self.name] = loc # now add the reg name AND its index to the dictionary
 
     def __init__(self, name, addr, reset, default):
         # list the attributes specific to each object (passed in as self) to the class
@@ -22,7 +23,7 @@ class regs(object): # define a class that sorts registers by their order (r1, r2
         self.addr = addr
         self.reset = reset
         self.default = default
-        regs.addItem(self, reglist)
+        regs.addItem(self, reglist) # once object has been initialized, place into dictionary and list
 
     '''
     NOTE: the default value of the devID reg according to the datasheet is 0x2002. It is located at address 0x10.
@@ -33,50 +34,6 @@ class regs(object): # define a class that sorts registers by their order (r1, r2
             // data sheet shows reset | default as the reset code, but it's broken up here into the MSB and LSB
                 to help with logging and debugging
     '''
-    
-r1 = regs('config', 0x2, 0x400, 0x0)
-r2 = regs('chan_sel', 0x3, 0x600, 0x0)
-r3 = regs('rangeA1', 0x4, 0x800, 0xFF)
-r4 = regs('rangeA2', 0x5, 0xA00, 0xFF)
-r5 = regs('rangeB1', 0x6, 0xC00, 0xFF)
-r6 = regs('rangeB2', 0x7, 0xE00, 0xFF)
-r7 = regs('status', 0x8, 0x0, 0x0)
-r8 = regs('over_rangeA', 0xA, 0x1400, 0x0)
-r9 = regs('over_rangeB', 0xB, 0x1600, 0x0)
-r10 = regs('lpf_config', 0xD, 0x1A00, 0x0)
-r11 = regs('devID', 0x10, 0x2000, 0x2)
-r12 = regs('seq0', 0x20, 0x4000, 0x0)
-r13 = regs('seq1', 0x21, 0x4200, 0x11)
-r14 = regs('seq2', 0x22, 0x4400, 0x22)
-r15 = regs('seq3', 0x23, 0x4600, 0x33)
-r16 = regs('seq4', 0x24, 0x4800, 0x44)
-r17 = regs('seq5', 0x25, 0x4A00, 0x55)
-r18 = regs('seq6', 0x26, 0x4C00, 0x66)
-r19 = regs('seq7', 0x27, 0x4F00, 0x77)
-r20 = regs('seq8', 0x28, 0x5000, 0x0)
-r21 = regs('seq9', 0x29, 0x5200, 0x0)
-r22 = regs('seq10', 0x2A, 0x5400, 0x0)
-r23 = regs('seq11', 0x2B, 0x5600, 0x0)
-r24 = regs('seq12', 0x2C, 0x5800, 0x0)
-r25 = regs('seq13', 0x2D, 0x5A00, 0x0)
-r26 = regs('seq14', 0x2E, 0x5C00, 0x0)
-r27 = regs('seq15', 0x2F, 0x5E00, 0x0)
-r28 = regs('seq16', 0x30, 0x6000, 0x0)
-r29 = regs('seq17', 0x31, 0x6200, 0x0)
-r30 = regs('seq18', 0x32, 0x6400, 0x0)
-r31 = regs('seq19', 0x33, 0x6600, 0x0)
-r32 = regs('seq20', 0x34, 0x6800, 0x0)
-r33 = regs('seq21', 0x35, 0x6A00, 0x0)
-r34 = regs('seq22', 0x36, 0x6C00, 0x0)
-r35 = regs('seq23', 0x37, 0x6E00, 0x0)
-r36 = regs('seq24', 0x38, 0x7000, 0x0)
-r37 = regs('seq25', 0x39, 0x7200, 0x0)
-r38 = regs('seq26', 0x3A, 0x7400, 0x0)
-r39 = regs('seq27', 0x3B, 0x7600, 0x0)
-r40 = regs('seq28', 0x3C, 0x7800, 0x0)
-r41 = regs('seq29', 0x3D, 0x7A00, 0x0)
-r42 = regs('seq30', 0x3E, 0x7C00, 0x0)
-r43 = regs('seq31', 0x3F, 0x7E00, 0x0)
 
 class chip(): # new class that attaches the index of the dictionary to the object within the regs class so we can grab names, reset codes, etc of registers
     dictofRegs[0] = regs('not_real', 0x0, 0x0, 0x0) # put in a dummy register that has a fake reset code and reserved address for testing
@@ -161,8 +118,9 @@ def sendSPI(message): # what needs to be written to the ADS?
     Writes to a register by storing the message in the Tx register, then tells
     the control register to go (1 in LSB) and receives the read value '''
 
+    print('Your message is 0x{:X}'.format(message))
     for i in range(2):
-        for val in [wb_r | Txreg_addr, wb_w | message, # go to the Tx register, store data to send (from cmd)
+        for val in [wb_r | Txreg_addr, message, # go to the Tx register, store data to send (from cmd)
                     wb_r | creg_addr,  wb_w | (creg_set | (1 << 8))]: # Tells the Control register - GO (bit 8)
             f.set_wire(control.addr, val, mask = 0xffffffff) # sets the wire to the ADS8686 and adds mask to get correct data back
             send_trig(valid)
@@ -174,29 +132,117 @@ def sendSPI(message): # what needs to be written to the ADS?
 
 def writeReg(msg, reg_name):
     print('--'*40) # for a clean terminal
-    reg_number = reglist.index(reg_name) + 1 # 0 indexing used for dictionaries, need to add 1 to get the correct reg
-    if(msg == 'r'): # if we want to read a register
-        print('Reading the %s register'%dictofRegs.get(reg_number).name) # for debugging and to keep track: tell us which reg we are looking at
-        cmd = dictofRegs.get(reg_number).reset
+    reg_number = reglist.index(reg_name) # 0 indexing used for dictionaries and lists
+    if(msg == 0): # if we want to read a register
+        print('Reading the %s register'%reg_name) # for debugging and to keep track: tell us which reg we are looking at
+        cmd = dictofRegs.get(reg_number).reset # get the MSB digits so we can set the register correctly
         cmd = (cmd | wb_w) # concatenate the reg addr w/a wishbone write (no message) to build a complete SPI command
     else: # otherwise, we're sending a message
-        print('Write 0x{:X} to the {} register'.format(msg, dictofRegs.get(reg_number).name)) # for debugging and to keep track: tell us which reg we are looking at
-        cmd = dictofRegs.get(reg_number).reset
-        cmd = (cmd | wb_w | msg | msg_w) # concatenate the reg addr w/a wishbone write and message to build a complete SPI command
+        print('Write 0x{:X} to the {} register'.format(msg, reg_name)) # for debugging and to keep track: tell us which reg we are looking at
+        cmd = dictofRegs.get(reg_number).reset # get the MSB digits so we can set the register correctly
+        cmd = (cmd | wb_w | msg) # concatenate the reg addr w/a wishbone write and message to build a complete SPI command
     
-    print('Your command is 0x{:X}'.format(cmd))
+    print('Your command is 0x{:X}'.format(cmd)) # print to the console to double check our math
     check = sendSPI(cmd) # store the sent result
+
+    print('Read back 0x{:X}'.format(check))
 
     # check if the read address matches the defauly value and log the result
     if(check == dictofRegs.get(reg_number).default): # if the correct address was read back
-        logging.info('  {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_number).name, dictofRegs.get(reg_number).default, hex(check)))
+        logging.info('     {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_number).name, dictofRegs.get(reg_number).default, hex(check)))
     else: # if another register address was given
         logging.warning('  {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_number).name, dictofRegs.get(reg_number).default, hex(check)))
 
+    return check
+
 def readAll(): # reads all 43 reg's and prints their values
-    for i in range(len(reglist)):
-        writeReg(0x0, i)
+    for i in range((len(reglist))): # lists are indexed starting at 0, so i should too
+        writeReg(0, dictofRegs.get(i).name) # use writeReg to send a blank message to see a reg's value
     print('All registers read.')
+
+''' Eventually will move to the ads8686.py file since it is specific to this chip, but for now it'll stay here'''
+################ Reads a V off the ads8686 #################
+def readVsetup(vset): # sets up the appropriate vars and chip settings before reading a V
+    # for 5V digital volt. in. Codes build from reading the datasheet and configuring the channels appropriately
+    A15V = 0x8AA # A1 Range reg
+    A25V = 0xAAA # A2 Range reg
+    B15V = 0xCAA # B1 Range reg
+    B25V = 0xEAA # B2 Range reg (same for below)
+
+    # for 2.5V difigal volt, in. Codes from reading datasheet and configuring the anaalog channels appropriately
+    A125V = 0x855
+    A225V = 0xA55
+    B125V = 0xC55
+    B225V = 0xE55
+
+    # Now beging sending commands to the config, chan_sel, range(A1, A2, B1, and B2), over range A/B, and lpf_config 
+    configCmd = writeReg(dictofRegs[1].reset, 'config') # config the reg using default val (no overrange, oversampling, etc)
+    chan_selCmd = writeReg(dictofRegs[2].reset, 'chan_sel') # selects AIN_0A/0B to be read
+
+    # to set the range correctly, evaluate the status of vset (digital volt)
+    # NO OVERRANGE support yet
+    if(vset == 10): # set all channels to vin = 10V (only need rangeA1, but set all to be safe)
+        A1Cmd = writeReg(dictofRegs[3].reset, 'rangeA1')
+        A2Cmd = writeReg(dictofRegs[4].reset, 'rangeA2')
+        B1Cmd = writeReg(dictofRegs[5].reset, 'rangeB1')
+        B2Cmd = writeReg(dictofRegs[6].reset, 'rangeB2')
+    elif(vset == 5): # set all channels to vin = 5V
+        A1Cmd = writeReg(A15V, 'rangeA1')
+        A2Cmd = writeReg(A25V, 'rangeA2')
+        B1Cmd = writeReg(B15V, 'rangeB1')
+        B2Cmd = writeReg(B25V, 'rangeB2')
+    else: # when vset = 2.5v for vin
+        A1Cmd = writeReg(A125V, 'rangeA1')
+        A2Cmd = writeReg(A225V, 'rangeA2')
+        B1Cmd = writeReg(B125V, 'rangeB1')
+        B2Cmd = writeReg(B225V, 'rangeB2')
+
+    # ensure that the over range and the cutoff freq is disabled
+    overACmd = writeReg(dictofRegs[8].reset, 'over_rangeA')
+    overBCmd = writeReg(dictofRegs[9].reset, 'over_rangeB')
+    lpfCmd = writeReg(dictofRegs[10].reset, 'lpf_config')
+
+    # get the code we need to analyze from AIN_0A (shows up on SDOA) and analyze with readV()
+    code = writeReg(0, 'rangeA1') # just want to read so use 0
+    
+    for i in range(16):
+        sendSPI(wb_w) # use a NOP code and see what the reg gives
+
+    return code
+
+    # readV(code) # setup complete! now decode
+
+def readV(code):
+    ''' Analyzes a 16 bit code (in binary 2's complement) that can be converted
+    into the v read from the chip using basic math (see fig 54) '''
+        # positive codes: 000...001 - 011...111
+        # negative codes: 111...111 - 100...000
+        # zero code: 000_000
+    ### dec_code = two2dec(code) # use the twos_comp fx from the utils file. Code should always be 16 bits, so hard code it
+
+    # set the LSB w/respect to current power supply (accounts for over range) to calculate v (see equation in figure 54)
+    if(vset == 12):
+        LSB = 0.000366 # in V! Tells how accurate (large/small) step size is
+    elif(vset == 10):
+        LSB = 0.000305
+    elif(vset == 6):
+        LSB = 0.000183
+    elif(vset == 5):
+        LSB = 0.000152
+    elif(vset == 3):
+        LSB = 0.000092
+    elif(vset == 2.5):
+        LSB = 0.000076
+    elif(vset == 1):
+        LSB = 0.0000305
+    else: # for a value that isn't on the datasheet, calculate the LSB value
+        LSB = ((2*vset)/65536) # or (2*vset)/2^16
+    
+    code = float(code) # change to a float since we can't make a float into an int
+    # calculate the v that was read and hand the res back
+    v = (code*LSB) - vset
+
+    return v
 
 ################ Changes a setting of the SPI controller ################
     # to change the clock edge, type 'clkedge' and then 'f' for falling or 'r' for rising edge
@@ -264,87 +310,3 @@ def changeSettings(view, choice):
     
     else: # if neither clkedge or clkfreq were entered, tell the user of the invalid entry
         print('Neither clkedge or clkfreq were entered. Please call the function again.')        
-
-################ Run these statements when the program is initialized ################
-# readAll
-
-'''
-################## Register Addresses for the ADS8686 ##########################
-config = 0x400 # 16 bits, Fig 77. 
-    # Hex = 0x8400 
-    # bit 15: write access = 1
-    # bits 14-9: accesses reg. by writing the address (which is 0x2 == 0'b000010)
-    # bits 8-7: read only... so put 0's
-    # bits 6-0: disable burst mode, sequencer, oversampling, status register output control, and crc control
-
-chan_sel = 0x600 # 16 bits, Fig 78.
-    # Hex 0x8600 
-    # bit 15: write access
-    # bits 14-9: access reg. by writing the address (which is 0x3 == 0'b000011)
-    # bit 8: reserved - 0
-    # bits 7-4: B channel select. Only using SDOA (1 output) so set to fixed code
-        # write 1011b (should give us the fixed result 0x5555)
-    # bits 3-0: A channel select. Keep It Simple so go with 0000b to selet AIN_0A
-        # write 1011b (should give us the fixed result 0x5555)
-
-rangeB1 = 0xC00 # 16 bits, Figure 81
-    # bit 15: read - 0
-    # bits 14-9: register address (0x6 = 0b000110b)
-    # bit 8: reserved - 0
-    # bits 7-6: voltage selection for +/- 5V = 10b
-    # bits 5-4: voltage selection for +/- 5V = 10b
-    # bits 3-2: voltage selection for +/- 5V = 10b
-    # bits 1-0: voltage selection for +/- 5V = 10b
-
-################# No response from the board ##################
-devID = 0x2000 # 16 bits, Fig 87. Hex = 0x4000 [address 0x10]
-    # Hex 0xA000? 
-    # bit 15: write access
-    # bits 14-9: access reg. by writing the address (0x10 == 0'b010000)
-    # bits 8-2: reserved - 000000
-    # bits 1-0: DEV_ID register - read only so write 00
-
-rangeA1 = 0x800 # 16 bits, Fig 79. 
-    # Hex = 0x8800? 
-    # bit 15: read (0)
-    # bits 14-9: access reg. by writing address (0x4 == 0b000100)
-    # bit 8: reserved - 0
-    # bits 7-6: voltage selection for +/- 5V = 10b
-    # bits 5-4: voltage selection for +/- 5V = 10b
-    # bits 3-2: voltage selection for +/- 5V = 10b
-    # bits 1-0: voltage selection for +/- 5V = 10b
-
-rangeA2 = 0xA00 # 16 bits, Figure 80
-    # Hex 0x8A00? 
-    # bit 15: read (0)
-    # bits 14-9: register addresss (0x5 == 0b000101)
-    # bit 8: reserved - 0
-    # bits 7-6: voltage selection for +/- 5V = 10b
-    # bits 5-4: voltage selection for +/- 5V = 10b
-    # bits 3-2: voltage selection for +/- 5V = 10b
-    # bits 1-0: voltage selection for +/- 5V = 10b
-
-rangeB2 = 0xE00 # 16 bits, Figure 82
-    # Hex 0x8E00? 
-    # bit 15: read - 0
-    # bits 14-9: register address (0x7 = 0b000111b)
-    # bit 8: reserved - 0
-    # bits 7-6: voltage selection for +/- 5V = 10b
-    # bits 5-4: voltage selection for +/- 5V = 10b
-    # bits 3-2: voltage selection for +/- 5V = 10b
-    # bits 1-0: voltage selection for +/- 5V = 10b
-
-lpf = 0x1A00 # 16 bits, Fig 86
-    # bit 15: read - 0
-    # bits 14-9: register address (0xD = 0b001101)
-    # bits 8-2: reserved - 0
-    # bits 1-0: set the cutoff frequency for the low pass filter: 00b = 39kHz, 01b = 15kHz, and 10b = 376kHz
-
-stack0 = 0x4000 # 16 bits, Fig 88.
-    # Hex 0xC000? or 0xC000? 
-    # bit 15: read (0)
-    # bits 14-9: register address (0x20 == 0b100000)
-    # bit 8: reserved - 0
-    # bits 7-4: CHSEL_B[3:0] 0b1011 for code 0x5555
-    # bits 3-0: CHSEL_A[3:0] 0b1011 for code 0x5555
-'''
