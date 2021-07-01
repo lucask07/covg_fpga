@@ -49,6 +49,8 @@ module top_module(
 	output wire ss_1,
 	output wire ss_2,
 	output wire slow_pulse
+	output wire [33:0] wb_cmd_dataout_1;
+	output wire [33:0] wb_cmd_dataout_2;
     );
 
 	wire cmd_stb;
@@ -73,7 +75,7 @@ module top_module(
 	wire [33:0] cmd_word_1;
 	wire cmd_busy_1;
 	wire rsp_stb_1;
-	wire [33:0] wb_cmd_dataout_1;
+	// wire [33:0] wb_cmd_dataout_1; Moved to outputs section so we can read the messages sent back
 	wire cyc_1;
 	wire stb_1;
 	wire we_1;
@@ -108,7 +110,7 @@ module top_module(
 	wire [33:0] cmd_word_2;
 	wire cmd_busy_2;
 	wire rsp_stb_2;
-	wire [33:0] wb_cmd_dataout_2;
+	// wire [33:0] wb_cmd_dataout_2; Moved to outputs section so we can read the messages sent back
 	wire cyc_2;
 	wire stb_2;
 	wire we_2;
