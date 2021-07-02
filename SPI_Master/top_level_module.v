@@ -131,7 +131,7 @@ module top_level_module(
 	
 	//Opal Kelly wires and triggers
 	wire [31:0] ep02wire, ep03wire, ep04wire, ep05wire;
-	wire [31:0] ep403trig, ep404trig, ep405trig;
+	wire [31:0] ep404trig, ep407trig, ep408trig;
 	
 	//wires to capture output from the user HDL
 	wire [31:0] lastWrite;
@@ -151,7 +151,7 @@ module top_level_module(
 	
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
-	assign sys_rst = (pushreset | ep403trig[1]);
+	assign sys_rst = (pushreset | ep404trig[1]);
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
 	okWireOR # (.N(3)) wireOR (okEH, okEHx);
@@ -168,17 +168,17 @@ module top_level_module(
 
 	
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
-	//ep403trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
-	//ep403trig[1] will be used as the master reset for the rest of the design
-	//ep403trig[2] will be used as the reset for the FIFO
+	//ep404trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
+	//ep404trig[1] will be used as the master reset for the rest of the design
+	//ep404trig[2] will be used as the reset for the FIFO
 	okTriggerIn trigIn40 (.okHE(okHE),
-                      .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep403trig));
+                      .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep404trig)); // Using 0x40[4] and 0x40[5] and 0x40[6]
 	
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
 	okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 	
 	//status signal (bit 0) from FIFO telling the host that it is half full (time to read data)
-	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), .ep_trigger({31'b0, hostinterrupt})); // Using 0x60[1]
+	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), .ep_trigger({30'b0, hostinterrupt, 1'b0})); // Using 0x60[1]
 	
 	//pipeOut to transfer data in bulk from the FIFO
 	okBTPipeOut pipeOutA0 (.okHE(okHE), .okEH(okEHx[2*65 +: 65]),
@@ -195,15 +195,15 @@ module top_level_module(
 
 	// Wires for wishbone converters to tell input is valid
 	okTriggerIn trigIn50 (.okHE(okHE),
-                      .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep404trig)); // Using 0x40[4]
+                      .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep407trig)); // Using 0x40[7]
 	okTriggerIn trigIn60 (.okHE(okHE),
-                      .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep405trig)); // Using 0x40[5]
+                      .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep408trig)); // Using 0x40[8]
 	
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
 	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
 				.ep_dataout(ep02wire), .ep_dataout_1(ep04wire), .ep_dataout_2(ep05wire),
-				.trigger(ep403trig[0]), .trigger_1(ep404trig[0]), .trigger_2(ep405trig[0])
-				.hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep403trig[2]), .dout(dout), .lastWrite(lastWrite), .ep_ready(ep_ready),
+				.trigger(ep404trig[4]), .trigger_1(ep407trig[7]), .trigger_2(ep408trig[7])
+				.hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep404trig[6]), .dout(dout), .lastWrite(lastWrite), .ep_ready(ep_ready),
 				.mosi(mosi), .mosi_1(mosi_1), .mosi_2(mosi_2), .miso(miso), .miso_1(miso_1), .miso_2(miso_2),
 				.sclk(sclk), .sclk_1(sclk_1), .sclk_2(sclk_2), .ss(slaveselect), .ss_1(ss_1), .ss_2(ss_2), .slow_pulse(led[0]),
 				.wb_cmd_dataout_1(wb_cmd_dataout_1), .wb_cmd_dataout_2(wb_cmd_dataout_2));
