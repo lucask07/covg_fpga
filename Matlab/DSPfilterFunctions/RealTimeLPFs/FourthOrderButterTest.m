@@ -1,6 +1,6 @@
 %% DSP Filter
 %% Generate SOS Matrix
-fc = 200e3;
+fc = 500e3;
 fs = 5e6;
 order = 4;
 
@@ -13,19 +13,24 @@ order = 4;
 
 [sos, g] = zp2sos(z, p, k);
 sos1 = zp2sos(z, p, k);
-figure(2);
+figure(1);
 freqz(sos1, 512, fs);
 %% Input
 Fs = 5e6;            % Sampling frequency                    
 T = 1/Fs;             % Sampling period       
 L = 200;             % Length of signal
+%fsine = 10000;        % frequency of test sinewave
+%L = round(((1/fsine)/T))*5;
 t = (0:L-1)*T;        % Time vector
 
 O = numerictype([],16,0);
 j = 4.096*(t>1e-5);
+%j = 4.096*sin(2*pi*fsine*t);
 
 codes = fi('numerictype', O);
-figure(3);
+m = numerictype([], 14, 8);
+output = fi('numerictype', m);
+figure(2);
 %loop that takes the input step function and outputs the hex codes that the
 %AD7961 would output
 for x = (1:L)
@@ -37,18 +42,47 @@ for x = (1:L)
         code = fi(0, 'numerictype', O);
     end
     codes = [codes; code];
-    out = FourthOrderButter(code, g, sos);
+    out = FourthOrderButter(code*2^-15, g, sos);
+    output = [output, out];
     %out = doFilter(code);
     plot(t(x), out, '*');
     hold on;
 end
 
 % Plotting Input and Output on same graph
-plot(t, codes/32767);%normalized the step function here to be able to view both filter output and step voltage
+plot(t, codes*2^-15);%normalized the step function here to be able to view both filter output and step voltage
 %plot(t, codes);
 title('Original Signal and Step Response of IIR LP filter');
 xlabel('t[s]');
 ylabel('Amplitude');
+
+%% Amplitude Spectrum of input/output
+
+Y = fft(double(codes*2^-15));
+Y2 = fft(double(output));
+
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+
+P4 = abs(Y2/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+
+f = Fs*(0:(L/2))/L;
+
+figure(3);
+subplot(2, 1, 1);
+stem(f,P1);
+title('Single-Sided Amplitude Spectrum of X(t)');
+xlabel('f (Hz)');
+ylabel('|P1(f)|');
+
+subplot(2, 1, 2);
+stem(f,P3); 
+title('Single-Sided Amplitude Spectrum of X(t)');
+xlabel('f (Hz)');
+ylabel('|P1(f)|');
 
 %% Plotting Group Delay
 figure(4);
@@ -107,7 +141,7 @@ if isempty(Hd)
         'DenominatorCoefficientsDataType', 'Custom', ...
         'CustomDenominatorCoefficientsDataType', numerictype([],16,14), ...
         'ScaleValuesDataType', 'Custom', ...
-        'CustomScaleValuesDataType', numerictype([],16,19), ...
+        'CustomScaleValuesDataType', numerictype([],16,15), ...
         'NumeratorProductDataType', 'Custom', ...
         'CustomNumeratorProductDataType', numerictype([],32,28), ...
         'DenominatorProductDataType', 'Custom', ...
@@ -123,8 +157,9 @@ if isempty(Hd)
         'RoundingMethod', 'Convergent');
 end
 
-s = fi(x,1,16,15,'RoundingMethod','Round','OverflowAction','Saturate');
-y = step(Hd,s);
+% s = fi(x,1,16,15,'RoundingMethod', 'Round', 'OverflowAction', 'Saturate');
+% y = step(Hd,s);
+y = Hd(x);
 
 
 % [EOF]
