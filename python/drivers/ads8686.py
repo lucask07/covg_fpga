@@ -14,7 +14,7 @@ from utils import rev_lookup, bin, test_bit, twos_comp
 
 # Import the necessary functions from the script so we can initialize the device
 # import ads8686_script
-# from ads8686_script import SPI_config
+from ads8686_script import SPI_config
 
 ################## Opal Kelly End Points ##################
 ep = namedtuple('ep', 'addr bits type') # address of the DEVICE_ID reg so we can read it
@@ -36,8 +36,6 @@ hall_full = ep(0x60, 0, 'to')
 
 # pipeout (bits are meaningless)
 adc_pipe = ep(0xA0, [i for i in range(32)], 'po') 
-
-vset = 1 # digital supply is set to 5.5 V, this is closest
 
 ################## Define functions for fpga reading/sending data  ##################
 def send_trig(ep_bit):
@@ -62,7 +60,7 @@ f.init_device() # programs the FPGA (loads bit file)
 f.set_wire(mux_control.addr, 1, mask = mux_control.bits)
 
 # configure the SPI controller (1x only!)
-# SPI_config()
+SPI_config()
 
 '''
 Wishbone information 
