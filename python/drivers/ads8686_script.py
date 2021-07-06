@@ -9,21 +9,14 @@ logging.basicConfig(filename = 'ads8686data.log', encoding = 'utf-8', level = lo
 logging.info('------------------------------------------------------------------------------------------')
 
 ############ List and Class of Registers Addresses for the ADS8686 #############
-reglist = [] # leave blank, will be filled by iter() and for loop
 dictofRegs = {} # now make a blank dictionary that will help us connect the reglist we have and use indices so we can grab the right class object to get it's reset code, etc
 
 class regs(object): # define a class that sorts registers by their order (r1, r2, etc), name, reset value, address, and default value after reset    
-    # for each item created for the class, append it into the reglist object
-    def addItem(self, reglist):
-        reglist.append(self.name) # add the name of the reg to the list
-
-    def __init__(self, name, addr, reset, default):
+    def __init__(self, addr, reset, default):
         # list the attributes specific to each object (passed in as self) to the class
-        self.name = name
         self.addr = addr
         self.reset = reset
         self.default = default
-        regs.addItem(self, reglist) # once object has been initialized, place into dictionary and list
 
     '''
     NOTE: the default value of the devID reg according to the datasheet is 0x2002. It is located at address 0x10.
@@ -36,51 +29,52 @@ class regs(object): # define a class that sorts registers by their order (r1, r2
     '''
 
 class chip(): # new class that attaches the index of the dictionary to the object within the regs class so we can grab names, reset codes, etc of registers
-    dictofRegs[0] = regs('not_real', 0x0, 0x0, 0x0) # put in a dummy register that has a fake reset code and reserved address for testing
+    # put in a dummy register that has a fake reset code and reserved address for testing
+    dictofRegs['not_real'] = regs(0x0, 0x0, 0x0)
     # the 43 registers of the ADS8686, change for other boards
-    dictofRegs[1] = regs('config', 0x2, 0x400, 0x0)
-    dictofRegs[2] = regs('chan_sel', 0x3, 0x600, 0x0)
-    dictofRegs[3] = regs('rangeA1', 0x4, 0x800, 0xFF)
-    dictofRegs[4] = regs('rangeA2', 0x5, 0xA00, 0xFF)
-    dictofRegs[5] = regs('rangeB1', 0x6, 0xC00, 0xFF)
-    dictofRegs[6] = regs('rangeB2', 0x7, 0xE00, 0xFF)
-    dictofRegs[7] = regs('status', 0x8, 0x0, 0x0)
-    dictofRegs[8] = regs('over_rangeA', 0xA, 0x1400, 0x0)
-    dictofRegs[9] = regs('over_rangeB', 0xB, 0x1600, 0x0)
-    dictofRegs[10] = regs('lpf_config', 0xD, 0x1A00, 0x0)
-    dictofRegs[11] = regs('devID', 0x10, 0x2000, 0x2)
-    dictofRegs[12] = regs('seq0', 0x20, 0x4000, 0x0)
-    dictofRegs[13] = regs('seq1', 0x21, 0x4200, 0x11)
-    dictofRegs[14] = regs('seq2', 0x22, 0x4400, 0x22)
-    dictofRegs[15] = regs('seq3', 0x23, 0x4600, 0x33)
-    dictofRegs[16] = regs('seq4', 0x24, 0x4800, 0x44)
-    dictofRegs[17] = regs('seq5', 0x25, 0x4A00, 0x55)
-    dictofRegs[18] = regs('seq6', 0x26, 0x4C00, 0x66)
-    dictofRegs[19] = regs('seq7', 0x27, 0x4F00, 0x77)
-    dictofRegs[20] = regs('seq8', 0x28, 0x5000, 0x0)
-    dictofRegs[21] = regs('seq9', 0x29, 0x5200, 0x0)
-    dictofRegs[22] = regs('seq10', 0x2A, 0x5400, 0x0)
-    dictofRegs[23] = regs('seq11', 0x2B, 0x5600, 0x0)
-    dictofRegs[24] = regs('seq12', 0x2C, 0x5800, 0x0)
-    dictofRegs[25] = regs('seq13', 0x2D, 0x5A00, 0x0)
-    dictofRegs[26] = regs('seq14', 0x2E, 0x5C00, 0x0)
-    dictofRegs[27] = regs('seq15', 0x2F, 0x5E00, 0x0)
-    dictofRegs[28] = regs('seq16', 0x30, 0x6000, 0x0)
-    dictofRegs[29] = regs('seq17', 0x31, 0x6200, 0x0)
-    dictofRegs[30] = regs('seq18', 0x32, 0x6400, 0x0)
-    dictofRegs[31] = regs('seq19', 0x33, 0x6600, 0x0)
-    dictofRegs[32] = regs('seq20', 0x34, 0x6800, 0x0)
-    dictofRegs[33] = regs('seq21', 0x35, 0x6A00, 0x0)
-    dictofRegs[34] = regs('seq22', 0x36, 0x6C00, 0x0)
-    dictofRegs[35] = regs('seq23', 0x37, 0x6E00, 0x0)
-    dictofRegs[36] = regs('seq24', 0x38, 0x7000, 0x0)
-    dictofRegs[37] = regs('seq25', 0x39, 0x7200, 0x0)
-    dictofRegs[38] = regs('seq26', 0x3A, 0x7400, 0x0)
-    dictofRegs[39] = regs('seq27', 0x3B, 0x7600, 0x0)
-    dictofRegs[40] = regs('seq28', 0x3C, 0x7800, 0x0)
-    dictofRegs[41] = regs('seq29', 0x3D, 0x7A00, 0x0)
-    dictofRegs[42] = regs('seq30', 0x3E, 0x7C00, 0x0)
-    dictofRegs[43] = regs('seq31', 0x3F, 0x7E00, 0x0)
+    dictofRegs['config'] = regs(0x2, 0x400, 0x0)
+    dictofRegs['chan_sel'] = regs(0x3, 0x600, 0x0)
+    dictofRegs['rangeA1'] = regs(0x4, 0x800, 0xFF)
+    dictofRegs['rangeA2'] = regs(0x5, 0xA00, 0xFF)
+    dictofRegs['rangeB1'] = regs(0x6, 0xC00, 0xFF)
+    dictofRegs['rangeB2'] = regs(0x7, 0xE00, 0xFF)
+    dictofRegs['status'] = regs(0x8, 0x0, 0x0)
+    dictofRegs['over_rangeA'] = regs(0xA, 0x1400, 0x0)
+    dictofRegs['over_rangeB'] = regs(0xB, 0x1600, 0x0)
+    dictofRegs['lpf_config'] = regs(0xD, 0x1A00, 0x0)
+    dictofRegs['devID'] = regs(0x10, 0x2000, 0x2)
+    dictofRegs['seq0'] = regs(0x20, 0x4000, 0x0)
+    dictofRegs['seq1'] = regs(0x21, 0x4200, 0x11)
+    dictofRegs['seq2'] = regs(0x22, 0x4400, 0x22)
+    dictofRegs['seq3'] = regs(0x23, 0x4600, 0x33)
+    dictofRegs['seq4'] = regs(0x24, 0x4800, 0x44)
+    dictofRegs['seq5'] = regs(0x25, 0x4A00, 0x55)
+    dictofRegs['seq6'] = regs(0x26, 0x4C00, 0x66)
+    dictofRegs['seq7'] = regs(0x27, 0x4F00, 0x77)
+    dictofRegs['seq8'] = regs(0x28, 0x5000, 0x0)
+    dictofRegs['seq9'] = regs(0x29, 0x5200, 0x0)
+    dictofRegs['seq10'] = regs(0x2A, 0x5400, 0x0)
+    dictofRegs['seq11'] = regs(0x2B, 0x5600, 0x0)
+    dictofRegs['seq12'] = regs(0x2C, 0x5800, 0x0)
+    dictofRegs['seq13'] = regs(0x2D, 0x5A00, 0x0)
+    dictofRegs['seq14'] = regs(0x2E, 0x5C00, 0x0)
+    dictofRegs['seq15'] = regs(0x2F, 0x5E00, 0x0)
+    dictofRegs['seq16'] = regs(0x30, 0x6000, 0x0)
+    dictofRegs['seq17'] = regs(0x31, 0x6200, 0x0)
+    dictofRegs['seq18'] = regs(0x32, 0x6400, 0x0)
+    dictofRegs['seq19'] = regs(0x33, 0x6600, 0x0)
+    dictofRegs['seq20'] = regs(0x34, 0x6800, 0x0)
+    dictofRegs['seq21'] = regs(0x35, 0x6A00, 0x0)
+    dictofRegs['seq22'] = regs(0x36, 0x6C00, 0x0)
+    dictofRegs['seq23'] = regs(0x37, 0x6E00, 0x0)
+    dictofRegs['seq24'] = regs(0x38, 0x7000, 0x0)
+    dictofRegs['seq25'] = regs(0x39, 0x7200, 0x0)
+    dictofRegs['seq26'] = regs(0x3A, 0x7400, 0x0)
+    dictofRegs['seq27'] = regs(0x3B, 0x7600, 0x0)
+    dictofRegs['seq28'] = regs(0x3C, 0x7800, 0x0)
+    dictofRegs['seq29'] = regs(0x3D, 0x7A00, 0x0)
+    dictofRegs['seq30'] = regs(0x3E, 0x7C00, 0x0)
+    dictofRegs['seq31'] = regs(0x3F, 0x7E00, 0x0)
 
 ############### SPI Controller Addresses and Configuration ###############
 # SPI Register Addresses
@@ -132,14 +126,14 @@ def sendSPI(message): # what needs to be written to the ADS?
 
 def writeReg(msg, reg_name):
     print('--'*40) # for a clean terminal
-    reg_number = reglist.index(reg_name) # 0 indexing used for dictionaries and lists
     if(msg == 0): # if we want to read a register
         print('Reading the %s register'%reg_name) # for debugging and to keep track: tell us which reg we are looking at
-        cmd = dictofRegs.get(reg_number).reset # get the MSB digits so we can set the register correctly
+        cmd = dictofRegs.get(reg_name).reset # get the MSB digits so we can set the register correctly
         cmd = (cmd | wb_w) # concatenate the reg addr w/a wishbone write (no message) to build a complete SPI command
     else: # otherwise, we're sending a message
         print('Write 0x{:X} to the {} register'.format(msg, reg_name)) # for debugging and to keep track: tell us which reg we are looking at
-        cmd = dictofRegs.get(reg_number).reset # get the MSB digits so we can set the register correctly
+        # get the MSB digits so we can set the register correctly
+        cmd = dictofRegs.get(reg_name).reset
         cmd = (cmd | wb_w | msg) # concatenate the reg addr w/a wishbone write and message to build a complete SPI command
     
     print('Your command is 0x{:X}'.format(cmd)) # print to the console to double check our math
@@ -148,16 +142,16 @@ def writeReg(msg, reg_name):
     print('Read back 0x{:X}'.format(check))
 
     # check if the read address matches the defauly value and log the result
-    if(check == dictofRegs.get(reg_number).default): # if the correct address was read back
-        logging.info('     {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_number).name, dictofRegs.get(reg_number).default, hex(check)))
+    if(check == dictofRegs.get(reg_name).default): # if the correct address was read back
+        logging.info('     {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_name).name, dictofRegs.get(reg_name).default, hex(check)))
     else: # if another register address was given
-        logging.warning('  {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_number).name, dictofRegs.get(reg_number).default, hex(check)))
+        logging.warning('  {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_name).name, dictofRegs.get(reg_name).default, hex(check)))
 
     return check
 
 def readAll(): # reads all 43 reg's and prints their values
-    for i in range((len(reglist))): # lists are indexed starting at 0, so i should too
-        writeReg(0, dictofRegs.get(i).name) # use writeReg to send a blank message to see a reg's value
+    for register in dictofRegs: # lists are indexed starting at 0, so i should too
+        writeReg(0, dictofRegs.get(register)) # use writeReg to send a blank message to see a reg's value
     print('All registers read.')
 
 ''' Eventually will move to the ads8686.py file since it is specific to this chip, but for now it'll stay here'''
