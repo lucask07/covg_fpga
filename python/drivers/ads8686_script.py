@@ -125,6 +125,10 @@ def sendSPI(message): # what needs to be written to the ADS?
     return addr 
 
 def writeReg(msg, reg_name):
+    ''' Writes to a specific register on the ads8686 by using wishbone commands and stored Hex
+    values above to either configure a register to its default value or change a register appropriately
+    (For example: setting the board to read voltages off the A channel instead of the B channel)
+    '''
     print('--'*40) # for a clean terminal
     if(msg == 0): # if we want to read a register
         print('Reading the %s register'%reg_name) # for debugging and to keep track: tell us which reg we are looking at
