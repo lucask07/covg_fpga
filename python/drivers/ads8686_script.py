@@ -6,75 +6,75 @@ import logging
 
 ############# Set up the Logging feature/lib ############
 logging.basicConfig(filename = 'ads8686data.log', encoding = 'utf-8', level = logging.INFO)
-logging.info('------------------------------------------------------------------------------------------')
 
 ############ List and Class of Registers Addresses for the ADS8686 #############
 dictofRegs = {} # now make a blank dictionary that will help us connect the reglist we have and use indices so we can grab the right class object to get it's reset code, etc
 
 class regs(object): # define a class that sorts registers by their order (r1, r2, etc), name, reset value, address, and default value after reset    
-    def __init__(self, addr, reset, default):
+    def __init__(self, addr, default):
         # list the attributes specific to each object (passed in as self) to the class
         self.addr = addr
-        self.reset = reset
         self.default = default
 
     '''
     NOTE: the default value of the devID reg according to the datasheet is 0x2002. It is located at address 0x10.
-        --> However, value read back from FPGA is 0x2.
-        *** The reset code is really the address of a register shifted left 1 bit with the expected result in the 2 LSB hex bits.
-            However, the ads8686 only has 1 byte to send a command, which is why when commands are sent the reset code only shows 
-            the first byte, the expected value out is where the LSB byte of the default value comes from
-            // data sheet shows reset | default as the reset code, but it's broken up here into the MSB and LSB
-                to help with logging and debugging
+        --> However, value read back from FPGA is 0x2. MOSI shows 0x2000 and MISO shows 0x0002.
+         This is because the first byte (MSB byte) is for master out slave in and the last byte (LSB) is for master in slave out
+        *** To reset a register, ONLY send the MSB value because the chip should send back the least significant byte's value
+            for example: the rangeA1 is at an address of 0x4. The reset code is the address shifted left 1 bit (0x8) in the MSB place
+            So we would send a value of 0x800 along the wishbone bus and the chip should hand back the default/expected value of 0xFF 
+                (unless it was programmed otherwise)
     '''
 
-class chip(): # new class that attaches the index of the dictionary to the object within the regs class so we can grab names, reset codes, etc of registers
+class chip(): # new class that attaches the index of the dictionary to the object within the regs class so we can grab the address of a reg
     # put in a dummy register that has a fake reset code and reserved address for testing
-    dictofRegs['not_real'] = regs(0x0, 0x0, 0x0)
+    dictofRegs['not_real']    = regs(0x0, 0x0)
     # the 43 registers of the ADS8686, change for other boards
-    dictofRegs['config'] = regs(0x2, 0x400, 0x0)
-    dictofRegs['chan_sel'] = regs(0x3, 0x600, 0x0)
-    dictofRegs['rangeA1'] = regs(0x4, 0x800, 0xFF)
-    dictofRegs['rangeA2'] = regs(0x5, 0xA00, 0xFF)
-    dictofRegs['rangeB1'] = regs(0x6, 0xC00, 0xFF)
-    dictofRegs['rangeB2'] = regs(0x7, 0xE00, 0xFF)
-    dictofRegs['status'] = regs(0x8, 0x0, 0x0)
-    dictofRegs['over_rangeA'] = regs(0xA, 0x1400, 0x0)
-    dictofRegs['over_rangeB'] = regs(0xB, 0x1600, 0x0)
-    dictofRegs['lpf_config'] = regs(0xD, 0x1A00, 0x0)
-    dictofRegs['devID'] = regs(0x10, 0x2000, 0x2)
-    dictofRegs['seq0'] = regs(0x20, 0x4000, 0x0)
-    dictofRegs['seq1'] = regs(0x21, 0x4200, 0x11)
-    dictofRegs['seq2'] = regs(0x22, 0x4400, 0x22)
-    dictofRegs['seq3'] = regs(0x23, 0x4600, 0x33)
-    dictofRegs['seq4'] = regs(0x24, 0x4800, 0x44)
-    dictofRegs['seq5'] = regs(0x25, 0x4A00, 0x55)
-    dictofRegs['seq6'] = regs(0x26, 0x4C00, 0x66)
-    dictofRegs['seq7'] = regs(0x27, 0x4F00, 0x77)
-    dictofRegs['seq8'] = regs(0x28, 0x5000, 0x0)
-    dictofRegs['seq9'] = regs(0x29, 0x5200, 0x0)
-    dictofRegs['seq10'] = regs(0x2A, 0x5400, 0x0)
-    dictofRegs['seq11'] = regs(0x2B, 0x5600, 0x0)
-    dictofRegs['seq12'] = regs(0x2C, 0x5800, 0x0)
-    dictofRegs['seq13'] = regs(0x2D, 0x5A00, 0x0)
-    dictofRegs['seq14'] = regs(0x2E, 0x5C00, 0x0)
-    dictofRegs['seq15'] = regs(0x2F, 0x5E00, 0x0)
-    dictofRegs['seq16'] = regs(0x30, 0x6000, 0x0)
-    dictofRegs['seq17'] = regs(0x31, 0x6200, 0x0)
-    dictofRegs['seq18'] = regs(0x32, 0x6400, 0x0)
-    dictofRegs['seq19'] = regs(0x33, 0x6600, 0x0)
-    dictofRegs['seq20'] = regs(0x34, 0x6800, 0x0)
-    dictofRegs['seq21'] = regs(0x35, 0x6A00, 0x0)
-    dictofRegs['seq22'] = regs(0x36, 0x6C00, 0x0)
-    dictofRegs['seq23'] = regs(0x37, 0x6E00, 0x0)
-    dictofRegs['seq24'] = regs(0x38, 0x7000, 0x0)
-    dictofRegs['seq25'] = regs(0x39, 0x7200, 0x0)
-    dictofRegs['seq26'] = regs(0x3A, 0x7400, 0x0)
-    dictofRegs['seq27'] = regs(0x3B, 0x7600, 0x0)
-    dictofRegs['seq28'] = regs(0x3C, 0x7800, 0x0)
-    dictofRegs['seq29'] = regs(0x3D, 0x7A00, 0x0)
-    dictofRegs['seq30'] = regs(0x3E, 0x7C00, 0x0)
-    dictofRegs['seq31'] = regs(0x3F, 0x7E00, 0x0)
+    dictofRegs['config']      = regs(0x2, 0x0)
+    dictofRegs['chan_sel']    = regs(0x3, 0x0)
+    dictofRegs['rangeA1']     = regs(0x4, 0xFF)
+    dictofRegs['rangeA2']     = regs(0x5, 0xFF)
+    dictofRegs['rangeB1']     = regs(0x6, 0xFF)
+    dictofRegs['rangeB2']     = regs(0x7, 0xFF)
+    ''' Status is a read only register... don't think we need a case for this? '''
+    dictofRegs['status']      = regs(0x8, 0x0) 
+    dictofRegs['over_rangeA'] = regs(0xA, 0x0)
+    dictofRegs['over_rangeB'] = regs(0xB, 0x0)
+    dictofRegs['lpf']  = regs(0xD, 0x0)
+    dictofRegs['devID']       = regs(0x10, 0x2)
+    dictofRegs['seq0']        = regs(0x20, 0x0)
+    dictofRegs['seq1']        = regs(0x21, 0x11)
+    dictofRegs['seq2']        = regs(0x22, 0x22)
+    dictofRegs['seq3']        = regs(0x23, 0x33)
+    dictofRegs['seq4']        = regs(0x24, 0x44)
+    dictofRegs['seq5']        = regs(0x25, 0x55)
+    dictofRegs['seq6']        = regs(0x26, 0x66)
+    dictofRegs['seq7']        = regs(0x27, 0x77) 
+    ''' Should this be  0x4E00???'''
+    dictofRegs['seq8']        = regs(0x28, 0x0)
+    dictofRegs['seq9']        = regs(0x29, 0x0)
+    dictofRegs['seq10']       = regs(0x2A, 0x0)
+    dictofRegs['seq11']       = regs(0x2B, 0x0)
+    dictofRegs['seq12']       = regs(0x2C, 0x0)
+    dictofRegs['seq13']       = regs(0x2D, 0x0)
+    dictofRegs['seq14']       = regs(0x2E, 0x0)
+    dictofRegs['seq15']       = regs(0x2F, 0x0)
+    dictofRegs['seq16']       = regs(0x30, 0x0)
+    dictofRegs['seq17']       = regs(0x31, 0x0)
+    dictofRegs['seq18']       = regs(0x32, 0x0)
+    dictofRegs['seq19']       = regs(0x33, 0x0)
+    dictofRegs['seq20']       = regs(0x34, 0x0)
+    dictofRegs['seq21']       = regs(0x35, 0x0)
+    dictofRegs['seq22']       = regs(0x36, 0x0)
+    dictofRegs['seq23']       = regs(0x37, 0x0)
+    dictofRegs['seq24']       = regs(0x38, 0x0)
+    dictofRegs['seq25']       = regs(0x39, 0x0)
+    dictofRegs['seq26']       = regs(0x3A, 0x0)
+    dictofRegs['seq27']       = regs(0x3B, 0x0)
+    dictofRegs['seq28']       = regs(0x3C, 0x0)
+    dictofRegs['seq29']       = regs(0x3D, 0x0)
+    dictofRegs['seq30']       = regs(0x3E, 0x0)
+    dictofRegs['seq31']       = regs(0x3F, 0x0)
 
 ############### SPI Controller Addresses and Configuration ###############
 # SPI Register Addresses
@@ -112,7 +112,6 @@ def sendSPI(message): # what needs to be written to the ADS?
     Writes to a register by storing the message in the Tx register, then tells
     the control register to go (1 in LSB) and receives the read value '''
 
-    print('Your message is 0x{:X}'.format(message))
     for i in range(2):
         for val in [wb_r | Txreg_addr, message, # go to the Tx register, store data to send (from cmd)
                     wb_r | creg_addr,  wb_w | (creg_set | (1 << 8))]: # Tells the Control register - GO (bit 8)
@@ -132,13 +131,18 @@ def writeReg(msg, reg_name):
     print('--'*40) # for a clean terminal
     if(msg == 0): # if we want to read a register
         print('Reading the %s register'%reg_name) # for debugging and to keep track: tell us which reg we are looking at
-        cmd = dictofRegs.get(reg_name).reset # get the MSB digits so we can set the register correctly
+        cmd = ((dictofRegs[reg_name].addr) * 0x100) # get the MSB digits so we can set the register correctly
+        cmd = (cmd << 1) # to reset the register, shift it's address 1 to the left
+        # cmd = hex(cmd) # make sure that the command is in hex so it can be bitwise or-ed with the wishbone commands
         cmd = (cmd | wb_w) # concatenate the reg addr w/a wishbone write (no message) to build a complete SPI command
     else: # otherwise, we're sending a message
         print('Write 0x{:X} to the {} register'.format(msg, reg_name)) # for debugging and to keep track: tell us which reg we are looking at
         # get the MSB digits so we can set the register correctly
-        cmd = dictofRegs.get(reg_name).reset
-        cmd = (cmd | wb_w | msg) # concatenate the reg addr w/a wishbone write and message to build a complete SPI command
+        cmd = ((dictofRegs[reg_name].addr) * 0x100)
+        cmd = (cmd << 1) # to reset the register, shift it's address 1 to the left
+        # cmd = hex(cmd) # make sure that the command is in hex so it can be bitwise or-ed with the wishbone commands
+        cmd = (cmd | wb_w | msg | msg_w) # concatenate the reg addr w/a wishbone write and message to build a complete SPI command
+        ''' Add 0x8000 to set the MSB bit (bit 15) to 1? '''
     
     print('Your command is 0x{:X}'.format(cmd)) # print to the console to double check our math
     check = sendSPI(cmd) # store the sent result
@@ -146,44 +150,47 @@ def writeReg(msg, reg_name):
     print('Read back 0x{:X}'.format(check))
 
     # check if the read address matches the defauly value and log the result
-    if(check == dictofRegs.get(reg_name).default): # if the correct address was read back
-        logging.info('     {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_name).name, dictofRegs.get(reg_name).default, hex(check)))
+    if(check == dictofRegs[reg_name].default): # if the correct address was read back
+        logging.info('     {} register: Default 0x{:X}, read {}'.format(reg_name, dictofRegs[reg_name].default, hex(check)))
     else: # if another register address was given
-        logging.warning('  {} register: Default 0x{:X}, read {}'.format(dictofRegs.get(reg_name).name, dictofRegs.get(reg_name).default, hex(check)))
+        logging.warning('  {} register: Default 0x{:X}, read {}'.format(reg_name, dictofRegs[reg_name].default, hex(check)))
 
     return check
 
 def readAll(): # reads all 43 reg's and prints their values
+    logging.info('------------------------------------------------------------------------------------------')
     for register in dictofRegs: # lists are indexed starting at 0, so i should too
-        writeReg(0, dictofRegs.get(register)) # use writeReg to send a blank message to see a reg's value
+        writeReg(0, str(register)) # use writeReg to send a blank message to see a reg's value
     print('All registers read.')
 
 ''' Eventually will move to the ads8686.py file since it is specific to this chip, but for now it'll stay here'''
 ################ Reads a V off the ads8686 #################
+vset = 5 # what is the digital voltage of the power supply set to?
+
 def readVsetup(vset): # sets up the appropriate vars and chip settings before reading a V
-    # for 5V digital volt. in. Codes build from reading the datasheet and configuring the channels appropriately
+    # for 5V digital voltage in. Codes built from reading the datasheet and configuring the channels appropriately
     A15V = 0x8AA # A1 Range reg
     A25V = 0xAAA # A2 Range reg
     B15V = 0xCAA # B1 Range reg
     B25V = 0xEAA # B2 Range reg (same for below)
 
-    # for 2.5V difigal volt, in. Codes from reading datasheet and configuring the anaalog channels appropriately
+    # for 2.5V digital voltage in. Codes from reading datasheet and configuring the analog channels appropriately
     A125V = 0x855
     A225V = 0xA55
     B125V = 0xC55
     B225V = 0xE55
 
     # Now beging sending commands to the config, chan_sel, range(A1, A2, B1, and B2), over range A/B, and lpf_config 
-    configCmd = writeReg(dictofRegs[1].reset, 'config') # config the reg using default val (no overrange, oversampling, etc)
-    chan_selCmd = writeReg(dictofRegs[2].reset, 'chan_sel') # selects AIN_0A/0B to be read
+    configCmd = writeReg(0, 'config') # config the reg using default val (no overrange, oversampling, etc)
+    chan_selCmd = writeReg(0, 'chan_sel') # selects AIN_0A/0B to be read
 
     # to set the range correctly, evaluate the status of vset (digital volt)
     # NO OVERRANGE support yet
     if(vset == 10): # set all channels to vin = 10V (only need rangeA1, but set all to be safe)
-        A1Cmd = writeReg(dictofRegs[3].reset, 'rangeA1')
-        A2Cmd = writeReg(dictofRegs[4].reset, 'rangeA2')
-        B1Cmd = writeReg(dictofRegs[5].reset, 'rangeB1')
-        B2Cmd = writeReg(dictofRegs[6].reset, 'rangeB2')
+        A1Cmd = writeReg(0, 'rangeA1')
+        A2Cmd = writeReg(0, 'rangeA2')
+        B1Cmd = writeReg(0, 'rangeB1')
+        B2Cmd = writeReg(0, 'rangeB2')
     elif(vset == 5): # set all channels to vin = 5V
         A1Cmd = writeReg(A15V, 'rangeA1')
         A2Cmd = writeReg(A25V, 'rangeA2')
@@ -196,16 +203,17 @@ def readVsetup(vset): # sets up the appropriate vars and chip settings before re
         B2Cmd = writeReg(B225V, 'rangeB2')
 
     # ensure that the over range and the cutoff freq is disabled
-    overACmd = writeReg(dictofRegs[8].reset, 'over_rangeA')
-    overBCmd = writeReg(dictofRegs[9].reset, 'over_rangeB')
-    lpfCmd = writeReg(dictofRegs[10].reset, 'lpf_config')
+    overACmd = writeReg(0, 'over_rangeA')
+    overBCmd = writeReg(0, 'over_rangeB')
+    lpfCmd = writeReg(0, 'lpf')
 
     # get the code we need to analyze from AIN_0A (shows up on SDOA) and analyze with readV()
     code = writeReg(0, 'rangeA1') # just want to read so use 0
     
+    '''
     for i in range(16):
         sendSPI(wb_w) # use a NOP code and see what the reg gives
-
+    '''
     return code
 
     # readV(code) # setup complete! now decode
@@ -216,7 +224,6 @@ def readV(code):
         # positive codes: 000...001 - 011...111
         # negative codes: 111...111 - 100...000
         # zero code: 000_000
-    ### dec_code = two2dec(code) # use the twos_comp fx from the utils file. Code should always be 16 bits, so hard code it
 
     # set the LSB w/respect to current power supply (accounts for over range) to calculate v (see equation in figure 54)
     if(vset == 12):
@@ -243,8 +250,8 @@ def readV(code):
     return v
 
 ################ Changes a setting of the SPI controller ################
-    # to change the clock edge, type 'clkedge' and then 'f' for falling or 'r' for rising edge
-    # to change the clk divider, type 'clkfreq' and then the desired frequency of the clock in Hz, like '10'
+    # to change the clock edge, set view to 'clkedge' and then choice to 'f' for falling or 'r' for rising edge
+    # to change the clk divider, set view to 'clkfreq' and then set choice to the desired frequency of the clock in Hz, like '10'
 
 # eventually these vars will be passed in from another file, place here for testing
 view = 'clkfreq'
@@ -254,11 +261,6 @@ def changeSettings(view, choice):
     # makes creg_set and clk_div changeable and then returned to update their values (not permanent??)
     global creg_set
     global clk_div
-    
-    # prints the available settings to config the SPI controller
-    print('Here are the following settings you may configure: ')
-    print('\t clock frequency,')
-    print('\t clock edge\n')
 
     if(view == 'clkedge'): # view and possibly modify the clkedge
         if(creg_set == 0x3010): # clock is being sampled on the rising edge

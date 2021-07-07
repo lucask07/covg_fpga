@@ -7,14 +7,9 @@ path = os.path.join(cwd, "covg_fpga/python/drivers")
 sys.path.append(path)
 
 from fpga import FPGA
-
-path1 = os.path.join(cwd, "covg_fpga/python/drivers")
-sys.path.append(path1)
 from utils import rev_lookup, bin, test_bit, twos_comp
 
 # Import the necessary functions from the script so we can initialize the device
-# import ads8686_script
-from ads8686_script import SPI_config
 
 ################## Opal Kelly End Points ##################
 ep = namedtuple('ep', 'addr bits type') # address of the DEVICE_ID reg so we can read it
@@ -60,7 +55,7 @@ f.init_device() # programs the FPGA (loads bit file)
 f.set_wire(mux_control.addr, 1, mask = mux_control.bits)
 
 # configure the SPI controller (1x only!)
-SPI_config()
+#ads8686_script.SPI_config() # when importing, to call function use filename.functionname()
 
 '''
 Wishbone information 
