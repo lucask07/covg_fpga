@@ -1,8 +1,8 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-| Date         : Thu Jun 10 10:25:50 2021
-| Host         : LAPTOP-RK0H8TS5 running 64-bit major release  (build 9200)
+| Date         : Thu Jul  8 15:31:25 2021
+| Host         : FDC212-01 running 64-bit major release  (build 9200)
 | Command      : report_bus_skew -warn_on_violation -file top_level_module_bus_skew_routed.rpt -pb top_level_module_bus_skew_routed.pb -rpx top_level_module_bus_skew_routed.rpx
 | Design       : top_level_module
 | Device       : 7a75t-fgg484
@@ -821,7 +821,7 @@ set_bus_skew -from [get_cells [list {adc7961_0_fifo/U0/inst_fifo_gen/gconvfifo.r
           {adc7961_0_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gcx.clkx/rd_pntr_cdc_inst/dest_graysync_ff_reg[0][8]} \
           {adc7961_0_fifo/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gcx.clkx/rd_pntr_cdc_inst/dest_graysync_ff_reg[0][9]}]] 5.000
 Requirement: 5.000ns
-Endpoints: 7
+Endpoints: 9
 
 From Clock            To Clock              Endpoint Pin                    Reference Pin                   Corner  Actual(ns)  Slack(ns)
 --------------------  --------------------  ------------------------------  ------------------------------  ------  ----------  ---------
