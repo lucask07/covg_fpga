@@ -18,3 +18,9 @@ INFO: [IP_Flow 19-234] Refreshing IP repositories
 INFO: [IP_Flow 19-1704] No user IP repositories specified
 INFO: [IP_Flow 19-2313] Loaded Vivado IP repository 'C:/Xilinx/Vivado/2018.2/data/ip'.
 open_project: Time (s): cpu = 00:00:18 ; elapsed = 00:00:17 . Memory (MB): peak = 822.770 ; gain = 155.473
+reset_run synth_1
+launch_runs impl_1 -to_step write_bitstream -jobs 4
+[Thu Jul  8 15:27:44 2021] Launched synth_1...
+Run output will be captured here: C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/runme.log
+[Thu Jul  8 15:27:44 2021] Launched impl_1...
+Run output will be captured here: C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/impl_1/runme.log
