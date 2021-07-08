@@ -56,7 +56,13 @@ module top_module(
      output wire ss_3,
      output wire sclk_3,
      output wire mosi_3,
-     input wire [15:0] adc_val_3
+     input wire [15:0] adc_val_3/*,
+     input wire ep_read,
+     input wire ep_write,
+     input wire [31:0] ep_address,
+     input wire ep_dataout_coeff,
+     output wire ep_datain
+     */
      
     );
     
@@ -253,6 +259,37 @@ module top_module(
 	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*adc_val_0*/16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0), .data_rdy(data_rdy_0)
 	 );
+	 
+	 //Real-Time LPF coefficient reader
+     wire write_enable, write_done;
+     wire [4:0] write_address;
+     wire [31:0] coeffs_in;
+     wire [13:0] filter_out;
+	 
+	 realTimeLPF_readwrite_coeff coeff_rd_0(
+	 .clk(clk), .rst(sync_rst), .wr_en(write_enable), .wr_done(write_done), .wr_adr(write_address),
+	 .coeff_out(coeffs_in) 
+	 );
+	 
+	 /*blk_mem_gen_0 coeff_BRAM(
+	 .addra(ep_address), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_Write), .wea(4'b1111),
+	 .addrb(), .clkb(clk), .doutb(bram_in), .enb(ep_read | read_coeff), .rstb(1'b0)
+	 );
+	 */
+	 
+	 // Real-Time LPF
+       Butterworth u_Butterworth_0
+         (
+         .clk(clk),
+         .clk_enable(data_rdy_0 | write_enable | write_done),
+         .reset(sync_rst),
+         .filter_in(adc_val_0),
+         .write_enable(write_enable),
+         .write_done(write_done),
+         .write_address(write_address),
+         .coeffs_in(coeffs_in),
+         .filter_out(filter_out)
+         );
 	 
 	 //Wishbone Master module for AD796x and AD5453
     hbexec Wishbone_Master_0 (
