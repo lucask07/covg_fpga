@@ -48,9 +48,9 @@ module top_module(
 	output wire ss,//*/
 	output wire ss_1,
 	output wire ss_2,
-	output wire slow_pulse
-	output wire [33:0] wb_cmd_dataout_1;
-	output wire [33:0] wb_cmd_dataout_2;
+	output wire slow_pulse,
+	output wire [33:0] wb_cmd_dataout_1,
+	output wire [33:0] wb_cmd_dataout_2
     );
 
 	wire cmd_stb;
@@ -203,7 +203,7 @@ module top_module(
     );
 
 	// Wishbone Master module 1
-    hbexec Wishbone_Master (
+    hbexec Wishbone_Master_1 (
     .i_clk(clk), .i_reset(sync_rst_1), .i_cmd_stb(cmd_stb_1), .i_cmd_word(cmd_word_1), .o_cmd_busy(cmd_busy_1), .o_rsp_stb(rsp_stb_1),
     .o_rsp_word(wb_cmd_dataout_1), .o_wb_cyc(cyc_1), .o_wb_stb(stb_1),
     .o_wb_we(we_1), .o_wb_addr(adr_1), .o_wb_data(dat_o_1), .o_wb_sel(sel_1),        
@@ -211,16 +211,16 @@ module top_module(
     );
 
 	// SPI master core 1
-    spi_top i_spi_top (
+    spi_top i_spi_top_1 (
       .wb_clk_i(clk), .wb_rst_i(sync_rst_1), 
-      .wb_adr_i(adr[4:0]_1), .wb_dat_i(dat_o_1), .wb_dat_o(dat_i_1), 
+      .wb_adr_i(adr_1[4:0]), .wb_dat_i(dat_o_1), .wb_dat_o(dat_i_1), 
       .wb_sel_i(sel_1), .wb_we_i(we_1), .wb_stb_i(stb_1), 
       .wb_cyc_i(cyc_1), .wb_ack_o(ack_1), .wb_err_o(err_1), .wb_int_o(int_o_1),
       .ss_pad_o(ss_1), .sclk_pad_o(sclk_1), .mosi_pad_o(mosi_1), .miso_pad_i(miso_1) 
     );
 
 	// Wishbone Master module 2
-    hbexec Wishbone_Master (
+    hbexec Wishbone_Master_2 (
     .i_clk(clk), .i_reset(sync_rst_2), .i_cmd_stb(cmd_stb_2), .i_cmd_word(cmd_word_2), .o_cmd_busy(cmd_busy_2), .o_rsp_stb(rsp_stb_2),
     .o_rsp_word(wb_cmd_dataout_2), .o_wb_cyc(cyc_2), .o_wb_stb(stb_2),
     .o_wb_we(we_2), .o_wb_addr(adr_2), .o_wb_data(dat_o_2), .o_wb_sel(sel_2),        
@@ -228,9 +228,9 @@ module top_module(
     );
 
 	// SPI master core 2
-    spi_top i_spi_top (
+    spi_top i_spi_top_2 (
       .wb_clk_i(clk), .wb_rst_i(sync_rst_2), 
-      .wb_adr_i(adr[4:0]_2), .wb_dat_i(dat_o_2), .wb_dat_o(dat_i_2), 
+      .wb_adr_i(adr_2[4:0]), .wb_dat_i(dat_o_2), .wb_dat_o(dat_i_2), 
       .wb_sel_i(sel_2), .wb_we_i(we_2), .wb_stb_i(stb_2), 
       .wb_cyc_i(cyc_2), .wb_ack_o(ack_2), .wb_err_o(err_2), .wb_int_o(int_o_2),
       .ss_pad_o(ss_2), .sclk_pad_o(sclk_2), .mosi_pad_o(mosi_2), .miso_pad_i(miso_2) 

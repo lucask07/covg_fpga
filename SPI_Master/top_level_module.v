@@ -127,7 +127,7 @@ module top_level_module(
 	wire [64:0] okEH;
 	
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
-	wire [3*65-1:0] okEHx;
+	wire [5*65-1:0] okEHx;
 	
 	//Opal Kelly wires and triggers
 	wire [31:0] ep02wire, ep03wire, ep04wire, ep05wire;
@@ -154,7 +154,7 @@ module top_level_module(
 	assign sys_rst = (pushreset | ep404trig[1]);
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(3)) wireOR (okEH, okEHx);
+	okWireOR # (.N(5)) wireOR (okEH, okEHx);
 
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
@@ -190,8 +190,8 @@ module top_level_module(
 	okWireIn wi3 (.okHE(okHE), .ep_addr(8'h05), .ep_dataout(ep05wire));
 
 	// Wires for responses from wishbones 1 and 2 to host
-	okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 66 ]), .ep_addr(8'h22), .ep_datain(wb_cmd_dataout_1));
-	okWireOut wo2 (.okHE(okHE), .okEH(okEHx[0*65 +: 67 ]), .ep_addr(8'h23), .ep_datain(wb_cmd_dataout_2));
+	okWireOut wo1 (.okHE(okHE), .okEH(okEHx[3*65 +: 65 ]), .ep_addr(8'h22), .ep_datain(wb_cmd_dataout_1));
+	okWireOut wo2 (.okHE(okHE), .okEH(okEHx[4*65 +: 65 ]), .ep_addr(8'h23), .ep_datain(wb_cmd_dataout_2));
 
 	// Wires for wishbone converters to tell input is valid
 	okTriggerIn trigIn50 (.okHE(okHE),
@@ -202,7 +202,7 @@ module top_level_module(
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
 	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
 				.ep_dataout(ep02wire), .ep_dataout_1(ep04wire), .ep_dataout_2(ep05wire),
-				.trigger(ep404trig[4]), .trigger_1(ep407trig[7]), .trigger_2(ep408trig[7])
+				.trigger(ep404trig[4]), .trigger_1(ep407trig[7]), .trigger_2(ep408trig[7]),
 				.hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep404trig[6]), .dout(dout), .lastWrite(lastWrite), .ep_ready(ep_ready),
 				.mosi(mosi), .mosi_1(mosi_1), .mosi_2(mosi_2), .miso(miso), .miso_1(miso_1), .miso_2(miso_2),
 				.sclk(sclk), .sclk_1(sclk_1), .sclk_2(sclk_2), .ss(slaveselect), .ss_1(ss_1), .ss_2(ss_2), .slow_pulse(led[0]),
