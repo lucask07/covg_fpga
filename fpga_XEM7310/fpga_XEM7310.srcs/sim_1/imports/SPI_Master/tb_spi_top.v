@@ -44,6 +44,7 @@ module tb_spi_top;
 	integer i;
 	//
 	reg data_rdy = 1'b0;
+	reg [15:0] filter_in;
 
 	// Instantiate the Unit Under Test (UUT)
 	top_module uut (
@@ -59,7 +60,8 @@ module tb_spi_top;
 		.lastWrite(lastWrite),
 		.ep_ready(ep_ready),
 		.slow_pulse(slow_pulse),
-		.data_rdy_0(data_rdy)
+		.data_rdy_0(data_rdy),
+		.adc_val_0(filter_in)
 	);
 	
 	// Generate clock
@@ -70,6 +72,8 @@ module tb_spi_top;
 	
 	//simulating data ready from ad796x.v
 	reg [7:0] count_enable = 8'b0;
+    reg [7:0] count = 8'b0;	
+	
 	//reg data_rdy = 1'b0;
     always@(posedge clk)begin
         if(count_enable == 8'd39)begin
@@ -82,6 +86,17 @@ module tb_spi_top;
         end
     end
     
+    always@(posedge data_rdy)begin
+        if(count > 10'd49)begin
+            count = count + 1'b1;
+            filter_in = 16'h7fff;
+        end
+        else begin
+            filter_in = 16'h0000;
+            count = count + 1'b1;
+        end
+    end
+    
 	initial begin
 		// Initialize Inputs
 		clk = 1'b0;
@@ -89,6 +104,7 @@ module tb_spi_top;
 		rst = 1'b0;
 		rstFifo = 1'b0;
 		trigger = 1'b0;
+		filter_in = 16'h0;
 		/*ep_dataout = 0;
 		trigger = 0;*/
 		readFifo = 1'b0;
