@@ -1,9 +1,14 @@
 Vivado Simulator 2018.2
 Copyright 1986-1999, 2001-2018 Xilinx, Inc. All Rights Reserved.
-Running: C:/Users/iande/Documents/Vivado/2018.2/bin/unwrapped/win64.o/xelab.exe -wto 1946c52a45964498a526646af489febf --incr --debug typical --relax --mt 2 -L fifo_generator_v13_2_2 -L xil_defaultlib -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot tb_spi_top_behav xil_defaultlib.tb_spi_top xil_defaultlib.glbl -log elaborate.log 
+Running: C:/Users/iande/Documents/Vivado/2018.2/bin/unwrapped/win64.o/xelab.exe -wto 1946c52a45964498a526646af489febf --incr --debug typical --relax --mt 2 -L fifo_generator_v13_2_2 -L xil_defaultlib -L blk_mem_gen_v8_4_1 -L unisims_ver -L unimacro_ver -L secureip -L xpm --snapshot tb_spi_top_behav xil_defaultlib.tb_spi_top xil_defaultlib.glbl -log elaborate.log 
 Using 2 slave threads.
 Starting static elaboration
-WARNING: [VRFC 10-278] actual bit length 5 differs from formal bit length 4 for port write_address [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:277]
+WARNING: [VRFC 10-278] actual bit length 4 differs from formal bit length 1 for port wea [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:276]
+WARNING: [VRFC 10-278] actual bit length 32 differs from formal bit length 4 for port addrb [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:277]
+WARNING: [VRFC 10-278] actual bit length 5 differs from formal bit length 4 for port write_address [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:290]
+WARNING: [VRFC 10-278] actual bit length 16 differs from formal bit length 14 for port adc_dat_i [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:334]
+WARNING: [VRFC 10-278] actual bit length 16 differs from formal bit length 14 for port adc_dat_i [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:376]
+WARNING: [VRFC 10-278] actual bit length 16 differs from formal bit length 14 for port adc_dat_i [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:418]
 Completed static elaboration
 Starting simulation data flow analysis
 Completed simulation data flow analysis
@@ -22,6 +27,13 @@ Compiling module xil_defaultlib.WbSignal_converter
 Compiling module xil_defaultlib.one_second_pulse
 Compiling module xil_defaultlib.read_AD796x_fifo_cmd_default
 Compiling module xil_defaultlib.realTimeLPF_readwrite_coeff
+Compiling module blk_mem_gen_v8_4_1.blk_mem_gen_v8_4_1_output_stage(...
+Compiling module blk_mem_gen_v8_4_1.blk_mem_gen_v8_4_1_output_stage(...
+Compiling module blk_mem_gen_v8_4_1.blk_mem_gen_v8_4_1_softecc_outpu...
+Compiling module blk_mem_gen_v8_4_1.blk_mem_gen_v8_4_1_mem_module(C_...
+Compiling module blk_mem_gen_v8_4_1.blk_mem_axi_regs_fwd_v8_4(C_DATA...
+Compiling module blk_mem_gen_v8_4_1.blk_mem_gen_v8_4_1(C_FAMILY="art...
+Compiling module xil_defaultlib.blk_mem_gen_0
 Compiling module xil_defaultlib.Butterworth
 Compiling module xil_defaultlib.top_module
 Compiling module xil_defaultlib.tb_spi_top

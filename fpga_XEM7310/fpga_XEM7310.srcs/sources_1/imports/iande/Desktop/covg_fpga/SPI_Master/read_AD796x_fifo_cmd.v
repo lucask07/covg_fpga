@@ -21,16 +21,17 @@
 module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd_word, rd_en, data_rdy//CE
     );
 	 input wire clk, rst, int_o, empty;
-	 input wire [15:0] adc_dat_i;
-	 //input wire CE;
+	 //input wire [15:0] adc_dat_i;
+	 input wire [13:0] adc_dat_i;/**/
 	 input wire data_rdy;
 	 output reg [7:0] adr;
 	 output reg [33:0] cmd_word;
 	 output reg cmd_stb;
 	 output reg rd_en; //pulse to mark the points in time where the state machine is grabbing AD796x datan(for simulation purposes)
 	 
-	 reg [13:0] converted_dat; //reg to hold the converted value to be sent to the AD5453
-	 wire [15:0] converted_cmd_dat = {2'b0, converted_dat}; //reg to hold the converted value plus command bits for AD5453
+	 //reg [13:0] converted_dat; //reg to hold the converted value to be sent to the AD5453
+	 //wire [15:0] converted_cmd_dat = {2'b0, converted_dat}; //reg to hold the converted value plus command bits for AD5453
+	 wire [15:0] converted_cmd_dat = {2'b0, adc_dat_i};/**/
 	 
 	 parameter conversion_offset = 14'h2000; //offset to convert AD796x data before sending to AD5453
 	 
@@ -39,19 +40,19 @@ module read_AD796x_fifo_cmd(clk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd
 	 
 	 //this always block will do the data conversion
 	 //the data is constantly being converted, but the state machine only really samples the converted data every 400 ns
-	 always@(posedge clk)begin
-		if(rst)begin
-			converted_dat <= 14'b0;
-		end
-		else begin
-			if(adc_dat_i[15])begin
-				converted_dat <= (adc_dat_i[15:2] - conversion_offset);
-			end
-			else begin
-				converted_dat <= (adc_dat_i[15:2] + conversion_offset);
-			end
-		end
-	 end
+//	 always@(posedge clk)begin
+//		if(rst)begin
+//			converted_dat <= 14'b0;
+//		end
+//		else begin
+//			if(adc_dat_i[15])begin
+//				converted_dat <= (adc_dat_i[15:2] - conversion_offset);
+//			end
+//			else begin
+//				converted_dat <= (adc_dat_i[15:2] + conversion_offset);
+//			end
+//		end
+//	 end
 	 
 	 //states
 	 reg [4:0] state, nextstate;
