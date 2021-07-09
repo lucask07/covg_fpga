@@ -488,7 +488,7 @@ class SPIController():
         self.wb_set_address(self.parameters['SS'].address)
 
         # Write slave address
-        self.wb_write(slave_address)
+        self.wb_write(slave_address) # Don't need to mask the write because we only select 1 slave device at a time
 
     # Method to set the DIVIDER register.
     def set_divider(self, divider):
@@ -499,9 +499,10 @@ class SPIController():
     def set_frequency(self, frequency):
         divider = round((2*self.parameters['WB_CLK'])/frequency) - 1
         self.set_divider(divider)
+        return divider
 
     # Method to write up to 30 bits of data to register Tx0, Tx1, Tx2, or Tx3
-    def write(self, data, register): # register should be 0, 1, 2, or 3
+    def write(self, data, register=0): # register should be 0, 1, 2, or 3
         print('SPI write')
 
         # Set address to Tx register
@@ -518,7 +519,7 @@ class SPIController():
         self.wb_go()
 
     # Method to read data from register 
-    def read(self, register):
+    def read(self, register=0):
         print('SPI read')
 
         # Set address to the Rx register Rx0, Rx1, Rx2, or Rx3
@@ -528,7 +529,7 @@ class SPIController():
         return self.wb_read()
 
     # Method to set the CTRL register using binary
-    def configure_bin(self, data, mask):
+    def configure_master_bin(self, data, mask=0Xffff):
         self.wb_set_address(self.parameters['CTRL'].address)
         self.fpga.set_wire(self.parameters['WB_IN'].address, data, mask)
         self.fpga.xem.ActivateTriggerIn(self.parameters['TRIGGER'].address)
@@ -540,21 +541,153 @@ class SPIController():
         print(f'Acknowledged: {ack}')
 
     # Method to set the CTRL register using several arguments
-    def configure(self, ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0):
-        configuration = 0x00000000 + ASS * \
-            2**(13) + IE*2**(12) + LSB*2**(11) + \
-            Tx_NEG*2**(10) + Rx_NEG*2**(9) + CHAR_LEN
-        self.configure_bin(configuration, configuration)
+    def configure_master(self, ASS=None, IE=None, LSB=None, Tx_NEG=None, Rx_NEG=None, CHAR_LEN=None):
+        params = [ASS, IE, LSB, Tx_NEG, Rx_NEG, CHAR_LEN]
+        mask = ''
+        for bit in range(len(params)-1):
+            if params[bit] == None:
+                mask += '0'
+                params[bit] = 0
+            else:
+                mask += '1'
+        mask += '0' # Reserved bit
+        if CHAR_LEN == None: # CHAR_LEN is 7 bits rather than 1, so its portion of the mask goes outside the loop
+            mask += '0000000'
+        else:
+            mask += '1111111'
+        mask = int(mask, 2)
+
+        configuration = 0x00000000 + params[0] * \
+            2**(13) + params[1]*2**(12) + params[2]*2**(11) + \
+            params[3]*2**(10) + params[4]*2**(9) + params[5]
+        self.configure_bin(configuration, mask)
 
     # Method to get the current configuration of the non-reserved CTRL register bits in a dictionary
     # Includes ASS, IO, LSB, Tx_NEG, Rx_NEG, CHAR_LEN
-    def get_configuration(self):
+    def get_master_configuration(self):
         config = {}
         self.wb_set_address(self.parameters['CTRL'].address)
         config_data = self.wb_read()
         for bit in self.parameters['CTRL_BITS']:
             config[bit] = bool(self.parameters['CTRL_BITS'][bit] & config_data)
         return config
+
+# Class for DAC80508 chip extending SPIController. Handles read, write, configuration, gain configuration, id, and reset.
+class GeneralDACController(SPIController):
+    DEFAULT_PARAMETERS = dict(SPIController.DEFAULT_PARAMETERS)
+    DEFAULT_PARAMETERS.update(dict(
+        WRITE_OPERATION = 0x000000,
+        READ_OPERATION = 0x800000
+    ))
+
+    # Get registers from spreadsheet
+    reg_dict = register.dict_from_excel('DAC80508')
+    config_dict = register.dict_from_excel('DAC80508_CONFIG')
+    DEFAULT_PARAMETERS.update(reg_dict)
+    DEFAULT_PARAMETERS.update(dict(CONFIG_DICT = config_dict))
+    
+    def __init__(self, fpga, slave_address, parameters=DEFAULT_PARAMETERS):
+        self.slave_address = slave_address
+        super.__init__(fpga, parameters)
+
+    # Method to write to any register on the chip.
+    def write(self, register, data, mask=0xffff):
+        reg = self.parameters.get(register) # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
+        if reg == None:
+            print('Register not in parameters')
+            return False
+
+        self.select_slave(self.slave_address)
+        
+        # Get current data
+        current_data = self.read(register)
+        # Create new data from input data, mask, and current data
+        new_data = (data & mask) | (current_data & ~mask)
+        
+        # 23=0 (write), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=D[15:0] (data) 
+        transmission = self.parameters['WRITE_OPERATION'] + \
+            reg.address*2**15 + new_data
+        super().write(transmission)
+        return True
+
+    # Method to read from any register on the chip.
+    def read(self, register):
+        reg = self.parameters.get(register) # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
+        if reg == None:
+            print('Register not in parameters')
+            return False
+
+        self.select_slave(self.slave_address)
+        # Issue read command
+        # 23=1 (read), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=0xXXXX (do not cares)
+        transmission = self.parameters['READ_OPERATION'] + \
+            reg.address*2**15
+        super().write(transmission)
+
+        # Read in response
+        # 23=1 (echo read), [22:20]=000 (echo reserved), [19:16]=A[3:0] (echo reg address), [15:0]=D[15:0] (data read)
+        read_out = super().read()
+        data_read = read_out & 0xffff # Data is only in bottom 16 bits
+        return data_read
+
+    # Method to set the configuration register with a binary number.
+    def set_config_bin(self, data, mask=0xffff):
+        # Write new config
+        return self.write(self.parameters['CONFIG'], data, mask)
+
+    # Method to set the configuration register with multiple arguments.
+    def set_config(self, ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0, DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0, DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0, ):
+        params = [ALM_SEL, ALM_EN, CRC_EN, FSDO,
+                  DSDO, REF_PWDWN, DAC7_PWDWN, DAC6_PWDWN, DAC5_PWDWN, DAC4_PWDWN, DAC3_PWDWN, DAC2_PWDWN, DAC1_PWDWN, DAC0_PWDWN]
+        mask = ''
+        for bit in range(params):
+            if params[bit] == None:
+                mask += '0'
+                params[bit] = 0
+            else:
+                mask += '1'
+        mask = int(mask)
+        
+        bit = 13
+        data = 0
+        for i in range(len(params)):
+            data += params[i]*2**bit
+        self.set_config_bin(data, mask)
+
+    # Method to read the current configuration register data.
+    def get_config(self, display_values=True):
+        config = self.read(self.parameters['CONFIG'])
+        if display_values:
+            for key in self.parameters['CONFIG_DICT']:
+                print(f"{key}: {bool(config & self.parameters['CONFIG_DICT'][key])}")
+        return config
+
+    # Method to set the gain value.
+    def set_gain(self, data, mask=0x01ff):
+        return self.write(self.parameters['GAIN'], data, mask)
+
+    # Method to get the gain value.
+    def get_gain(self):
+        return self.read(self.parameters['GAIN'])
+
+    # Method to get the device info from its ID.
+    def get_id(self, display=True):
+        id = self.read(self.parameters['ID'])
+        if display:
+            device_id = bin(id >> 2)[2:] # Only from 2 on to skip the '0b'
+            version_id = bin(id & 0b11)[2:]
+            resolution = {'000': '16-bit', '001': '14-bit', '010': '12-bit'}
+            print(f'Resolution: {resolution.get(device_id[1:4])}')
+            channels = {'1000': 8}
+            print(f'Channels: {channels.get(device_id[4:8])}')
+            reset = {'0': 'reset to zero', '1': 'reset to midscale'}
+            print(f'Reset: {reset.get(device_id[8])}')
+            print(f'Version ID: {version_id}')
+        return id
+
+    # Method to soft reset the chip.
+    def reset(self):
+        self.write(self.parameters['TRIGGER'], 0b1010, 0x000f)
 
 if __name__ == '__main__':
     f = FPGA()
