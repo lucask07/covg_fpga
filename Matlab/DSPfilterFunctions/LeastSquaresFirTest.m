@@ -1,8 +1,8 @@
 %% DSP Filter
 %% Generate Coefficients
-fc = 500e3;
+fc = 200e3;
 fs = 5e6;
-order = 10;
+order = 4;
 
 a = firls(order, [0,fc/(fs/2),(fc/(fs/2)+0.04),1], [1,1,0,0]);
 
@@ -11,13 +11,14 @@ freqz(a, 1, 512, fs);
 %% Input
 Fs = 5e6;            % Sampling frequency                    
 T = 1/Fs;             % Sampling period       
-L = 500;             % Length of signal
-%L = 1000;
+%L = 500;             % Length of signal
+fsine = 10000;        % frequency of test sinewave
+L = round(((1/fsine)/T))*2;
 t = (0:L-1)*T;        % Time vector
 
 O = numerictype([],16,0);
 %j = 4.096*(t>1e-5);
-j = 4.096*sin(2*pi*10000*t);
+j = 4.096*sin(2*pi*fsine*t);
 %j = 4.096*((0.5e-5<t)&(t<1.5e-5));
 %j = 2*sin(2*pi*200000*t) + sin(2*pi*800000*t) + sin(2*pi*600000*t);
 %j = sin(2*pi*20000*t) + 2*randn(size(t));
@@ -38,9 +39,9 @@ for x = (1:L)
         code = fi(0, 'numerictype', O);
     end
     codes = [codes; code];
-    %out = LeastSquaresFIRFunction(code, a);
+    out = LeastSquaresFIRFunction(code*2^-15, a);
     %out = LeastSquaresFIR_doublePrecision(code);
-    out = doFilter(code);
+    %out = doFilter(code);
     output = [output, out];
     %plot(t(x), out, '*');
     stem(t(x), out);
@@ -110,8 +111,9 @@ if isempty(Hd)
         'CustomCoefficientsDataType', numerictype(true,16,15));
 end
 
-s = fi(x,1,16,15,'RoundingMethod','Round','OverflowAction','Saturate');
-y = step(Hd,s);
+% s = fi(x,1,16,15,'RoundingMethod', 'Round', 'OverflowAction', 'Saturate');
+% y = step(Hd,s);
+y = Hd(x);
 
 
 % [EOF]
