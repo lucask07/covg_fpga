@@ -586,13 +586,13 @@ class GeneralDACController(SPIController):
     DEFAULT_PARAMETERS.update(reg_dict)
     DEFAULT_PARAMETERS.update(dict(CONFIG_DICT = config_dict))
     
-    def __init__(self, fpga, slave_address, parameters=DEFAULT_PARAMETERS):
+    def __init__(self, fpga, slave_address=0x5, parameters=DEFAULT_PARAMETERS):
         self.slave_address = slave_address
         super.__init__(fpga, parameters)
 
     # Method to write to any register on the chip.
-    def write(self, register, data, mask=0xffff):
-        reg = self.parameters.get(register) # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
+    def write(self, register_name, data, mask=0xffff):
+        reg = self.parameters.get(register_name) # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
         if reg == None:
             print('Register not in parameters')
             return False
@@ -611,8 +611,8 @@ class GeneralDACController(SPIController):
         return True
 
     # Method to read from any register on the chip.
-    def read(self, register):
-        reg = self.parameters.get(register) # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
+    def read(self, register_name):
+        reg = self.parameters.get(register_name) # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
         if reg == None:
             print('Register not in parameters')
             return False
@@ -687,7 +687,7 @@ class GeneralDACController(SPIController):
 
     # Method to soft reset the chip.
     def reset(self):
-        self.write(self.parameters['TRIGGER'], 0b1010, 0x000f)
+        return self.write(self.parameters['TRIGGER'], 0b1010, 0x000f)
 
 if __name__ == '__main__':
     f = FPGA()
