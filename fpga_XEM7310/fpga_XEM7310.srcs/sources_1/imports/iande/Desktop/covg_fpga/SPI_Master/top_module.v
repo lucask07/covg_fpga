@@ -56,14 +56,12 @@ module top_module(
      output wire ss_3,
      output wire sclk_3,
      output wire mosi_3,
-     input wire [15:0] adc_val_3/*,
+     input wire [15:0] adc_val_3,
      input wire ep_read,
      input wire ep_write,
      input wire [31:0] ep_address,
-     input wire ep_dataout_coeff,
-     output wire ep_datain
-     */
-     
+     input wire [31:0] ep_dataout_coeff,
+     output wire [31:0] ep_datain
     );
     
       wire cmd_stb;
@@ -256,26 +254,29 @@ module top_module(
 	 
 	 //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
 	 read_AD796x_fifo_cmd data_converter_0(
-	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*adc_val_0*/16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
+	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(filter_out/*16'h7fff*/), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0), .data_rdy(data_rdy_0)
 	 );
 	 
 	 //Real-Time LPF coefficient reader
-     wire write_enable, write_done;
+     wire write_enable, write_done, read_coeff;
      wire [4:0] write_address;
      wire [31:0] coeffs_in;
      wire [13:0] filter_out;
+     wire [4:0] read_address;
+     wire [31:0] coeff_bram_in;
 	 
 	 realTimeLPF_readwrite_coeff coeff_rd_0(
 	 .clk(clk), .rst(sync_rst), .wr_en(write_enable), .wr_done(write_done), .wr_adr(write_address),
-	 .coeff_out(coeffs_in) 
+	 .coeff_out(coeffs_in), .ep_write(ep_write), .read_enable(read_coeff), .rd_adr(read_address),
+	 .bram_in(coeff_bram_in)
 	 );
 	 
-	 /*blk_mem_gen_0 coeff_BRAM(
-	 .addra(ep_address), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_Write), .wea(4'b1111),
-	 .addrb(), .clkb(clk), .doutb(bram_in), .enb(ep_read | read_coeff), .rstb(1'b0)
+	 blk_mem_gen_0 realTime_LPF_coeff_BRAM(
+	 .addra(ep_address[3:0]), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_write), .wea(4'b1111),
+	 .addrb({27'b0, read_address}), .clkb(clk), .doutb(coeff_bram_in), .enb(read_coeff)
 	 );
-	 */
+	 
 	 
 	 // Real-Time LPF
        Butterworth u_Butterworth_0

@@ -32,6 +32,9 @@ module tb_spi_top;
 	reg trigger;
 	reg readFifo;
 	reg rstFifo;
+	reg ep_write;
+	reg [31:0] ep_address;
+	reg [31:0] ep_dataout_coeff;
 
 	// Outputs
 	wire hostinterrupt;
@@ -61,7 +64,10 @@ module tb_spi_top;
 		.ep_ready(ep_ready),
 		.slow_pulse(slow_pulse),
 		.data_rdy_0(data_rdy),
-		.adc_val_0(filter_in)
+		.adc_val_0(filter_in),
+		.ep_write(ep_write),
+		.ep_address(ep_address),
+		.ep_dataout_coeff(ep_dataout_coeff)
 	);
 	
 	// Generate clock
@@ -105,6 +111,9 @@ module tb_spi_top;
 		rstFifo = 1'b0;
 		trigger = 1'b0;
 		filter_in = 16'h0;
+		ep_write = 1'b0;
+		ep_address = 32'h0;
+		ep_dataout_coeff = 32'h0;
 		/*ep_dataout = 0;
 		trigger = 0;*/
 		readFifo = 1'b0;
@@ -118,11 +127,52 @@ module tb_spi_top;
 		rstFifo = 1'b0;
         
 		// Add stimulus here
-		#20;
+		#25;
       trigger = 1'b0;
+      ep_write = 1'b1;
+      ep_address = 32'h00000000;
+      ep_dataout_coeff = 32'h009e1586;
+      #10;
+      ep_address = 32'h00000001;
+      ep_dataout_coeff = 32'h20000000;
+      #10;
+      ep_address = 32'h00000002;
+      ep_dataout_coeff = 32'h40000000;
+      #10;
+      ep_address = 32'h00000003;
+      ep_dataout_coeff = 32'h20000000;
+      #10;
+      ep_address = 32'h00000004;
+      ep_dataout_coeff = 32'hbce3be9a;
+      #10;
+      ep_address = 32'h00000005;
+      ep_dataout_coeff = 32'h12f3f6b0;
+      #10;
+      ep_address = 32'h00000008;
+      ep_dataout_coeff = 32'h7fffffff;
+      #10;
+      ep_address = 32'h00000009;
+      ep_dataout_coeff = 32'h20000000;
+      #10;
+      ep_address = 32'h0000000a;
+      ep_dataout_coeff = 32'h40000000;
+      #10;
+      ep_address = 32'h0000000b;
+      ep_dataout_coeff = 32'h20000000;
+      #10;
+      ep_address = 32'h0000000c;
+      ep_dataout_coeff = 32'hab762783;
+      #10;
+      ep_address = 32'h0000000d;
+      ep_dataout_coeff = 32'h287ecada;
+      #10;
+      ep_address = 32'h00000007;
+      ep_dataout_coeff = 32'h7fffffff;
+      #10;
+      ep_write = 1'b0;
       #5;
       ep_dataout = 32'h80000051;//divide register address
-		#10//
+	  #10;
       trigger = 1'b1;
       #10;
       trigger = 1'b0;

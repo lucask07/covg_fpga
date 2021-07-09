@@ -1,7 +1,7 @@
 -- Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 -- --------------------------------------------------------------------------------
 -- Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
--- Date        : Thu Jul  8 09:21:28 2021
+-- Date        : Thu Jul  8 12:50:10 2021
 -- Host        : LAPTOP-RK0H8TS5 running 64-bit major release  (build 9200)
 -- Command     : write_vhdl -force -mode synth_stub
 --               c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0_stub.vhdl
@@ -16,16 +16,13 @@ entity blk_mem_gen_0 is
   Port ( 
     clka : in STD_LOGIC;
     ena : in STD_LOGIC;
-    wea : in STD_LOGIC_VECTOR ( 3 downto 0 );
-    addra : in STD_LOGIC_VECTOR ( 31 downto 0 );
+    wea : in STD_LOGIC_VECTOR ( 0 to 0 );
+    addra : in STD_LOGIC_VECTOR ( 3 downto 0 );
     dina : in STD_LOGIC_VECTOR ( 31 downto 0 );
     clkb : in STD_LOGIC;
-    rstb : in STD_LOGIC;
     enb : in STD_LOGIC;
-    addrb : in STD_LOGIC_VECTOR ( 31 downto 0 );
-    doutb : out STD_LOGIC_VECTOR ( 31 downto 0 );
-    rsta_busy : out STD_LOGIC;
-    rstb_busy : out STD_LOGIC
+    addrb : in STD_LOGIC_VECTOR ( 3 downto 0 );
+    doutb : out STD_LOGIC_VECTOR ( 31 downto 0 )
   );
 
 end blk_mem_gen_0;
@@ -34,7 +31,7 @@ architecture stub of blk_mem_gen_0 is
 attribute syn_black_box : boolean;
 attribute black_box_pad_pin : string;
 attribute syn_black_box of stub : architecture is true;
-attribute black_box_pad_pin of stub : architecture is "clka,ena,wea[3:0],addra[31:0],dina[31:0],clkb,rstb,enb,addrb[31:0],doutb[31:0],rsta_busy,rstb_busy";
+attribute black_box_pad_pin of stub : architecture is "clka,ena,wea[0:0],addra[3:0],dina[31:0],clkb,enb,addrb[3:0],doutb[31:0]";
 attribute x_core_info : string;
 attribute x_core_info of stub : architecture is "blk_mem_gen_v8_4_1,Vivado 2018.2";
 begin
