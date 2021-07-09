@@ -2,12 +2,12 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Thu Jun 10 10:18:01 2021
-# Process ID: 7560
-# Current directory: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
+# Start of session at: Thu Jul  8 15:27:46 2021
+# Process ID: 7384
+# Current directory: C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
 # Command line: vivado.exe -log top_level_module.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_level_module.tcl
-# Log file: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
-# Journal file: C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1\vivado.jou
+# Log file: C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
+# Journal file: C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1\vivado.jou
 #-----------------------------------------------------------
 source top_level_module.tcl -notrace
 Command: synth_design -top top_level_module -part xc7a75tfgg484-1
@@ -15,50 +15,50 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 6940 
-WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15361]
+INFO: Helper process launched with PID 4104 
+WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15361]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:10 ; elapsed = 00:00:11 . Memory (MB): peak = 407.551 ; gain = 118.605
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 428.859 ; gain = 118.746
 ---------------------------------------------------------------------------------
-INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:75]
-INFO: [Synth 8-6157] synthesizing module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:21]
-INFO: [Synth 8-226] default block is never used [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:30]
-INFO: [Synth 8-6155] done synthesizing module 'mux_1to8' (1#1) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:21]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:203]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:205]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:207]
-INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
+INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:87]
+INFO: [Synth 8-6157] synthesizing module 'mux_1to8' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:21]
+INFO: [Synth 8-226] default block is never used [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:30]
+INFO: [Synth 8-6155] done synthesizing module 'mux_1to8' (1#1) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:21]
+WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:215]
+WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:217]
+WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:219]
+INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
 	Parameter CAPACITANCE bound to: DONT_CARE - type: string 
 	Parameter DIFF_TERM bound to: FALSE - type: string 
 	Parameter IBUF_DELAY_VALUE bound to: 0 - type: string 
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
-INFO: [Synth 8-6155] done synthesizing module 'IBUFGDS' (2#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7560-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (3#1) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7560-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6157] synthesizing module 'okWireOR' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:119]
+INFO: [Synth 8-6155] done synthesizing module 'IBUFGDS' (2#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7384-FDC212-01/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (3#1) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7384-FDC212-01/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'okWireOR' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:119]
 	Parameter N bound to: 8 - type: integer 
-INFO: [Synth 8-6155] done synthesizing module 'okWireOR' (4#1) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:119]
-INFO: [Synth 8-6157] synthesizing module 'okHost' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:10]
-INFO: [Synth 8-6157] synthesizing module 'IOBUF' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:22660]
+INFO: [Synth 8-6155] done synthesizing module 'okWireOR' (4#1) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:119]
+INFO: [Synth 8-6157] synthesizing module 'okHost' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:10]
+INFO: [Synth 8-6157] synthesizing module 'IOBUF' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:22660]
 	Parameter DRIVE bound to: 12 - type: integer 
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
 	Parameter SLEW bound to: SLOW - type: string 
-INFO: [Synth 8-6155] done synthesizing module 'IOBUF' (5#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:22660]
-INFO: [Synth 8-6157] synthesizing module 'FDRE' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3966]
+INFO: [Synth 8-6155] done synthesizing module 'IOBUF' (5#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:22660]
+INFO: [Synth 8-6157] synthesizing module 'FDRE' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3966]
 	Parameter INIT bound to: 1'b0 
 	Parameter IS_C_INVERTED bound to: 1'b0 
 	Parameter IS_D_INVERTED bound to: 1'b0 
 	Parameter IS_R_INVERTED bound to: 1'b0 
-INFO: [Synth 8-6155] done synthesizing module 'FDRE' (6#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3966]
-INFO: [Synth 8-6157] synthesizing module 'IBUFG' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19897]
+INFO: [Synth 8-6155] done synthesizing module 'FDRE' (6#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3966]
+INFO: [Synth 8-6157] synthesizing module 'IBUFG' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19897]
 	Parameter CAPACITANCE bound to: DONT_CARE - type: string 
 	Parameter IBUF_DELAY_VALUE bound to: 0 - type: string 
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
-INFO: [Synth 8-6155] done synthesizing module 'IBUFG' (7#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19897]
-INFO: [Synth 8-6157] synthesizing module 'MMCME2_BASE' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25882]
+INFO: [Synth 8-6155] done synthesizing module 'IBUFG' (7#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19897]
+INFO: [Synth 8-6157] synthesizing module 'MMCME2_BASE' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25882]
 	Parameter BANDWIDTH bound to: OPTIMIZED - type: string 
 	Parameter CLKFBOUT_MULT_F bound to: 10.000000 - type: float 
 	Parameter CLKFBOUT_PHASE bound to: 0.000000 - type: float 
@@ -88,206 +88,206 @@ INFO: [Synth 8-6157] synthesizing module 'MMCME2_BASE' [C:/Users/iande/Documents
 	Parameter DIVCLK_DIVIDE bound to: 1 - type: integer 
 	Parameter REF_JITTER1 bound to: 0.000000 - type: float 
 	Parameter STARTUP_WAIT bound to: FALSE - type: string 
-INFO: [Synth 8-6155] done synthesizing module 'MMCME2_BASE' (8#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25882]
-WARNING: [Synth 8-350] instance 'mmcm0' of module 'MMCME2_BASE' requires 18 connections, but only 6 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:53]
-INFO: [Synth 8-6157] synthesizing module 'BUFG' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:609]
-INFO: [Synth 8-6155] done synthesizing module 'BUFG' (9#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:609]
-INFO: [Synth 8-6157] synthesizing module 'GND' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
-INFO: [Synth 8-6155] done synthesizing module 'GND' (10#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
-INFO: [Synth 8-6157] synthesizing module 'VCC' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:52076]
-INFO: [Synth 8-6155] done synthesizing module 'VCC' (11#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:52076]
-INFO: [Synth 8-6157] synthesizing module 'LUT5' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6155] done synthesizing module 'LUT5' (12#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6157] synthesizing module 'LUT6' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6' (13#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized0' (13#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT3' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
-INFO: [Synth 8-6155] done synthesizing module 'LUT3' (14#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
-INFO: [Synth 8-6157] synthesizing module 'LUT2' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
-INFO: [Synth 8-6155] done synthesizing module 'LUT2' (15#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized1' (15#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized0' (15#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized1' (15#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6157] synthesizing module 'LUT4' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
-INFO: [Synth 8-6155] done synthesizing module 'LUT4' (16#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
-INFO: [Synth 8-6157] synthesizing module 'LUT3__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
-INFO: [Synth 8-6155] done synthesizing module 'LUT3__parameterized0' (16#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized2' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized2' (16#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized3' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized3' (16#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25461]
-INFO: [Synth 8-6155] done synthesizing module 'LUT1' (17#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25461]
-INFO: [Synth 8-6157] synthesizing module 'FDSE' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4102]
-INFO: [Synth 8-6155] done synthesizing module 'FDSE' (18#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4102]
-INFO: [Synth 8-6157] synthesizing module 'CARRY4' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:963]
-INFO: [Synth 8-6155] done synthesizing module 'CARRY4' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:963]
-INFO: [Synth 8-6157] synthesizing module 'fifo_generator_v13_2_0' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15469]
-INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15982]
-INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15983]
-INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15984]
-INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15985]
-INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized2' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized2' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6157] synthesizing module 'LUT2__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
-INFO: [Synth 8-6155] done synthesizing module 'LUT2__parameterized0' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
-INFO: [Synth 8-6157] synthesizing module 'LUT2__parameterized1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
-INFO: [Synth 8-6155] done synthesizing module 'LUT2__parameterized1' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
-INFO: [Synth 8-6157] synthesizing module 'LUT3__parameterized1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
-INFO: [Synth 8-6155] done synthesizing module 'LUT3__parameterized1' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
-INFO: [Synth 8-6157] synthesizing module 'LUT4__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
-INFO: [Synth 8-6155] done synthesizing module 'LUT4__parameterized0' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
-INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized3' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized3' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized4' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized4' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT1__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25461]
-INFO: [Synth 8-6155] done synthesizing module 'LUT1__parameterized0' (19#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25461]
-INFO: [Synth 8-6157] synthesizing module 'FDPE' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
-INFO: [Synth 8-6155] done synthesizing module 'FDPE' (20#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
-INFO: [Synth 8-6157] synthesizing module 'FDCE' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3750]
-INFO: [Synth 8-6155] done synthesizing module 'FDCE' (21#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3750]
-INFO: [Synth 8-6157] synthesizing module 'RAMB18E1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:48860]
-INFO: [Synth 8-6155] done synthesizing module 'RAMB18E1' (22#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:48860]
-INFO: [Synth 8-6157] synthesizing module 'FDRE__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3966]
-INFO: [Synth 8-6155] done synthesizing module 'FDRE__parameterized0' (22#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3966]
-WARNING: [Synth 8-4446] all outputs are unconnected for this instance and logic may be removed [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:17097]
-INFO: [Synth 8-6157] synthesizing module 'xpm_cdc_async_rst' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15361]
-INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15371]
-INFO: [Synth 8-6157] synthesizing module 'FDPE__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
-INFO: [Synth 8-6155] done synthesizing module 'FDPE__parameterized0' (22#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
-INFO: [Synth 8-6155] done synthesizing module 'xpm_cdc_async_rst' (23#1) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15361]
-INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized4' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized4' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized5' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized5' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized6' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized6' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT4__parameterized1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
-INFO: [Synth 8-6155] done synthesizing module 'LUT4__parameterized1' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
-INFO: [Synth 8-6157] synthesizing module 'LUT4__parameterized2' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
-INFO: [Synth 8-6155] done synthesizing module 'LUT4__parameterized2' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized7' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized7' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized8' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized8' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized9' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized9' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized10' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized10' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized11' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized11' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized5' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized5' (23#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
-INFO: [Synth 8-6155] done synthesizing module 'fifo_generator_v13_2_0' (24#1) [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15469]
-INFO: [Synth 8-6157] synthesizing module 'DNA_PORT' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3034]
-INFO: [Synth 8-6155] done synthesizing module 'DNA_PORT' (26#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3034]
-INFO: [Synth 8-6157] synthesizing module 'FDCE__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3750]
-INFO: [Synth 8-6155] done synthesizing module 'FDCE__parameterized0' (26#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3750]
-INFO: [Synth 8-6157] synthesizing module 'FDPE__parameterized1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
-INFO: [Synth 8-6155] done synthesizing module 'FDPE__parameterized1' (26#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized12' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized12' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized0' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized13' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized13' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized14' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized14' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized1' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized1' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized2' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized2' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized3' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized3' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized15' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized15' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized4' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized4' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized16' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized16' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized5' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized5' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized17' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized17' (27#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'RAM128X1S' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:43885]
-INFO: [Synth 8-6155] done synthesizing module 'RAM128X1S' (28#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:43885]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized6' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized6' (28#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized18' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized18' (28#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized7' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized7' (28#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'RAM32M' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:44132]
-INFO: [Synth 8-6155] done synthesizing module 'RAM32M' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:44132]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized8' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized8' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized9' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized9' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized10' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized10' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized11' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized11' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized19' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized19' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized20' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized20' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized12' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized12' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized13' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized13' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized21' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized21' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized14' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized14' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized15' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized15' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized16' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized16' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized22' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized22' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized17' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized17' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized18' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized18' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized19' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized19' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized20' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized20' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized23' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized23' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized24' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized24' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized21' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized21' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
-INFO: [Synth 8-6157] synthesizing module 'RAMB18E1__parameterized0' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:48860]
-INFO: [Synth 8-6155] done synthesizing module 'RAMB18E1__parameterized0' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:48860]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized25' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized25' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized26' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized26' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized27' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized27' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized28' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'MMCME2_BASE' (8#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25882]
+WARNING: [Synth 8-350] instance 'mmcm0' of module 'MMCME2_BASE' requires 18 connections, but only 6 given [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:53]
+INFO: [Synth 8-6157] synthesizing module 'BUFG' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:609]
+INFO: [Synth 8-6155] done synthesizing module 'BUFG' (9#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:609]
+INFO: [Synth 8-6157] synthesizing module 'GND' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
+INFO: [Synth 8-6155] done synthesizing module 'GND' (10#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
+INFO: [Synth 8-6157] synthesizing module 'VCC' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:52076]
+INFO: [Synth 8-6155] done synthesizing module 'VCC' (11#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:52076]
+INFO: [Synth 8-6157] synthesizing module 'LUT5' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6155] done synthesizing module 'LUT5' (12#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6157] synthesizing module 'LUT6' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6' (13#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized0' (13#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT3' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
+INFO: [Synth 8-6155] done synthesizing module 'LUT3' (14#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
+INFO: [Synth 8-6157] synthesizing module 'LUT2' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
+INFO: [Synth 8-6155] done synthesizing module 'LUT2' (15#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized1' (15#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized0' (15#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized1' (15#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6157] synthesizing module 'LUT4' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
+INFO: [Synth 8-6155] done synthesizing module 'LUT4' (16#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
+INFO: [Synth 8-6157] synthesizing module 'LUT3__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
+INFO: [Synth 8-6155] done synthesizing module 'LUT3__parameterized0' (16#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized2' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized2' (16#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized3' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized3' (16#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25461]
+INFO: [Synth 8-6155] done synthesizing module 'LUT1' (17#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25461]
+INFO: [Synth 8-6157] synthesizing module 'FDSE' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4102]
+INFO: [Synth 8-6155] done synthesizing module 'FDSE' (18#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4102]
+INFO: [Synth 8-6157] synthesizing module 'CARRY4' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:963]
+INFO: [Synth 8-6155] done synthesizing module 'CARRY4' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:963]
+INFO: [Synth 8-6157] synthesizing module 'fifo_generator_v13_2_0' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15469]
+INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15982]
+INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15983]
+INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15984]
+INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15985]
+INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized2' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized2' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6157] synthesizing module 'LUT2__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
+INFO: [Synth 8-6155] done synthesizing module 'LUT2__parameterized0' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
+INFO: [Synth 8-6157] synthesizing module 'LUT2__parameterized1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
+INFO: [Synth 8-6155] done synthesizing module 'LUT2__parameterized1' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25495]
+INFO: [Synth 8-6157] synthesizing module 'LUT3__parameterized1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
+INFO: [Synth 8-6155] done synthesizing module 'LUT3__parameterized1' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25533]
+INFO: [Synth 8-6157] synthesizing module 'LUT4__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
+INFO: [Synth 8-6155] done synthesizing module 'LUT4__parameterized0' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
+INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized3' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized3' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized4' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized4' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT1__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25461]
+INFO: [Synth 8-6155] done synthesizing module 'LUT1__parameterized0' (19#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25461]
+INFO: [Synth 8-6157] synthesizing module 'FDPE' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
+INFO: [Synth 8-6155] done synthesizing module 'FDPE' (20#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
+INFO: [Synth 8-6157] synthesizing module 'FDCE' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3750]
+INFO: [Synth 8-6155] done synthesizing module 'FDCE' (21#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3750]
+INFO: [Synth 8-6157] synthesizing module 'RAMB18E1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:48860]
+INFO: [Synth 8-6155] done synthesizing module 'RAMB18E1' (22#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:48860]
+INFO: [Synth 8-6157] synthesizing module 'FDRE__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3966]
+INFO: [Synth 8-6155] done synthesizing module 'FDRE__parameterized0' (22#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3966]
+WARNING: [Synth 8-4446] all outputs are unconnected for this instance and logic may be removed [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:17097]
+INFO: [Synth 8-6157] synthesizing module 'xpm_cdc_async_rst' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15361]
+INFO: [Synth 8-5534] Detected attribute (* async_reg = "true" *) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15371]
+INFO: [Synth 8-6157] synthesizing module 'FDPE__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
+INFO: [Synth 8-6155] done synthesizing module 'FDPE__parameterized0' (22#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
+INFO: [Synth 8-6155] done synthesizing module 'xpm_cdc_async_rst' (23#1) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15361]
+INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized4' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized4' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized5' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized5' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized6' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized6' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT4__parameterized1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
+INFO: [Synth 8-6155] done synthesizing module 'LUT4__parameterized1' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
+INFO: [Synth 8-6157] synthesizing module 'LUT4__parameterized2' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
+INFO: [Synth 8-6155] done synthesizing module 'LUT4__parameterized2' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized7' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized7' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized8' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized8' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized9' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized9' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized10' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized10' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized11' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized11' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT5__parameterized5' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6155] done synthesizing module 'LUT5__parameterized5' (23#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25621]
+INFO: [Synth 8-6155] done synthesizing module 'fifo_generator_v13_2_0' (24#1) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15469]
+INFO: [Synth 8-6157] synthesizing module 'DNA_PORT' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3034]
+INFO: [Synth 8-6155] done synthesizing module 'DNA_PORT' (26#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3034]
+INFO: [Synth 8-6157] synthesizing module 'FDCE__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3750]
+INFO: [Synth 8-6155] done synthesizing module 'FDCE__parameterized0' (26#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3750]
+INFO: [Synth 8-6157] synthesizing module 'FDPE__parameterized1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
+INFO: [Synth 8-6155] done synthesizing module 'FDPE__parameterized1' (26#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:3906]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized12' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized12' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized0' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized13' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized13' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized14' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized14' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized1' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized1' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized2' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized2' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized3' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized3' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized15' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized15' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized4' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized4' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized16' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized16' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized5' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized5' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized17' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized17' (27#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'RAM128X1S' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:43885]
+INFO: [Synth 8-6155] done synthesizing module 'RAM128X1S' (28#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:43885]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized6' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized6' (28#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized18' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized18' (28#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized7' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized7' (28#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'RAM32M' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:44132]
+INFO: [Synth 8-6155] done synthesizing module 'RAM32M' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:44132]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized8' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized8' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized9' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized9' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized10' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized10' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized11' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized11' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized19' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized19' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized20' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized20' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized12' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized12' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized13' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized13' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized21' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized21' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized14' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized14' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized15' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized15' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized16' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized16' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized22' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized22' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized17' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized17' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized18' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized18' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized19' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized19' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized20' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized20' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized23' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized23' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized24' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized24' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6_2__parameterized21' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6_2__parameterized21' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25692]
+INFO: [Synth 8-6157] synthesizing module 'RAMB18E1__parameterized0' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:48860]
+INFO: [Synth 8-6155] done synthesizing module 'RAMB18E1__parameterized0' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:48860]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized25' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized25' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized26' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized26' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized27' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized27' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6157] synthesizing module 'LUT6__parameterized28' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
 INFO: [Common 17-14] Message 'Synth 8-6157' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized28' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized29' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
-INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized30' (29#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized28' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized29' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
+INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized30' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
 INFO: [Common 17-14] Message 'Synth 8-6155' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-WARNING: [Synth 8-350] instance 'okHI' of module 'okHost' requires 9 connections, but only 7 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:268]
-WARNING: [Synth 8-689] width (35) of port connection 'ep_dataout' does not match port width (32) of module 'okWireIn' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:282]
-WARNING: [Synth 8-2900] ignoring illegal expression in output port connection [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:282]
+WARNING: [Synth 8-350] instance 'okHI' of module 'okHost' requires 9 connections, but only 7 given [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:280]
+WARNING: [Synth 8-689] width (35) of port connection 'ep_dataout' does not match port width (32) of module 'okWireIn' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:294]
+WARNING: [Synth 8-2900] ignoring illegal expression in output port connection [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:294]
 	Parameter ADDRESS_WIDTH bound to: 30 - type: integer 
 	Parameter AW bound to: 30 - type: integer 
 	Parameter CW bound to: 34 - type: integer 
-WARNING: [Synth 8-693] zero replication count - replication ignored [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_top.v:137]
-WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 connections, but only 10 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:167]
+WARNING: [Synth 8-693] zero replication count - replication ignored [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_top.v:137]
+WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 connections, but only 10 given [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:167]
 	Parameter S0 bound to: 5'b00000 
 	Parameter S1 bound to: 5'b00001 
 	Parameter S2 bound to: 5'b00010 
@@ -321,7 +321,7 @@ WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 
 	Parameter Transfer_1 bound to: 5'b01101 
 	Parameter Transfer_2 bound to: 5'b01110 
 	Parameter IDLE_0 bound to: 5'b10001 
-WARNING: [Synth 8-689] width (8) of port connection 'slow_pulse' does not match port width (1) of module 'top_module' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:352]
+WARNING: [Synth 8-689] width (8) of port connection 'slow_pulse' does not match port width (1) of module 'top_module' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:364]
 	Parameter FPGA_CLOCK_FREQ bound to: 200.000000 - type: float 
 	Parameter TCYC bound to: 0.200000 - type: float 
 	Parameter ADC_CYC_CNT bound to: 39 - type: integer 
@@ -341,10 +341,10 @@ WARNING: [Synth 8-689] width (8) of port connection 'slow_pulse' does not match 
 	Parameter DDR_ALIGNMENT bound to: NONE - type: string 
 	Parameter INIT bound to: 1'b0 
 	Parameter SRTYPE bound to: SYNC - type: string 
-WARNING: [Synth 8-350] instance 'adc7961_0_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:402]
-WARNING: [Synth 8-350] instance 'adc7961_1_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:437]
-WARNING: [Synth 8-350] instance 'adc7961_2_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:472]
-WARNING: [Synth 8-350] instance 'adc7961_3_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:506]
+WARNING: [Synth 8-350] instance 'adc7961_0_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:414]
+WARNING: [Synth 8-350] instance 'adc7961_1_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:449]
+WARNING: [Synth 8-350] instance 'adc7961_2_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:484]
+WARNING: [Synth 8-350] instance 'adc7961_3_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:518]
 WARNING: [Synth 8-3917] design top_level_module has port led[7] driven by constant 0
 WARNING: [Synth 8-3917] design top_level_module has port led[6] driven by constant 0
 WARNING: [Synth 8-3917] design top_level_module has port led[5] driven by constant 0
@@ -454,7 +454,7 @@ WARNING: [Synth 8-3331] design okPipeOut has unconnected port okHE[86]
 WARNING: [Synth 8-3331] design okPipeOut has unconnected port okHE[85]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 476.254 ; gain = 187.309
+Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 497.543 ; gain = 187.430
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -463,69 +463,69 @@ Report Check Netlist:
 +------+------------------+-------+---------+-------+------------------+
 |1     |multi_driven_nets |      0|        0|Passed |Multi driven nets |
 +------+------------------+-------+---------+-------+------------------+
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_0:miso_pad_i to constant 0 [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:266]
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_1:miso_pad_i to constant 0 [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:309]
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_2:miso_pad_i to constant 0 [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:351]
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_3:miso_pad_i to constant 0 [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:393]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_0:miso_pad_i to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:266]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_1:miso_pad_i to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:309]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_2:miso_pad_i to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:351]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_3:miso_pad_i to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:393]
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 476.254 ; gain = 187.309
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 497.543 ; gain = 187.430
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 476.254 ; gain = 187.309
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 497.543 ; gain = 187.430
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 167 Unisim elements for replacement
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_0/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_1/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_2/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_3/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
-INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
+INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Device 21-403] Loading part xc7a75tfgg484-1
 INFO: [Project 1-570] Preparing netlist for logic optimization
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
 
 Processing XDC Constraints
 Initializing timing engine
-Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/fifo_generator_1/fifo_generator_1_in_context.xdc] for cell 'top/FIFO'
-Finished Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/fifo_generator_1/fifo_generator_1_in_context.xdc] for cell 'top/FIFO'
-Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0/clk_wiz_0_in_context.xdc] for cell 'adc_pll'
-Finished Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0/clk_wiz_0_in_context.xdc] for cell 'adc_pll'
-Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_0_fifo'
-Finished Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_0_fifo'
-Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_1_fifo'
-Finished Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_1_fifo'
-Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_2_fifo'
-Finished Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_2_fifo'
-Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_3_fifo'
-Finished Parsing XDC File [c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_3_fifo'
-Parsing XDC File [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc]
-WARNING: [Constraints 18-96] Setting input delay on a clock pin 'okUH[0]' is not supported, ignoring it [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc:72]
-WARNING: [Constraints 18-96] Setting input delay on a clock pin 'okUH[0]' is not supported, ignoring it [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc:73]
-INFO: [Timing 38-2] Deriving generated clocks [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc:99]
-WARNING: [Vivado 12-4702] SLEW is not a supported property on input port(s). Setting is ignored. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc:106]
-Finished Parsing XDC File [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc]
-INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/top_level_module_propImpl.xdc].
+Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/fifo_generator_1/fifo_generator_1_in_context.xdc] for cell 'top/FIFO'
+Finished Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/fifo_generator_1/fifo_generator_1_in_context.xdc] for cell 'top/FIFO'
+Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0/clk_wiz_0_in_context.xdc] for cell 'adc_pll'
+Finished Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0/clk_wiz_0_in_context.xdc] for cell 'adc_pll'
+Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_0_fifo'
+Finished Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_0_fifo'
+Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_1_fifo'
+Finished Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_1_fifo'
+Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_2_fifo'
+Finished Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_2_fifo'
+Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_3_fifo'
+Finished Parsing XDC File [c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'adc7961_3_fifo'
+Parsing XDC File [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc]
+WARNING: [Constraints 18-96] Setting input delay on a clock pin 'okUH[0]' is not supported, ignoring it [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc:72]
+WARNING: [Constraints 18-96] Setting input delay on a clock pin 'okUH[0]' is not supported, ignoring it [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc:73]
+INFO: [Timing 38-2] Deriving generated clocks [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc:99]
+WARNING: [Vivado 12-4702] SLEW is not a supported property on input port(s). Setting is ignored. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc:106]
+Finished Parsing XDC File [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc]
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/top_level_module_propImpl.xdc].
 Resolution: To avoid this warning, move constraints listed in [.Xil/top_level_module_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
-Sourcing Tcl File [C:/Users/iande/Documents/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
-Finished Sourcing Tcl File [C:/Users/iande/Documents/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
-INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/iande/Documents/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/top_level_module_propImpl.xdc].
+Sourcing Tcl File [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+Finished Sourcing Tcl File [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
+INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/top_level_module_propImpl.xdc].
 Resolution: To avoid this warning, move constraints listed in [.Xil/top_level_module_propImpl.xdc] to another XDC file and exclude this new file from synthesis with the used_in_synthesis property (File Properties dialog in GUI) and re-run elaboration/synthesis.
 Completed Processing XDC Constraints
 
@@ -541,21 +541,21 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM128X1S => RAM128X1S (MUXF7, RAMS64E, RAMS64E): 8 instances
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.013 . Memory (MB): peak = 833.293 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.024 . Memory (MB): peak = 855.734 ; gain = 0.000
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc7961_0_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc7961_1_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc7961_2_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc7961_3_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'top/FIFO' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:37 ; elapsed = 00:00:42 . Memory (MB): peak = 833.293 ; gain = 544.348
+Finished Constraint Validation : Time (s): cpu = 00:00:16 ; elapsed = 00:00:20 . Memory (MB): peak = 855.734 ; gain = 545.621
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:37 ; elapsed = 00:00:42 . Memory (MB): peak = 833.293 ; gain = 544.348
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:16 ; elapsed = 00:00:20 . Memory (MB): peak = 855.734 ; gain = 545.621
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -568,7 +568,7 @@ Applied set_property DONT_TOUCH = true for adc7961_2_fifo. (constraint file  aut
 Applied set_property DONT_TOUCH = true for adc7961_3_fifo. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okHI/core0/core0/\a0/cb0 /U0/\inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:37 ; elapsed = 00:00:42 . Memory (MB): peak = 833.293 ; gain = 544.348
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:16 ; elapsed = 00:00:20 . Memory (MB): peak = 855.734 ; gain = 545.621
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'WbSignal_converter'
 INFO: [Synth 8-5546] ROM "cmd_word" won't be mapped to RAM because it is too sparse
@@ -605,7 +605,7 @@ INFO: [Synth 8-5544] ROM "serial_next_state" won't be mapped to Block RAM becaus
                    read7 |                    1000000000000 |                            01011
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'WbSignal_converter'
-WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/WbSignal_converter.v:119]
+WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/WbSignal_converter.v:119]
 ---------------------------------------------------------------------------------------------------
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
@@ -627,10 +627,10 @@ WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/ian
                   IDLE_0 |                             1111 |                            10001
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'read_AD796x_fifo_cmd'
-WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/read_AD796x_fifo_cmd.v:155]
-INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm1F5340AA9300'
+WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/read_AD796x_fifo_cmd.v:155]
+INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm19BC1D05CF00'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:38 ; elapsed = 00:00:43 . Memory (MB): peak = 833.293 ; gain = 544.348
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:17 ; elapsed = 00:00:22 . Memory (MB): peak = 855.734 ; gain = 545.621
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -925,7 +925,7 @@ INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wire
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[30] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[31] )
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:53 ; elapsed = 00:00:58 . Memory (MB): peak = 833.293 ; gain = 544.348
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:22 ; elapsed = 00:00:27 . Memory (MB): peak = 855.734 ; gain = 545.621
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -941,13 +941,13 @@ INFO: [Synth 8-5783] Moving clock source from hierarchical pin 'adc_pll/clk_in1'
 INFO: [Synth 8-5578] Moved timing constraint from pin 'okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst/src_arst' to pin 'okHI/core0/core0/a0/l62a5479e7989ce7f4d5507c695cc69cf_reg/Q'
 INFO: [Synth 8-5819] Moved 3 constraints on hierarchical pins to their respective driving/loading pins
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:13 ; elapsed = 00:01:20 . Memory (MB): peak = 833.293 ; gain = 544.348
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:29 ; elapsed = 00:00:36 . Memory (MB): peak = 855.734 ; gain = 545.621
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:01:22 ; elapsed = 00:01:29 . Memory (MB): peak = 893.855 ; gain = 604.910
+Finished Timing Optimization : Time (s): cpu = 00:00:32 ; elapsed = 00:00:39 . Memory (MB): peak = 915.328 ; gain = 605.215
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -973,7 +973,7 @@ INFO: [Synth 8-3886] merging instance 'top/data_converter_1/converted_dat_reg[2]
 INFO: [Synth 8-3886] merging instance 'top/data_converter_1/converted_dat_reg[1]' (FDR) to 'top/data_converter_0/converted_dat_reg[13]'
 INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:01:25 ; elapsed = 00:01:32 . Memory (MB): peak = 894.883 ; gain = 605.938
+Finished Technology Mapping : Time (s): cpu = 00:00:33 ; elapsed = 00:00:40 . Memory (MB): peak = 916.367 ; gain = 606.254
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -997,7 +997,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:01:28 ; elapsed = 00:01:34 . Memory (MB): peak = 894.883 ; gain = 605.938
+Finished IO Insertion : Time (s): cpu = 00:00:34 ; elapsed = 00:00:41 . Memory (MB): peak = 916.367 ; gain = 606.254
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -1010,7 +1010,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:01:28 ; elapsed = 00:01:34 . Memory (MB): peak = 894.883 ; gain = 605.938
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:34 ; elapsed = 00:00:41 . Memory (MB): peak = 916.367 ; gain = 606.254
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1022,25 +1022,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:28 ; elapsed = 00:01:35 . Memory (MB): peak = 894.883 ; gain = 605.938
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:35 ; elapsed = 00:00:41 . Memory (MB): peak = 916.367 ; gain = 606.254
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:01:29 ; elapsed = 00:01:35 . Memory (MB): peak = 894.883 ; gain = 605.938
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:35 ; elapsed = 00:00:41 . Memory (MB): peak = 916.367 ; gain = 606.254
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:01:29 ; elapsed = 00:01:36 . Memory (MB): peak = 894.883 ; gain = 605.938
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:35 ; elapsed = 00:00:41 . Memory (MB): peak = 916.367 ; gain = 606.254
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:01:29 ; elapsed = 00:01:36 . Memory (MB): peak = 894.883 ; gain = 605.938
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:35 ; elapsed = 00:00:41 . Memory (MB): peak = 916.367 ; gain = 606.254
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1097,11 +1097,11 @@ Report Cell Usage:
 |36    |OBUFDS           |     8|
 +------+-----------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:01:29 ; elapsed = 00:01:36 . Memory (MB): peak = 894.883 ; gain = 605.938
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:35 ; elapsed = 00:00:41 . Memory (MB): peak = 916.367 ; gain = 606.254
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 1476 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:00:55 ; elapsed = 00:01:16 . Memory (MB): peak = 894.883 ; gain = 248.898
-Synthesis Optimization Complete : Time (s): cpu = 00:01:29 ; elapsed = 00:01:36 . Memory (MB): peak = 894.883 ; gain = 605.938
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:22 ; elapsed = 00:00:31 . Memory (MB): peak = 916.367 ; gain = 248.062
+Synthesis Optimization Complete : Time (s): cpu = 00:00:35 ; elapsed = 00:00:41 . Memory (MB): peak = 916.367 ; gain = 606.254
 INFO: [Project 1-571] Translating synthesized netlist
 INFO: [Netlist 29-17] Analyzing 334 Unisim elements for replacement
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_0/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
@@ -1110,22 +1110,22 @@ WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_2/Clock_Out_ODDR' of cel
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_3/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
-WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:278]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:251]
+WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:265]
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
 INFO: [Project 1-111] Unisim Transformation Summary:
   A total of 188 instances were transformed.
@@ -1143,9 +1143,9 @@ INFO: [Project 1-111] Unisim Transformation Summary:
 INFO: [Common 17-83] Releasing license: Synthesis
 417 Infos, 284 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:01:36 ; elapsed = 00:01:43 . Memory (MB): peak = 894.883 ; gain = 617.469
+synth_design: Time (s): cpu = 00:00:38 ; elapsed = 00:00:45 . Memory (MB): peak = 916.367 ; gain = 617.750
 WARNING: [Constraints 18-5210] No constraint will be written out.
-INFO: [Common 17-1381] The checkpoint 'C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
+INFO: [Common 17-1381] The checkpoint 'C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.221 . Memory (MB): peak = 894.883 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Thu Jun 10 10:19:54 2021...
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.104 . Memory (MB): peak = 916.367 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Thu Jul  8 15:28:36 2021...
