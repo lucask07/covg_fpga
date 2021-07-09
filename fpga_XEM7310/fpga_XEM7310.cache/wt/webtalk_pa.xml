@@ -3,7 +3,7 @@
 <!--The data in this file is primarily intended for consumption by Xilinx tools.
 The structure and the elements are likely to change over the next few releases.
 This means code written to parse this file will need to be revisited each subsequent release.-->
-<application name="pa" timeStamp="Thu Jul  8 20:52:59 2021">
+<application name="pa" timeStamp="Fri Jul  9 14:50:52 2021">
 <section name="Project Information" visible="false">
 <property name="ProjectID" value="8301869f92464d22b53a2227d0abaf77" type="ProjectID"/>
 <property name="ProjectIteration" value="33" type="ProjectIteration"/>
@@ -65,7 +65,7 @@ This means code written to parse this file will need to be revisited each subseq
 <property name="ExpRunTreePanel_EXP_RUN_TREE_TABLE" value="9" type="GuiHandlerData"/>
 <property name="FPGAChooser_FPGA_TABLE" value="3" type="GuiHandlerData"/>
 <property name="FPGAChooser_SPEED" value="1" type="GuiHandlerData"/>
-<property name="FileSetPanel_FILE_SET_PANEL_TREE" value="1319" type="GuiHandlerData"/>
+<property name="FileSetPanel_FILE_SET_PANEL_TREE" value="1327" type="GuiHandlerData"/>
 <property name="FileSetPanel_MESSAGES" value="3" type="GuiHandlerData"/>
 <property name="FlowNavigatorTreePanel_FLOW_NAVIGATOR_TREE" value="134" type="GuiHandlerData"/>
 <property name="GettingStartedView_CREATE_NEW_PROJECT" value="3" type="GuiHandlerData"/>
@@ -149,7 +149,7 @@ This means code written to parse this file will need to be revisited each subseq
 <property name="ProjectSummaryPowerPanel_TABBED_PANE" value="3" type="GuiHandlerData"/>
 <property name="ProjectSummaryTimingPanel_OPEN_TIMING_SUMMARY_REPORT" value="5" type="GuiHandlerData"/>
 <property name="ProjectSummaryTimingPanel_PROJECT_SUMMARY_TIMING_PANEL_TABBED" value="8" type="GuiHandlerData"/>
-<property name="ProjectSummaryUtilizationGadget_PROJECT_SUMMARY_UTILIZATION_GADGET_TABBED" value="27" type="GuiHandlerData"/>
+<property name="ProjectSummaryUtilizationGadget_PROJECT_SUMMARY_UTILIZATION_GADGET_TABBED" value="31" type="GuiHandlerData"/>
 <property name="ProjectSummaryUtilizationPanel_PROJECT_SUMMARY_UTILIZATION_PANEL_TABBED" value="5" type="GuiHandlerData"/>
 <property name="ProjectSummaryUtilizationPanel_PROJECT_SUMMARY_UTILIZATION_TABLE" value="1" type="GuiHandlerData"/>
 <property name="PropertiesView_NEXT_OBJECT" value="25" type="GuiHandlerData"/>
@@ -192,7 +192,7 @@ This means code written to parse this file will need to be revisited each subseq
 <property name="SrcMenu_OPEN_SELECTED_SOURCE_FILES" value="1" type="GuiHandlerData"/>
 <property name="StaleMoreAction_OUT_OF_DATE_DETAILS" value="1" type="GuiHandlerData"/>
 <property name="StaleRunDialog_YES" value="1" type="GuiHandlerData"/>
-<property name="SyntheticaGettingStartedView_RECENT_PROJECTS" value="60" type="GuiHandlerData"/>
+<property name="SyntheticaGettingStartedView_RECENT_PROJECTS" value="61" type="GuiHandlerData"/>
 <property name="TaskBanner_CLOSE" value="58" type="GuiHandlerData"/>
 <property name="TclConsoleView_TCL_CONSOLE_CODE_EDITOR" value="13" type="GuiHandlerData"/>
 <property name="TimingItemFlatTablePanel_TABLE" value="1" type="GuiHandlerData"/>
@@ -205,9 +205,9 @@ This means code written to parse this file will need to be revisited each subseq
 <property name="WaveformView_GOTO_TIME_0" value="367" type="GuiHandlerData"/>
 </item>
 <item name="Other">
-<property name="GuiMode" value="127" type="GuiMode"/>
+<property name="GuiMode" value="134" type="GuiMode"/>
 <property name="BatchMode" value="0" type="BatchMode"/>
-<property name="TclMode" value="115" type="TclMode"/>
+<property name="TclMode" value="121" type="TclMode"/>
 </item>
 </section>
 </application>

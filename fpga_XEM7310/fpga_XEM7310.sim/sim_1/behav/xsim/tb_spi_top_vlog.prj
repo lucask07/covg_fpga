@@ -1,0 +1,41 @@
+# compile verilog/system verilog design source files
+verilog xil_defaultlib  --include "../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master" --include "../../../../fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0" \
+"../../../../fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/sim/fifo_generator_1.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0_clk_wiz.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/sim/fifo_AD796x.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/sim/blk_mem_gen_0.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_slave_model.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_8to1.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_shift.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_clgen.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/WbSignal_converter.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/spi_top.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/one_second_pulse.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/hbexec.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okWireIn.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okTriggerIn.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okBTPipeOut.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okWireOut.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/okTriggerOut.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/read_AD796x_fifo_cmd.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/AD7960/AD7960.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/new/reset_synchronizer.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/new/AD7961.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okPipeOut.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/new/reset_sync_low.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/new/realTimeLPF_readwrite_coeff.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/Butter/Butterworth.v" \
+"../../../../fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okRegisterBridge.v" \
+"../../../../fpga_XEM7310.srcs/sim_1/imports/SPI_Master/tb_spi_top.v" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort
