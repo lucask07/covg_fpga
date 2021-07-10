@@ -1,8 +1,8 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-| Date         : Thu Jun 10 10:25:42 2021
-| Host         : LAPTOP-RK0H8TS5 running 64-bit major release  (build 9200)
+| Date         : Thu Jul  8 15:31:20 2021
+| Host         : FDC212-01 running 64-bit major release  (build 9200)
 | Command      : report_methodology -file top_level_module_methodology_drc_routed.rpt -pb top_level_module_methodology_drc_routed.pb -rpx top_level_module_methodology_drc_routed.rpx
 | Design       : top_level_module
 | Device       : xc7a75tfgg484-1
@@ -1060,14 +1060,14 @@ XDCH-1#1 Warning
 Hold option missing in multicycle path constraint  
 A multicycle constraint has been set to override the setup relationship, but no multicycle constraint has been defined to change the hold relationship. As a result, the default hold for those paths is derived from the setup and may not be evaluated as expected.
 set_multicycle_path -setup -from [get_ports {okUHU[*]}] 2
-C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc (Line: 78)
+C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc (Line: 78)
 Related violations: <none>
 
 XDCH-1#2 Warning
 Hold option missing in multicycle path constraint  
 A multicycle constraint has been set to override the setup relationship, but no multicycle constraint has been defined to change the hold relationship. As a result, the default hold for those paths is derived from the setup and may not be evaluated as expected.
 set_multicycle_path -setup -from [get_ports {okUH[*]}] 2
-C:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc (Line: 74)
+C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc (Line: 74)
 Related violations: <none>
 
 

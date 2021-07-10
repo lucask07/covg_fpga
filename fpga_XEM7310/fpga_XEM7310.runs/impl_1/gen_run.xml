@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <GenRun Id="impl_1" LaunchPart="xc7a75tfgg484-1" LaunchTime="1623338405">
+=======
+<GenRun Id="impl_1" LaunchPart="xc7a75tfgg484-1" LaunchTime="1625776063">
+  <File Type="BITSTR-BMM" Name="top_level_module_bd.bmm"/>
+  <File Type="OPT-METHODOLOGY-DRC" Name="top_level_module_methodology_drc_opted.rpt"/>
+  <File Type="INIT-TIMING" Name="top_level_module_timing_summary_init.rpt"/>
+>>>>>>> be944fd63708a8b77dce13ee7bd2cfbc8c0ef34b
   <File Type="ROUTE-PWR" Name="top_level_module_power_routed.rpt"/>
   <File Type="PA-TCL" Name="top_level_module.tcl"/>
   <File Type="BITSTR-BMM" Name="top_level_module_bd.bmm"/>
