@@ -14,7 +14,7 @@ sys.path.append(interfaces_path)
 
 from interfaces import FPGA, GeneralDACController
 
-logging.basicConfig(filename='DAC80508_test.log', filemode='w',
+logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'DAC80508_test.log'), filemode='w',
                     encoding='utf-8', level=logging.INFO)
 
 # Set up FPGA
