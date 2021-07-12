@@ -14,26 +14,38 @@ import ok
 import time
 import numpy as np
 import pandas as pd
+import os
 
 # Class for registers to be used within chips and the SPI core. Contains the register's hex address, default value, bit index, and bit width.
-class register():
-    def __init__(self, address, default, bit_index, bit_width):
-        self.address = address
-        self.default = default
-        self.bit_index = bit_index
-        self.bit_width = bit_width
+class Register():
+    spreadsheet_path = os.getcwd()
+    for i in range(15): # The Registers spreadsheet is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+        if os.path.basename(spreadsheet_path) == 'covg_fpga':
+            spreadsheet_path = os.path.join(spreadsheet_path, 'Registers.xlsx')
+            break
+        else:
+            spreadsheet_path = os.path.dirname(spreadsheet_path) # If we aren't in covg_fpga, move up a folder and check again
+        
+
+    def __init__(self, address, default, bit_width, bit_index_high, bit_index_low):
+        self.address        = address
+        self.default        = default
+        self.bit_index_high = bit_index_high
+        self.bit_index_low  = bit_index_low
+        self.bit_width      = bit_width
 
     @classmethod
-    def dict_from_excel(cls, sheet, workbook='../Registers.xlsx'):
+    def dict_from_excel(cls, sheet, workbook=spreadsheet_path):
         reg_dict = {}
         sheet_data = pd.read_excel(workbook, sheet)
         for row in range(len(sheet_data)):
             row_data = sheet_data.iloc[row]
-            reg_dict[row_data['Name']] = register(
-                address   = int(row_data['Hex Address'], 16),
-                default   = int(row_data['Default Value'], 16),
-                bit_index = row_data['Bit Index'],
-                bit_width = row_data['Bit Width'])
+            reg_dict[row_data['Name']] = Register(
+                address        = int(row_data['Hex Address'], 16),
+                default        = int(row_data['Default Value'], 16),
+                bit_width      = int(row_data['Bit Width']),
+                bit_index_high = (None if row_data['Bit Index (High)'] == 'None' else int(row_data['Bit Index (High)'])),  # Bit Index of None means the register takes up the whole endpoint
+                bit_index_low  = (None if row_data['Bit Index (Low)'] == 'None' else int(row_data['Bit Index (Low)'])))
         return reg_dict
 
 # Class for the FPGA itself. Handles FPGA configuration, setting wire values, and other FPGA specific functions.
@@ -173,7 +185,7 @@ class I2CController():
     )
 
     # Add the registers from the Excel file to the parameters
-    reg_dict = register.dict_from_excel('I2C')
+    reg_dict = Register.dict_from_excel('I2C')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     def __init__(self, fpga, parameters=DEFAULT_PARAMETERS, i2c={'m_pBuf': [], 'm_nDataStart': 7}):
@@ -359,7 +371,7 @@ class IOExpanderController(I2CController):
         ))
 
     # Add the registers from the Excel file to the parameters
-    reg_dict = register.dict_from_excel('IOExpander')
+    reg_dict = Register.dict_from_excel('IOExpander')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     def __init__(self, fpga, parameters=DEFAULT_PARAMETERS):
@@ -432,26 +444,28 @@ class SPIController():
     )
 
     # Add the registers from the Excel file to the parameters
-    reg_dict = register.dict_from_excel('SPI')
+    reg_dict = Register.dict_from_excel('SPI')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     WB_1_PARAMETERS = dict(DEFAULT_PARAMETERS)
-    reg_dict_WB_1 = register.dict_from_excel('SPI_WB_1')
+    reg_dict_WB_1 = Register.dict_from_excel('SPI_WB_1')
     WB_1_PARAMETERS.update(reg_dict_WB_1)
 
     WB_2_PARAMETERS = dict(DEFAULT_PARAMETERS)
-    reg_dict_WB_2 = register.dict_from_excel('SPI_WB_2')
+    reg_dict_WB_2 = Register.dict_from_excel('SPI_WB_2')
     WB_2_PARAMETERS.update(reg_dict_WB_2)
 
-    def __init__(self, fpga, parameters=DEFAULT_PARAMETERS):
+    def __init__(self, fpga, parameters=WB_1_PARAMETERS, debug=False):
         self.fpga = fpga
         self.parameters = parameters
+        self.debug = debug # Turning on debug will show more output
 
     # Method to send a command to the Wishbone. Sent in 32 bits through the WbSignal_converter Verilog module to reformat to 34 bits.
     def wb_send_cmd(self, command):
         self.fpga.set_wire(
             self.parameters['WB_IN'].address, command, 0xffffffff)
-        self.fpga.xem.ActivateTriggerIn(self.parameters['TRIGGER'].address)
+        self.fpga.xem.ActivateTriggerIn(
+            self.parameters['TRIGGER_BIT'].address, self.parameters['TRIGGER_BIT'].bit_index_high)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
 
     def wb_is_acknowledged(self):
         response = self.fpga.read_wire(self.parameters['WB_OUT'].address)
@@ -503,27 +517,52 @@ class SPIController():
 
     # Method to write up to 30 bits of data to register Tx0, Tx1, Tx2, or Tx3
     def write(self, data, register=0): # register should be 0, 1, 2, or 3
-        print('SPI write')
-
         # Set address to Tx register
-        self.wb_set_address(self.parameters['Tx'+str(register)].address)
+        ack = self.wb_set_address(self.parameters['Tx'+str(register)].address)
+        if ack:
+            if self.debug:
+                print(f'Set address to "Tx{register}": SUCCESS')
+        else:
+            if self.debug:
+                print(f'Set address to "Tx{register}": FAIL')
+            return False
 
         # Write data
         ack = self.wb_write(data)
-        print(f'Acknowledged: {ack}')
+        if ack:
+            if self.debug:
+                print(f'Data write to "Tx{register}": SUCCESS')
+        else:
+            if self.debug:
+                print(f'Data write to "Tx{register}": FAIL')
+            return False
 
         # Set address to CTRL register
-        self.wb_set_address(self.parameters['CTRL'].address)
+        ack = self.wb_set_address(self.parameters['CTRL'].address)
+        if ack:
+            if self.debug:
+                print(f'Set address to "CTRL": SUCCESS')
+        else:
+            if self.debug:
+                print(f'Set address to "CTRL": FAIL')
+            return False
 
         # Set GO_BSY bit
         self.wb_go()
+        return True
 
     # Method to read data from register 
     def read(self, register=0):
-        print('SPI read')
-
         # Set address to the Rx register Rx0, Rx1, Rx2, or Rx3
-        self.wb_set_address(self.parameters['Rx'+str(register)].address)
+        ack = self.wb_set_address(self.parameters['Rx'+str(register)].address)
+
+        if ack:
+            if self.debug:
+                print(f'Set address to "Rx{register}": SUCCESS')
+        else:
+            if self.debug:
+                print(f'Set address to "Rx{register}": FAIL')
+            return False
 
         # Read data
         return self.wb_read()
@@ -532,7 +571,8 @@ class SPIController():
     def configure_master_bin(self, data, mask=0Xffff):
         self.wb_set_address(self.parameters['CTRL'].address)
         self.fpga.set_wire(self.parameters['WB_IN'].address, data, mask)
-        self.fpga.xem.ActivateTriggerIn(self.parameters['TRIGGER'].address)
+        self.fpga.xem.ActivateTriggerIn(
+            self.parameters['TRIGGER_BIT'].address, self.parameters['TRIGGER_BIT'].bit_index_high)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
         response = self.fpga.read_wire(self.parameters['WB_OUT'].address)
         if response == self.parameters['ACK']:
             ack = True
@@ -574,21 +614,21 @@ class SPIController():
 
 # Class for DAC80508 chip extending SPIController. Handles read, write, configuration, gain configuration, id, and reset.
 class GeneralDACController(SPIController):
-    DEFAULT_PARAMETERS = dict(SPIController.DEFAULT_PARAMETERS)
+    DEFAULT_PARAMETERS = dict(SPIController.WB_1_PARAMETERS)
     DEFAULT_PARAMETERS.update(dict(
         WRITE_OPERATION = 0x000000,
         READ_OPERATION = 0x800000
     ))
 
     # Get registers from spreadsheet
-    reg_dict = register.dict_from_excel('DAC80508')
-    config_dict = register.dict_from_excel('DAC80508_CONFIG')
+    reg_dict = Register.dict_from_excel('DAC80508')
+    config_dict = Register.dict_from_excel('DAC80508_CONFIG')
     DEFAULT_PARAMETERS.update(reg_dict)
     DEFAULT_PARAMETERS.update(dict(CONFIG_DICT = config_dict))
     
-    def __init__(self, fpga, slave_address=0x5, parameters=DEFAULT_PARAMETERS):
+    def __init__(self, fpga, slave_address=0x5, parameters=DEFAULT_PARAMETERS, debug=False):
         self.slave_address = slave_address
-        super.__init__(fpga, parameters)
+        super().__init__(fpga, parameters, debug)
 
     # Method to write to any register on the chip.
     def write(self, register_name, data, mask=0xffff):
@@ -600,21 +640,26 @@ class GeneralDACController(SPIController):
         self.select_slave(self.slave_address)
         
         # Get current data
-        current_data = self.read(register)
+        current_data = self.read(register_name)
         # Create new data from input data, mask, and current data
         new_data = (data & mask) | (current_data & ~mask)
         
         # 23=0 (write), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=D[15:0] (data) 
         transmission = self.parameters['WRITE_OPERATION'] + \
             reg.address*2**15 + new_data
-        super().write(transmission)
-        return True
+        ack = super().write(transmission)
+        if ack:
+            print(f'Write {hex(data)} to {register_name}: SUCCESS')
+        else:
+            print(f'Write {hex(data)} to {register_name}: FAIL')
+        return ack
+
 
     # Method to read from any register on the chip.
     def read(self, register_name):
         reg = self.parameters.get(register_name) # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
         if reg == None:
-            print('Register not in parameters')
+            print(f'"{register_name}" not in parameters')
             return False
 
         self.select_slave(self.slave_address)
@@ -633,7 +678,7 @@ class GeneralDACController(SPIController):
     # Method to set the configuration register with a binary number.
     def set_config_bin(self, data, mask=0xffff):
         # Write new config
-        return self.write(self.parameters['CONFIG'], data, mask)
+        return self.write('CONFIG', data, mask)
 
     # Method to set the configuration register with multiple arguments.
     def set_config(self, ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0, DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0, DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0, ):
@@ -656,23 +701,29 @@ class GeneralDACController(SPIController):
 
     # Method to read the current configuration register data.
     def get_config(self, display_values=True):
-        config = self.read(self.parameters['CONFIG'])
+        config = self.read('CONFIG')
+        if not config:
+            print('Get Configuration: FAIL')
+            return False
         if display_values:
             for key in self.parameters['CONFIG_DICT']:
-                print(f"{key}: {bool(config & self.parameters['CONFIG_DICT'][key])}")
+                print(f"{key}: {bool(config & self.parameters['CONFIG_DICT'][key].bit_index_high)}") # High and low bit indexes are the same because it is 1 bit wide
         return config
 
     # Method to set the gain value.
     def set_gain(self, data, mask=0x01ff):
-        return self.write(self.parameters['GAIN'], data, mask)
+        return self.write('GAIN', data, mask)
 
     # Method to get the gain value.
     def get_gain(self):
-        return self.read(self.parameters['GAIN'])
+        return self.read('GAIN')
 
     # Method to get the device info from its ID.
     def get_id(self, display=True):
-        id = self.read(self.parameters['ID'])
+        id = self.read('ID')
+        if not id: # Check to see if the read worked
+            print('ID could not be read')
+            return False
         if display:
             device_id = bin(id >> 2)[2:] # Only from 2 on to skip the '0b'
             version_id = bin(id & 0b11)[2:]
@@ -687,7 +738,13 @@ class GeneralDACController(SPIController):
 
     # Method to soft reset the chip.
     def reset(self):
-        return self.write(self.parameters['TRIGGER'], 0b1010, 0x000f)
+        ack = self.write('TRIGGER', 0b1010, 0x000f)
+        if self.debug:
+            if ack:
+                print('Reset: SUCCESS')
+            else:
+                print('Reset: FAIL')
+        return ack
 
 if __name__ == '__main__':
     f = FPGA()
