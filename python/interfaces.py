@@ -395,7 +395,11 @@ class IOExpanderController(I2CController):
             new_data = data
         else:
             current_data = self.read(addr_pins)
-            new_data = (data & mask) | (current_data & ~mask)
+            if current_data == None:
+                print('Read for masking FAILED')
+                return False
+            new_data = [(data & mask) | (data_piece & ~mask)
+                        for data_piece in current_data]
 
         self.i2c_write_long(
             dev_addr, [self.parameters['SLAVE_OUTPUT_REG'].address], 2, new_data)
