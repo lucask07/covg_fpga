@@ -1,3 +1,16 @@
+import os, sys
+
+# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+covg_fpga_path = os.getcwd()
+for i in range(15):
+    if os.path.basename(covg_fpga_path) == 'covg_fpga':
+        interfaces_path = os.path.join(covg_fpga_path, 'python')
+        break
+    else:
+        # If we aren't in covg_fpga, move up a folder and check again
+        covg_fpga_path = os.path.dirname(covg_fpga_path)
+sys.path.append(interfaces_path)
+
 from interfaces import FPGA, IOExpanderController
 import logging
 
@@ -5,7 +18,7 @@ logging.basicConfig(filename='TCA9555DBT_test.log',
                     encoding='utf-8', level=logging.INFO)
 
 # Initialize FPGA
-f = FPGA(bitfile='../i2c.bit')
+f = FPGA(bitfile='C:/Users/ajstr/OneDrive/Documents/Research Internship/Programs/xem7310_starter/i2c.bit')
 f.init_device()
 f.set_wire(0x00, value=0xff00, mask=0xff00)
 
