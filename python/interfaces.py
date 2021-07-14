@@ -387,10 +387,19 @@ class IOExpanderController(I2CController):
 
     # Method to write 2 bytes of data to the pins.
     # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 0100 and Write bit automatically
-    def write(self, addr_pins, data):
+    def write(self, addr_pins, data, mask=0xffff):
         dev_addr = self.parameters['ADDRESS_HEADER'] + (addr_pins*2)
+
+        # Compare with current data to mask unchanged values
+        if mask == 0xffff:
+            new_data = data
+        else:
+            current_data = self.read(addr_pins)
+            new_data = (data & mask) | (current_data & ~mask)
+
         self.i2c_write_long(
-            dev_addr, [self.parameters['SLAVE_OUTPUT_REG'].address], 2, data)
+            dev_addr, [self.parameters['SLAVE_OUTPUT_REG'].address], 2, new_data)
+
 
     # Method to read 2 bytes of data from the pins.
     # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 0100 and Read bit automatically
@@ -568,7 +577,7 @@ class SPIController():
         return self.wb_read()
 
     # Method to set the CTRL register using binary
-    def configure_master_bin(self, data, mask=0Xffff):
+    def configure_master_bin(self, data, mask=0xffff):
         self.wb_set_address(self.parameters['CTRL'].address)
         self.fpga.set_wire(self.parameters['WB_IN'].address, data, mask)
         self.fpga.xem.ActivateTriggerIn(
