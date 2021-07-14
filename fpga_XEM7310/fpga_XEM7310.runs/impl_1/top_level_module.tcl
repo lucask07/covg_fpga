@@ -77,6 +77,7 @@ set rc [catch {
   read_ip -quiet C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/fifo_generator_1.xci
   read_ip -quiet C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.xci
   read_ip -quiet C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x.xci
+  read_ip -quiet C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0.xci
   read_xdc C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/imports/Downloads/xem7310.xdc
   link_design -top top_level_module -part xc7a75tfgg484-1
   close_msg_db -file init_design.pb
