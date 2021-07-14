@@ -392,7 +392,8 @@ class IOExpanderController(I2CController):
 
         # Compare with current data to mask unchanged values
         if mask == 0xffff:
-            new_data = data
+            # Turn data into a list of bytes
+            new_data = [data // (16**2), data % (16**2)]
         else:
             current_data = self.read(addr_pins)
             if current_data == None:
