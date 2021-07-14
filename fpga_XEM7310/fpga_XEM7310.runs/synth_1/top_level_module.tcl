@@ -61,6 +61,10 @@ read_verilog -library xil_defaultlib {
   C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v
   C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okPipeOut.v
   C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/reset_sync_low.v
+  C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/realTimeLPF_readwrite_coeff.v
+  C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/Butter/Butterworth.v
+  C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okRegisterBridge.v
+  C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/Downloads/DAC80508.v
 }
 read_ip -quiet C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/fifo_generator_1.xci
 set_property used_in_implementation false [get_files -all c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/fifo_generator_1.xdc]
@@ -76,6 +80,9 @@ read_ip -quiet C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.src
 set_property used_in_implementation false [get_files -all c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x.xdc]
 set_property used_in_implementation false [get_files -all c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x_clocks.xdc]
 set_property used_in_implementation false [get_files -all c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x_ooc.xdc]
+
+read_ip -quiet C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0.xci
+set_property used_in_implementation false [get_files -all c:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0_ooc.xdc]
 
 # Mark all dcp files as not used in implementation to prevent them from being
 # stitched into the results of this synthesis run. Any black boxes in the

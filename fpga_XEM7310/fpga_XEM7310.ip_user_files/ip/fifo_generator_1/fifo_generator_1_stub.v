@@ -1,10 +1,10 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-// Date        : Mon Feb 22 22:06:48 2021
+// Date        : Mon Feb 22 22:06:47 2021
 // Host        : LAPTOP-RK0H8TS5 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub
-//               c:/Users/iande/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_generator_1/fifo_generator_1_stub.v
+// Command     : write_verilog -force -mode synth_stub -rename_top fifo_generator_1 -prefix
+//               fifo_generator_1_ fifo_generator_1_stub.v
 // Design      : fifo_generator_1
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a75tfgg484-1

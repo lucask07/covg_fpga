@@ -169,11 +169,21 @@ module top_level_module(
     output wire A3_CNV_P,                 // Convert Out, Positive Pair
     output wire A3_CNV_N,                 // Convert Out, Negative Pair
     output wire A3_CLK_P,                 // Clock Out, Positive Pair
-    output wire A3_CLK_N                 // Clock Out, Negative Pair
+    output wire A3_CLK_N,                 // Clock Out, Negative Pair
     /*
     input wire LS0_EN
     */
 	
+    // DAC80508
+    input wire DS1_SDO,
+    output wire DS1_SCLK,
+    output wire DS1_CSB,
+    output wire DS1_SDI,
+
+    input wire DS2_SDO,
+    output wire DS2_SCLK,
+    output wire DS2_CSB,
+    output wire DS2_SDI
 	
 	);
 	
@@ -198,6 +208,17 @@ module top_level_module(
     wire mosi_3;
     wire ss_3;
     wire sclk_3;
+
+    // DAC80508
+    wire dac_ss_0;
+    wire dac_sclk_0;
+    wire dac_mosi_0;
+    wire dac_miso_0;
+
+    wire dac_ss_1;
+    wire dac_sclk_1;
+    wire dac_mosi_1;
+    wire dac_miso_1;
     
 	
 	// connect SPI signals to the general purpose outputs for debug
@@ -210,7 +231,7 @@ module top_level_module(
 	assign gp[4] = mosi_0;
     assign gp[5] = ss_0;
     assign gp[6] = sclk_0;
-	 
+
 	// MUX for routing the SPI master  [select mosi default, outputs]
 	mux_1to8 mux_sdi (ep01wire[2:0], mosi, 1'b0, {d3_sdi, d2_sdi, d1_sdi, d0_sdi, adcs_sdi});
 	// MUX for routing the SPI master  [select ss default, outputs]
@@ -282,7 +303,7 @@ module top_level_module(
              
     /* ---------------- Ok Endpoints ----------------*/
 				 
-	//wire to hold the data/commands from the host – this will be routed to the wishbone formatter/state machine for the ADS7952
+	//wire to hold the data/commands from the host ï¿½ this will be routed to the wishbone formatter/state machine for the ADS7952
 	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
 	
 	// Wire in to select what slave the SPI data is routed to
@@ -302,6 +323,8 @@ module top_level_module(
 	//ep40trig[5] is the reset for adc7961_1_fifo
 	//ep40trig[6] is the reset for adc7961_2_fifo
 	//ep40trig[7] is the reset for adc7961_3_fifo
+	//ep40trig[8] will be used to trigger the Wishbone formatter/state machine for dac_0, telling the state machine that wi0 is valid
+	//ep40trig[9] will be used to trigger the Wishbone formatter/state machine for dac_1, telling the state machine that wi0 is valid
 	okTriggerIn trigIn40 (.okHE(okHE),
                       .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep40trig));
 	
@@ -361,7 +384,7 @@ module top_level_module(
    wire regRead;
    wire [31:0] regAddress;
    wire [31:0] regDataOut;
-   reg [31:0] regDataIn;
+   wire [31:0] regDataIn; // Was reg, gave error in Vivado synthesis
    
    okRegisterBridge regBridge (
        .okHE(okHE),
@@ -382,6 +405,8 @@ module top_level_module(
 				 .ss_1(ss_1), .mosi_1(mosi_1), .sclk_1(sclk_1), .data_rdy_1(pipe_out_write_adc[1]), .adc_val_1(adc_val[1]),
 				 .ss_2(ss_2), .mosi_2(mosi_2), .sclk_2(sclk_2), .data_rdy_2(pipe_out_write_adc[2]), .adc_val_2(adc_val[2]),
 				 .ss_3(ss_3), .mosi_3(mosi_3), .sclk_3(sclk_3), .data_rdy_3(pipe_out_write_adc[3]), .adc_val_3(adc_val[3]),
+                 .dac_val_0(dac_val[0]), .dac_convert_trigger_0(ep40trig[8]), .dac_ss_0(dac_ss_0), .dac_sclk_0(dac_sclk_0), .dac_mosi_0(dac_mosi_0), .dac_miso_0(dac_miso_0),
+                 .dac_val_1(dac_val[1]), .dac_convert_trigger_1(ep40trig[9]), .dac_ss_1(dac_ss_1), .dac_sclk_1(dac_sclk_1), .dac_mosi_1(dac_mosi_1), .dac_miso_1(dac_miso_1), 
 				 .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn));
 	
 	/* ---------------- ADC796x ----------------*/
@@ -544,5 +569,7 @@ module top_level_module(
       .empty(adc_fifo_empty[3]),   // status 
       .prog_full(adc_fifo_halffull[3]));//status        
     
+    /* ---------------- DAC80508 ----------------*/
+    wire [1:0] dac_val;
 	
 endmodule

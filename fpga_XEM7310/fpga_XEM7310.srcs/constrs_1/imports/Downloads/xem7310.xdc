@@ -374,14 +374,14 @@ set_property IOSTANDARD LVCMOS25 [get_ports {gp[6]}]
 #set_property PACKAGE_PIN R13 [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
 # MC2-10 
-#set_property PACKAGE_PIN F4 [get_ports {}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {}]
+set_property PACKAGE_PIN F4 [get_ports {DS1_SDO}]
+set_property IOSTANDARD LVCMOS25 [get_ports {DS1_SDO}]
 # MC2-11 
-#set_property PACKAGE_PIN AB12 [get_ports {}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {}]
+set_property PACKAGE_PIN AB12 [get_ports {DS1_SCLK}]
+set_property IOSTANDARD LVCMOS25 [get_ports {DS1_SCLK}]
 # MC2-12 
-#set_property PACKAGE_PIN L6 [get_ports {}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {}]
+set_property PACKAGE_PIN L6 [get_ports {DS1_CSB}]
+set_property IOSTANDARD LVCMOS25 [get_ports {DS1_CSB}]
 # MC2-13 
 #set_property PACKAGE_PIN  [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
@@ -389,20 +389,20 @@ set_property IOSTANDARD LVCMOS25 [get_ports {gp[6]}]
 #set_property PACKAGE_PIN  [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
 # MC2-15 
-#set_property PACKAGE_PIN P5 [get_ports {}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {}]
+set_property PACKAGE_PIN P5 [get_ports {DS1_SDI}]
+set_property IOSTANDARD LVCMOS25 [get_ports {DS1_SDI}]
 # MC2-16 
-#set_property PACKAGE_PIN P6 [get_ports {}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {}]
+set_property PACKAGE_PIN P6 [get_ports {DS2_SDO}]
+set_property IOSTANDARD LVCMOS25 [get_ports {DS2_SDO}]
 # MC2-17 
-#set_property PACKAGE_PIN P4 [get_ports {}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {}]
+set_property PACKAGE_PIN P4 [get_ports {DS2_SCLK}]
+set_property IOSTANDARD LVCMOS25 [get_ports {DS2_SCLK}]
 # MC2-18 
-#set_property PACKAGE_PIN N5 [get_ports {}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {}]
+set_property PACKAGE_PIN N5 [get_ports {DS2_CSB}]
+set_property IOSTANDARD LVCMOS25 [get_ports {DS2_CSB}]
 # MC2-19 
-#set_property PACKAGE_PIN N4 [get_ports {}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {}]
+set_property PACKAGE_PIN N4 [get_ports {DS2_SDI}]
+set_property IOSTANDARD LVCMOS25 [get_ports {DS2_SDI}]
 # MC2-20 
 #set_property PACKAGE_PIN P2 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
