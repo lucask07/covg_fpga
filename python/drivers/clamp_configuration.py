@@ -22,7 +22,7 @@ from interfaces import FPGA, IOExpanderController
 
 def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
                     ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None, P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None, gain=None, FDBK=None, mode=None, EN_ipump=None, RF_1_Out=None,
-                    addr_pins_1=0b000, addr_pins_2=0b001):  # TODO: correct defaults for addr_pins
+                    addr_pins_1=0b110, addr_pins_2=0b000):  # TODO: correct defaults for addr_pins
     # Define configuration params for mask later
     config_params_1 = [ADC_SEL, DAC_SEL, CCOMP, RF1]
     config_params_2 = [ADG_RES, PClamp_CTRL, P1_E_CTRL, P1_CAL_CTRL,
@@ -50,12 +50,16 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     RF_1_Out_code    = RF_1_Out_dict.get(RF_1_Out)
 
     # Assemble messages
-    message1 = (ADC_SEL_code << 12) + (DAC_SEL_code << 8) + \
-        (CCOMP_code << 4) + (RF1_code)
-    message2 = (ADG_RES_code << 13) + (PClamp_CTRL_code << 12) + (P1_E_CTRL_code << 11) + (P1_CAL_CTRL_code << 10) + (P2_E_CTRL_code <<
-        9) + (P2_CAL_CTRL_code << 8) + (gain_code << 5) + (FDBK_code << 4) + (mode_code << 2) + (EN_ipump_code << 1) + (RF_1_Out_code)
+    upper_byte_1 = reverse_bits((ADC_SEL_code << 4) + DAC_SEL_code)
+    lower_byte_1 = reverse_bits((CCOMP_code << 4) + RF1_code)
+    message1 = (upper_byte_1 << 8) + lower_byte_1
+
+    upper_byte_2 = reverse_bits((ADG_RES_code << 5) + (PClamp_CTRL_code << 4) + (P1_E_CTRL_code << 3) + (P1_CAL_CTRL_code << 2) + (P2_E_CTRL_code << 1) + P2_CAL_CTRL_code)
+    lower_byte_2 = reverse_bits((gain_code << 5) + (FDBK_code << 4) + (mode_code << 2) + (EN_ipump_code << 1) + RF_1_Out_code)
+    message2 = (upper_byte_2 << 8) + lower_byte_2
 
     # Create masks
+    # TODO: fix masks and use bit shifts instead of strings. Maybe use Register class.
     mask1 = ''
     for bit in range(len(config_params_1)):
         if config_params_1[bit] == None:
@@ -81,8 +85,22 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     io2.configure_pins(addr_pins_2, [0x00, 0x00])
 
     # Write messages
+    mask1 = 0xffff
+    mask2 = 0xffff
+
+    print(f'Writing: {bin(message1)} ({hex(message1)})')
+    print(f'   Mask: {bin(mask1)}')
     io1.write(addr_pins_1, message1, mask1)
+
+    print(f'Writing: {bin(message2)} ({hex(message2)})')
+    print(f'   Mask: {bin(mask2)}')
     io2.write(addr_pins_2, message2, mask2)
+
+    # Read messages
+    read1 = io1.read(addr_pins_1)
+    read2 = io2.read(addr_pins_2)
+    print([bin(part) for part in read1])
+    print([bin(part) for part in read2])
 
     # Return configuration and code for logging or other purposes.
     return [
@@ -104,6 +122,15 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
         f'Code 1 = {message1}',
         f'Code 2 = {message2}'
     ]
+
+# Function to reverse the bits in a byte. Use for writing each byte to the I/O Expander because the MSB goes to pin 07 or 17 rather than 00 or 10
+def reverse_bits(number, bit_width=8):
+    reversed_number = 0
+    for i in range(bit_width):
+        reversed_number <<= 1
+        reversed_number |= number & 0b1
+        number >>= 1
+    return reversed_number
 
 #Dictonaries
 ADC_SEL_dict = { #Select the signal to output (Usually only output one signal at a time)
