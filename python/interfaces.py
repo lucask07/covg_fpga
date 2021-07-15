@@ -305,7 +305,7 @@ class I2CController():
                     return list(buf[0::4])[0:data_length]
             time.sleep(0.01)
 
-        print('Timeout Excpetion in Rx')
+        print('Timeout Exception in Rx')
 
     def i2c_write8(self, devAddr, regAddr, data_length, data):
 
@@ -315,7 +315,6 @@ class I2CController():
 
     def i2c_write_long(self, devAddr, regAddr, data_length, data):
 
-        print('i2c write long')
         preamble = [devAddr & 0xfe] + regAddr  # + data
         self.i2c_configure(len(preamble), 0x00, 1 << len(preamble), preamble)
         return self.i2c_transmit(data, data_length)
@@ -392,18 +391,19 @@ class IOExpanderController(I2CController):
 
         # Compare with current data to mask unchanged values
         if mask == 0xffff:
-            # Turn data into a list of bytes
-            new_data = [data // (16**2), data % (16**2)]
+            new_data = data
         else:
-            current_data = self.read(addr_pins)
+            read_out = self.read(addr_pins)
+            current_data = (read_out[0] << 8) | read_out[1]
             if current_data == None:
                 print('Read for masking FAILED')
                 return False
-            new_data = [(data & mask) | (data_piece & ~mask)
-                        for data_piece in current_data]
+            new_data = (data & mask) | (current_data & ~mask)
 
+        # Turn data into a list of bytes for i2c_write method
+        list_data = [new_data // (16**2), new_data % (16**2)]
         self.i2c_write_long(
-            dev_addr, [self.parameters['SLAVE_OUTPUT_REG'].address], 2, new_data)
+            dev_addr, [self.parameters['SLAVE_OUTPUT_REG'].address], 2, list_data)
 
 
     # Method to read 2 bytes of data from the pins.
