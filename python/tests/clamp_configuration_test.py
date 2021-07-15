@@ -27,7 +27,7 @@ from clamp_configuration import configure_clamp
 f = FPGA(bitfile='C:/Users/ajstr/OneDrive/Documents/Research Internship/Programs/xem7310_starter/i2c.bit')
 f.init_device()
 
-log_info = configure_clamp(f, ADC_SEL='CC', DAC_SEL='drive_CAL2', CCOMP=47, RF1=12, addr_pins_1=000, addr_pins_2=111)
+log_info = configure_clamp(f, ADC_SEL='CC', DAC_SEL=None, CCOMP=47, RF1=12, addr_pins_1=000, addr_pins_2=111)
 for info in log_info:
     logging.info(info)
 # Expecting 0b1110, 0b1011, 0b1000, 0b0100

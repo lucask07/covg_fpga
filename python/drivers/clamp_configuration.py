@@ -12,7 +12,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces import FPGA, IOExpanderController
+from interfaces import IOExpanderController, Register
 
 # This is our main function. All parameters should pass through here. The function should get the codes
 # corresponding to the parameters, assemble them as 2 bytes to set on the I/O Expander (with masking for 
@@ -22,11 +22,11 @@ from interfaces import FPGA, IOExpanderController
 
 def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
                     ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None, P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None, gain=None, FDBK=None, mode=None, EN_ipump=None, RF_1_Out=None,
-                    addr_pins_1=0b110, addr_pins_2=0b000):  # TODO: correct defaults for addr_pins
+                    addr_pins_1=0b110, addr_pins_2=0b000):
     # Define configuration params for mask later
-    config_params_1 = [ADC_SEL, DAC_SEL, CCOMP, RF1]
-    config_params_2 = [ADG_RES, PClamp_CTRL, P1_E_CTRL, P1_CAL_CTRL,
-                       P2_E_CTRL, P2_CAL_CTRL, gain, FDBK, mode, EN_ipump, RF_1_Out]
+    input_params_1 = {'ADC_SEL' : ADC_SEL, 'DAC_SEL' : DAC_SEL, 'CCOMP' : CCOMP, 'RF1' : RF1}
+    input_params_2 = {'ADG_RES': ADG_RES, 'PClamp_CTRL' : PClamp_CTRL, 'P1_E_CTRL' : P1_E_CTRL, 'P1_CAL_CTRL' : P1_CAL_CTRL,
+                      'P2_E_CTRL': P2_E_CTRL, 'P2_CAL_CTRL': P2_CAL_CTRL, 'gain' : gain, 'FDBK' : FDBK, 'mode' : mode, 'EN_ipump' : EN_ipump, 'RF_1_Out' : RF_1_Out}
 
     # Get codes from the corresponding dictionaries
     # I/O Expander 1 (io1)
@@ -50,31 +50,33 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     RF_1_Out_code    = RF_1_Out_dict.get(RF_1_Out)
 
     # Assemble messages
-    upper_byte_1 = reverse_bits((ADC_SEL_code << 4) + DAC_SEL_code)
-    lower_byte_1 = reverse_bits((CCOMP_code << 4) + RF1_code)
-    message1 = (upper_byte_1 << 8) + lower_byte_1
+    upper_byte_1 = reverse_bits((ADC_SEL_code << 4) | DAC_SEL_code)
+    lower_byte_1 = reverse_bits((CCOMP_code << 4) | RF1_code)
+    message1 = (upper_byte_1 << 8) | lower_byte_1
 
-    upper_byte_2 = reverse_bits((ADG_RES_code << 5) + (PClamp_CTRL_code << 4) + (P1_E_CTRL_code << 3) + (P1_CAL_CTRL_code << 2) + (P2_E_CTRL_code << 1) + P2_CAL_CTRL_code)
-    lower_byte_2 = reverse_bits((gain_code << 5) + (FDBK_code << 4) + (mode_code << 2) + (EN_ipump_code << 1) + RF_1_Out_code)
-    message2 = (upper_byte_2 << 8) + lower_byte_2
+    upper_byte_2 = reverse_bits((ADG_RES_code << 5) | (PClamp_CTRL_code << 4) | (P1_E_CTRL_code << 3) | (P1_CAL_CTRL_code << 2) | (P2_E_CTRL_code << 1) | P2_CAL_CTRL_code)
+    lower_byte_2 = reverse_bits((gain_code << 5) | (FDBK_code << 4) | (mode_code << 2) | (EN_ipump_code << 1) | RF_1_Out_code)
+    message2 = (upper_byte_2 << 8) | lower_byte_2
 
     # Create masks
-    # TODO: fix masks and use bit shifts instead of strings. Maybe use Register class.
-    mask1 = ''
-    for bit in range(len(config_params_1)):
-        if config_params_1[bit] == None:
-            mask1 += '0'
+    mask1 = 0
+    for key in input_params_1:
+        if input_params_1[key] == None: # If the parameter was not set by the user, do not add it to the mask.
+            continue
         else:
-            mask1 += '1'
-    mask1 = int(mask1, 2)
+            mask1 += ((2**config_params[key].bit_width - 1) << config_params[key].bit_index_low)
 
-    mask2 = ''
-    for bit in range(len(config_params_2)):
-        if config_params_2[bit] == None:
-            mask2 += '0'
+    mask2 = 0
+    for key in input_params_2:
+        # If the parameter was not set by the user, do not add it to the mask.
+        if input_params_2[key] == None:
+            continue
         else:
-            mask2 += '1'
-    mask2 = int(mask2, 2)
+            mask2 += ((2**config_params[key].bit_width - 1) << config_params[key].bit_index_low)
+
+    # Reverse bytes in masks
+    mask1 = (reverse_bits(mask1 // 16**2) << 8) | reverse_bits(mask1 % 16**2)
+    mask2 = (reverse_bits(mask2 // 16**2) << 8) | reverse_bits(mask2 % 16**2)
 
     # I/O Expander chips
     io1 = IOExpanderController(fpga)
@@ -85,22 +87,21 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     io2.configure_pins(addr_pins_2, [0x00, 0x00])
 
     # Write messages
-    mask1 = 0xffff
-    mask2 = 0xffff
-
-    print(f'Writing: {bin(message1)} ({hex(message1)})')
-    print(f'   Mask: {bin(mask1)}')
+    print(f'Writing 1: {bin(message1)} ({hex(message1)})')
+    print(f'   Mask 1: {bin(mask1)}')
     io1.write(addr_pins_1, message1, mask1)
 
-    print(f'Writing: {bin(message2)} ({hex(message2)})')
-    print(f'   Mask: {bin(mask2)}')
+    print(f'Writing 2: {bin(message2)} ({hex(message2)})')
+    print(f'   Mask 2: {bin(mask2)}')
     io2.write(addr_pins_2, message2, mask2)
 
     # Read messages
-    read1 = io1.read(addr_pins_1)
-    read2 = io2.read(addr_pins_2)
-    print([bin(part) for part in read1])
-    print([bin(part) for part in read2])
+    list_read1 = io1.read(addr_pins_1)
+    list_read2 = io2.read(addr_pins_2)
+    read1 = (list_read1[0] << 8) | list_read1[1]
+    read2 = (list_read2[0] << 8) | list_read2[1]
+    print('Reading 1', bin(read1))
+    print('Reading 2', bin(read2))
 
     # Return configuration and code for logging or other purposes.
     return [
@@ -131,6 +132,8 @@ def reverse_bits(number, bit_width=8):
         reversed_number |= number & 0b1
         number >>= 1
     return reversed_number
+
+config_params = Register.dict_from_excel('clamp_configuration')
 
 #Dictonaries
 ADC_SEL_dict = { #Select the signal to output (Usually only output one signal at a time)
