@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Wed Jul 14 08:13:23 2021
-# Process ID: 4672
+# Start of session at: Thu Jul 15 13:17:49 2021
+# Process ID: 9920
 # Current directory: C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
 # Command line: vivado.exe -log top_level_module.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_level_module.tcl
 # Log file: C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
@@ -15,10 +15,12 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 11320 
+INFO: Helper process launched with PID 1272 
+WARNING: [Synth 8-992] dac_val_0 is already implicitly declared earlier [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:574]
+WARNING: [Synth 8-992] dac_val_1 is already implicitly declared earlier [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:575]
 WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okCoreHarness.v:15361]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 429.918 ; gain = 120.227
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 425.676 ; gain = 116.078
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:87]
 INFO: [Synth 8-6157] synthesizing module 'mux_1to8' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/mux_1to8.v:21]
@@ -34,10 +36,10 @@ INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Xilinx/Vivado/2018.2/scri
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
 INFO: [Synth 8-6155] done synthesizing module 'IBUFGDS' (2#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4672-FDC212-04/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (3#1) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4672-FDC212-04/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9920-FDC212-04/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (3#1) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9920-FDC212-04/realtime/clk_wiz_0_stub.v:5]
 INFO: [Synth 8-6157] synthesizing module 'okWireOR' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:119]
-	Parameter N bound to: 9 - type: integer 
+	Parameter N bound to: 11 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'okWireOR' (4#1) [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:119]
 INFO: [Synth 8-6157] synthesizing module 'okHost' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/XEM7310-A75/okLibrary.v:10]
 INFO: [Synth 8-6157] synthesizing module 'IOBUF' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:22660]
@@ -346,8 +348,6 @@ WARNING: [Synth 8-689] width (5) of port connection 'write_address' does not mat
 WARNING: [Synth 8-3848] Net adr in module/entity DAC80508 does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/Downloads/DAC80508.v:42]
 WARNING: [Synth 8-3848] Net ep_datain in module/entity top_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:64]
 WARNING: [Synth 8-689] width (8) of port connection 'slow_pulse' does not match port width (1) of module 'top_module' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:403]
-WARNING: [Synth 8-689] width (1) of port connection 'dac_val_0' does not match port width (32) of module 'top_module' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:408]
-WARNING: [Synth 8-689] width (1) of port connection 'dac_val_1' does not match port width (32) of module 'top_module' [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:409]
 	Parameter FPGA_CLOCK_FREQ bound to: 200.000000 - type: float 
 	Parameter TCYC bound to: 0.200000 - type: float 
 	Parameter ADC_CYC_CNT bound to: 39 - type: integer 
@@ -377,9 +377,10 @@ WARNING: [Synth 8-3848] Net DS1_SDI in module/entity top_level_module does not h
 WARNING: [Synth 8-3848] Net DS2_SCLK in module/entity top_level_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:184]
 WARNING: [Synth 8-3848] Net DS2_CSB in module/entity top_level_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:185]
 WARNING: [Synth 8-3848] Net DS2_SDI in module/entity top_level_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:186]
-WARNING: [Synth 8-3848] Net dac_val in module/entity top_level_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:573]
 WARNING: [Synth 8-3848] Net dac_miso_0 in module/entity top_level_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:216]
 WARNING: [Synth 8-3848] Net dac_miso_1 in module/entity top_level_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:221]
+WARNING: [Synth 8-3848] Net dac_out_0 in module/entity top_level_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:581]
+WARNING: [Synth 8-3848] Net dac_out_1 in module/entity top_level_module does not have driver. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:582]
 WARNING: [Synth 8-3917] design top_level_module has port led[7] driven by constant 0
 WARNING: [Synth 8-3917] design top_level_module has port led[6] driven by constant 0
 WARNING: [Synth 8-3917] design top_level_module has port led[5] driven by constant 0
@@ -387,109 +388,109 @@ WARNING: [Synth 8-3917] design top_level_module has port led[4] driven by consta
 WARNING: [Synth 8-3917] design top_level_module has port led[3] driven by constant 0
 WARNING: [Synth 8-3917] design top_level_module has port led[2] driven by constant 0
 WARNING: [Synth 8-3917] design top_level_module has port led[1] driven by constant 0
-WARNING: [Synth 8-3331] design spi_shift has unconnected port latch[3]
-WARNING: [Synth 8-3331] design spi_shift has unconnected port latch[2]
-WARNING: [Synth 8-3331] design spi_shift has unconnected port latch[1]
-WARNING: [Synth 8-3331] design spi_top has unconnected port wb_adr_i[1]
-WARNING: [Synth 8-3331] design spi_top has unconnected port wb_adr_i[0]
-WARNING: [Synth 8-3331] design read_AD796x_fifo_cmd has unconnected port empty
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[31]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[30]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[29]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[28]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[27]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[26]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[25]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[24]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[23]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[22]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[21]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[20]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[19]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[18]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[17]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[16]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[15]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[14]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[13]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[12]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[11]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[10]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[9]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[8]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[7]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[6]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[5]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[4]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[3]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[2]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[1]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[0]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[15]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[14]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[13]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[12]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[11]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[10]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[9]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[8]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[7]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[6]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[5]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[4]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[3]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[2]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[1]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[0]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[15]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[14]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[13]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[12]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[11]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[10]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[9]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[8]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[7]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[6]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[5]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[4]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[3]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[2]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[1]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[0]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[15]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[14]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[13]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[12]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[11]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[10]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[9]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[8]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[7]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[6]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[5]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[4]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[3]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[2]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[1]
-WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[0]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_read
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[31]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[30]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[29]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[28]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[27]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[26]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[25]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[24]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[23]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[22]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[21]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[20]
-WARNING: [Synth 8-3331] design top_module has unconnected port ep_address[19]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[112]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[111]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[110]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[109]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[108]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[107]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[106]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[105]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[104]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[103]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[102]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[101]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[100]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[99]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[98]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[97]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[96]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[95]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[94]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[93]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[92]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[91]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[90]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[89]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[88]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[87]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[86]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[85]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[84]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[83]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[82]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[81]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[80]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[79]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[78]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[77]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[76]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[75]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[74]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[73]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[72]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[71]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[70]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[69]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[68]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[67]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[66]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[65]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[64]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[63]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[62]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[61]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[60]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[59]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[58]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[57]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[56]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[55]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[54]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[53]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[52]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[51]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[50]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[49]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[48]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[47]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[46]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[45]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[43]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[42]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[31]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[30]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[29]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[28]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[27]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[26]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[25]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[24]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[23]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[22]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[21]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[20]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[19]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[18]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[17]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[16]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[15]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[14]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[13]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[12]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[11]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[10]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[9]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[8]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[7]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[6]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[5]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[4]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[3]
+WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[2]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 502.242 ; gain = 192.551
+Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 502.184 ; gain = 192.586
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -505,25 +506,87 @@ WARNING: [Synth 8-3295] tying undriven pin i_spi_top_0:miso_pad_i to constant 0 
 WARNING: [Synth 8-3295] tying undriven pin i_spi_top_1:miso_pad_i to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:360]
 WARNING: [Synth 8-3295] tying undriven pin i_spi_top_2:miso_pad_i to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:402]
 WARNING: [Synth 8-3295] tying undriven pin i_spi_top_3:miso_pad_i to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_module.v:444]
-WARNING: [Synth 8-3295] tying undriven pin top:dac_val_0[0] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:401]
 WARNING: [Synth 8-3295] tying undriven pin top:dac_miso_0 to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:401]
-WARNING: [Synth 8-3295] tying undriven pin top:dac_val_1[0] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:401]
 WARNING: [Synth 8-3295] tying undriven pin top:dac_miso_1 to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:401]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[31] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[30] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[29] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[28] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[27] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[26] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[25] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[24] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[23] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[22] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[21] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[20] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[19] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[18] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[17] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[16] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[15] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[14] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[13] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[12] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[11] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[10] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[9] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[8] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[7] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[6] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[5] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[4] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[3] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[2] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[1] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_0:ep_datain[0] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:584]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[31] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[30] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[29] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[28] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[27] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[26] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[25] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[24] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[23] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[22] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[21] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[20] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[19] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[18] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[17] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[16] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[15] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[14] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[13] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[12] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[11] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[10] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[9] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[8] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[7] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[6] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[5] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[4] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[3] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[2] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[1] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
+WARNING: [Synth 8-3295] tying undriven pin wo_dac_1:ep_datain[0] to constant 0 [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/imports/iande/Desktop/covg_fpga/SPI_Master/top_level_module.v:585]
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 502.242 ; gain = 192.551
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 502.184 ; gain = 192.586
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 502.242 ; gain = 192.551
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 502.184 ; gain = 192.586
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 167 Unisim elements for replacement
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_0/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_1/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_2/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_3/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
-INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
 INFO: [Device 21-403] Loading part xc7a75tfgg484-1
 INFO: [Project 1-570] Preparing netlist for logic optimization
 WARNING: [Constraints 18-548] Could not create 'IOSTANDARD' constraint because invalid IOSTANDARD value 'LVDS_33' specified. The default IOSTANDARD will be used instead. 'IOSTANDARD' is ignored by Vivado but preserved for implementation tool. [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:310]
@@ -585,7 +648,7 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM128X1S => RAM128X1S (MUXF7, RAMS64E, RAMS64E): 8 instances
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 866.234 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.011 . Memory (MB): peak = 866.434 ; gain = 0.000
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc7961_0_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc7961_1_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc7961_2_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
@@ -593,14 +656,14 @@ WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context s
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'top/FIFO' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'top/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:15 ; elapsed = 00:00:18 . Memory (MB): peak = 866.234 ; gain = 556.543
+Finished Constraint Validation : Time (s): cpu = 00:00:16 ; elapsed = 00:00:20 . Memory (MB): peak = 866.434 ; gain = 556.836
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:15 ; elapsed = 00:00:18 . Memory (MB): peak = 866.234 ; gain = 556.543
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:16 ; elapsed = 00:00:20 . Memory (MB): peak = 866.434 ; gain = 556.836
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -614,7 +677,7 @@ Applied set_property DONT_TOUCH = true for adc7961_3_fifo. (constraint file  aut
 Applied set_property DONT_TOUCH = true for top/realTime_LPF_coeff_BRAM. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okHI/core0/core0/\a0/cb0 /U0/\inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 866.234 ; gain = 556.543
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:16 ; elapsed = 00:00:20 . Memory (MB): peak = 866.434 ; gain = 556.836
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'WbSignal_converter'
 INFO: [Synth 8-5546] ROM "cmd_word" won't be mapped to RAM because it is too sparse
@@ -741,9 +804,9 @@ WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/str
                      S17 |                            10010 |                            10100
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'realTimeLPF_readwrite_coeff'
-INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm185A399C5300'
+INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm19F3ACD23100'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:17 ; elapsed = 00:00:19 . Memory (MB): peak = 866.234 ; gain = 556.543
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:18 ; elapsed = 00:00:22 . Memory (MB): peak = 866.434 ; gain = 556.836
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1025,37 +1088,85 @@ WARNING: [Synth 8-3332] Sequential element (trigff1_reg[12]) is unused and will 
 WARNING: [Synth 8-3332] Sequential element (trigff1_reg[13]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (trigff1_reg[14]) is unused and will be removed from module okTriggerIn.
 INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[2] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[3] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[3] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[3] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[4] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[4] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[4] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[5] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[5] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[5] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[6] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[6] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[6] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[7] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[7] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[7] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[8] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[8] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[8] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[9] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[9] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[9] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[10] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[10] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[10] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[11] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[11] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[11] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[12] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[12] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[12] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[13] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[13] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[13] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[14] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[14] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[14] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[15] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[15] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[15] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[16] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[16] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[16] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[17] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[17] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[17] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[18] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[19] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[19] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[19] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[20] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[20] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[20] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[21] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[21] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[21] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[22] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[22] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[22] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[23] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[23] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[23] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[24] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[24] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[24] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[25] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[25] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[25] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[26] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[27] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[28] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[29] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[30] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[31] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[26] )
+INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[12]' (LD) to 'top/data_converter_0/cmd_word_reg[13]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[31]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
@@ -1074,14 +1185,12 @@ INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[18]' 
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[17]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[16]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[15]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (top/Wishbone_Master_0/\o_wb_data_reg[14] )
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master/o_wb_data_reg[31]' (FDE) to 'top/Wishbone_Master/o_wb_data_reg[30]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (top/Wishbone_Master/\o_wb_data_reg[30] )
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[12]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[13]'
 INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[12]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[13]'
 INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[12]' (FDCE) to 'top/i_spi_top_0/divider_reg[13]'
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:24 ; elapsed = 00:00:27 . Memory (MB): peak = 866.234 ; gain = 556.543
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:25 ; elapsed = 00:00:29 . Memory (MB): peak = 866.434 ; gain = 556.836
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1097,13 +1206,13 @@ INFO: [Synth 8-5783] Moving clock source from hierarchical pin 'adc_pll/clk_in1'
 INFO: [Synth 8-5578] Moved timing constraint from pin 'okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst/src_arst' to pin 'okHI/core0/core0/a0/l62a5479e7989ce7f4d5507c695cc69cf_reg/Q'
 INFO: [Synth 8-5819] Moved 3 constraints on hierarchical pins to their respective driving/loading pins
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:35 ; elapsed = 00:00:38 . Memory (MB): peak = 900.324 ; gain = 590.633
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:36 ; elapsed = 00:00:41 . Memory (MB): peak = 903.281 ; gain = 593.684
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:00:37 ; elapsed = 00:00:41 . Memory (MB): peak = 920.258 ; gain = 610.566
+Finished Timing Optimization : Time (s): cpu = 00:00:38 ; elapsed = 00:00:43 . Memory (MB): peak = 922.934 ; gain = 613.336
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1116,7 +1225,7 @@ Start Technology Mapping
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-5844] Detected registers with asynchronous reset at DSP/BRAM block boundary. Consider using synchronous reset for optimal packing [C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/new/AD7961.v:128]
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:00:40 ; elapsed = 00:00:43 . Memory (MB): peak = 958.129 ; gain = 648.438
+Finished Technology Mapping : Time (s): cpu = 00:00:41 ; elapsed = 00:00:46 . Memory (MB): peak = 961.512 ; gain = 651.914
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1140,7 +1249,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:00:41 ; elapsed = 00:00:44 . Memory (MB): peak = 958.129 ; gain = 648.438
+Finished IO Insertion : Time (s): cpu = 00:00:42 ; elapsed = 00:00:47 . Memory (MB): peak = 961.512 ; gain = 651.914
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -1153,7 +1262,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:00:41 ; elapsed = 00:00:44 . Memory (MB): peak = 958.129 ; gain = 648.438
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:42 ; elapsed = 00:00:47 . Memory (MB): peak = 961.512 ; gain = 651.914
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1165,25 +1274,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:42 ; elapsed = 00:00:45 . Memory (MB): peak = 958.129 ; gain = 648.438
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:43 ; elapsed = 00:00:48 . Memory (MB): peak = 961.512 ; gain = 651.914
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:00:42 ; elapsed = 00:00:45 . Memory (MB): peak = 958.129 ; gain = 648.438
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:43 ; elapsed = 00:00:48 . Memory (MB): peak = 961.512 ; gain = 651.914
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:42 ; elapsed = 00:00:45 . Memory (MB): peak = 958.129 ; gain = 648.438
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:43 ; elapsed = 00:00:48 . Memory (MB): peak = 961.512 ; gain = 651.914
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:00:42 ; elapsed = 00:00:45 . Memory (MB): peak = 958.129 ; gain = 648.438
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:43 ; elapsed = 00:00:48 . Memory (MB): peak = 961.512 ; gain = 651.914
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1220,9 +1329,9 @@ Report Cell Usage:
 |15    |LUT1             |   464|
 |16    |LUT2             |   585|
 |17    |LUT3             |   231|
-|18    |LUT4             |   725|
+|18    |LUT4             |   759|
 |19    |LUT5             |   349|
-|20    |LUT6             |   724|
+|20    |LUT6             |   760|
 |21    |LUT6_2           |    50|
 |22    |MMCME2_BASE      |     1|
 |23    |MUXF7            |     8|
@@ -1247,11 +1356,11 @@ Report Cell Usage:
 |42    |OBUFT            |     6|
 +------+-----------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:00:42 ; elapsed = 00:00:45 . Memory (MB): peak = 958.129 ; gain = 648.438
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:43 ; elapsed = 00:00:48 . Memory (MB): peak = 961.512 ; gain = 651.914
 ---------------------------------------------------------------------------------
-Synthesis finished with 0 errors, 0 critical warnings and 1771 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:00:29 ; elapsed = 00:00:37 . Memory (MB): peak = 958.129 ; gain = 284.445
-Synthesis Optimization Complete : Time (s): cpu = 00:00:42 ; elapsed = 00:00:46 . Memory (MB): peak = 958.129 ; gain = 648.438
+Synthesis finished with 0 errors, 0 critical warnings and 1963 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:29 ; elapsed = 00:00:39 . Memory (MB): peak = 961.512 ; gain = 287.664
+Synthesis Optimization Complete : Time (s): cpu = 00:00:43 ; elapsed = 00:00:49 . Memory (MB): peak = 961.512 ; gain = 651.914
 INFO: [Project 1-571] Translating synthesized netlist
 INFO: [Netlist 29-17] Analyzing 537 Unisim elements for replacement
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'adc7961_0/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
@@ -1291,11 +1400,11 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-395 Infos, 403 Warnings, 0 Critical Warnings and 0 Errors encountered.
+441 Infos, 466 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:00:45 ; elapsed = 00:00:49 . Memory (MB): peak = 958.129 ; gain = 659.941
+synth_design: Time (s): cpu = 00:00:47 ; elapsed = 00:00:52 . Memory (MB): peak = 961.512 ; gain = 663.684
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.088 . Memory (MB): peak = 958.129 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Wed Jul 14 08:14:18 2021...
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.092 . Memory (MB): peak = 961.512 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Thu Jul 15 13:18:47 2021...

@@ -1,7 +1,7 @@
 Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 ---------------------------------------------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-| Date         : Wed Jul 14 08:14:18 2021
+| Date         : Thu Jul 15 13:18:47 2021
 | Host         : FDC212-04 running 64-bit major release  (build 9200)
 | Command      : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
 | Design       : top_level_module
@@ -30,8 +30,8 @@ Table of Contents
 +----------------------------+------+-------+-----------+-------+
 |          Site Type         | Used | Fixed | Available | Util% |
 +----------------------------+------+-------+-----------+-------+
-| Slice LUTs*                | 2880 |     0 |     47200 |  6.10 |
-|   LUT as Logic             | 2848 |     0 |     47200 |  6.03 |
+| Slice LUTs*                | 2950 |     0 |     47200 |  6.25 |
+|   LUT as Logic             | 2918 |     0 |     47200 |  6.18 |
 |   LUT as Memory            |   32 |     0 |     19000 |  0.17 |
 |     LUT as Distributed RAM |   32 |     0 |           |       |
 |     LUT as Shift Register  |    0 |     0 |           |       |
@@ -156,8 +156,8 @@ Table of Contents
 |  Ref Name  | Used | Functional Category |
 +------------+------+---------------------+
 | FDRE       | 1227 |        Flop & Latch |
-| LUT6       |  774 |                 LUT |
-| LUT4       |  725 |                 LUT |
+| LUT6       |  810 |                 LUT |
+| LUT4       |  759 |                 LUT |
 | FDCE       |  683 |        Flop & Latch |
 | LUT2       |  585 |                 LUT |
 | LUT1       |  464 |                 LUT |
@@ -206,9 +206,9 @@ Table of Contents
 +-------------------+------+
 |      Ref Name     | Used |
 +-------------------+------+
+| okWireOut         |    4 |
 | okPipeOut         |    4 |
 | okWireIn          |    3 |
-| okWireOut         |    2 |
 | xpm_cdc_async_rst |    1 |
 | okTriggerOut      |    1 |
 | okTriggerIn       |    1 |
