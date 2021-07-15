@@ -268,7 +268,7 @@ module top_level_module(
 	wire [64:0] okEH;
 	
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
-	wire [9*65-1:0] okEHx;
+	wire [11*65-1:0] okEHx;
 	
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire, ep01wire;
@@ -295,7 +295,7 @@ module top_level_module(
 	assign sys_rst = (pushreset | ep40trig[1]);
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(9)) wireOR (okEH, okEHx);
+	okWireOR # (.N(11)) wireOR (okEH, okEHx);
     
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
@@ -405,8 +405,8 @@ module top_level_module(
 				 .ss_1(ss_1), .mosi_1(mosi_1), .sclk_1(sclk_1), .data_rdy_1(pipe_out_write_adc[1]), .adc_val_1(adc_val[1]),
 				 .ss_2(ss_2), .mosi_2(mosi_2), .sclk_2(sclk_2), .data_rdy_2(pipe_out_write_adc[2]), .adc_val_2(adc_val[2]),
 				 .ss_3(ss_3), .mosi_3(mosi_3), .sclk_3(sclk_3), .data_rdy_3(pipe_out_write_adc[3]), .adc_val_3(adc_val[3]),
-                 .dac_val_0(dac_val[0]), .dac_convert_trigger_0(ep40trig[8]), .dac_ss_0(dac_ss_0), .dac_sclk_0(dac_sclk_0), .dac_mosi_0(dac_mosi_0), .dac_miso_0(dac_miso_0),
-                 .dac_val_1(dac_val[1]), .dac_convert_trigger_1(ep40trig[9]), .dac_ss_1(dac_ss_1), .dac_sclk_1(dac_sclk_1), .dac_mosi_1(dac_mosi_1), .dac_miso_1(dac_miso_1), 
+                 .dac_val_0(dac_val_0), .dac_convert_trigger_0(ep40trig[8]), .dac_ss_0(dac_ss_0), .dac_sclk_0(dac_sclk_0), .dac_mosi_0(dac_mosi_0), .dac_miso_0(dac_miso_0),
+                 .dac_val_1(dac_val_1), .dac_convert_trigger_1(ep40trig[9]), .dac_ss_1(dac_ss_1), .dac_sclk_1(dac_sclk_1), .dac_mosi_1(dac_mosi_1), .dac_miso_1(dac_miso_1), 
 				 .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn));
 	
 	/* ---------------- ADC796x ----------------*/
@@ -570,6 +570,18 @@ module top_level_module(
       .prog_full(adc_fifo_halffull[3]));//status        
     
     /* ---------------- DAC80508 ----------------*/
-    wire [1:0] dac_val;
+    // Input Values to Wishbones
+    wire [31:0] dac_val_0;
+    wire [31:0] dac_val_1;
+
+    okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(8'h03), .ep_dataout(dac_val_0));
+    okWireIn wi_dac_1 (.okHE(okHE), .ep_addr(8'h04), .ep_dataout(dac_val_1));
+
+    // Output Values from Wishbones
+    wire [31:0] dac_out_0;
+    wire [31:0] dac_out_1;
+
+    okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[9*65 +: 65 ]), .ep_addr(8'h22), .ep_datain(dac_out_0));
+    okWireOut wo_dac_1 (.okHE(okHE), .okEH(okEHx[10*65 +: 65 ]), .ep_addr(8'h23), .ep_datain(dac_out_1));
 	
 endmodule
