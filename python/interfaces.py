@@ -640,8 +640,10 @@ class GeneralDACController(SPIController):
     DEFAULT_PARAMETERS.update(reg_dict)
     DEFAULT_PARAMETERS.update(dict(CONFIG_DICT = config_dict))
     
-    def __init__(self, fpga, slave_address=0x5, parameters=DEFAULT_PARAMETERS, debug=False):
+    def __init__(self, fpga, slave_address=0x5, chip_number=0, parameters=DEFAULT_PARAMETERS, debug=False):
         self.slave_address = slave_address
+        self.parameters['WB_IN'] = self.parameters['WB_IN_' + chip_number]
+        self.parameters['WB_OUT'] = self.parameters['WB_OUT_' + chip_number]
         super().__init__(fpga, parameters, debug)
 
     # Method to write to any register on the chip.
