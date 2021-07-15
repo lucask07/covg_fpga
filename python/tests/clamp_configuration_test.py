@@ -24,10 +24,12 @@ sys.path.append(os.path.join(interfaces_path, 'drivers'))
 from clamp_configuration import configure_clamp
 
 # Requires i2c.bit or First.bit for the bitfile.
-f = FPGA(bitfile='C:/Users/ajstr/OneDrive/Documents/Research Internship/Programs/xem7310_starter/i2c.bit')
+bitfile = os.path.join(interfaces_path, 'i2c.bit')
+
+f = FPGA(bitfile=bitfile)
 f.init_device()
 
-log_info = configure_clamp(f, ADC_SEL='CC', DAC_SEL=None, CCOMP=47, RF1=12, addr_pins_1=000, addr_pins_2=111)
+log_info = configure_clamp(f, ADC_SEL='INAMP_OUT', DAC_SEL='drive_CAL1', CCOMP=47, RF1=12, addr_pins_1=000, addr_pins_2=111)
 for info in log_info:
     logging.info(info)
-# Expecting 0b1110, 0b1011, 0b1000, 0b0100
+# Expecting 0b0111, 0b1101, 0b1000, 0b0100
