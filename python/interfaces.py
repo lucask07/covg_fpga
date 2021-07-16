@@ -417,6 +417,9 @@ class IDChipController(I2CController):
     DEFAULT_PARAMETERS = I2CController.DEFAULT_PARAMETERS.update(dict(
         ADDRESS_HEADER = 10100000
     ))
+    reg_dict = Register.dict_from_excel('24AA025UID')
+    DEFAULT_PARAMETERS.update(reg_dict)
+
     def __init__(self, fpga, parameters):
         super().__init__(fpga, parameters)
 
@@ -433,10 +436,23 @@ class IDChipController(I2CController):
         self.i2c_write_long(dev_addr, [word_address], number_of_bytes, data)
 
     # Method to read 1 byte of data from a given word address within the chip.
-    # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 0100 and Read bit automatically
-    def read(self, addr_pins, word_address=0x00):
+    # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 0100 and Read bit automatically.
+    def read(self, addr_pins, word_address=0x00, words_read=1):
+        # A word is a byte, 8 bits
         dev_addr = self.parameters['ADDRESS_HEADER'] + (addr_pins*2) + 0b1
-        return self.i2c_read_long(dev_addr, [word_address], 1)
+        return self.i2c_read_long(dev_addr, [word_address], words_read)
+
+    # Method to get the manufactured 32-bit serial number for the chip.
+    def get_serial_number(self, addr_pins):
+        return self.read(addr_pins, word_address=self.parameters['SERIAL_NUMBER'], words_read=4)
+
+    # Method to get the manufacturer code. Should be 0x29.
+    def get_manufacturer_code(self, addr_pins):
+        return self.read(addr_pins, word_address=self.parameters['MANUFACTURER_CODE'])
+
+    # Method to get the device code. Should be 0x41.
+    def get_device_code(self, addr_pins):
+        return self.read(addr_pins, word_address=self.parameters['DEVICE_CODE'])
 
 # Class for controllers on the FPGA using SPI protocol. Handles reading, writing, slave select, and configuration of the control register.
 # Requires top_level_module.bit file for FPGA.
