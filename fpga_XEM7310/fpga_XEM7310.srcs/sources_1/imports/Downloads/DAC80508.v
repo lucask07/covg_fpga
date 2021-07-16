@@ -25,8 +25,9 @@
 module DAC80508(
     input wire clk,
     input wire reset,
-    input [31:0] dac_val,
+    input wire [31:0] dac_val,
     input wire dac_convert_trigger,
+    output wire [31:0] dac_out,
     output wire ss,
     output wire sclk,
     output wire mosi,
@@ -63,6 +64,8 @@ module DAC80508(
     .o_wb_we(we), .o_wb_addr(), .o_wb_data(dat_o), .o_wb_sel(sel),        
     .i_wb_ack(ack), .i_wb_stall(1'b0), .i_wb_err(err), .i_wb_data(dat_i)
     );
+
+    assign dac_out = wb_cmd_dataout[31:0];
     
     //SPI master core for DAC80508
     spi_top i_spi_top (

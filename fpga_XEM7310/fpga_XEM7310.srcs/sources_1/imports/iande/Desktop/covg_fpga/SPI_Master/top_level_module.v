@@ -405,8 +405,8 @@ module top_level_module(
 				 .ss_1(ss_1), .mosi_1(mosi_1), .sclk_1(sclk_1), .data_rdy_1(pipe_out_write_adc[1]), .adc_val_1(adc_val[1]),
 				 .ss_2(ss_2), .mosi_2(mosi_2), .sclk_2(sclk_2), .data_rdy_2(pipe_out_write_adc[2]), .adc_val_2(adc_val[2]),
 				 .ss_3(ss_3), .mosi_3(mosi_3), .sclk_3(sclk_3), .data_rdy_3(pipe_out_write_adc[3]), .adc_val_3(adc_val[3]),
-                 .dac_val_0(dac_val_0), .dac_convert_trigger_0(ep40trig[8]), .dac_ss_0(dac_ss_0), .dac_sclk_0(dac_sclk_0), .dac_mosi_0(dac_mosi_0), .dac_miso_0(dac_miso_0),
-                 .dac_val_1(dac_val_1), .dac_convert_trigger_1(ep40trig[9]), .dac_ss_1(dac_ss_1), .dac_sclk_1(dac_sclk_1), .dac_mosi_1(dac_mosi_1), .dac_miso_1(dac_miso_1), 
+                 .dac_val_0(dac_val_0), .dac_convert_trigger_0(ep40trig[8]), .dac_out_0(dac_out_0), .dac_ss_0(dac_ss_0), .dac_sclk_0(dac_sclk_0), .dac_mosi_0(dac_mosi_0), .dac_miso_0(dac_miso_0),
+                 .dac_val_1(dac_val_1), .dac_convert_trigger_1(ep40trig[9]), .dac_out_1(dac_out_1), .dac_ss_1(dac_ss_1), .dac_sclk_1(dac_sclk_1), .dac_mosi_1(dac_mosi_1), .dac_miso_1(dac_miso_1), 
 				 .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn));
 	
 	/* ---------------- ADC796x ----------------*/

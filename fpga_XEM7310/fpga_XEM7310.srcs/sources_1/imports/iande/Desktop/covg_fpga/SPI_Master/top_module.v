@@ -65,12 +65,14 @@ module top_module(
      // DAC80508
      input wire [31:0] dac_val_0,
      input wire dac_convert_trigger_0,
+     output wire [31:0] dac_out_0,
      output wire dac_ss_0,
      output wire dac_sclk_0,
      output wire dac_mosi_0,
      input wire dac_miso_0,
      input wire [31:0] dac_val_1,
      input wire dac_convert_trigger_1,
+     output wire [31:0] dac_out_1,
      output wire dac_ss_1,
      output wire dac_sclk_1,
      output wire dac_mosi_1,
@@ -451,12 +453,12 @@ module top_module(
 
     /*---------------- DAC80508 -------------------*/
     DAC80508 dac_0 (
-      .clk(clk), .reset(sync_rst), .dac_val(dac_val_0), .dac_convert_trigger(dac_convert_trigger_0),
+      .clk(clk), .reset(sync_rst), .dac_val(dac_val_0), .dac_convert_trigger(dac_convert_trigger_0), .dac_out(dac_out_0),
       .ss(dac_ss_0), .sclk(dac_sclk_0), .mosi(dac_mosi_0), .miso(dac_miso_0)
     );
     
     DAC80508 dac_1 (
-      .clk(clk), .reset(sync_rst), .dac_val(dac_val_1), .dac_convert_trigger(dac_convert_trigger_1),
+      .clk(clk), .reset(sync_rst), .dac_val(dac_val_1), .dac_convert_trigger(dac_convert_trigger_1), .dac_out(dac_out_1),
       .ss(dac_ss_1), .sclk(dac_sclk_1), .mosi(dac_mosi_1), .miso(dac_miso_1)
     );
     
