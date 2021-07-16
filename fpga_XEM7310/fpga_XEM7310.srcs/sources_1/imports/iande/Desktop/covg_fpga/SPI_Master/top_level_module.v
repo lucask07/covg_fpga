@@ -574,6 +574,10 @@ module top_level_module(
     wire [31:0] dac_val_0;
     wire [31:0] dac_val_1;
 
+    // DEBUG: Have the LEDs light up on a couple values of the dac input to see if the message goes through
+    assign led[7:6] = ~(dac_val_0[31:30]); // Added not (~) because LEDs are active low
+    assign led[5:1] = ep40trig[8];
+
     okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(8'h03), .ep_dataout(dac_val_0));
     okWireIn wi_dac_1 (.okHE(okHE), .ep_addr(8'h04), .ep_dataout(dac_val_1));
 
