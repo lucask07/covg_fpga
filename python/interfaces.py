@@ -476,23 +476,20 @@ class SPIController():
 
     # Method to send a command to the Wishbone. Sent in 32 bits through the WbSignal_converter Verilog module to reformat to 34 bits.
     def wb_send_cmd(self, command):
+        print(f'wb_send_cmd: {self.parameters["WB_IN"].address}, {bin(command)}')
         self.fpga.set_wire(
             self.parameters['WB_IN'].address, command, 0xffffffff)
         self.fpga.xem.ActivateTriggerIn(
-            self.parameters['TRIGGER_BIT'].address, self.parameters['TRIGGER_BIT'].bit_index_high)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
+            self.parameters['WB_CONVERT_TRIGGER'].address, self.parameters['WB_CONVERT_TRIGGER'].bit_index_high)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
 
     def wb_is_acknowledged(self):
         response = self.fpga.read_wire(self.parameters['WB_OUT'].address)
-        if response == self.parameters['ACK']:
-            acknowledged = True
-        else:
-            acknowledged = False
-        return acknowledged
+        return response == self.parameters['ACK']
 
     # Method to send a Wishbone command setting the address of the register we interact with.
     def wb_set_address(self, address):
         self.wb_send_cmd(
-            self.parameters['WB_SET_ADDRESS'] | address)
+            self.parameters['WB_SET_ADDRESS'] | (address << 2) | 0x1) # TODO: comment here what the | 0x1 is for when I figure it out
         return self.wb_is_acknowledged() # TODO: test if acknowledge actually comes back
 
     # Method to write up to 30 bytes of data to the currently selected register.
@@ -507,8 +504,27 @@ class SPIController():
 
     # Method to set the GO_BSY bit of the CTRL register to logic 1, initiating a SPI transmission.
     def wb_go(self):
-        self.wb_set_address(self.parameters['CTRL'].address)
-        self.wb_write(0x00000100)
+        ack = self.wb_set_address(self.parameters['CTRL'].address)
+        # TODO: fix ack
+        # if ack:
+        #     if self.debug:
+        #         print(f'Set address to "CTRL": SUCCESS')
+        # else:
+        #     if self.debug:
+        #         print(f'Set address to "CTRL": FAIL')
+        #     return False
+
+        ack = self.wb_write(0x00000100)
+        # TODO: fix ack
+        # if ack:
+        #     if self.debug:
+        #         print(f'Set GO_BSY bit: SUCCESS')
+        # else:
+        #     if self.debug:
+        #         print(f'Set GO_BSY bit: FAIL')
+        #     return False
+
+        return True
 
     # Method to write a slave_address to the SS register, selecting that slave device.
     def select_slave(self, slave_address):
@@ -533,50 +549,42 @@ class SPIController():
     def write(self, data, register=0): # register should be 0, 1, 2, or 3
         # Set address to Tx register
         ack = self.wb_set_address(self.parameters['Tx'+str(register)].address)
-        if ack:
-            if self.debug:
-                print(f'Set address to "Tx{register}": SUCCESS')
-        else:
-            if self.debug:
-                print(f'Set address to "Tx{register}": FAIL')
-            return False
+        # TODO: fix ack
+        # if ack:
+        #     if self.debug:
+        #         print(f'Set address to "Tx{register}": SUCCESS')
+        # else:
+        #     if self.debug:
+        #         print(f'Set address to "Tx{register}": FAIL')
+        #     return False
 
         # Write data
         ack = self.wb_write(data)
-        if ack:
-            if self.debug:
-                print(f'Data write to "Tx{register}": SUCCESS')
-        else:
-            if self.debug:
-                print(f'Data write to "Tx{register}": FAIL')
-            return False
-
-        # Set address to CTRL register
-        ack = self.wb_set_address(self.parameters['CTRL'].address)
-        if ack:
-            if self.debug:
-                print(f'Set address to "CTRL": SUCCESS')
-        else:
-            if self.debug:
-                print(f'Set address to "CTRL": FAIL')
-            return False
+        # TODO: fix ack
+        # if ack:
+        #     if self.debug:
+        #         print(f'Data write to "Tx{register}": SUCCESS')
+        # else:
+        #     if self.debug:
+        #         print(f'Data write to "Tx{register}": FAIL')
+        #     return False
 
         # Set GO_BSY bit
-        self.wb_go()
-        return True
+        return self.wb_go()
 
     # Method to read data from register 
     def read(self, register=0):
         # Set address to the Rx register Rx0, Rx1, Rx2, or Rx3
         ack = self.wb_set_address(self.parameters['Rx'+str(register)].address)
 
-        if ack:
-            if self.debug:
-                print(f'Set address to "Rx{register}": SUCCESS')
-        else:
-            if self.debug:
-                print(f'Set address to "Rx{register}": FAIL')
-            return False
+        # TODO: fix ack
+        # if ack:
+        #     if self.debug:
+        #         print(f'Set address to "Rx{register}": SUCCESS')
+        # else:
+        #     if self.debug:
+        #         print(f'Set address to "Rx{register}": FAIL')
+        #     return False
 
         # Read data
         return self.wb_read()
@@ -586,7 +594,7 @@ class SPIController():
         self.wb_set_address(self.parameters['CTRL'].address)
         self.fpga.set_wire(self.parameters['WB_IN'].address, data, mask)
         self.fpga.xem.ActivateTriggerIn(
-            self.parameters['TRIGGER_BIT'].address, self.parameters['TRIGGER_BIT'].bit_index_high)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
+            self.parameters['WB_CONVERT_TRIGGER'].address, self.parameters['WB_CONVERT_TRIGGER'].bit_index_high)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
         response = self.fpga.read_wire(self.parameters['WB_OUT'].address)
         if response == self.parameters['ACK']:
             ack = True
@@ -614,7 +622,7 @@ class SPIController():
         configuration = 0x00000000 + params[0] * \
             2**(13) + params[1]*2**(12) + params[2]*2**(11) + \
             params[3]*2**(10) + params[4]*2**(9) + params[5]
-        self.configure_bin(configuration, mask)
+        self.configure_master_bin(configuration, mask)
 
     # Method to get the current configuration of the non-reserved CTRL register bits in a dictionary
     # Includes ASS, IO, LSB, Tx_NEG, Rx_NEG, CHAR_LEN
@@ -642,9 +650,10 @@ class GeneralDACController(SPIController):
     
     def __init__(self, fpga, slave_address=0x5, chip_number=0, parameters=DEFAULT_PARAMETERS, debug=False):
         self.slave_address = slave_address
-        self.parameters['WB_IN'] = self.parameters['WB_IN_' + chip_number]
-        self.parameters['WB_OUT'] = self.parameters['WB_OUT_' + chip_number]
         super().__init__(fpga, parameters, debug)
+        self.parameters['WB_IN'] = self.parameters['WB_IN_' + str(chip_number)]
+        self.parameters['WB_OUT'] = self.parameters['WB_OUT_' + str(chip_number)]
+        self.parameters['WB_CONVERT_TRIGGER'] = self.parameters['WB_CONVERT_TRIGGER_' + str(chip_number)]
 
     # Method to write to any register on the chip.
     def write(self, register_name, data, mask=0xffff):
@@ -661,8 +670,7 @@ class GeneralDACController(SPIController):
         new_data = (data & mask) | (current_data & ~mask)
         
         # 23=0 (write), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=D[15:0] (data) 
-        transmission = self.parameters['WRITE_OPERATION'] + \
-            reg.address*2**15 + new_data
+        transmission = self.parameters['WRITE_OPERATION'] + (reg.address << 15) + new_data
         ack = super().write(transmission)
         if ack:
             print(f'Write {hex(data)} to {register_name}: SUCCESS')
@@ -681,8 +689,7 @@ class GeneralDACController(SPIController):
         self.select_slave(self.slave_address)
         # Issue read command
         # 23=1 (read), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=0xXXXX (do not cares)
-        transmission = self.parameters['READ_OPERATION'] + \
-            reg.address*2**15
+        transmission = self.parameters['READ_OPERATION'] | (reg.address << 15)
         super().write(transmission)
 
         # Read in response
@@ -737,6 +744,7 @@ class GeneralDACController(SPIController):
     # Method to get the device info from its ID.
     def get_id(self, display=True):
         id = self.read('ID')
+        print(f'ID = {id} = {bin(id)}')
         if not id: # Check to see if the read worked
             print('ID could not be read')
             return False
