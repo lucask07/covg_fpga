@@ -79,6 +79,12 @@
 # !*.rpt
 # !*.txt
 # !*.vdi
+
+#######
+#include bit file
+# 
+!*.bit
+
 #########
 #C-files
 #########
