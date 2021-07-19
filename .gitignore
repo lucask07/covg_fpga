@@ -105,5 +105,11 @@
 *.DS_Store
 
 # for Python
+
+!*.py
+!*.pyd
+!*.csv
+!*.dll
+!*.so
 *.pyc
 *.swp
