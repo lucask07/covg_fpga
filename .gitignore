@@ -74,9 +74,11 @@
 #########
 #Reports
 #########
-!*.rpt
-!*.txt
-!*.vdi
+
+# LJK -- skip reports
+# !*.rpt
+# !*.txt
+# !*.vdi
 #########
 #C-files
 #########
