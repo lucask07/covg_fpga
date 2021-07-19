@@ -69,7 +69,7 @@
 `define	RSP_RESET		{ `RSP_SUB_SPECIAL, 3'h0, 29'h00 }
 `define	RSP_BUS_ERROR		{ `RSP_SUB_SPECIAL, 3'h1, 29'h00 }
 
-`include "timescale.v"
+//`include "timescale.v"
 
 module	hbexec(i_clk, i_reset,
 		// The input command channel

@@ -294,7 +294,7 @@ module top_module(
 	 
 	 
 	 // Real-Time LPF
-       Butterworth u_Butterworth_0
+      /* Butterworth u_Butterworth_0
          (
          .clk(clk),
          .clk_enable(data_rdy_0 | write_enable | write_done),
@@ -306,6 +306,7 @@ module top_module(
          .coeffs_in(coeffs_in),
          .filter_out(filter_out)
          );
+	 */
 	 
 	 //Wishbone Master module for AD796x and AD5453
     hbexec Wishbone_Master_0 (
