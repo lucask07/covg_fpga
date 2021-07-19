@@ -3,7 +3,7 @@
 <!--                                                         -->
 <!-- Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.   -->
 
-<Project Version="7" Minor="38" Path="C:/Users/stro4149/Desktop/covg_fpga/fpga_XEM7310/fpga_XEM7310.xpr">
+<Project Version="7" Minor="38" Path="C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.xpr">
   <DefaultLaunch Dir="$PRUNDIR"/>
   <Configuration>
     <Option Name="Id" Val="1946c52a45964498a526646af489febf"/>
@@ -267,12 +267,6 @@
           <Attr Name="ImportTime" Val="1611878297"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PSRCDIR/sources_1/imports/iande/OneDrive - University of St. Thomas/Research SPI core files/fpga_XEM7310/import_ise_summary.txt">
-        <FileInfo>
-          <Attr Name="ImportPath" Val="$PPRDIR/import_ise_summary.txt"/>
-          <Attr Name="ImportTime" Val="1613445668"/>
         </FileInfo>
       </File>
       <File Path="$PSRCDIR/sources_1/imports/XEM7310-A75/okLibrary.v">
