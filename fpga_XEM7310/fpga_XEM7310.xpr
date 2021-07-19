@@ -395,17 +395,8 @@
     </FileSet>
     <FileSet Name="constrs_1" Type="Constrs" RelSrcDir="$PSRCDIR/constrs_1">
       <Filter Type="Constrs"/>
-      <File Path="$PSRCDIR/constrs_1/imports/SPI_Master/adc_daq_v1.ucf">
+      <File Path="$PSRCDIR/constrs_1/xem7310.xdc">
         <FileInfo>
-          <Attr Name="UserDisabled" Val="1"/>
-          <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/adc_daq_v1.ucf"/>
-          <Attr Name="ImportTime" Val="1611176365"/>
-        </FileInfo>
-      </File>
-      <File Path="$PSRCDIR/constrs_1/imports/Downloads/xem7310.xdc">
-        <FileInfo>
-          <Attr Name="ImportPath" Val="$PPRDIR/../../../Downloads/xem7310.xdc"/>
-          <Attr Name="ImportTime" Val="1614222117"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
         </FileInfo>

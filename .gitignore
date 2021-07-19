@@ -91,6 +91,9 @@
 *.cache/
 *.cache/*
 
+*webtalk/*
+*webtalk
+
 #########
 #C-files
 #########
