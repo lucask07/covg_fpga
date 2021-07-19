@@ -325,11 +325,8 @@
     </FileSet>
     <FileSet Name="sim_1" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/sim_1">
       <Filter Type="Srcs"/>
-      <File Path="$PSRCDIR/sim_1/imports/SPI_Master/tb_spi_top.v">
+      <File Path="$PSRCDIR/sim_1/SPI_Master/tb_spi_top.v">
         <FileInfo>
-          <Attr Name="Library" Val="xil_defaultlib"/>
-          <Attr Name="ImportPath" Val="$PPRDIR/../SPI_Master/tb_spi_top.v"/>
-          <Attr Name="ImportTime" Val="1611252623"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
