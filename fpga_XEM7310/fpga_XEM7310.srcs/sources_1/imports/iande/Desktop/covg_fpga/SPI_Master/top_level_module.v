@@ -575,8 +575,14 @@ module top_level_module(
     wire [31:0] dac_val_1;
 
     // DEBUG: Have the LEDs light up on a couple values of the dac input to see if the message goes through
-    assign led[7:6] = ~(dac_val_0[31:30]); // Added not (~) because LEDs are active low
-    assign led[5:1] = ep40trig[8];
+    assign led[7:2] = dac_val_reg; // Added not (~) because LEDs are active low
+    assign led[1] = led_reg;
+    reg [5:0] dac_val_reg;
+    reg led_reg;
+    always @(posedge clk_sys) begin
+        dac_val_reg <= ~(dac_val_0[31:30]);
+        led_reg <= ep40trig[8];
+    end
 
     okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(8'h03), .ep_dataout(dac_val_0));
     okWireIn wi_dac_1 (.okHE(okHE), .ep_addr(8'h04), .ep_dataout(dac_val_1));
