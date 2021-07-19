@@ -575,8 +575,8 @@ module top_level_module(
     wire [31:0] dac_val_1;
 
     // DEBUG: Have the LEDs light up on a couple values of the dac input to see if the message goes through
-    assign led[7:2] = dac_val_reg; // Added not (~) because LEDs are active low
-    assign led[1] = led_reg;
+    assign led[7:2] = 7'b1010101; // Added not (~) because LEDs are active low
+    assign led[1] = 1;
     reg [5:0] dac_val_reg;
     reg led_reg;
     always @(posedge clk_sys) begin
