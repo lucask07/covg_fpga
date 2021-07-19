@@ -69,7 +69,8 @@
 #########
 #Journal - files
 #########
-!*.jou
+# gitignore journal files 
+# !*.jou
 #########
 #Reports
 #########
@@ -88,5 +89,4 @@
 
 # for Python
 *.pyc
-
 *.swp
