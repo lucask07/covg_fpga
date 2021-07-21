@@ -140,16 +140,34 @@ module top_module(
 	 assign sync_fifo_rst = s4;
 	 
 	 /* ---------------- ADS7950 ----------------*/
+	 //module to take commands from the host and format them into commands that the Wishbone master will understand
     
+    // From host: ep_dataout (wirein) 
+    // From host: trigger
+    // To host: 
+    
+    WbSignal_converter CONVERT(
+    .clk(clk), .rst(sync_rst), .ep_dataout(ep_dataout), .trigger(trigger), 
+    .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)
+    );
+        
     /*Wishbone Master module*/
     hbexec Wishbone_Master (
-    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb), .i_cmd_word(cmd_word), .o_cmd_busy(cmd_busy), .o_rsp_stb(rsp_stb),
+    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb), .i_cmd_word(cmd_word),
+     .o_cmd_busy(cmd_busy), .o_rsp_stb(rsp_stb),
     .o_rsp_word(wb_cmd_dataout), .o_wb_cyc(cyc), .o_wb_stb(stb),
     .o_wb_we(we), .o_wb_addr(adr), .o_wb_data(dat_o), .o_wb_sel(sel),        
     .i_wb_ack(ack), .i_wb_stall(1'b0), .i_wb_err(err), .i_wb_data(dat_i)
     );
-    //*/
     
+      // SPI master core
+      spi_top i_spi_top (
+        .wb_clk_i(clk), .wb_rst_i(sync_rst), 
+        .wb_adr_i(adr[4:0]), .wb_dat_i(dat_o), .wb_dat_o(dat_i), 
+        .wb_sel_i(sel), .wb_we_i(we), .wb_stb_i(stb), 
+        .wb_cyc_i(cyc), .wb_ack_o(ack), .wb_err_o(err), .wb_int_o(int_o),
+        .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
+      );
 	 
 	 //generating the write enable signal for the FIFO
 	 always@(negedge clk)begin
@@ -167,16 +185,7 @@ module top_module(
 	 end
     
 	 assign writeFifo = wr_en;
-  
-    // SPI master core
-    spi_top i_spi_top (
-      .wb_clk_i(clk), .wb_rst_i(sync_rst), 
-      .wb_adr_i(adr[4:0]), .wb_dat_i(dat_o), .wb_dat_o(dat_i), 
-      .wb_sel_i(sel), .wb_we_i(we), .wb_stb_i(stb), 
-      .wb_cyc_i(cyc), .wb_ack_o(ack), .wb_err_o(err), .wb_int_o(int_o),
-      .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
-    );
-  
+
     /* //SPI slave model
     spi_slave_model i_spi_slave (
       .rst(sync_rst), .ss(ss), .sclk(sclk), .mosi(mosi), .miso(miso)
@@ -186,11 +195,6 @@ module top_module(
     fifo_generator_1 FIFO(
     .full(full), .din(wb_cmd_dataout[31:0]), .wr_en(writeFifo), .empty(empty), 
     .dout(dout), .rd_en(readFifo), .wr_clk(clk), .rd_clk(fifoclk), .rst(sync_fifo_rst), .prog_full(hostinterrupt)
-    );
-    
-	 //module to take commands from the host and format them into commands that the Wishbone master will understand
-    WbSignal_converter CONVERT(
-    .clk(clk), .rst(sync_rst), .ep_dataout(ep_dataout), .trigger(trigger), .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)
     );
 	 
 	 //module to create a one second pulse on one of the LEDs (just to confirm the FPGA is working)
