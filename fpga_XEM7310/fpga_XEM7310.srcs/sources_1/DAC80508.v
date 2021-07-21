@@ -54,14 +54,16 @@ module DAC80508(
 
     //module to take commands from the host and format them into commands that the Wishbone master will understand
     WbSignal_converter CONVERT(
-    .clk(clk), .rst(reset), .ep_dataout(dac_val), .trigger(dac_convert_trigger), .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)
+    .clk(clk), .rst(reset), .ep_dataout(dac_val), .trigger(dac_convert_trigger), 
+    .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)
     );
 
     //Wishbone Master module for DAC80508
     hbexec Wishbone_Master (
-    .i_clk(clk), .i_reset(reset), .i_cmd_stb(cmd_stb), .i_cmd_word(cmd_word), .o_cmd_busy(cmd_busy), .o_rsp_stb(rsp_stb),
+    .i_clk(clk), .i_reset(reset), .i_cmd_stb(cmd_stb), .i_cmd_word(cmd_word), 
+    .o_cmd_busy(cmd_busy), .o_rsp_stb(rsp_stb),
     .o_rsp_word(wb_cmd_dataout), .o_wb_cyc(cyc), .o_wb_stb(stb),
-    .o_wb_we(we), .o_wb_addr(), .o_wb_data(dat_o), .o_wb_sel(sel),        
+    .o_wb_we(we), .o_wb_addr(adr), .o_wb_data(dat_o), .o_wb_sel(sel),        
     .i_wb_ack(ack), .i_wb_stall(1'b0), .i_wb_err(err), .i_wb_data(dat_i)
     );
 
