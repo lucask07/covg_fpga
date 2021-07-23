@@ -37,7 +37,7 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
     parameter S1 = 5'b00001;
     parameter S2 = 5'b00010;
     parameter S3 = 5'b00011;
-	 parameter S4 = 5'b01111;
+    parameter S4 = 5'b01111;
     parameter read = 5'b00100;//this state and the ones below will initiate transfer of data from the ADC to the FIFO
     parameter read1 = 5'b00101;//this will ensure that there is not need for host intervention to move data from the SPI master to the FIFO
     parameter read2 = 5'b00110;
@@ -62,17 +62,17 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
     always@(*)begin
         case(state)
             S0: begin
-                if(trigger)begin
+                if(trigger)begin // trigger a wishbone write 
                     nextstate = S1;
                 end
-					 else if(int_o)begin
-						nextstate = read;
-					 end
+                 else if(int_o)begin // trigger a read when Wishbone slave sends interrupt signals (this is from spi_top)
+                    nextstate = read;
+                 end
                 else begin
                     nextstate = S0;
                 end
             end
-				S1: begin
+            S1: begin
                 nextstate = S2;
             end
             S2: begin
@@ -119,13 +119,13 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
                     cmd_word = {ep_dataout[31:30], 2'b0, ep_dataout[29:0]};
                     o_stb = 1'b0;
                 end
-				S1: begin
-                    cmd_word = cmd_word;
-                    o_stb = 1'b0;
+            S1: begin
+                cmd_word = cmd_word;
+                o_stb = 1'b0;
             end
             S2: begin
                     cmd_word = cmd_word;
-                    o_stb = 1'b1;
+                    o_stb = 1'b1; //output strobe to the wishbone bus master 
             end
             S3: begin
                     cmd_word = cmd_word;
@@ -136,7 +136,7 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
                     o_stb = 1'b0;
             end
             read: begin
-                    cmd_word = 34'h200000001;
+                    cmd_word = 34'h200000001; // read command 
                     o_stb = 1'b0;
             end
             read1: begin
