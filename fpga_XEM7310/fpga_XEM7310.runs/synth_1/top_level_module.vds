@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Fri Jul 23 11:10:00 2021
-# Process ID: 16452
+# Start of session at: Sun Jul 25 13:55:11 2021
+# Process ID: 4124
 # Current directory: C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
 # Command line: vivado.exe -log top_level_module.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_level_module.tcl
 # Log file: C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
@@ -15,26 +15,21 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 13888 
+INFO: Helper process launched with PID 7732 
 WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okCoreHarness.v:15361]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:88]
 WARNING: [Synth 8-1102] /* in comment [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:177]
 WARNING: [Synth 8-1102] /* in comment [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:179]
-WARNING: [Synth 8-992] dac_val_0 is already implicitly declared earlier [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:592]
-WARNING: [Synth 8-992] dac_val_1 is already implicitly declared earlier [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:593]
-WARNING: [Synth 8-992] dac_out_0 is already implicitly declared earlier [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:611]
-WARNING: [Synth 8-992] dac_out_1 is already implicitly declared earlier [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:612]
-WARNING: [Synth 8-992] filter_out is already implicitly declared earlier [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:284]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 429.359 ; gain = 119.258
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 430.344 ; gain = 119.996
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:90]
 INFO: [Synth 8-6157] synthesizing module 'mux_1to8' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/mux_1to8.v:21]
 INFO: [Synth 8-226] default block is never used [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/mux_1to8.v:30]
 INFO: [Synth 8-6155] done synthesizing module 'mux_1to8' (1#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/mux_1to8.v:21]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:241]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:243]
-WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:245]
+WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:249]
+WARNING: [Synth 8-689] width (5) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:251]
+WARNING: [Synth 8-689] width (4) of port connection 'out' does not match port width (8) of module 'mux_1to8' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:253]
 INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
 	Parameter CAPACITANCE bound to: DONT_CARE - type: string 
 	Parameter DIFF_TERM bound to: FALSE - type: string 
@@ -42,8 +37,8 @@ INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Xilinx/Vivado/2018.2/scri
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
 INFO: [Synth 8-6155] done synthesizing module 'IBUFGDS' (2#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-16452-FDC212-01/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (3#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-16452-FDC212-01/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4124-FDC212-01/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (3#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4124-FDC212-01/realtime/clk_wiz_0_stub.v:5]
 INFO: [Synth 8-6157] synthesizing module 'okWireOR' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
 	Parameter N bound to: 11 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'okWireOR' (4#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
@@ -288,18 +283,20 @@ INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized28' (29#1) [C:
 INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized29' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
 INFO: [Synth 8-6155] done synthesizing module 'LUT6__parameterized30' (29#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25671]
 INFO: [Common 17-14] Message 'Synth 8-6155' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-WARNING: [Synth 8-350] instance 'okHI' of module 'okHost' requires 9 connections, but only 7 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:305]
-WARNING: [Synth 8-689] width (30) of port connection 'ep_dataout' does not match port width (32) of module 'okWireIn' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:319]
-WARNING: [Synth 8-2900] ignoring illegal expression in output port connection [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:319]
-WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:355]
-WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:355]
-WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:355]
-WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:356]
-WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:356]
-WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:356]
-WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:357]
-WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:357]
-WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:357]
+WARNING: [Synth 8-350] instance 'okHI' of module 'okHost' requires 9 connections, but only 7 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:329]
+WARNING: [Synth 8-689] width (30) of port connection 'ep_dataout' does not match port width (32) of module 'okWireIn' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:339]
+WARNING: [Synth 8-2900] ignoring illegal expression in output port connection [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:339]
+WARNING: [Synth 8-689] width (1) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:368]
+WARNING: [Synth 8-689] width (1) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:369]
+WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:384]
+WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:384]
+WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:384]
+WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:385]
+WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:385]
+WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:385]
+WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:386]
+WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:386]
+WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:386]
 	Parameter S0 bound to: 5'b00000 
 	Parameter S1 bound to: 5'b00001 
 	Parameter S2 bound to: 5'b00010 
@@ -317,7 +314,7 @@ WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/co
 	Parameter AW bound to: 30 - type: integer 
 	Parameter CW bound to: 34 - type: integer 
 WARNING: [Synth 8-693] zero replication count - replication ignored [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_top.v:137]
-WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 connections, but only 10 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:195]
+WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 connections, but only 10 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:196]
 	Parameter halfof_divide_by bound to: 31'b0000101111101011110000100000000 
 	Parameter conversion_offset bound to: 14'b10000000000000 
 	Parameter master_clock_freq bound to: 16'b0000000011001000 
@@ -358,132 +355,129 @@ WARNING: [Synth 8-350] instance 'FIFO' of module 'fifo_generator_1' requires 12 
 	Parameter S18 bound to: 5'b10101 
 	Parameter INIT bound to: 5'b10010 
 	Parameter CHECK bound to: 5'b10011 
-WARNING: [Synth 8-689] width (32) of port connection 'addrb' does not match port width (4) of module 'blk_mem_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:296]
-WARNING: [Synth 8-689] width (8) of port connection 'o_wb_addr' does not match port width (30) of module 'hbexec' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/DAC80508.v:66]
+WARNING: [Synth 8-689] width (32) of port connection 'addrb' does not match port width (4) of module 'blk_mem_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:297]
 WARNING: [Synth 8-3848] Net ep_datain in module/entity top_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:64]
-WARNING: [Synth 8-3848] Net filter_out in module/entity top_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:276]
-WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:418]
-WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:418]
-WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:419]
-WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:419]
-WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:420]
-WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:420]
-WARNING: [Synth 8-3848] Net DS1_SCLK in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:185]
-WARNING: [Synth 8-3848] Net DS1_CSB in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:186]
-WARNING: [Synth 8-3848] Net DS1_SDI in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:187]
-WARNING: [Synth 8-3848] Net DS2_SCLK in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:190]
-WARNING: [Synth 8-3848] Net DS2_CSB in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:191]
-WARNING: [Synth 8-3848] Net DS2_SDI in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:192]
-WARNING: [Synth 8-3848] Net pipe_out_write_adc in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:429]
-WARNING: [Synth 8-3848] Net adc_val[0] in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:430]
-WARNING: [Synth 8-3848] Net dac_miso_0 in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:221]
-WARNING: [Synth 8-3848] Net dac_miso_1 in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:226]
-WARNING: [Synth 8-3848] Net adc_fifo_full in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:431]
-WARNING: [Synth 8-3848] Net adc_fifo_halffull in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:432]
-WARNING: [Synth 8-3848] Net adc_fifo_empty in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:433]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[112]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[111]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[110]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[109]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[108]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[107]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[106]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[105]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[104]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[103]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[102]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[101]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[100]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[99]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[98]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[97]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[96]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[95]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[94]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[93]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[92]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[91]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[90]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[89]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[88]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[87]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[86]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[85]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[84]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[83]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[82]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[81]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[80]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[79]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[78]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[77]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[76]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[75]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[74]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[73]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[72]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[71]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[70]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[69]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[68]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[67]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[66]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[65]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[64]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[63]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[62]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[61]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[60]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[59]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[58]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[57]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[56]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[55]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[54]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[53]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[52]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[51]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[50]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[49]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[48]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[47]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[46]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[45]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[43]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[42]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[31]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[30]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[29]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[28]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[27]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[26]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[25]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[24]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[23]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[22]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[21]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[20]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[19]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[18]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[17]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[16]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[15]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[14]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[13]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[12]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[11]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[10]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[9]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[8]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[7]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[6]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[5]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[4]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[3]
-WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[2]
+WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:433]
+WARNING: [Synth 8-324] index 1 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:433]
+WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:434]
+WARNING: [Synth 8-324] index 2 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:434]
+WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:435]
+WARNING: [Synth 8-324] index 3 out of range [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:435]
+WARNING: [Synth 8-689] width (1) of port connection 'dac_out_0' does not match port width (32) of module 'top_module' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:436]
+WARNING: [Synth 8-689] width (1) of port connection 'dac_out_1' does not match port width (32) of module 'top_module' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:437]
+WARNING: [Synth 8-6104] Input port 'ds2_sdo' has an internal driver [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:437]
+WARNING: [Synth 8-3848] Net d2_sclk in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:122]
+WARNING: [Synth 8-3848] Net ds2_sdi in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:192]
+WARNING: [Synth 8-3848] Net pipe_out_write_adc in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:455]
+WARNING: [Synth 8-3848] Net adc_val[0] in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:456]
+WARNING: [Synth 8-3848] Net sd1_sdi in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:436]
+WARNING: [Synth 8-3848] Net adc_fifo_full in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:457]
+WARNING: [Synth 8-3848] Net adc_fifo_halffull in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:458]
+WARNING: [Synth 8-3848] Net adc_fifo_empty in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:459]
+WARNING: [Synth 8-3848] Net clk_sys_fast in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:262]
+WARNING: [Synth 8-3331] design spi_shift has unconnected port latch[3]
+WARNING: [Synth 8-3331] design spi_shift has unconnected port latch[2]
+WARNING: [Synth 8-3331] design spi_shift has unconnected port latch[1]
+WARNING: [Synth 8-3331] design spi_top has unconnected port wb_adr_i[1]
+WARNING: [Synth 8-3331] design spi_top has unconnected port wb_adr_i[0]
+WARNING: [Synth 8-3331] design read_AD796x_fifo_cmd has unconnected port empty
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[31]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[30]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[29]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[28]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[27]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[26]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[25]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[24]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[23]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[22]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[21]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[20]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[19]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[18]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[17]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[16]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[15]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[14]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[13]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[12]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[11]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[10]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[9]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[8]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[7]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[6]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[5]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[4]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[3]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[2]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[1]
+WARNING: [Synth 8-3331] design top_module has unconnected port ep_datain[0]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[15]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[14]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[13]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[12]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[11]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[10]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[9]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[8]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[7]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[6]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[5]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[4]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[3]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[2]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[1]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_0[0]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[15]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[14]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[13]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[12]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[11]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[10]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[9]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[8]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[7]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[6]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[5]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[4]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[3]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[2]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[1]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_1[0]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[15]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[14]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[13]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[12]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[11]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[10]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[9]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[8]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[7]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[6]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[5]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[4]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[3]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[2]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[1]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_2[0]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[15]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[14]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[13]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[12]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[11]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[10]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[9]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[8]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[7]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[6]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[5]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[4]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[3]
+WARNING: [Synth 8-3331] design top_module has unconnected port adc_val_3[2]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 498.184 ; gain = 188.082
+Finished RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 498.996 ; gain = 188.648
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -492,115 +486,115 @@ Report Check Netlist:
 +------+------------------+-------+---------+-------+------------------+
 |1     |multi_driven_nets |      0|        0|Passed |Multi driven nets |
 +------+------------------+-------+---------+-------+------------------+
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[13] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[12] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[11] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[10] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[9] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[8] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[7] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[6] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[5] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[4] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin data_converter_0:adc_dat_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:275]
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_0:miso_pad_i to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:324]
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_1:miso_pad_i to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:367]
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_2:miso_pad_i to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:409]
-WARNING: [Synth 8-3295] tying undriven pin i_spi_top_3:miso_pad_i to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:451]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[519] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[518] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[517] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[516] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[515] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[514] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[513] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[512] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[511] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[510] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[509] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[508] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[507] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[506] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[505] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[504] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[503] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[502] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[501] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[500] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[499] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[498] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[497] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[496] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[495] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[494] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[493] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[492] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[491] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[490] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[489] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[488] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[487] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[486] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[485] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[484] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[483] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[482] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[481] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[480] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[479] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[478] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[477] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[476] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[475] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[474] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[473] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[472] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[471] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[470] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[469] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[468] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[467] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[466] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[465] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[464] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[463] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[462] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[461] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[460] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[459] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[458] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[457] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[456] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[455] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[454] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[453] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[452] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[451] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[450] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[449] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[448] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[447] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[446] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[445] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[444] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[443] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[442] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[441] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[440] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[439] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[438] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:302]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_0:miso_pad_i to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:325]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_1:miso_pad_i to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:368]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_2:miso_pad_i to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:410]
+WARNING: [Synth 8-3295] tying undriven pin i_spi_top_3:miso_pad_i to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_module.v:452]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[519] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[518] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[517] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[516] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[515] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[514] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[513] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[512] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[511] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[510] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[509] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[508] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[507] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[506] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[505] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[504] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[503] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[502] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[501] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[500] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[499] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[498] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[497] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[496] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[495] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[494] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[493] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[492] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[491] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[490] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[489] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[488] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[487] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[486] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[485] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[484] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[483] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[482] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[481] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[480] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[479] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[478] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[477] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[476] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[475] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[474] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[473] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[472] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[471] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[470] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[469] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[468] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[467] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[466] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[465] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[464] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[463] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[462] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[461] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[460] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[459] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[458] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[457] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[456] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[455] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[454] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[453] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[452] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[451] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[450] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[449] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[448] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[447] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[446] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[445] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[444] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[443] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[442] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[441] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[440] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[439] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[438] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[437] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[436] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[435] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[434] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[433] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[432] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[431] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[430] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[429] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[428] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[427] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[426] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[425] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[424] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:326]
 INFO: [Common 17-14] Message 'Synth 8-3295' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 498.184 ; gain = 188.082
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 498.996 ; gain = 188.648
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 498.184 ; gain = 188.082
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 498.996 ; gain = 188.648
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 147 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -639,18 +633,18 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM128X1S => RAM128X1S (MUXF7, RAMS64E, RAMS64E): 8 instances
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 856.465 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.010 . Memory (MB): peak = 857.680 ; gain = 0.000
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'top/FIFO' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'top/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:15 ; elapsed = 00:00:18 . Memory (MB): peak = 856.465 ; gain = 546.363
+Finished Constraint Validation : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 857.680 ; gain = 547.332
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 856.465 ; gain = 546.363
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 857.680 ; gain = 547.332
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -660,10 +654,11 @@ Applied set_property DONT_TOUCH = true for top/FIFO. (constraint file  auto gene
 Applied set_property DONT_TOUCH = true for top/realTime_LPF_coeff_BRAM. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okHI/core0/core0/\a0/cb0 /U0/\inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 856.465 ; gain = 546.363
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:16 ; elapsed = 00:00:18 . Memory (MB): peak = 857.680 ; gain = 547.332
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'WbSignal_converter'
-INFO: [Synth 8-5546] ROM "cmd_word" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-5546] ROM "read_cmd" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-5546] ROM "load" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "o_stb" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
 INFO: [Synth 8-5545] ROM "cnt" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
@@ -700,7 +695,6 @@ INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because addres
                    read7 |                    1000000000000 |                            01011
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'WbSignal_converter'
-WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/WbSignal_converter.v:119]
 ---------------------------------------------------------------------------------------------------
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
@@ -748,7 +742,7 @@ WARNING: [Synth 8-327] inferring latch for variable 'cmd_word_reg' [C:/Users/koe
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'realTimeLPF_readwrite_coeff'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:17 ; elapsed = 00:00:19 . Memory (MB): peak = 856.465 ; gain = 546.363
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:17 ; elapsed = 00:00:19 . Memory (MB): peak = 857.680 ; gain = 547.332
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -815,10 +809,10 @@ INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[29] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[30] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[31] )
-INFO: [Synth 8-3886] merging instance 'DAC80508:/CONVERT/cmd_word_reg[30]' (LD) to 'DAC80508:/CONVERT/cmd_word_reg[31]'
+INFO: [Synth 8-3886] merging instance 'DAC80508:/CONVERT/cmd_word_reg[30]' (FDE) to 'DAC80508:/CONVERT/cmd_word_reg[31]'
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (DAC80508:/\CONVERT/cmd_word_reg[31] )
-INFO: [Synth 8-3886] merging instance 'top/CONVERT/cmd_word_reg[30]' (LD) to 'top/CONVERT/cmd_word_reg[31]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (top/\CONVERT/cmd_word_reg[31] )
+INFO: [Synth 8-3886] merging instance 'top/CONVERT/cmd_word_reg[30]' (FDE) to 'top/CONVERT/cmd_word_reg[31]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (top/CONVERT/\cmd_word_reg[31] )
 INFO: [Synth 8-3886] merging instance 'read_AD796x_fifo_cmd:/cmd_word_reg[14]' (LD) to 'read_AD796x_fifo_cmd:/cmd_word_reg[15]'
 INFO: [Synth 8-3886] merging instance 'read_AD796x_fifo_cmd:/cmd_word_reg[15]' (LD) to 'read_AD796x_fifo_cmd:/cmd_word_reg[16]'
 INFO: [Synth 8-3886] merging instance 'read_AD796x_fifo_cmd:/cmd_word_reg[16]' (LD) to 'read_AD796x_fifo_cmd:/cmd_word_reg[17]'
@@ -870,6 +864,8 @@ WARNING: [Synth 8-3332] Sequential element (ld53bc82cafe43594f651cb14d090c4f9_re
 WARNING: [Synth 8-3332] Sequential element (ld53bc82cafe43594f651cb14d090c4f9_reg[7]) is unused and will be removed from module okCore.
 WARNING: [Synth 8-3332] Sequential element (ld53bc82cafe43594f651cb14d090c4f9_reg[8]) is unused and will be removed from module okCore.
 WARNING: [Synth 8-3332] Sequential element (ld53bc82cafe43594f651cb14d090c4f9_reg[9]) is unused and will be removed from module okCore.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[10]) is unused and will be removed from module okTriggerIn.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[11]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[12]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[13]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[14]) is unused and will be removed from module okTriggerIn.
@@ -894,6 +890,8 @@ WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[4]) is unused and wil
 WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[5]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[6]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[7]) is unused and will be removed from module okTriggerIn.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[10]) is unused and will be removed from module okTriggerIn.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[11]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (eptrig_reg[12]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (eptrig_reg[13]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (eptrig_reg[14]) is unused and will be removed from module okTriggerIn.
@@ -918,6 +916,8 @@ WARNING: [Synth 8-3332] Sequential element (eptrig_reg[4]) is unused and will be
 WARNING: [Synth 8-3332] Sequential element (eptrig_reg[5]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (eptrig_reg[6]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (eptrig_reg[7]) is unused and will be removed from module okTriggerIn.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[10]) is unused and will be removed from module okTriggerIn.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[11]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (trigff0_reg[12]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (trigff0_reg[13]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (trigff0_reg[14]) is unused and will be removed from module okTriggerIn.
@@ -935,55 +935,82 @@ WARNING: [Synth 8-3332] Sequential element (trigff0_reg[25]) is unused and will 
 WARNING: [Synth 8-3332] Sequential element (trigff0_reg[26]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (trigff0_reg[27]) is unused and will be removed from module okTriggerIn.
 WARNING: [Synth 8-3332] Sequential element (trigff0_reg[28]) is unused and will be removed from module okTriggerIn.
-WARNING: [Synth 8-3332] Sequential element (trigff0_reg[29]) is unused and will be removed from module okTriggerIn.
-WARNING: [Synth 8-3332] Sequential element (trigff0_reg[30]) is unused and will be removed from module okTriggerIn.
-WARNING: [Synth 8-3332] Sequential element (trigff0_reg[31]) is unused and will be removed from module okTriggerIn.
-WARNING: [Synth 8-3332] Sequential element (trigff0_reg[4]) is unused and will be removed from module okTriggerIn.
-WARNING: [Synth 8-3332] Sequential element (trigff0_reg[5]) is unused and will be removed from module okTriggerIn.
-WARNING: [Synth 8-3332] Sequential element (trigff0_reg[6]) is unused and will be removed from module okTriggerIn.
 INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[2] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[3] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[3] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[3] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[4] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[4] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[4] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[5] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[5] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[5] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[6] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[6] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[6] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[7] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[7] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[7] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[8] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[8] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[8] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[9] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[9] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[9] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[10] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[10] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[10] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[11] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[11] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[11] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[12] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[12] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[12] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[13] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[13] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[13] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[14] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[14] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[14] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[15] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[15] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[15] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[16] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[16] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[16] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[17] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[17] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[17] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[18] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[19] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[19] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[19] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[20] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[20] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[20] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[21] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_0/\wirehold_reg[21] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[21] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[22] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[23] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[24] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[25] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[26] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[27] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[28] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[29] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[30] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[31] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo_dac_1/\wirehold_reg[22] )
+INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[12]' (LD) to 'top/data_converter_0/cmd_word_reg[4]'
-INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[9]' (LD) to 'top/data_converter_0/cmd_word_reg[1]'
-INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[7]' (LD) to 'top/data_converter_0/cmd_word_reg[1]'
-INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[6]' (LD) to 'top/data_converter_0/cmd_word_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[9]' (LD) to 'top/data_converter_0/cmd_word_reg[7]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[7]' (LD) to 'top/data_converter_0/cmd_word_reg[6]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[6]' (LD) to 'top/data_converter_0/cmd_word_reg[5]'
 INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[5]' (LD) to 'top/data_converter_0/cmd_word_reg[1]'
 INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[1]' (LD) to 'top/data_converter_0/cmd_word_reg[2]'
 INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[2]' (LD) to 'top/data_converter_0/cmd_word_reg[3]'
-INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[3]' (LD) to 'top/data_converter_0/cmd_word_reg[10]'
+INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[3]' (LD) to 'top/data_converter_0/cmd_word_reg[11]'
 INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[4]' (LD) to 'top/data_converter_0/cmd_word_reg[13]'
 INFO: [Synth 8-3886] merging instance 'top/data_converter_0/cmd_word_reg[11]' (LD) to 'top/data_converter_0/cmd_word_reg[10]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (top/data_converter_0/\cmd_word_reg[10] )
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[31]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[29]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
@@ -1001,27 +1028,39 @@ INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[18]' 
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[17]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[16]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[15]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[14]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (top/Wishbone_Master_0/\o_wb_data_reg[14] )
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master/o_wb_data_reg[31]' (FDE) to 'top/Wishbone_Master/o_wb_data_reg[30]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (top/Wishbone_Master/\o_wb_data_reg[30] )
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[12]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[4]'
-INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[9]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[1]'
-INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[14]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[1]'
-INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[7]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[1]'
-INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[6]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[9]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[7]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[7]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[6]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[6]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[5]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[5]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[1]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[1]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[2]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[2]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[3]'
-INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[3]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[10]'
+INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[3]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[11]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[4]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[13]'
 INFO: [Synth 8-3886] merging instance 'top/Wishbone_Master_0/o_wb_data_reg[11]' (FDE) to 'top/Wishbone_Master_0/o_wb_data_reg[10]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (top/Wishbone_Master_0/\o_wb_data_reg[10] )
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[7]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[9]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[6]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[9]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[5]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[9]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[9]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[3]'
 INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[12]' (FDCE) to 'top/i_spi_top_0/divider_reg[13]'
 INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[13]' (FDCE) to 'top/i_spi_top_0/divider_reg[4]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[9]' (FDCE) to 'top/i_spi_top_0/divider_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[10]' (FDCE) to 'top/i_spi_top_0/divider_reg[11]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[11]' (FDCE) to 'top/i_spi_top_0/divider_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[6]' (FDCE) to 'top/i_spi_top_0/divider_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[7]' (FDCE) to 'top/i_spi_top_0/divider_reg[1]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[1]' (FDCE) to 'top/i_spi_top_0/divider_reg[2]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[2]' (FDCE) to 'top/i_spi_top_0/divider_reg[3]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/divider_reg[3]' (FDCE) to 'top/i_spi_top_0/divider_reg[5]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[1]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[3]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[2]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[3]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[3]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[10]'
 INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[12]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[4]'
 INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[4]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[13]'
+INFO: [Synth 8-3886] merging instance 'top/i_spi_top_0/ctrl_reg[11]' (FDCE) to 'top/i_spi_top_0/ctrl_reg[10]'
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:22 ; elapsed = 00:00:24 . Memory (MB): peak = 856.465 ; gain = 546.363
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:23 ; elapsed = 00:00:25 . Memory (MB): peak = 857.680 ; gain = 547.332
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1033,17 +1072,17 @@ Report RTL Partitions:
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-5578] Moved timing constraint from pin 'adc_pll/clk_out1' to pin 'adc_pll/bbstub_clk_out1/O'
-INFO: [Synth 8-5783] Moving clock source from hierarchical pin 'adc_pll/clk_in1' to 'i_0/count_reg[0]/C'
+INFO: [Synth 8-5783] Moving clock source from hierarchical pin 'adc_pll/clk_in1' to 'i_0/trig_cnt_reg[0]/C'
 INFO: [Synth 8-5578] Moved timing constraint from pin 'okHI/core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst/src_arst' to pin 'okHI/core0/core0/a0/l62a5479e7989ce7f4d5507c695cc69cf_reg/Q'
 INFO: [Synth 8-5819] Moved 3 constraints on hierarchical pins to their respective driving/loading pins
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:29 ; elapsed = 00:00:32 . Memory (MB): peak = 856.465 ; gain = 546.363
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:30 ; elapsed = 00:00:33 . Memory (MB): peak = 857.680 ; gain = 547.332
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:00:31 ; elapsed = 00:00:34 . Memory (MB): peak = 884.797 ; gain = 574.695
+Finished Timing Optimization : Time (s): cpu = 00:00:31 ; elapsed = 00:00:34 . Memory (MB): peak = 875.938 ; gain = 565.590
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1055,7 +1094,7 @@ Report RTL Partitions:
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:00:32 ; elapsed = 00:00:35 . Memory (MB): peak = 902.867 ; gain = 592.766
+Finished Technology Mapping : Time (s): cpu = 00:00:32 ; elapsed = 00:00:35 . Memory (MB): peak = 900.848 ; gain = 590.500
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1079,7 +1118,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 902.867 ; gain = 592.766
+Finished IO Insertion : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 900.848 ; gain = 590.500
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -1092,7 +1131,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 902.867 ; gain = 592.766
+Finished Renaming Generated Instances : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 900.848 ; gain = 590.500
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1104,25 +1143,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 902.867 ; gain = 592.766
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 900.848 ; gain = 590.500
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:00:33 ; elapsed = 00:00:37 . Memory (MB): peak = 902.867 ; gain = 592.766
+Finished Renaming Generated Ports : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 900.848 ; gain = 590.500
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:33 ; elapsed = 00:00:37 . Memory (MB): peak = 902.867 ; gain = 592.766
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 900.848 ; gain = 590.500
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:00:33 ; elapsed = 00:00:37 . Memory (MB): peak = 902.867 ; gain = 592.766
+Finished Renaming Generated Nets : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 900.848 ; gain = 590.500
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1144,63 +1183,63 @@ Report Cell Usage:
 |1     |blk_mem_gen_0    |     1|
 |2     |clk_wiz_0        |     1|
 |3     |fifo_generator_1 |     1|
-|4     |BUFG             |     6|
-|5     |CARRY4           |   118|
+|4     |BUFG             |     3|
+|5     |CARRY4           |    94|
 |6     |DNA_PORT         |     1|
-|7     |LUT1             |    67|
-|8     |LUT2             |   251|
-|9     |LUT3             |   326|
-|10    |LUT4             |   599|
-|11    |LUT5             |   352|
-|12    |LUT6             |   760|
+|7     |LUT1             |    61|
+|8     |LUT2             |   177|
+|9     |LUT3             |   220|
+|10    |LUT4             |   566|
+|11    |LUT5             |   289|
+|12    |LUT6             |   769|
 |13    |LUT6_2           |    50|
 |14    |MMCME2_BASE      |     1|
-|15    |MUXF7            |     9|
+|15    |MUXF7            |     7|
 |16    |RAM128X1S        |     8|
 |17    |RAM32M           |     4|
 |18    |RAMB18E1         |     1|
 |19    |RAMB18E1_1       |     1|
 |20    |RAMB36E1         |     1|
-|21    |FDCE             |   660|
+|21    |FDCE             |   589|
 |22    |FDPE             |   105|
-|23    |FDRE             |  1295|
+|23    |FDRE             |  1216|
 |24    |FDSE             |    28|
-|25    |LD               |    99|
+|25    |LD               |     4|
 |26    |IBUF             |     6|
 |27    |IBUFG            |     1|
 |28    |IBUFGDS          |     1|
 |29    |IOBUF            |    33|
-|30    |OBUF             |    33|
-|31    |OBUFT            |     6|
+|30    |OBUF             |    36|
+|31    |OBUFT            |     2|
 +------+-----------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:00:33 ; elapsed = 00:00:37 . Memory (MB): peak = 902.867 ; gain = 592.766
+Finished Writing Synthesis Report : Time (s): cpu = 00:00:33 ; elapsed = 00:00:36 . Memory (MB): peak = 900.848 ; gain = 590.500
 ---------------------------------------------------------------------------------
-Synthesis finished with 0 errors, 0 critical warnings and 1608 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:00:20 ; elapsed = 00:00:28 . Memory (MB): peak = 902.867 ; gain = 234.484
-Synthesis Optimization Complete : Time (s): cpu = 00:00:33 ; elapsed = 00:00:37 . Memory (MB): peak = 902.867 ; gain = 592.766
+Synthesis finished with 0 errors, 0 critical warnings and 1741 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:20 ; elapsed = 00:00:28 . Memory (MB): peak = 900.848 ; gain = 231.816
+Synthesis Optimization Complete : Time (s): cpu = 00:00:34 ; elapsed = 00:00:37 . Memory (MB): peak = 900.848 ; gain = 590.500
 INFO: [Project 1-571] Translating synthesized netlist
-INFO: [Netlist 29-17] Analyzing 333 Unisim elements for replacement
+INFO: [Netlist 29-17] Analyzing 212 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
 INFO: [Project 1-111] Unisim Transformation Summary:
-  A total of 197 instances were transformed.
+  A total of 102 instances were transformed.
   IBUFG => IBUF: 1 instances
   IBUFGDS => IBUFDS: 1 instances
   IOBUF => IOBUF (IBUF, OBUFT): 33 instances
-  LD => LDCE: 99 instances
+  LD => LDCE: 4 instances
   LUT6_2 => LUT6_2 (LUT5, LUT6): 50 instances
   MMCME2_BASE => MMCME2_ADV: 1 instances
   RAM128X1S => RAM128X1S (MUXF7, RAMS64E, RAMS64E): 8 instances
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-391 Infos, 359 Warnings, 0 Critical Warnings and 0 Errors encountered.
+437 Infos, 352 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:00:36 ; elapsed = 00:00:40 . Memory (MB): peak = 902.867 ; gain = 604.281
+synth_design: Time (s): cpu = 00:00:36 ; elapsed = 00:00:40 . Memory (MB): peak = 900.848 ; gain = 602.004
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.065 . Memory (MB): peak = 902.867 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Fri Jul 23 11:10:46 2021...
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.062 . Memory (MB): peak = 900.848 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Sun Jul 25 13:55:57 2021...

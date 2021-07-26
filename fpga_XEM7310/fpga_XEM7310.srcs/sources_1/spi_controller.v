@@ -6,13 +6,13 @@
 // 
 // Create Date:    12:09:23 07/12/2021
 // Design Name: 
-// Module Name:    DAC80508
+// Module Name:    spi_controller
 // Project Name: 
 // Target Devices: 
 // Tool versions: 
-// Description: module for the DAC80508 chip including the Wishbone signal converter, the Wishbone master,
+// Description: module for general SPU control including the Wishbone signal converter, the Wishbone master,
 // and the SPI master used for the chip. This module is meant to be instantiated in the top level for each
-// DAC80508 chip in use on the FPGA.
+// SPI chip in use on the FPGA.
 //
 // Dependencies: WbSignal_converter, hbexec, spi_top
 //
@@ -22,7 +22,7 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
     
-module DAC80508(
+module spi_controller(
     input wire clk,
     input wire reset,
     input wire [31:0] dac_val,
@@ -40,7 +40,7 @@ module DAC80508(
     wire cmd_busy;
     wire rsp_stb;
     wire [33:0] wb_cmd_dataout;
-    wire [7:0] adr;
+    wire [29:0] adr;
     wire [31:0] dat_i; 
     wire [31:0] dat_o;
     wire we;

@@ -239,20 +239,20 @@ set_property IOSTANDARD LVCMOS33 [get_ports {d0_sdi}]
 #set_property PACKAGE_PIN AA6 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 ## MC1-45 
-set_property PACKAGE_PIN Y3 [get_ports {d0_sclk}]
-set_property IOSTANDARD LVCMOS33 [get_ports {d0_sclk}]
+set_property PACKAGE_PIN Y3 [get_ports {ds1_sclk}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ds1_sclk}]
 ## MC1-46 
 #set_property PACKAGE_PIN AA8 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 ## MC1-47 
-set_property PACKAGE_PIN AA3 [get_ports {d1_csb}]
-set_property IOSTANDARD LVCMOS33 [get_ports {d1_csb}]
+set_property PACKAGE_PIN AA3 [get_ports {ds1_csb}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ds1_csb}]
 ## MC1-48 
 #set_property PACKAGE_PIN AB8 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
 ## MC1-49 
-set_property PACKAGE_PIN U2 [get_ports {d1_sdi}]
-set_property IOSTANDARD LVCMOS33 [get_ports {d1_sdi}]
+set_property PACKAGE_PIN U2 [get_ports {ds1_sdi}]
+set_property IOSTANDARD LVCMOS33 [get_ports {ds1_sdi}]
 ## MC1-50 
 #set_property PACKAGE_PIN U3 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]
@@ -275,11 +275,11 @@ set_property IOSTANDARD LVCMOS33 [get_ports {d1_sclk}]
 #set_property PACKAGE_PIN  [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
 ## MC1-57 
-#set_property PACKAGE_PIN Y2 [get_ports {GPIO_3V3_0}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_3V3_0}]
+#set_property PACKAGE_PIN Y2 [get_ports {}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {}]
 ## MC1-58 
-#set_property PACKAGE_PIN Y1 [get_ports {GPIO_3V3_1}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_3V3_1}]
+#set_property PACKAGE_PIN Y1 [get_ports {}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {}]
 ## MC1-59 
 #set_property PACKAGE_PIN T1 [get_ports {GPIO_3V3_2}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {GPIO_3V3_2}]
@@ -374,14 +374,14 @@ set_property IOSTANDARD LVCMOS25 [get_ports {gp[6]}]
 #set_property PACKAGE_PIN R13 [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
 # MC2-10 
-set_property PACKAGE_PIN F4 [get_ports {DS1_SDO}]
-set_property IOSTANDARD LVCMOS25 [get_ports {DS1_SDO}]
+set_property PACKAGE_PIN F4 [get_ports {ds1_sdo}]
+set_property IOSTANDARD LVCMOS25 [get_ports {ds1_sdo}]
 # MC2-11 
-set_property PACKAGE_PIN AB12 [get_ports {DS1_SCLK}]
-set_property IOSTANDARD LVCMOS25 [get_ports {DS1_SCLK}]
+#set_property PACKAGE_PIN AB12 [get_ports {ds1_sclk}]
+#set_property IOSTANDARD LVCMOS25 [get_ports {ds1_sclk}]
 # MC2-12 
-set_property PACKAGE_PIN L6 [get_ports {DS1_CSB}]
-set_property IOSTANDARD LVCMOS25 [get_ports {DS1_CSB}]
+#set_property PACKAGE_PIN L6 [get_ports {ds1_csb}]
+#set_property IOSTANDARD LVCMOS25 [get_ports {ds1_csb}]
 # MC2-13 
 #set_property PACKAGE_PIN  [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
@@ -389,20 +389,20 @@ set_property IOSTANDARD LVCMOS25 [get_ports {DS1_CSB}]
 #set_property PACKAGE_PIN  [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
 # MC2-15 
-set_property PACKAGE_PIN P5 [get_ports {DS1_SDI}]
-set_property IOSTANDARD LVCMOS25 [get_ports {DS1_SDI}]
+#set_property PACKAGE_PIN P5 [get_ports {ds1_sdi}]
+#set_property IOSTANDARD LVCMOS25 [get_ports {ds1_sdi}]
 # MC2-16 
-set_property PACKAGE_PIN P6 [get_ports {DS2_SDO}]
-set_property IOSTANDARD LVCMOS25 [get_ports {DS2_SDO}]
+set_property PACKAGE_PIN P6 [get_ports {ds2_sdo}]
+set_property IOSTANDARD LVCMOS25 [get_ports {ds2_sdo}]
 # MC2-17 
-set_property PACKAGE_PIN P4 [get_ports {DS2_SCLK}]
-set_property IOSTANDARD LVCMOS25 [get_ports {DS2_SCLK}]
+set_property PACKAGE_PIN P4 [get_ports {ds2_sclk}]
+set_property IOSTANDARD LVCMOS25 [get_ports {ds2_sclk}]
 # MC2-18 
-set_property PACKAGE_PIN N5 [get_ports {DS2_CSB}]
-set_property IOSTANDARD LVCMOS25 [get_ports {DS2_CSB}]
+set_property PACKAGE_PIN N5 [get_ports {ds2_csb}]
+set_property IOSTANDARD LVCMOS25 [get_ports {ds2_csb}]
 # MC2-19 
-set_property PACKAGE_PIN N4 [get_ports {DS2_SDI}]
-set_property IOSTANDARD LVCMOS25 [get_ports {DS2_SDI}]
+set_property PACKAGE_PIN N4 [get_ports {ds2_sdi}]
+set_property IOSTANDARD LVCMOS25 [get_ports {ds2_sdi}]
 # MC2-20 
 #set_property PACKAGE_PIN P2 [get_ports {}]
 #set_property IOSTANDARD LVCMOS33 [get_ports {}]

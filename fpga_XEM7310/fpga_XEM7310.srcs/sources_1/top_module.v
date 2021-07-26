@@ -104,8 +104,14 @@ module top_module(
       wire empty;
       wire writeFifo;//this signal and the one below are used to generate the write enable signal for the FIFO
       reg wr_en;//
-		
-    //syncronizer for the system rst (non-Fifo)
+			
+    wire sync_rst;
+	assign sync_rst = rst;
+    wire sync_fifo_rst;
+    assign sync_fifo_rst = rstFifo;
+	/*	
+    //syncronizer for the system rst (non-Fifo) [TODO: the synchronizer appears properly designed but triggers are already 
+    // synchronized to the clk_sys domain]
       reg s1, s2;
 	  wire sync_rst;
 	 
@@ -273,7 +279,7 @@ module top_module(
 	 
 	 //State machine/controller for reading data from AD796x FIFO and initiating SPI transfers to AD5453
 	 read_AD796x_fifo_cmd data_converter_0(
-	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(filter_out/*16'h7fff*/), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
+	 .clk(clk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*filter_out*/16'h7fff), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0), .data_rdy(data_rdy_0)
 	 );
 	 
@@ -457,12 +463,12 @@ module top_module(
     );
 
     /*---------------- DAC80508 -------------------*/
-    DAC80508 dac_0 (
+    spi_controller dac_0 (
       .clk(clk), .reset(sync_rst), .dac_val(dac_val_0), .dac_convert_trigger(dac_convert_trigger_0), .dac_out(dac_out_0),
       .ss(dac_ss_0), .sclk(dac_sclk_0), .mosi(dac_mosi_0), .miso(dac_miso_0)
     );
     
-    DAC80508 dac_1 (
+    spi_controller dac_1 (
       .clk(clk), .reset(sync_rst), .dac_val(dac_val_1), .dac_convert_trigger(dac_convert_trigger_1), .dac_out(dac_out_1),
       .ss(dac_ss_1), .sclk(dac_sclk_1), .mosi(dac_mosi_1), .miso(dac_miso_1)
     );
