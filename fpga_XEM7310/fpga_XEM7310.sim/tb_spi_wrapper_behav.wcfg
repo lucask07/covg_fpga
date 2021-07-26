@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_spi_wrapper_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="tb_spi_wrapper" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="5000000001fs"></ZoomEndTime>
+      <Cursor1Time time="1248846000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="175"></NameColumnWidth>
+      <ValueColumnWidth column_width="146"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="27" />
+   <wave_markers>
+      <marker time="508000000" label="" />
+      <marker time="548000000" label="" />
+   </wave_markers>
+   <wvobject fp_name="/tb_spi_wrapper/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/rst" type="logic">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/wire_in" type="array">
+      <obj_property name="ElementShortName">wire_in[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wire_in[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/trigger" type="logic">
+      <obj_property name="ElementShortName">trigger</obj_property>
+      <obj_property name="ObjectShortName">trigger</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/miso" type="logic">
+      <obj_property name="ElementShortName">miso</obj_property>
+      <obj_property name="ObjectShortName">miso</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/wire_out" type="array">
+      <obj_property name="ElementShortName">wire_out[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wire_out[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/ss" type="logic">
+      <obj_property name="ElementShortName">ss</obj_property>
+      <obj_property name="ObjectShortName">ss</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/sclk" type="logic">
+      <obj_property name="ElementShortName">sclk</obj_property>
+      <obj_property name="ObjectShortName">sclk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/mosi" type="logic">
+      <obj_property name="ElementShortName">mosi</obj_property>
+      <obj_property name="ObjectShortName">mosi</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/i" type="array">
+      <obj_property name="ElementShortName">i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/s1" type="logic">
+      <obj_property name="ElementShortName">s1</obj_property>
+      <obj_property name="ObjectShortName">s1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/s2" type="logic">
+      <obj_property name="ElementShortName">s2</obj_property>
+      <obj_property name="ObjectShortName">s2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/sync_rst" type="logic">
+      <obj_property name="ElementShortName">sync_rst</obj_property>
+      <obj_property name="ObjectShortName">sync_rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/CONVERT/int_o" type="logic">
+      <obj_property name="ElementShortName">int_o</obj_property>
+      <obj_property name="ObjectShortName">int_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/CONVERT/o_stb" type="logic">
+      <obj_property name="ElementShortName">o_stb</obj_property>
+      <obj_property name="ObjectShortName">o_stb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/Wishbone_Master/o_wb_stb" type="logic">
+      <obj_property name="ElementShortName">o_wb_stb</obj_property>
+      <obj_property name="ObjectShortName">o_wb_stb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/i_spi_top/wb_int_o" type="logic">
+      <obj_property name="ElementShortName">wb_int_o</obj_property>
+      <obj_property name="ObjectShortName">wb_int_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/i_spi_top/wb_stb_i" type="logic">
+      <obj_property name="ElementShortName">wb_stb_i</obj_property>
+      <obj_property name="ObjectShortName">wb_stb_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/i_spi_top/go" type="logic">
+      <obj_property name="ElementShortName">go</obj_property>
+      <obj_property name="ObjectShortName">go</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/i_spi_top/shift/data" type="array">
+      <obj_property name="ElementShortName">data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/CONVERT/cmd_word" type="array">
+      <obj_property name="ElementShortName">cmd_word[33:0]</obj_property>
+      <obj_property name="ObjectShortName">cmd_word[33:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/CONVERT/read" type="array">
+      <obj_property name="ElementShortName">read[4:0]</obj_property>
+      <obj_property name="ObjectShortName">read[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/CONVERT/S0" type="array">
+      <obj_property name="ElementShortName">S0[4:0]</obj_property>
+      <obj_property name="ObjectShortName">S0[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/CONVERT/state" type="array">
+      <obj_property name="ElementShortName">state[4:0]</obj_property>
+      <obj_property name="ObjectShortName">state[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/rd_en" type="logic">
+      <obj_property name="ElementShortName">rd_en</obj_property>
+      <obj_property name="ObjectShortName">rd_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/dat_i" type="array">
+      <obj_property name="ElementShortName">dat_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dat_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/uut/dat_o" type="array">
+      <obj_property name="ElementShortName">dat_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dat_o[31:0]</obj_property>
+   </wvobject>
+</wave_config>

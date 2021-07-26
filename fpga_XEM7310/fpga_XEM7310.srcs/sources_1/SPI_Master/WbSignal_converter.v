@@ -112,63 +112,87 @@ module WbSignal_converter(clk, rst, ep_dataout, trigger, o_stb, cmd_word, int_o
         endcase
     end
     
+    always @(posedge clk) begin
+        if (rst) cmd_word <= 34'd0;
+        else if (load) cmd_word <= {ep_dataout[31:30], 2'b0, ep_dataout[29:0]};
+        else if (read_cmd[0]) cmd_word <= 34'h200000001; // read command 
+        else if (read_cmd[1]) cmd_word <= 34'd0; // read command (off?)
+    end
+    
+    reg load;
+    reg [1:0]read_cmd;
+    
     //output logic
     always@(*)begin
         case(state)
             S0: begin
-                    cmd_word = {ep_dataout[31:30], 2'b0, ep_dataout[29:0]};
-                    o_stb = 1'b0;
+                    load = 1'b0;
+                    read_cmd = 2'b00;
+                    o_stb = 1'b0;    
                 end
             S1: begin
-                cmd_word = cmd_word;
+                load = 1'b1;
+                read_cmd = 2'b00;
                 o_stb = 1'b0;
             end
             S2: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;
                     o_stb = 1'b1; //output strobe to the wishbone bus master 
             end
             S3: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;
                     o_stb = 1'b1;
             end
             S4: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;
                     o_stb = 1'b0;
             end
             read: begin
-                    cmd_word = 34'h200000001; // read command 
+                    load = 1'b0;
+                    read_cmd = 2'b01;
                     o_stb = 1'b0;
             end
             read1: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;                    
                     o_stb = 1'b1;
             end
             read2: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;
                     o_stb = 1'b1;
             end
             read3: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;                    
                     o_stb = 1'b0;
             end
             read4: begin
-                    cmd_word = 34'h0;
+                    load = 1'b0;
+                    read_cmd = 2'b10;
                     o_stb = 1'b0;
             end
             read5: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;                  
                     o_stb = 1'b1;
             end
             read6: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;                   
                     o_stb = 1'b1;
             end
             read7: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;                    
                     o_stb = 1'b0;
             end
             default: begin
-                    cmd_word = cmd_word;
+                    load = 1'b0;
+                    read_cmd = 2'b00;                    
                     o_stb = 1'b0;
                 end
         endcase
