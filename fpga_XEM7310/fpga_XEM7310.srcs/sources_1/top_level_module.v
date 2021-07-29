@@ -82,10 +82,9 @@
 //
 //
 //
-
+`include "ep_defines.v" 
 //`default_nettype wire
-
-localparam FADC_NUM = 0;
+localparam FADC_NUM = 1;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -95,90 +94,24 @@ module top_level_module(
     input wire sys_clkn,
 	input wire sys_clkp,
 	
-	/*
-	output wire mosi,/////////
-	input wire miso, 
-	output wire ss,
-	output wire sclk,/////////
-	*/ 
-	
-	// ADS7952
-	output wire adcs_sdi,/////////
-	input wire adcs_sdo,  /*these spi signals are for the ADS7950*/
-	output wire adcs_sclk,
-	output wire adcs_csb,/////////
-	
-	//Fast DAC AD5453
-	output wire d0_sdi,
-	output wire d0_csb,
-	//output wire d0_sclk,
-
-	//output wire d1_sdi,
-	//output wire d1_csb,
-	output wire d1_sclk,
-
-	output wire d2_sdi,
-	output wire d2_csb,
-	output wire d2_sclk,
-
-	output wire d3_sdi,
-	output wire d3_csb,
-	output wire d3_sclk,	
-	
 	input wire pushreset,//pushbutton reset
 	output wire [7:0] led, //LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
-	output wire [6:0] gp,
-	
-	
-	//AD796x
-    //output wire [3:0] adc_en0,          // Enable pins output
-    //output wire adc_en2,                // Enable pins output
-    
-    //input wire [(FADC_NUM-1):0]adc_d_p,      // Data In, Positive Pair
-    //input wire [(FADC_NUM-1):0]adc_d_n,      // Data In, Negative Pair
-    //input wire [(FADC_NUM-1):0]adc_dco_p,    // Echoed Clock In, Positive Pair
-    //input wire [(FADC_NUM-1):0]adc_dco_n,    // Echoed Clock In, Negative Pair
-    
-    //output wire [(FADC_NUM-1):0]adc_cnv_p,   // Convert Out, Positive Pair
-    //output wire [(FADC_NUM-1):0]adc_cnv_n,   // Convert Out, Negative Pair
-    //output wire [(FADC_NUM-1):0]adc_clk_p,   // Clock Out, Positive Pair
-    //output wire [(FADC_NUM-1):0]adc_clk_n,   // Clock Out, Negative Pair
-    
-    /*
-    input wire A1_D_P,                // Data In, Positive Pair
-    input wire A1_D_N,                    // Data In, Negative Pair
-    input wire A1_DCO_P,                  // Echoed Clock In, Positive Pair
-    input wire A1_DCO_N,                  // Echoed Clock In, Negative Pair
-    
-    output wire A1_CNV_P,                 // Convert Out, Positive Pair
-    output wire A1_CNV_N,                 // Convert Out, Negative Pair
-    output wire A1_CLK_P,                 // Clock Out, Positive Pair
-    output wire A1_CLK_N,                 // Clock Out, Negative Pair
-    
-    input wire A2_D_P,                // Data In, Positive Pair
-    input wire A2_D_N,                    // Data In, Negative Pair
-    input wire A2_DCO_P,                  // Echoed Clock In, Positive Pair
-    input wire A2_DCO_N,                  // Echoed Clock In, Negative Pair
-    
-    output wire A2_CNV_P,                 // Convert Out, Positive Pair
-    output wire A2_CNV_N,                 // Convert Out, Negative Pair
-    output wire A2_CLK_P,                 // Clock Out, Positive Pair
-    output wire A2_CLK_N,                 // Clock Out, Negative Pair
 
-    input wire A3_D_P,                // Data In, Positive Pair
-    input wire A3_D_N,                    // Data In, Negative Pair
-    input wire A3_DCO_P,                  // Echoed Clock In, Positive Pair
-    input wire A3_DCO_N,                  // Echoed Clock In, Negative Pair
+	//AD796x
+	/*
+    output wire [(FADC_NUM-1):0] adc_en0,          // Enable pins output
+    output wire adc_en2,                // Enable pins output
     
-    output wire A3_CNV_P,                 // Convert Out, Positive Pair
-    output wire A3_CNV_N,                 // Convert Out, Negative Pair
-    output wire A3_CLK_P,                 // Clock Out, Positive Pair
-    output wire A3_CLK_N,                 // Clock Out, Negative Pair
-    /*
+    input wire [(FADC_NUM-1):0]adc_d_p,      // Data In, Positive Pair
+    input wire [(FADC_NUM-1):0]adc_d_n,      // Data In, Negative Pair
+    input wire [(FADC_NUM-1):0]adc_dco_p,    // Echoed Clock In, Positive Pair
+    input wire [(FADC_NUM-1):0]adc_dco_n,    // Echoed Clock In, Negative Pair
     
-    /*
-    input wire LS0_EN
-    */
+    output wire [(FADC_NUM-1):0]adc_cnv_p,   // Convert Out, Positive Pair
+    output wire [(FADC_NUM-1):0]adc_cnv_n,   // Convert Out, Negative Pair
+    output wire [(FADC_NUM-1):0]adc_clk_p,   // Clock Out, Positive Pair
+    output wire [(FADC_NUM-1):0]adc_clk_n,   // Clock Out, Negative Pair
+	*/
 	
     // DAC80508
     input wire ds1_sdo,
@@ -189,91 +122,31 @@ module top_level_module(
     input wire ds2_sdo,
     output wire ds2_sclk,
     output wire ds2_csb,
-    output wire ds2_sdi 
+    output wire ds2_sdi ,
+    
+    //ADS8686
+    output wire ss_ads,
+    output wire sclk_ads,
+    output wire mosi_ads,
+    input wire miso_ads,
+    output wire convst
+    
 	);
 		    
     /* ---------------- DAC80508 ----------------*/
     // Input Values to Wishbones
     wire [31:0] dac_val_0;
     wire [31:0] dac_val_1;
-	
-	wire mosi;
-	wire miso;
-	wire ss;
-	wire sclk;
-	
-	wire mosi_0;
-    wire ss_0;
-    wire sclk_0;
     
-    wire mosi_1;
-    wire ss_1;
-    wire sclk_1;
-    
-    wire mosi_2;
-    wire ss_2;
-    wire sclk_2;
-        
-    wire mosi_3;
-    wire ss_3;
-    wire sclk_3;
-
-    // DAC80508
-    wire dac_ss_0;
-    wire dac_sclk_0;
-    wire dac_mosi_0;
-    wire dac_miso_0;
-
-    wire dac_ss_1;
-    wire dac_sclk_1;
-    wire dac_mosi_1;
-    wire dac_miso_1;
-    
-	
-	// connect SPI signals to the general purpose outputs for debug
-	assign gp[0] = mosi;
-	assign gp[1] = miso;
-	assign gp[2] = ss;
-	assign gp[3] = sclk;
-	
-	// SPI signals to AD5453 also connected to gp outputs
-	assign gp[4] = mosi_0;
-    assign gp[5] = ss_0;
-    assign gp[6] = sclk_0;
-
-	// MUX for routing the SPI master  [select mosi default, outputs]
-	mux_1to8 mux_sdi (ep01wire[2:0], mosi, 1'b0, {d3_sdi, d2_sdi, d1_sdi, d0_sdi, adcs_sdi});
-	// MUX for routing the SPI master  [select ss default, outputs]
-	mux_1to8 mux_csb (ep01wire[2:0], ss, 1'b1, {d3_csb, d2_csb, d1_csb, d0_csb, adcs_csb});
-	// MUX for routing the SPI master  [select sclk default, outputs]
-	mux_1to8 mux_sclk (ep01wire[2:0], sclk, 1'b0, {d3_sclk, d1_sclk, d0_sclk, adcs_sclk});
-
-	// no mux needed since DACs do not output data
-	assign miso = adcs_sdo;
-	
     wire [(FADC_NUM-1):0] adc_reset; //asynchronous adc (AD796x resets)  
 
-	 
 	//System Clock from input differential pair 
-	wire clk_sys, clk_sys_fast;
-	
+	wire clk_sys;
 	IBUFGDS osc_clk(
 		  .O(clk_sys),
 		  .I(sys_clkp),
 		  .IB(sys_clkn)
 	);
-	
-	/*
-	 clk_wiz_0_1 slow_clk_sys
-      (
-       // Clock out ports
-       .clk_out1(clk_sys),     // output clk_out1
-       // Status and control signals
-       .reset(ep41trig[0]), // input reset
-       .locked(),       // output locked
-      // Clock in ports
-       .clk_in1(clk_sys_fast));      // input clk_in1
-	*/
 	
 	//pll generating "Fast" clock for Ad796x.v
 	wire adc_clk;
@@ -290,29 +163,12 @@ module top_level_module(
 	wire okClk;
 	wire [112:0] okHE;
 	wire [64:0] okEH;
-	
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
-	wire [11*65-1:0] okEHx;
+	//TODO: better way to keep track of these
+	wire [12*65-1:0] okEHx;
 	
 	//Opal Kelly wires and triggers
-	wire [31:0] ep00wire, ep01wire;
-	wire [31:0] ep40trig;
-	
-	//wires to capture output from the HDL regarding last data written to ADS7952 Fifo and when the data is ready
-	wire [31:0] lastWrite;
-	wire hostinterrupt;
-	wire ep_ready;
-	
-	//output data from the ADS7952 FIFO
-	wire [31:0] dout;
-	
-	//wires to capture output from BTPipeOut (initiating block reads from ADS7952 FIFO)
-	wire readFifo;
-	wire pipestrobe;
-	
-	//wire to capture slave select signal from the SPI master
-	wire slaveselect;
-	assign ss = slaveselect;//slave select signal for ADS7950
+	wire [31:0] ep00wire, ep01wire, ep40trig;
 	
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
@@ -327,7 +183,7 @@ module top_level_module(
              
     /* ---------------- Ok Endpoints ----------------*/
 				 
-	//wire to hold the data/commands from the host � this will be routed to the wishbone formatter/state machine for the ADS7952
+	//wire to hold the data/commands from the host this will be routed to the wishbone formatter/state machine for the ADS7952
 	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
 	// Wire in to select what slave the SPI data is routed to
 	okWireIn wi1 (.okHE(okHE), .ep_addr(8'h01), .ep_dataout(ep01wire));
@@ -336,7 +192,6 @@ module top_level_module(
 
     okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(8'h03), .ep_dataout(dac_val_0));
     okWireIn wi_dac_1 (.okHE(okHE), .ep_addr(8'h04), .ep_dataout(dac_val_1));
-
 	
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
@@ -349,6 +204,9 @@ module top_level_module(
 	//ep40trig[7] is the reset for adc7961_3_fifo
 	//ep40trig[8] will be used to trigger the Wishbone formatter/state machine for dac_0, telling the state machine that wi0 is valid
 	//ep40trig[9] will be used to trigger the Wishbone formatter/state machine for dac_1, telling the state machine that wi0 is valid
+	//ep40trig[10] reset the programmable clock divider for the ADS8686 spi 
+	//ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode 
+	
 	okTriggerIn trigIn40 (.okHE(okHE),
                       .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep40trig));
     
@@ -356,11 +214,10 @@ module top_level_module(
     okTriggerIn trigIn41 (.okHE(okHE),
                                     .ep_addr(8'h41), .ep_clk(clk_sys_fast), .ep_trigger(ep41trig));
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
-	okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
+	// okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 
     //wire to hold general status output to host
     okWireOut wo1 (.okHE(okHE), .okEH(okEHx[3*65 +: 65 ]), .ep_addr(8'h21), .ep_datain({31'b0, adc_pll_locked}));
-	
     okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[9*65 +: 65 ]), .ep_addr(8'h22), .ep_datain(dac_out_0));
     okWireOut wo_dac_1 (.okHE(okHE), .okEH(okEHx[10*65 +: 65 ]), .ep_addr(8'h23), .ep_datain(dac_out_1));
 	//status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
@@ -376,50 +233,92 @@ module top_level_module(
     //bit 10 is status signal telling host that AD7961_3 fifo is completely full
     //bit 11 is status signal telling host that AD7961_3 fifo is half full
     //bit 12 is status signal telling host that AD7961_3 fifo is empty
+    //bit 13 is status signal telling host that AD7S8686 fifo is completely full
+    //bit 14 is status signal telling host that AD7S8686 fifo is half full
+    //bit 15 is status signal telling host that AD7S8686 fifo is empty    
 	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), 
-                           .ep_trigger({19'b0, adc_fifo_empty[3], adc_fifo_halffull[3], adc_fifo_full[3],
+                           .ep_trigger({16'b0, 
+                           ads_fifo_empty, ads_fifo_halffull, ads_fifo_full,
+                           adc_fifo_empty[3], adc_fifo_halffull[3], adc_fifo_full[3],
                            adc_fifo_empty[2], adc_fifo_halffull[2], adc_fifo_full[2],
                            adc_fifo_empty[1], adc_fifo_halffull[1], adc_fifo_full[1],
                            adc_fifo_empty[0], adc_fifo_halffull[0], adc_fifo_full[0], hostinterrupt}));
+       //register bridge for writing filter coefficients to BRAM and to the spi_controller 
+       wire regWrite;
+       wire regRead;
+       wire [31:0] regAddress;
+       wire [31:0] regDataOut;
+       wire [31:0] regDataIn; // Was reg, gave error in Vivado synthesis
+       
+       okRegisterBridge regBridge (
+           .okHE(okHE),
+           .okEH(okEHx[8*65 +: 65]),
+           .ep_write(regWrite),
+           .ep_read(regRead),
+           .ep_address(regAddress),
+           .ep_dataout(regDataOut),
+           .ep_datain(regDataIn)
+       );
 	
-	//pipeOut to transfer data in bulk from the ADS7952 FIFO
-	okBTPipeOut pipeOutA0 (.okHE(okHE), .okEH(okEHx[2*65 +: 65]),
-                       .ep_addr(8'hA0), .ep_datain(dout), .ep_read(readFifo),
-                       .ep_blockstrobe(pipestrobe), .ep_ready(ep_ready));  
-    
-    /* ---- created by generate block 
-    //pipeOut for data from AD7961_1
-    okPipeOut pipeOutA2(.okHE(okHE), .okEH(okEHx[5*65 +: 65]), 
-              .ep_addr(8'hA2), .ep_read(adc_pipe_ep_read[1]), 
-              .ep_datain(adc_pipe_ep_datain[1]));
-   
-   //pipeOut for data from AD7961_2
-   okPipeOut pipeOutA3(.okHE(okHE), .okEH(okEHx[6*65 +: 65]), 
-             .ep_addr(8'hA3), .ep_read(adc_pipe_ep_read[2]), 
-             .ep_datain(adc_pipe_ep_datain[2]));
-             
-   //pipeOut for data from AD7961_3
-   okPipeOut pipeOutA4(.okHE(okHE), .okEH(okEHx[7*65 +: 65]), 
-             .ep_addr(8'hA4), .ep_read(adc_pipe_ep_read[3]), 
-             .ep_datain(adc_pipe_ep_datain[3]));        
-   */
-             
-   //register bridge for writing filter coefficients to BRAM
-   wire regWrite;
-   wire regRead;
-   wire [31:0] regAddress;
-   wire [31:0] regDataOut;
-   wire [31:0] regDataIn; // Was reg, gave error in Vivado synthesis
-   
-   okRegisterBridge regBridge (
-       .okHE(okHE),
-       .okEH(okEHx[8*65 +: 65]),
-       .ep_write(regWrite),
-       .ep_read(regRead),
-       .ep_address(regAddress),
-       .ep_dataout(regDataOut),
-       .ep_datain(regDataIn)
-   );
+	// --------------------- for the ADS8686 --------------------------
+    okWireIn wi_ads (.okHE(okHE), .ep_addr(ADS_WIRE_IN_ADDR), .ep_dataout(ads_wire_in));
+    wire [31:0] ads_wire_in;
+    wire [31:0] ads_data_out;
+    wire ads_data_valid;
+    spi_controller uut(
+                       .clk(clk),
+                       .reset(sys_rst),
+                       .divider_reset(ep40trig[10]), //TODO: to trigger 
+                       .dac_val(ads_wire_in), 
+                       .dac_convert_trigger(ep40trig[11]), // trigger wishbone transfers 
+                       .host_fpgab(ep01wire[0]), // if 1 host driven commands; if 0 
+                       // OKRegister bridge inputs 
+                       .okClk(okClk),
+                       .addr(regAddress),
+                       .data_in(regDataOut),
+                       .write_in(regWrite),
+                       // outputs 
+                       .dac_out(ads_data_out), // connect to FIFO
+                       .data_valid(ads_data_valid), 
+                       .ss(ss_ads),
+                       .sclk(sclk_ads),
+                       .mosi(mosi_ads),
+                       .miso(miso_ads),
+                       .convst_out(convst)
+                       );
+                                     	
+   fifo_AD796x ads8686_fifo (//32 bit wide read and 16 bit wide write ports 
+     .rst(ads_fifo_reset),
+     .wr_clk(clk_sys),
+     .rd_clk(okClk),
+     .din(ads_data_out),         // Bus [15:0] (from ADC)
+     .wr_en(ads_data_valid),// from ADC 
+     .rd_en(ads_pipe_read),      // from OKHost
+     .dout(ads_fifo_data),     // Bus [31:0] (to OKHost)
+     .full(ads_fifo_full),     // status 
+     .empty(ads_fifo_empty),   // status 
+     .prog_full(ads_fifo_halffull));//status
+    	
+    wire [31:0] ads_fifo_data;
+    wire ads_pipe_read;
+    //pipeOut to transfer data in bulk from the ADS8686 FIFO
+   okPipeOut pipeOutADS86 (.okHE(okHE), .okEH(okEHx[2*65 +: 65]),
+                      .ep_addr(ADS_POUT_OFFSET),  .ep_read(ads_pipe_read),
+                      .ep_datain(ads_fifo_data));  
+
+   reg [31:0] ads_last_read;  
+   always @(posedge clk_sys) begin 
+        if (sys_rst) begin
+             ads_last_read <=32'h0;
+        end
+        else if (ads_pipe_read) begin
+            ads_last_read <= ads_data_out;
+        end
+    end
+    okWireOut wo_ads (.okHE(okHE), .okEH(okEHx[11*65 +: 65 ]), .ep_addr(ADS_WIRE_OUT_ADDR), .ep_datain(ads_last_read));
+
+    // ------------ end ADS8686 -----------------------------------
+    	
     	
 	//instantiation of lower level "top module" to connect the okHost and OpalKelly Endpoints to the rest of the design
 	top_module top (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
@@ -432,14 +331,6 @@ module top_level_module(
                  .dac_val_0(dac_val_0), .dac_convert_trigger_0(ep40trig[8]), .dac_out_0(dac_out_0), .dac_ss_0(ds1_csb), .dac_sclk_0(ds1_sclk), .dac_mosi_0(ds1_sdi), .dac_miso_0(sd1_sdi),
                  .dac_val_1(dac_val_1), .dac_convert_trigger_1(ep40trig[9]), .dac_out_1(dac_out_1), .dac_ss_1(ds2_csb), .dac_sclk_1(ds2_sclk), .dac_mosi_1(ds2_sdo), .dac_miso_1(ds2_sdi), 
 				 .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn));
-	
-	reg [6:0] trig_cnt; 
-	assign led[7:1] = trig_cnt; 
-	
-	always @(posedge clk_sys) begin
-	   if (sys_rst) trig_cnt <= 7'd0;
-	   else if (ds1_sclk) trig_cnt <= trig_cnt + 1'b1;
-   end
 	
 	/* ---------------- ADC796x ----------------*/
 	wire [(FADC_NUM-1):0] adc_sync_rst;
@@ -460,7 +351,7 @@ module top_level_module(
         .m_clk_i(clk_sys),                // 200 MHz Clock, used for timing (only for 5 MSPS tracking)
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
         .reset_n_i(adc_sync_rst[i]),          // Reset signal, active low
-        .en_i({1'b0, adc_en2, 1'b0, adc_en0[i]}),                // Enable pins input  LJK: assigned to en_o within module (all that's done)
+        .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
         .d_pos_i(adc_d_p[i]),                    // Data Ii, Positive Pair
         .d_neg_i(adc_d_n[i]),                    // Data In, Negative Pair
         .dco_pos_i(adc_dco_p[i]),                  // Echoed Clock In, Positive Pair
@@ -493,7 +384,7 @@ module top_level_module(
           
           //pipeOut for data from AD7961
           okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(4+i)*65 +: 65]), 
-                    .ep_addr(8'hA1 + i), .ep_read(adc_pipe_ep_read[i]), 
+                    .ep_addr(AD796x_POUT_OFFSET + i), .ep_read(adc_pipe_ep_read[i]), 
                     .ep_datain(adc_pipe_ep_datain[i]));
      end
      endgenerate 
