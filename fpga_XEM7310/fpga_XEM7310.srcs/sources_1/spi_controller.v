@@ -22,16 +22,28 @@
 //
 //////////////////////////////////////////////////////////////////////////////////
     
-module spi_controller(
+module spi_controller #(ADDR = 0)(
     input wire clk,
     input wire reset,
+    input wire divider_reset,
     input wire [31:0] dac_val,
     input wire dac_convert_trigger,
+    input wire host_fpgab,
+    
+    // OkRegister bridge 
+    input wire okClk, // needed to synchronize to the register bridge data. Should reset divider after loading data.  
+    input wire [31:0] addr,
+    input wire [31:0] data_in, // dividing period. must be multiple of 2     
+    input wire write_in,
+    
     output wire [31:0] dac_out,
+    output wire data_valid,
     output wire ss,
     output wire sclk,
     output wire mosi,
-    input wire miso
+    input wire miso,
+    // for ADS8686
+    output wire convst_out
     );
 
     //instantiations and wires for DAC80508
@@ -52,13 +64,52 @@ module spi_controller(
     wire int_o;
     wire rd_en; //signaling data is being grabbed by stae machine/controller
 
+    wire pulse, convst_out;
+    wire [3:0]read_en;
+    wire [31:0] data_out;
+
+    clock_divider #(.ADDR(ADDR)) dut(
+        .clk(clk),
+        .okClk(okClk), // needed to synchronize to the register bridge data. Should reset divider after loading data.  
+        .rst(divider_reset),
+        .clk_out(), //50% duty-cycle 
+        .pulse(pulse), // single clk period pulse 
+        .convst(convst),
+        .read_en(read_en),    
+        .addr(addr),     // input data to program frequency 
+        .data_in(data_in), // must be multiple of 2 
+        .write_in(write_in)
+        );
+        
+    assign convst_out = convst & (~host_fpgab); // force convst output to zero if doing host driven reads. 
+        
+    spi_data_gen #(.ADDR(ADDR + 1)) dut2 (
+            .clk(clk),
+            .okClk(okClk), // needed to synchronize to the register bridge data. Should reset divider after loading data.  
+            .read_en(read_en),
+            // input data to program frequency 
+            .addr(addr),
+            .data_in(data_in), 
+            .write_in(write_in),
+            .data_out(data_out)
+            );
+
+    wire wb_trigger;
+    assign wb_trigger = host_fpgab ? dac_convert_trigger : pulse; 
+    
+    wire [31:0] wb_conv_data; // data to the wishbone converter 
+    assign wb_conv_data = host_fpgab ? dac_val : data_out; 
+
+    wire data_valid;
+    assign data_valid = (!wb_cmd_dataout[32] && !wb_cmd_dataout[33] && !rsp_stb);
+
     //module to take commands from the host and format them into commands that the Wishbone master will understand
     WbSignal_converter CONVERT(
-    .clk(clk), .rst(reset), .ep_dataout(dac_val), .trigger(dac_convert_trigger), 
+    .clk(clk), .rst(reset), .ep_dataout(wb_conv_data), .trigger(wb_trigger), 
     .o_stb(cmd_stb), .cmd_word(cmd_word), .int_o(int_o)
     );
 
-    //Wishbone Master module for DAC80508
+    //Wishbone Master module
     hbexec Wishbone_Master (
     .i_clk(clk), .i_reset(reset), .i_cmd_stb(cmd_stb), .i_cmd_word(cmd_word), 
     .o_cmd_busy(cmd_busy), .o_rsp_stb(rsp_stb),
@@ -69,7 +120,7 @@ module spi_controller(
 
     assign dac_out = wb_cmd_dataout[31:0];
     
-    //SPI master core for DAC80508
+    //SPI master core 
     spi_top i_spi_top (
      .wb_clk_i(clk), .wb_rst_i(reset), 
      .wb_adr_i(adr[4:0]), .wb_dat_i(dat_o), .wb_dat_o(dat_i), 
@@ -77,5 +128,4 @@ module spi_controller(
      .wb_cyc_i(cyc), .wb_ack_o(ack), .wb_err_o(err), .wb_int_o(int_o),
      .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
     );
-
 endmodule
