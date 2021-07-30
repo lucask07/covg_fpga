@@ -82,11 +82,13 @@
 //
 //
 //
+
+`default_nettype wire // depending on compile order this may be needed. OpalKelly says its not a problem.
+
 `include "ep_defines.v" 
-//`default_nettype wire
 localparam FADC_NUM = 1;
 localparam DAC80508_NUM = 2;
-
+localparam AD5453_NUM = 1;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -100,9 +102,8 @@ module top_level_module(
 	output wire [7:0] led, //LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
 
 	//AD796x
-
     output wire [(FADC_NUM-1):0] adc_en0,          // Enable pins output
-    output wire adc_en2,                // Enable pins output
+    output wire adc_en2,                           // Enable pins output
     
     input wire [(FADC_NUM-1):0]adc_d_p,      // Data In, Positive Pair
     input wire [(FADC_NUM-1):0]adc_d_n,      // Data In, Negative Pair
@@ -119,6 +120,11 @@ module top_level_module(
     output wire [(DAC80508_NUM-1):0]ds_sclk,
     output wire [(DAC80508_NUM-1):0]ds_csb,
     output wire [(DAC80508_NUM-1):0]ds_sdi,
+    
+    //AD5453 (SPI)
+    output wire [(AD5453_NUM-1):0]d_sclk,
+    output wire [(AD5453_NUM-1):0]d_csb,
+    output wire [(AD5453_NUM-1):0]d_sdi,   
     
     //ADS8686
     output wire ss_ads,
@@ -143,7 +149,6 @@ module top_level_module(
     inout  wire [3 :0]  ddr3_dqs_n,
     output wire         ddr3_reset_n
     
-    
 	);
 	//System Clock from input differential pair 
 	wire clk_sys;
@@ -159,15 +164,10 @@ module top_level_module(
 	
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
-	.reset(ep40trig[3]), 
+	.reset(ep40trig[TI40_PLL_RST]), 
 	.clk_out1(adc_clk), //out at 200 MHz
 	.locked(adc_pll_locked)
-	);
-	 
-    //wire to capture clock enable period multiplier, and the clock enable itself
-    wire [9:0] en_period;
-    wire clk_en;
-	 
+	); 
 	 //FrontPanel (HostInterface) wires	
 	wire okClk;
 	wire [112:0] okHE;
@@ -181,7 +181,7 @@ module top_level_module(
 	
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
-	assign sys_rst = (pushreset | ep40trig[1]);
+	assign sys_rst = (pushreset | ep40trig[1]); // TODO: TI40_RST is not found
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
 	okWireOR # (.N(13)) wireOR (okEH, okEHx);
@@ -190,14 +190,14 @@ module top_level_module(
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
              .okClk(okClk), .okHE(okHE), .okEH(okEH));
              
-    /* ---------------- Ok Endpoints ----------------*/
-				 
+    /* ---------------- Ok Endpoints ----------------*/	
+    wire ignore;  
 	//wire to hold the data/commands from the host this will be routed to the wishbone formatter/state machine for the ADS7952
 	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
 	// Wire in to select what slave the SPI data is routed to
 	okWireIn wi1 (.okHE(okHE), .ep_addr(8'h01), .ep_dataout(ep01wire));
     okWireIn wi2 (.okHE(okHE), .ep_addr(8'h02), 
-      .ep_dataout({13'b0, en_period, adc_en0, adc_reset}));
+      .ep_dataout({13'b0, en_period, adc_en0, ignore}));
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
 	//ep40trig[1] will be used as the master reset for the rest of the design
@@ -263,17 +263,9 @@ module top_level_module(
            .ep_dataout(regDataOut),
            .ep_datain(regDataIn)
        );
-	
 	// ---------------------- END OpalKelly EndPoints (global) --------
-	
-    /* ---------------- DAC80508 ----------------*/
-    // Input Values to Wishbones
-    wire [31:0] dac_val_0;
-    wire [31:0] dac_val_1;
-    
-    wire [(FADC_NUM-1):0] adc_reset; //asynchronous adc (AD796x resets)  
-	
-	// --------------------- for the ADS8686 --------------------------
+    	
+	// --------------------- Begin ADS8686 --------------------------
     okWireIn wi_ads (.okHE(okHE), .ep_addr(ADS_WIRE_IN_ADDR), .ep_dataout(ads_wire_in));
     wire [31:0] ads_wire_in;
     wire [31:0] ads_data_out;
@@ -281,9 +273,9 @@ module top_level_module(
     spi_controller uut(
                        .clk(clk_sys),
                        .reset(sys_rst),
-                       .divider_reset(ep40trig[10]), //TODO: to trigger 
+                       .divider_reset(ep40trig[TI40_ADS_CLK_DIV]), //TODO: to trigger 
                        .dac_val(ads_wire_in), 
-                       .dac_convert_trigger(ep40trig[11]), // trigger wishbone transfers 
+                       .dac_convert_trigger(ep40trig[TI40_ADS_WB]), // trigger wishbone transfers 
                        .host_fpgab(ep01wire[0]), // if 1 host driven commands; if 0 
                        // OKRegister bridge inputs 
                        .okClk(okClk),
@@ -333,9 +325,11 @@ module top_level_module(
     // ------------ end ADS8686 -----------------------------------
 	
 	/* ---------------- AD796x 5 MSPS ADC  ----------------*/
+    wire [(FADC_NUM-1):0] adc_reset; //asynchronous adc (AD796x resets)  
+
 	wire [(FADC_NUM-1):0] adc_sync_rst;
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
-	wire [(FADC_NUM-1):0]pipe_out_write_adc;
+	wire [(FADC_NUM-1):0]write_en_adc_o;
     wire [15:0] adc_val[0:(FADC_NUM-1)]; 
     wire [(FADC_NUM-1):0] adc_fifo_full;
     wire [(FADC_NUM-1):0] adc_fifo_halffull;
@@ -346,11 +340,10 @@ module top_level_module(
 	genvar i;
     generate
     for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7960_gen
-	
         AD7961 adc7961(
         .m_clk_i(clk_sys),                // 200 MHz Clock, used for timing (only for 5 MSPS tracking)
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
-        .reset_n_i(adc_sync_rst[i]),          // Reset signal, active low
+        .reset_n_i(~ep40trig[TI40_ADC_RST+i]),          // Reset signal, active low
         .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
         .d_pos_i(adc_d_p[i]),                    // Data Ii, Positive Pair
         .d_neg_i(adc_d_n[i]),                    // Data In, Negative Pair
@@ -361,21 +354,19 @@ module top_level_module(
         .cnv_neg_o(adc_cnv_n[i]),                  // Convert Out, Negative Pair
         .clk_pos_o(adc_clk_p[i]),                  // Clock Out, Positive Pair
         .clk_neg_o(adc_clk_n[i]),                  // Clock Out, Negative Pair
-        .data_rd_rdy_o(pipe_out_write_adc[i]), // Signals that new data is available
+        .data_rd_rdy_o(write_en_adc_o[i]), // Signals that new data is available
         .data_o(adc_val[i])
         );
         
         //AD796x reset synchronizer 
         reset_sync_low sync_adc_rst_0 (.clk(clk_sys), .async_rst(adc_reset[i]), .sync_rst(adc_sync_rst[i]));
-        //sychronized AD796x fifo resets
-        reset_synchronizer sync_adc_fifo_rst_0 (.clk(clk_sys), .async_rst(ep40trig[4 + i]), .sync_rst(adc_fifo_reset[i]));
-            
+
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports 
-          .rst(adc_fifo_reset[i]),
+          .rst(ep40trig[TI40_ADC_FIFO_RST + i]),
           .wr_clk(clk_sys),
           .rd_clk(okClk),
           .din({adc_val[i]}),         // Bus [15:0] (from ADC)
-          .wr_en(pipe_out_write_adc[i]),// from ADC 
+          .wr_en(write_en_adc_o[i]),// from ADC 
           .rd_en(adc_pipe_ep_read[i]),      // from OKHost
           .dout(adc_pipe_ep_datain[i]),     // Bus [31:0] (to OKHost)
           .full(adc_fifo_full[i]),     // status 
@@ -395,7 +386,7 @@ module top_level_module(
     generate
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen     
         spi_controller dac_0 (
-          .clk(clk), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[DS_TRIG_OFFSET+j]), .dac_out(dac_out_0),
+          .clk(clk), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[TI40_DAC805_WB+j]), .dac_out(dac_out_0),
           .ss(dac_ss_0), .sclk(dac_sclk_0), .mosi(dac_mosi_0), .miso(dac_miso_0)
         );
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
@@ -406,6 +397,9 @@ module top_level_module(
     
    //General purpose clock divide - currently used as "helper" clocking module for reading form DDR3
    wire dataready;
+   //wire to capture clock enable period multiplier, and the clock enable itself
+   wire [9:0] en_period;
+   wire clk_en;
    assign clk_en = dataready;
     general_clock_divide MIG_DDR_FIFO_RD_EN(
         .clk(clk),
@@ -468,6 +462,9 @@ module top_level_module(
      wire         po0_ep_read;
      wire [31:0]  pi0_ep_dataout;     
      wire [31:0] INDEX;
+     wire          ddr3_rst;// MIG/DDR3 synchronous reset
+     wire [31:0]  po0_ep_datain;// MIG/DDR3 data out
+     wire rd_en_0;
      
      reset_synchronizer u_MIG_sync_rst(
      .clk(clk_sys),
@@ -627,18 +624,21 @@ module top_level_module(
     
     /* ------------------ END DDR3 ------------------- */
     
+    /* ------------------ AD5453 SPI ------------------- */
+    genvar k;
+    generate
+    for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
     // instantiate old top-level (but only for the AD5453 SPI) 
-    spi_fifo_driven spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), .ep_dataout(ep00wire), .trigger(ep40trig[0]), 
-             .hostinterrupt(hostinterrupt), .readFifo(readFifo), .rstFifo(ep40trig[2]), .dout(dout), .lastWrite(lastWrite),
-             .ep_ready(ep_ready), .mosi(mosi), .miso(miso), .sclk(sclk), .ss(slaveselect), 
-             .ss_0(ss_0), .mosi_0(mosi_0), .sclk_0(sclk_0), .data_rdy_0(pipe_out_write_adc[0]), .adc_val_0(adc_val[0]),
-             .ss_1(ss_1), .mosi_1(mosi_1), .sclk_1(sclk_1), .data_rdy_1(pipe_out_write_adc[1]), .adc_val_1(adc_val[1]),
-             .ss_2(ss_2), .mosi_2(mosi_2), .sclk_2(sclk_2), .data_rdy_2(pipe_out_write_adc[2]), .adc_val_2(adc_val[2]),
-             .ss_3(ss_3), .mosi_3(mosi_3), .sclk_3(sclk_3), .data_rdy_3(pipe_out_write_adc[3]), .adc_val_3(adc_val[3]),
+    spi_fifo_driven spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), 
+             .ss_0(d_csb), .mosi_0(d_sdi), .sclk_0(d_sclk), .data_rdy_0(), .adc_val_0(), //not yet used
              // register bridge 
-             .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn));
-    
+             .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn),
+             // ddr 
+             .en_period(en_period), .clk_en(clk_en), .ddr3_rst(ddr3_rst), .ddr_dat_i(po0_ep_datain[13:0]), .rd_en_0(rd_en_0), .regTrigger(ep40trig[TI40_AD5453_WB]));
+    end
+    endgenerate        
     /* ----------------- END AD5453 ------------------------------------ */
+    
 	 //module to create a one second pulse on one of the LEDs (keepAlive test)
 	 one_second_pulse out_pulse(
 	 .clk(clk), .rst(sys_rst), .slow_pulse(led[0])
