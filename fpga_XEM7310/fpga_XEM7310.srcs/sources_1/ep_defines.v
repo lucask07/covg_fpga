@@ -25,3 +25,9 @@
 `define ADS_POUT_OFFSET 8'hA5
 `define ADS_WIRE_IN_ADDR 8'h05
 `define ADS_WIRE_OUT_ADDR 8'h24 
+`define DS_WIRE_IN_OFFSET 8'h05
+`define DS_TRIG_OFFSET 32'h08  // bit 8 
+
+
+
+`define NUM_OUTGOING_EPS 13
