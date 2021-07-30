@@ -24,40 +24,12 @@ module spi_fifo_driven(
      input wire clk,
 	 input wire fifoclk,
      input wire rst,
-     input wire [31:0] ep_dataout,
-     input wire trigger,  
-     output wire hostinterrupt, //interrupt signal from fifo to tell host computer that FIFO is half full
-     input wire readFifo,
-	 input wire rstFifo,
-     output wire [31:0] dout,
-	 output wire [31:0] lastWrite, //this signal will give the value of the last word written into the FIFO (for debugging)
-	 output wire ep_ready, //this signal will tell the host that a block transfer is ready
-	 /**/output wire mosi,
-	 input wire miso,
-	 output wire sclk,
-	 output wire ss,//*/
-	 output wire slow_pulse,
 	 /*****AD796x signals*****/
 	 input wire data_rdy_0,
 	 output wire ss_0,
      output wire sclk_0,
      output wire mosi_0,
      input wire [15:0] adc_val_0,
-     input wire data_rdy_1,
-     output wire ss_1,
-     output wire sclk_1,
-     output wire mosi_1,
-     input wire [15:0] adc_val_1,
-     input wire data_rdy_2,
-     output wire ss_2,
-     output wire sclk_2,
-     output wire mosi_2,
-     input wire [15:0] adc_val_2,
-     input wire data_rdy_3,
-     output wire ss_3,
-     output wire sclk_3,
-     output wire mosi_3,
-     input wire [15:0] adc_val_3,
      /*****Register Bridge and DDR Signals******/
      input wire ep_read,
      input wire ep_write,
@@ -92,11 +64,8 @@ module spi_fifo_driven(
       wire empty;
       wire writeFifo;//this signal and the one below are used to generate the write enable signal for the FIFO
       reg wr_en;//
-
 	 
 	 //General purpose clock divide – currently used as "helper" clocking module for reading form DDR3
-//     wire clk_en;
-//     wire en_period;
     wire dataready;
     assign clk_en = dataready;
      
@@ -125,11 +94,6 @@ module spi_fifo_driven(
 	 wire ack_0;
 	 wire err_0;
 	 wire int_o_0;
-	 /**///wire rd_en_0; //read enable for AD796x FIFO
-	 
-	 /*wire ss_0;
-     wire sclk_0;
-     wire mosi_0;*/
 	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd data_converter_0(
