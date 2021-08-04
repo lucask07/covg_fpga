@@ -68,7 +68,7 @@ creg_addr = 0x41 # control register
 Txreg_addr = 0x01 # Tx/Rx register (at the same address! But has dual functionality)
 
 # Configuring the SPI controller
-creg_set = 0x3010 # Char length of 16. Samples Tx/Rx on POS edge; sets ASS, IE
+creg_set = 0x3610 # Char length of 16. Samples Tx/Rx on POS edge; sets ASS, IE
 clk_div = 0x18 # Takes the given clk at 10MHz and divides it so you get a 2MHz clk instead
 ss = 0x1 # sets the active ss line by setting the LSB of a SPI command to 1 during configuration
 
@@ -86,14 +86,14 @@ def SPI_config():
     register. ONLY RUN 1x to avoid improper configuration! '''
     
     # first: reset fpga, fifo, spi controller clk_divider, and set to listen to host commands
-    f.xem.ActivateTriggerIn(0x40, 1)    # resets the fpga
+    # f.xem.ActivateTriggerIn(0x40, 1)    # resets the fpga
 
     # write to the register bridge to setup the device (okRegBridge needs an addr and the value to send to the clk)
-    f.xem.WriteRegister(0, 2) # pass in the address (0) and value to divide the clk (must be a multiple of 2)   
+    # f.xem.WriteRegister(0, 2) # pass in the address (0) and value to divide the clk (must be a multiple of 2)   
 
-    f.xem.ActivateTriggerIn(0x40, 10)   # resets the spi controller clock divider
-    f.xem.ActivateTriggerIn(0x40, 2)    # empties the fifo for the ads8686
-    f.xem.ActivateTriggerIn(0x40, 11)   # initiates host wishbone and SPI transactions
+    # f.xem.ActivateTriggerIn(0x40, 10)   # resets the spi controller clock divider
+    # f.xem.ActivateTriggerIn(0x40, 2)    # empties the fifo for the ads8686
+    # f.xem.ActivateTriggerIn(0x40, 11)   # initiates host wishbone and SPI transactions
     f.set_wire(0x1, 1, 0x1)             # sets the wire for spi_driver so the host is driving commands
 
     for val in [wb_r | divreg_addr, wb_w | clk_div, # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
@@ -111,6 +111,8 @@ def sendSPI(message): # what needs to be written to the ADS?
     Writes to a register by storing the message in the Tx register, then tells
     the control register to go (1 in LSB) and receives the read value '''
 
+    print('Sneding 0x{:X}'.format(message))
+
     for i in range(2):
         for val in [wb_r | Txreg_addr, message, # go to the Tx register, store data to send (from cmd)
                     wb_r | creg_addr,  wb_w | (creg_set | (1 << 8))]: # Tells the Control register - GO (bit 8)
@@ -120,7 +122,7 @@ def sendSPI(message): # what needs to be written to the ADS?
             send_trig(valid)
     
     # Now read the result back and store it print to the console and return
-    data = read_wire(control) 
+    data = read_wire(FPGA_data) 
 
     print('Read back 0x{:X}'.format(data))
 

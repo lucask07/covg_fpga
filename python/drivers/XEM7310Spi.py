@@ -19,7 +19,7 @@ ep = namedtuple('ep', 'addr bits type') # address of the DEVICE_ID reg so we can
 one_deep_fifo = ep(0x24, [i for i in range(32)], 'wo') # should hand back the same data as the FPGA_data wire?
 
 # wire ins
-control       = ep(0x5, [i for i in range(32)], 'wi')  # note this is active low 
+control       = ep(0x0, [i for i in range(32)], 'wi')  # note this is active low 
 convst        = ep(0x1, 3, 'wi') # the input signal used to start converting data (helps us read a voltage from the chip)
 spi_driver    = ep(0x1, 0, 'wi') # who is driving SPI commands? High for host, low for FPGA
 # ads_reset = ep(0x03, 4, 'wi') # used to reset the chip instead of pushing the button
@@ -54,7 +54,7 @@ def read_wire(ep_bit): # reads the wire and returns the value back
 
 ################## Actual executing code ##################
 # sets up the fpga by grabbing an instance of the class (as f) and initializing the device
-f = FPGA(bitfile = '1213pm.bit')
+f = FPGA(bitfile = 'testConvst.bit')
 f.init_device() # programs the FPGA (loads bit file)
 
 # set the SPI output mux to select a device other than the ADS7952 to avoid contention on SDO
