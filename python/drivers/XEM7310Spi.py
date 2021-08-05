@@ -30,7 +30,7 @@ valid      = ep(0x40, 11, 'ti') # tells the FPGA to read good data (same as host
 fpga_reset = ep(0x40, 1, 'ti') # this resets the entire system
 fifo_reset = ep(0x40, 2, 'ti') # empties the fifo
 clk_reset  = ep(0x40, 10, 'ti') # resets the clk divider of the SPI controller
-host_wb    = ep(0x40, 11, 'ti') # initates host wishbone transactions
+# host_wb    = ep(0x40, 11, 'ti') # initates host wishbone transactions (same as valid, remove?)
 
 # triggers out
 half_full = ep(0x60, 0, 'to') # tells the FPGA that the fifo is half full
@@ -54,11 +54,8 @@ def read_wire(ep_bit): # reads the wire and returns the value back
 
 ################## Actual executing code ##################
 # sets up the fpga by grabbing an instance of the class (as f) and initializing the device
-f = FPGA(bitfile = 'testConvst.bit')
+f = FPGA(bitfile = '353pm.bit')
 f.init_device() # programs the FPGA (loads bit file)
-
-# set the SPI output mux to select a device other than the ADS7952 to avoid contention on SDO
-# f.set_wire(mux_control.addr, 1, mask = mux_control.bits)
 
 # setup the control wire so we can drive signals coming from host to FPGA and vice versa
 f.set_wire(0x0, 0xFFFF, mask = 0xFFFF_FFFF)

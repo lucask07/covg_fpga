@@ -68,8 +68,8 @@ creg_addr = 0x41 # control register
 Txreg_addr = 0x01 # Tx/Rx register (at the same address! But has dual functionality)
 
 # Configuring the SPI controller
-creg_set = 0x3610 # Char length of 16. Samples Tx/Rx on POS edge; sets ASS, IE
-clk_div = 0x18 # Takes the given clk at 10MHz and divides it so you get a 2MHz clk instead
+creg_set = 0x3710 # Char length of 16. Samples Tx/Rx on NEG edge; sets ASS, IE
+clk_div = 0x18 # Takes the given clk at 25MHz and divides it so you get a 2MHz clk instead
 ss = 0x1 # sets the active ss line by setting the LSB of a SPI command to 1 during configuration
 
 # SPI write and read commands
@@ -90,11 +90,12 @@ def SPI_config():
 
     # write to the register bridge to setup the device (okRegBridge needs an addr and the value to send to the clk)
     # f.xem.WriteRegister(0, 2) # pass in the address (0) and value to divide the clk (must be a multiple of 2)   
+    # f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
 
-    # f.xem.ActivateTriggerIn(0x40, 10)   # resets the spi controller clock divider
+    f.xem.ActivateTriggerIn(0x40, 10)   # resets the spi controller clock divider
     # f.xem.ActivateTriggerIn(0x40, 2)    # empties the fifo for the ads8686
     # f.xem.ActivateTriggerIn(0x40, 11)   # initiates host wishbone and SPI transactions
-    f.set_wire(0x1, 1, 0x1)             # sets the wire for spi_driver so the host is driving commands
+    f.set_wire(0x1, 1, 0xFFFF)             # sets the wire for spi_driver so the host is driving commands
 
     for val in [wb_r | divreg_addr, wb_w | clk_div, # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
                 wb_r | creg_addr,   wb_w | creg_set,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
@@ -111,7 +112,7 @@ def sendSPI(message): # what needs to be written to the ADS?
     Writes to a register by storing the message in the Tx register, then tells
     the control register to go (1 in LSB) and receives the read value '''
 
-    print('Sneding 0x{:X}'.format(message))
+    print('Sending 0x{:X}'.format(message))
 
     for i in range(2):
         for val in [wb_r | Txreg_addr, message, # go to the Tx register, store data to send (from cmd)
@@ -128,6 +129,47 @@ def sendSPI(message): # what needs to be written to the ADS?
 
     return data
 
+def writeRegBridge():
+    ''' Goes to the register bridge and writes a value that will be used during FPGA driven SPI '''
+    
+    # go to the clk divider and set up posedge, go bit, IE, and cs
+    res = f.xem.WriteRegister(0x0, 80) # opal kelly function to read a register
+    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
+    print('Read 0x{:X}'.format(res))
+
+    # write commands using 1111, 2222, 3333, 4444 to see what array of data_out is used
+    res = f.xem.WriteRegister(0x1, 0x8000_AAAA) # opal kelly function to read a register
+    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
+    print('Read 0x{:X}'.format(res))
+
+    res = f.xem.WriteRegister(0x2, 0x4000_1111) # opal kelly function to read a register
+    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
+    print('Read 0x{:X}'.format(res))
+
+    res = f.xem.WriteRegister(0x3, 0x8000_2222) # opal kelly function to read a register
+    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
+    print('Read 0x{:X}'.format(res))
+
+    res = f.xem.WriteRegister(0x4, 0x4000_3333) # opal kelly function to read a register
+    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
+    print('Read 0x{:X}'.format(res))
+
+    f.set_wire(0x1, 0, 0xFFFF) # lower the wire so the FPGA can take control of sending SPI commands, won't listen to python anymore
+
+'''  
+def quickWrite():
+    Writes to the register bridge in one function all at once 
+    # okTRegisterEntries regs(5) # writing to 
+    pass
+'''
+
+def readRegBridge(reg):
+    ''' Checks the status of a register bridge register and hands back the value '''
+    res = f.xem.ReadRegister(reg) # opal kelly function to write to a register
+    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
+
+    return res
+    
 def writeReg(msg, reg_name):
     ''' Writes to a specific register on the ads8686 by using wishbone commands and stored Hex
     values above to either configure a register to its default value or change a register appropriately
