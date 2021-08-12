@@ -1,5 +1,5 @@
 import numpy as np
-from utils import rev_lookup, test_bit, bin, twos_comp
+from utils import twos_comp
 import logging
 
 ############# Set up the Logging feature/lib ############
@@ -69,7 +69,7 @@ Txreg_addr = 0x01 # Tx/Rx register (at the same address! But has dual functional
 
 # Configuring the SPI controller
 creg_set = 0x3710 # Char length of 16. Samples Tx/Rx on NEG edge; sets ASS, IE
-clk_div = 0x18 # Takes the given clk at 25MHz and divides it so you get a 2MHz clk instead
+clk_div = 0x6 # Takes the given clk at 25MHz and divides it so you get a 2MHz clk instead
 ss = 0x1 # sets the active ss line by setting the LSB of a SPI command to 1 during configuration
 
 # SPI write and read commands
@@ -89,10 +89,10 @@ def SPI_config():
     # f.xem.ActivateTriggerIn(0x40, 1)    # resets the fpga
 
     # write to the register bridge to setup the device (okRegBridge needs an addr and the value to send to the clk)
-    # f.xem.WriteRegister(0, 2) # pass in the address (0) and value to divide the clk (must be a multiple of 2)   
+    # f.xem.WriteRegister(0, 6) # pass in the address (0) and value to divide the clk (must be a multiple of 2)   
     # f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
 
-    f.xem.ActivateTriggerIn(0x40, 10)   # resets the spi controller clock divider
+    # f.xem.ActivateTriggerIn(0x40, 10)   # resets the spi controller clock divider
     # f.xem.ActivateTriggerIn(0x40, 2)    # empties the fifo for the ads8686
     # f.xem.ActivateTriggerIn(0x40, 11)   # initiates host wishbone and SPI transactions
     f.set_wire(0x1, 1, 0xFFFF)             # sets the wire for spi_driver so the host is driving commands
@@ -107,7 +107,7 @@ def SPI_config():
         send_trig(valid) 
 
 # Expects a 8-digit hex command!!
-def sendSPI(message): # what needs to be written to the ADS?
+def sendSPI(message): # what needs to be sent to the ADS?
     ''' Send 16 bits (2 bytes) of SPI data and read any result sent back along SDO.
     Writes to a register by storing the message in the Tx register, then tells
     the control register to go (1 in LSB) and receives the read value '''
@@ -123,7 +123,7 @@ def sendSPI(message): # what needs to be written to the ADS?
             send_trig(valid)
     
     # Now read the result back and store it print to the console and return
-    data = read_wire(FPGA_data) 
+    data = read_wire(one_deep_fifo) 
 
     print('Read back 0x{:X}'.format(data))
 
@@ -133,35 +133,28 @@ def writeRegBridge():
     ''' Goes to the register bridge and writes a value that will be used during FPGA driven SPI '''
     
     # go to the clk divider and set up posedge, go bit, IE, and cs
-    res = f.xem.WriteRegister(0x0, 80) # opal kelly function to read a register
+    res = f.xem.WriteRegister(0x0, 400) # opal kelly function that writes to a register
     f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
     print('Read 0x{:X}'.format(res))
 
     # write commands using 1111, 2222, 3333, 4444 to see what array of data_out is used
-    res = f.xem.WriteRegister(0x1, 0x8000_AAAA) # opal kelly function to read a register
+    res = f.xem.WriteRegister(0x1, 0x8000_0001) # opal kelly function that writes to a register
     f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
     print('Read 0x{:X}'.format(res))
 
-    res = f.xem.WriteRegister(0x2, 0x4000_1111) # opal kelly function to read a register
+    res = f.xem.WriteRegister(0x2, 0x4000_88AA) # opal kelly function that writes to a register
     f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
     print('Read 0x{:X}'.format(res))
 
-    res = f.xem.WriteRegister(0x3, 0x8000_2222) # opal kelly function to read a register
+    res = f.xem.WriteRegister(0x3, 0x8000_0041) # opal kelly function that writes to a register
     f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
     print('Read 0x{:X}'.format(res))
 
-    res = f.xem.WriteRegister(0x4, 0x4000_3333) # opal kelly function to read a register
+    res = f.xem.WriteRegister(0x4, 0x4000_3710) # opal kelly function that writes to a register
     f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
     print('Read 0x{:X}'.format(res))
 
-    f.set_wire(0x1, 0, 0xFFFF) # lower the wire so the FPGA can take control of sending SPI commands, won't listen to python anymore
-
-'''  
-def quickWrite():
-    Writes to the register bridge in one function all at once 
-    # okTRegisterEntries regs(5) # writing to 
-    pass
-'''
+    f.set_wire(0x1, 0, 1) # lower the wire so the FPGA can take control of sending SPI commands, won't listen to python anymore
 
 def readRegBridge(reg):
     ''' Checks the status of a register bridge register and hands back the value '''
@@ -182,11 +175,11 @@ def writeReg(msg, reg_name):
     elif(msg == 'c'): # if we want to clear the register's contents
         cmd = ((dictofRegs[reg_name].addr) * 0x100) # get the MSB digits so we can set the register correctly
         cmd = (cmd << 1) # to reset the register, shift it's address 1 to the left
-        cmd = (cmd | wb_w | msg_w) # concatenate the reg addr w/a wishbone write (NO message) to build a complete SPI command
+        cmd = (cmd | wb_w | msg_w) # concatenate the reg addr w/a wishbone write (no message) to build a complete SPI command
     else: # otherwise, we're sending a message
         cmd = ((dictofRegs[reg_name].addr) * 0x100) # get the MSB digits so we can set the register correctly
         cmd = (cmd << 1) # to reset the register, shift it's address 1 to the left
-        cmd = (cmd | wb_w | msg | msg_w) # concatenate the reg addr w/a wishbone write and message to build a complete SPI command
+        cmd = (cmd | wb_w | msg | msg_w) # concatenate the reg addr w/wishbone write and message to build a complete SPI command
     
     # print('Your command is 0x{:X}'.format(cmd)) # print to the console to double check our math
     check = sendSPI(cmd) # store the sent result
@@ -200,21 +193,6 @@ def writeReg(msg, reg_name):
         logging.warning('  {} register: Default 0x{:X}, read {}'.format(reg_name, dictofRegs[reg_name].default, hex(check)))
 
     return check
-
-def continuous_data():
-    ''' Should allow us to send SPI commands between host -- > FPGA and then let the FPGA take over
-    the sending and recieving of SPI commands '''
-    # Setup the fpga by configuring the SPI controller and updating the triggers/wires in
-    SPI_config()
- 
-    f.xem.ActivateTriggerIn(0x40, 11) # instantiates the signal thattells the wishbone master when we want to send a SPI command
-    f.set_wire(0x01, 1, 1) # sets up host driven SPI commands (wire 1, bit 0, mask = 1)
-
-    # Set up the register bridge with clk divider, ctrl reg settings, etc for when the FPGA takes over
-    NOP = 0x4000_0000 # don't need to use the for val loop above, sendSPI handles the SPI registers for us
-    sendSPI(NOP)
- 
-    f.set_wire(0x01, 0, 1) # lower the wire so the FPGA takes over SPI commands
 
 def readAll(): # reads all 43 reg's and prints their values
     logging.info('------------------------------------------------------------------------------------------')
@@ -255,14 +233,14 @@ def seqControl():
     seqRegs.append('rangeB2')
 
     # step 3: setup the sequencer stack regs for each channel we want to read (up to 32 reads)
-    s0 = 0x00 # reads channel 0A/0B, go next, cmd 0xC000
+    s0 = 0x100 # reads channel 0A/0B, STOP, cmd 0xC100
     seqCmds.append(s0)
     seqRegs.append('seq0')
-
+    '''
     s1 = 0x111 # reads channel 1A/1B, STOP, cmd 0xC211
     seqCmds.append(s1)
     seqRegs.append('seq1')
-    '''
+    
     s2 = 0x00 # reads channel 0A/0B, go next, cmd 0xC600
     seqCmds.append(s2)
     seqRegs.append('seq2')
