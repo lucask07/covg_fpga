@@ -629,7 +629,7 @@ module top_level_module(
      fifo_w32_1024_r256_128 okPipeIn_fifo (
          .rst(ep03wire[2]),
          .wr_clk(okClk),
-         .rd_clk(clk_sys),
+         .rd_clk(clk_ddr_ui),
          .din(pi0_ep_dataout), // Bus [31 : 0]
          .wr_en(pi0_ep_write),
          .rd_en(pipe_in_read),
@@ -642,7 +642,7 @@ module top_level_module(
      
      fifo_w256_128_r32_1024 okPipeOut_fifo (
          .rst(ep03wire[2]),
-         .wr_clk(clk_sys),
+         .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys/*okClk*/),
          .din(pipe_out_data), // Bus [256 : 0]
          .wr_en(pipe_out_write),
