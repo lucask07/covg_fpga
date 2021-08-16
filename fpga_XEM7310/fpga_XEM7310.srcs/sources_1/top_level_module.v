@@ -194,27 +194,43 @@ module top_level_module(
 	wire [16*65-1:0] okEHx;
 	
 	//Opal Kelly wires and triggers
-	wire [31:0] ep00wire, ep01wire, ep40trig, ep41trig;
+	wire [31:0] ep00wire, ep01wire, ep02wire, ep40trig, ep41trig;
 	
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
 	assign sys_rst = (pushreset | ep40trig[`TI40_RST]); // TODO: TI40_RST is not found
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(13)) wireOR (okEH, okEHx);
+	okWireOR # (.N(13)) wireOR (okEH, okEHx); //TODO
     
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
              .okClk(okClk), .okHE(okHE), .okEH(okEH));
              
     /* ---------------- Ok Endpoints ----------------*/	
-    wire ignore;  
 	//wire to hold the data/commands from the host this will be routed to the wishbone formatter/state machine for the ADS7952
 	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
 	// Wire in to select what slave the SPI data is routed to
 	okWireIn wi1 (.okHE(okHE), .ep_addr(8'h01), .ep_dataout(ep01wire));
+    
     okWireIn wi2 (.okHE(okHE), .ep_addr(8'h02), 
-      .ep_dataout({13'b0, en_period, adc_en0, ignore}));
+      .ep_dataout(ep02wire));
+      
+     assign a_en0_hv = ep02wire[(`WI02_A_EN0+`WI02_A_EN0_LEN - 1):`WI02_A_EN0]; //1 for each channel
+     assign a_en_hv = ep02wire[(`WI02_A_EN+`WI02_A_EN_LEN - 1):`WI02_A_EN];    // global
+
+     wire [9:0] en_period;
+     assign en_period = ep02wire[(`WI02_EN_PERIOD_LEN+`WI02_EN_PERIOD - 1):`WI02_EN_PERIOD];
+      
+     //power supply regulatoor enable signals (5 total signals)
+     assign en_15v = ep02wire[`WI02_15V_EN];
+     assign en_1v8 = ep02wire[`WI02_1V8_EN];
+     assign en_3v3 = ep02wire[`WI02_3V3_EN];
+     assign en_5v = ep02wire[`WI02_5V_EN];
+     assign en_n15v = ep02wire[`WI02_N15V_EN];
+
+     assign en_ipump = ep02wire[(`WI02_IPUMP_EN + `WI02_IPUMP_EN_LEN - 1):`WI02_IPUMP_EN]; // (2 total signals) 
+      
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
 	//ep40trig[1] will be used as the master reset for the rest of the design
@@ -415,7 +431,6 @@ module top_level_module(
    //General purpose clock divide - currently used as "helper" clocking module for reading form DDR3
    wire dataready;
    //wire to capture clock enable period multiplier, and the clock enable itself
-   wire [9:0] en_period;
    wire clk_en;
    assign clk_en = dataready;
     general_clock_divide MIG_DDR_FIFO_RD_EN(

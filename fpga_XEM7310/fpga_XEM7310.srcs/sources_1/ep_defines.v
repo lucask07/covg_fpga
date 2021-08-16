@@ -57,5 +57,27 @@
 `define TI40_ADS8686_FIFO_RST 18
 `define TI40_ADC_RST 19 //19,20,21,22,
 
+// wire in at 0x00 
+
+// wirein at 0x02 
+`define WI02_A_EN0 1
+`define WI02_A_EN0_LEN 4
+
+`define WI02_EN_PERIOD 5
+`define WI02_EN_PERIOD_LEN 10
+
+`define WI02_A_EN 15
+`define WI02_A_EN_LEN 3
+
+// power supply enables 
+`define WI02_15V_EN 18
+`define WI02_1V8_EN 19
+`define WI02_3V3_EN 20
+`define WI02_5V_EN 21
+`define WI02_N15V_EN 22
+
+`define WI02_IPUMP_EN 23
+`define WI02_IPUMP_EN_LEN 2
+
 // TODO set this up! 
 `define NUM_OUTGOING_EPS 13
