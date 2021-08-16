@@ -106,15 +106,15 @@ module top_level_module(
     output wire [(FADC_NUM-1):0] adc_en0,          // Enable pins output
     output wire adc_en2,                           // Enable pins output
     
-    input wire [(FADC_NUM-1):0]adc_d_p,      // Data In, Positive Pair
-    input wire [(FADC_NUM-1):0]adc_d_n,      // Data In, Negative Pair
-    input wire [(FADC_NUM-1):0]adc_dco_p,    // Echoed Clock In, Positive Pair
-    input wire [(FADC_NUM-1):0]adc_dco_n,    // Echoed Clock In, Negative Pair
+    input wire [(FADC_NUM-1):0]a_d_p,      // Data In, Positive Pair
+    input wire [(FADC_NUM-1):0]a_d_n,      // Data In, Negative Pair
+    input wire [(FADC_NUM-1):0]a_dco_p,    // Echoed Clock In, Positive Pair
+    input wire [(FADC_NUM-1):0]a_dco_n,    // Echoed Clock In, Negative Pair
     
-    output wire [(FADC_NUM-1):0]adc_cnv_p,   // Convert Out, Positive Pair
-    output wire [(FADC_NUM-1):0]adc_cnv_n,   // Convert Out, Negative Pair
-    output wire [(FADC_NUM-1):0]adc_clk_p,   // Clock Out, Positive Pair
-    output wire [(FADC_NUM-1):0]adc_clk_n,   // Clock Out, Negative Pair
+    output wire [(FADC_NUM-1):0]a_cnv_p,   // Convert Out, Positive Pair
+    output wire [(FADC_NUM-1):0]a_cnv_n,   // Convert Out, Negative Pair
+    output wire [(FADC_NUM-1):0]a_clk_p,   // Clock Out, Positive Pair
+    output wire [(FADC_NUM-1):0]a_clk_n,   // Clock Out, Negative Pair
 	
     // DAC80508 (ds for DAC slow)
     input wire  [(DAC80508_NUM-1):0]ds_sdo,    // DAC85058 input data is not necessary 
@@ -165,7 +165,7 @@ module top_level_module(
 	
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
-	.reset(ep40trig[TI40_PLL_RST]), 
+	.reset(ep40trig[`TI40_PLL_RST]), 
 	.clk_out1(adc_clk), //out at 200 MHz
 	.locked(adc_pll_locked)
 	); 
@@ -182,7 +182,7 @@ module top_level_module(
 	
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
-	assign sys_rst = (pushreset | ep40trig[1]); // TODO: TI40_RST is not found
+	assign sys_rst = (pushreset | ep40trig[`TI40_RST]); // TODO: TI40_RST is not found
 	
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
 	okWireOR # (.N(13)) wireOR (okEH, okEHx);
@@ -267,16 +267,16 @@ module top_level_module(
 	// ---------------------- END OpalKelly EndPoints (global) --------
     	
 	// --------------------- Begin ADS8686 --------------------------
-    okWireIn wi_ads (.okHE(okHE), .ep_addr(ADS_WIRE_IN_ADDR), .ep_dataout(ads_wire_in));
+    okWireIn wi_ads (.okHE(okHE), .ep_addr(`ADS_WIRE_IN_ADDR), .ep_dataout(ads_wire_in));
     wire [31:0] ads_wire_in;
     wire [31:0] ads_data_out;
     wire ads_data_valid;
     spi_controller uut(
                        .clk(clk_sys),
                        .reset(sys_rst),
-                       .divider_reset(ep40trig[TI40_ADS_CLK_DIV]), 
+                       .divider_reset(ep40trig[`TI40_ADS_CLK_DIV]), 
                        .dac_val(ads_wire_in), 
-                       .dac_convert_trigger(ep40trig[TI40_ADS_WB]), // trigger wishbone transfers 
+                       .dac_convert_trigger(ep40trig[`TI40_ADS_WB]), // trigger wishbone transfers 
                        .host_fpgab(ep01wire[0]), // if 1 host driven commands; if 0 
                        // OKRegister bridge inputs 
                        .okClk(okClk),
@@ -294,7 +294,7 @@ module top_level_module(
                        );
                                      	
    fifo_AD796x ads8686_fifo (//32 bit wide read and 16 bit wide write ports 
-     .rst(ep40trig[TI40_ADS8686_FIFO_RST]),
+     .rst(ep40trig[`TI40_ADS8686_FIFO_RST]),
      .wr_clk(clk_sys),
      .rd_clk(okClk),
      .din(ads_data_out),         // Bus [15:0] (from ADC)
@@ -309,7 +309,7 @@ module top_level_module(
     wire ads_pipe_read;
     //pipeOut to transfer data in bulk from the ADS8686 FIFO
    okPipeOut pipeOutADS86 (.okHE(okHE), .okEH(okEHx[2*65 +: 65]),
-                      .ep_addr(ADS_POUT_OFFSET),  .ep_read(ads_pipe_read),
+                      .ep_addr(`ADS_POUT_OFFSET),  .ep_read(ads_pipe_read),
                       .ep_datain(ads_fifo_data));  
 
    reg [31:0] ads_last_read;  
@@ -321,7 +321,7 @@ module top_level_module(
             ads_last_read <= ads_data_out;
         end
     end
-    okWireOut wo_ads (.okHE(okHE), .okEH(okEHx[11*65 +: 65 ]), .ep_addr(ADS_WIRE_OUT_ADDR), .ep_datain(ads_last_read));
+    okWireOut wo_ads (.okHE(okHE), .okEH(okEHx[11*65 +: 65 ]), .ep_addr(`ADS_WIRE_OUT_ADDR), .ep_datain(ads_last_read));
 
     // ------------ end ADS8686 -----------------------------------
 	
@@ -344,17 +344,17 @@ module top_level_module(
         AD7961 adc7961(
         .m_clk_i(clk_sys),                // 200 MHz Clock, used for timing (only for 5 MSPS tracking)
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
-        .reset_n_i(~ep40trig[TI40_ADC_RST+i]),          // Reset signal, active low
+        .reset_n_i(~ep40trig[`TI40_ADC_RST+i]),          // Reset signal, active low
         .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
-        .d_pos_i(adc_d_p[i]),                    // Data Ii, Positive Pair
-        .d_neg_i(adc_d_n[i]),                    // Data In, Negative Pair
-        .dco_pos_i(adc_dco_p[i]),                  // Echoed Clock In, Positive Pair
-        .dco_neg_i(adc_dco_n[i]),                  // Echoed Clock In, Negative Pair
+        .d_pos_i(a_d_p[i]),                    // Data Ii, Positive Pair
+        .d_neg_i(a_d_n[i]),                    // Data In, Negative Pair
+        .dco_pos_i(a_dco_p[i]),                  // Echoed Clock In, Positive Pair
+        .dco_neg_i(a_dco_n[i]),                  // Echoed Clock In, Negative Pair
         .en_o(),                              // Enable pins output
-        .cnv_pos_o(adc_cnv_p[i]),                  // Convert Out, Positive Pair
-        .cnv_neg_o(adc_cnv_n[i]),                  // Convert Out, Negative Pair
-        .clk_pos_o(adc_clk_p[i]),                  // Clock Out, Positive Pair
-        .clk_neg_o(adc_clk_n[i]),                  // Clock Out, Negative Pair
+        .cnv_pos_o(a_cnv_p[i]),                  // Convert Out, Positive Pair
+        .cnv_neg_o(a_cnv_n[i]),                  // Convert Out, Negative Pair
+        .clk_pos_o(a_clk_p[i]),                  // Clock Out, Positive Pair
+        .clk_neg_o(a_clk_n[i]),                  // Clock Out, Negative Pair
         .data_rd_rdy_o(write_en_adc_o[i]), // Signals that new data is available
         .data_o(adc_val[i])
         );
@@ -363,7 +363,7 @@ module top_level_module(
         reset_sync_low sync_adc_rst_0 (.clk(clk_sys), .async_rst(adc_reset[i]), .sync_rst(adc_sync_rst[i]));
 
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports 
-          .rst(ep40trig[TI40_ADC_FIFO_RST + i]),
+          .rst(ep40trig[`TI40_ADC_FIFO_RST + i]),
           .wr_clk(clk_sys),
           .rd_clk(okClk),
           .din({adc_val[i]}),         // Bus [15:0] (from ADC)
@@ -376,7 +376,7 @@ module top_level_module(
           
           //pipeOut for data from AD7961
           okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(4+i)*65 +: 65]), 
-                    .ep_addr(AD796x_POUT_OFFSET + i), .ep_read(adc_pipe_ep_read[i]), 
+                    .ep_addr(`AD796x_POUT_OFFSET + i), .ep_read(adc_pipe_ep_read[i]), 
                     .ep_datain(adc_pipe_ep_datain[i]));
      end
      endgenerate 
@@ -387,10 +387,10 @@ module top_level_module(
     generate
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen     
         spi_controller dac_0 (
-          .clk(clk), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[TI40_DAC805_WB+j]), .dac_out(dac_out_0),
+          .clk(clk), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_out_0),
           .ss(dac_ss_0), .sclk(dac_sclk_0), .mosi(dac_mosi_0), .miso(dac_miso_0)
         );
-        okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
+        okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
         //TODO (if needed) add WireOut to transfer data out
     end
     endgenerate 
@@ -635,7 +635,7 @@ module top_level_module(
              // register bridge 
              .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn),
              // ddr 
-             .en_period(en_period), .clk_en(clk_en), .ddr3_rst(ddr3_rst), .ddr_dat_i(po0_ep_datain[13:0]), .rd_en_0(rd_en_0), .regTrigger(ep40trig[TI40_AD5453_WB]));
+             .en_period(en_period), .clk_en(clk_en), .ddr3_rst(ddr3_rst), .ddr_dat_i(po0_ep_datain[13:0]), .rd_en_0(rd_en_0), .regTrigger(ep40trig[`TI40_AD5453_WB]));
     end
     endgenerate        
     /* ----------------- END AD5453 ------------------------------------ */

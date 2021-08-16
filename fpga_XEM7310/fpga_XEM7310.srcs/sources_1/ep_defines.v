@@ -26,7 +26,9 @@
 `define ADS_WIRE_IN_ADDR 8'h05
 `define ADS_WIRE_OUT_ADDR 8'h24 
 `define DS_WIRE_IN_OFFSET 8'h05
-`define DS_TRIG_OFFSET 32'h08  // bit 8 
+
+
+//`define DS_TRIG_OFFSET 32'h08  // bit 8 
 
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
 	//ep40trig[1] will be used as the master reset for the rest of the design
@@ -46,15 +48,14 @@
 // `define TI40_ 0
 `define TI40_RST 1 // sys reset
 // `define TI40_ 2 // not used 
-`define TI40_RST 1 // sys reset
 `define TI40_PLL_RST 3 //AD796x PLL reset 
 `define TI40_ADC_FIFO_RST 4 // 4,5,6,7 by generate loop.
 `define TI40_AD5453_WB 8 // 8,9,10,11,12,13
 `define TI40_ADS_CLK_DIV 14
 `define TI40_ADS_WB 15
-`define TI40_ADC_RST 16
 `define TI40_DAC805_WB 17 //17, 18
 `define TI40_ADS8686_FIFO_RST 18
+`define TI40_ADC_RST 19 //19,20,21,22,
 
 // TODO set this up! 
 `define NUM_OUTGOING_EPS 13
