@@ -419,11 +419,11 @@ module top_level_module(
     generate
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen     
         spi_controller dac_0 (
-          .clk(clk), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_out_0),
-          .ss(dac_ss_0), .sclk(dac_sclk_0), .mosi(dac_mosi_0), .miso(dac_miso_0)
+          .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_out_0),
+          .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdo[j]), .miso(ds_sdi[j])
         );
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
-        //TODO (if needed) add WireOut to transfer data out
+        //TODO (if needed) add WireOut to transfer data out (dac_out_0)
     end
     endgenerate 
     /*---------------- END DAC80508 -------------------*/ 
@@ -434,7 +434,7 @@ module top_level_module(
    wire clk_en;
    assign clk_en = dataready;
     general_clock_divide MIG_DDR_FIFO_RD_EN(
-        .clk(clk),
+        .clk(clk_sys),
         .rst(ddr3_rst),
         .en_period(en_period),
         .clk_en(dataready)
@@ -629,7 +629,7 @@ module top_level_module(
      fifo_w32_1024_r256_128 okPipeIn_fifo (
          .rst(ep03wire[2]),
          .wr_clk(okClk),
-         .rd_clk(clk),
+         .rd_clk(clk_sys),
          .din(pi0_ep_dataout), // Bus [31 : 0]
          .wr_en(pi0_ep_write),
          .rd_en(pipe_in_read),
@@ -642,7 +642,7 @@ module top_level_module(
      
      fifo_w256_128_r32_1024 okPipeOut_fifo (
          .rst(ep03wire[2]),
-         .wr_clk(clk),
+         .wr_clk(clk_sys),
          .rd_clk(clk_sys/*okClk*/),
          .din(pipe_out_data), // Bus [256 : 0]
          .wr_en(pipe_out_write),
@@ -673,6 +673,6 @@ module top_level_module(
     
 	 //module to create a one second pulse on one of the LEDs (keepAlive test)
 	 one_second_pulse out_pulse(
-	 .clk(clk), .rst(sys_rst), .slow_pulse(led[0])
+	 .clk(clk_sys), .rst(sys_rst), .slow_pulse(led[0])
 	 );
 endmodule
