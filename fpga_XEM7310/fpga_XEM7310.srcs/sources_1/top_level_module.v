@@ -99,6 +99,7 @@ module top_level_module(
 	
 	input wire pushreset,//pushbutton reset
 	output wire [7:0] led, //LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
+	                       //TODO: connect other signals to led 
 
 	//AD796x
     output wire [(FADC_NUM-1):0] a_en0_hv,          // Enable pins output (one for each ADC)
@@ -132,12 +133,12 @@ module top_level_module(
     input  wire ads_sdoa,
     input  wire ads_sdob, // TODO: not yet connected 
     output wire ads_convst,
-    output wire ads_resetb, //TODO: add to wireout (with ADC enables, DN/UP, etc.) 
+    output wire ads_resetb, 
     
     // GPIO (6+6+4+4+4 = 24 total signals)
     output wire [5:0]dn, // TODO: constraint generator prints [4:0]dn 
     output wire [5:0]up,
-    output wire [3:0]gp_lvds_n, //TODO: need LVDS output driver
+    output wire [3:0]gp_lvds_n, //TODO: need LVDS output driver (for now leave unconnected) 
     output wire [3:0]gp_lvds_p,
     output wire [3:0]gpio, 
 
@@ -212,6 +213,12 @@ module top_level_module(
 	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
 	// Wire in to select what slave the SPI data is routed to
 	okWireIn wi1 (.okHE(okHE), .ep_addr(8'h01), .ep_dataout(ep01wire));
+    wire host_fpgab;
+    assign host_fpgab = ep01wire[`WI01_ADS_HOST_FPGAB];   
+    assign up = ep01wire[(`WI01_UP+`WI01_UP_LEN - 1):`WI01_UP];
+    assign dn = ep01wire[(`WI01_DN+`WI01_DN_LEN - 1):`WI01_DN];
+    assign gpio = ep01wire[(`WI01_GPIO+`WI01_GPIO_LEN - 1):`WI01_GPIO];
+    
     
     okWireIn wi2 (.okHE(okHE), .ep_addr(8'h02), 
       .ep_dataout(ep02wire));
@@ -230,6 +237,8 @@ module top_level_module(
      assign en_n15v = ep02wire[`WI02_N15V_EN];
 
      assign en_ipump = ep02wire[(`WI02_IPUMP_EN + `WI02_IPUMP_EN_LEN - 1):`WI02_IPUMP_EN]; // (2 total signals) 
+     
+     assign ads_resetb = ep02wire[`WI02_ADS_RESETB];
       
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
@@ -299,17 +308,18 @@ module top_level_module(
 	// ---------------------- END OpalKelly EndPoints (global) --------
     	
 	// --------------------- Begin ADS8686 --------------------------
-    okWireIn wi_ads (.okHE(okHE), .ep_addr(`ADS_WIRE_IN_ADDR), .ep_dataout(ads_wire_in));
     wire [31:0] ads_wire_in;
     wire [31:0] ads_data_out;
     wire ads_data_valid;
+
+    okWireIn wi_ads (.okHE(okHE), .ep_addr(`ADS_WIRE_IN_ADDR), .ep_dataout(ads_wire_in));
     spi_controller uut(
                        .clk(clk_sys),
                        .reset(sys_rst),
                        .divider_reset(ep40trig[`TI40_ADS_CLK_DIV]), 
                        .dac_val(ads_wire_in), 
                        .dac_convert_trigger(ep40trig[`TI40_ADS_WB]), // trigger wishbone transfers 
-                       .host_fpgab(ep01wire[0]), // if 1 host driven commands; if 0 
+                       .host_fpgab(host_fpgab), // if 1 host driven commands; if 0 
                        // OKRegister bridge inputs 
                        .okClk(okClk),
                        .addr(regAddress),
@@ -420,7 +430,7 @@ module top_level_module(
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen     
         spi_controller dac_0 (
           .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_out_0),
-          .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdo[j]), .miso(ds_sdi[j])
+          .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(ds_sdo[j])
         );
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
         //TODO (if needed) add WireOut to transfer data out (dac_out_0)
@@ -662,7 +672,7 @@ module top_level_module(
     for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
     // instantiate old top-level (but only for the AD5453 SPI) 
     spi_fifo_driven spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), 
-             .ss_0(d_csb), .mosi_0(d_sdi), .sclk_0(d_sclk), .data_rdy_0(), .adc_val_0(), //not yet used
+             .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), .data_rdy_0(), .adc_val_0(), //not yet used
              // register bridge 
              .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn),
              // ddr 
