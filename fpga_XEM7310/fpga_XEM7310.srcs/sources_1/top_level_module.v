@@ -128,11 +128,13 @@ module top_level_module(
     output wire [(AD5453_NUM-1):0]d_sdi,   
     
     //ADS8686
-    output wire ss_ads,
-    output wire sclk_ads,
-    output wire mosi_ads,
-    input wire miso_ads,
-    output wire convst,
+    output wire ads_csb,
+    output wire ads_sclk,
+    output wire ads_mosi,
+    input  wire ads_sdoa,
+    input  wire ads_sdob, // TODO: not yet connected 
+    output wire ads_convst,
+    output wire ads_resetb, //TODO: add to wireout (with ADC enables, DN/UP, etc.) 
     
     //DDR3 
     inout  wire [31:0]  ddr3_dq,
@@ -286,11 +288,11 @@ module top_level_module(
                        // outputs 
                        .dac_out(ads_data_out), // connect to FIFO
                        .data_valid(ads_data_valid), 
-                       .ss(ss_ads),
-                       .sclk(sclk_ads),
-                       .mosi(mosi_ads),
-                       .miso(miso_ads),
-                       .convst_out(convst)
+                       .ss(ads_csb),
+                       .sclk(ads_sclk),
+                       .mosi(ads_mosi),
+                       .miso(ads_sdoa), //TODO: need to connect SDOB
+                       .convst_out(ads_convst)
                        );
                                      	
    fifo_AD796x ads8686_fifo (//32 bit wide read and 16 bit wide write ports 
