@@ -86,9 +86,10 @@
 `default_nettype wire // depending on compile order this may be needed. OpalKelly says its not a problem.
 
 `include "ep_defines.v" 
-localparam FADC_NUM = 1;
+localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
-localparam AD5453_NUM = 1;
+localparam AD5453_NUM = 6;
+localparam I2C_DCARDS = 4;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -174,7 +175,7 @@ module top_level_module(
 	wire [64:0] okEH;
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
 	//TODO: better way to keep track of these
-	wire [13*65-1:0] okEHx;
+	wire [16*65-1:0] okEHx;
 	
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire, ep01wire, ep40trig, ep41trig;
@@ -273,7 +274,7 @@ module top_level_module(
     spi_controller uut(
                        .clk(clk_sys),
                        .reset(sys_rst),
-                       .divider_reset(ep40trig[TI40_ADS_CLK_DIV]), //TODO: to trigger 
+                       .divider_reset(ep40trig[TI40_ADS_CLK_DIV]), 
                        .dac_val(ads_wire_in), 
                        .dac_convert_trigger(ep40trig[TI40_ADS_WB]), // trigger wishbone transfers 
                        .host_fpgab(ep01wire[0]), // if 1 host driven commands; if 0 
@@ -293,11 +294,11 @@ module top_level_module(
                        );
                                      	
    fifo_AD796x ads8686_fifo (//32 bit wide read and 16 bit wide write ports 
-     .rst(ads_fifo_reset),
+     .rst(ep40trig[TI40_ADS8686_FIFO_RST]),
      .wr_clk(clk_sys),
      .rd_clk(okClk),
      .din(ads_data_out),         // Bus [15:0] (from ADC)
-     .wr_en(ads_data_valid),// from ADC 
+     .wr_en(ads_data_valid),    // from ADC 
      .rd_en(ads_pipe_read),      // from OKHost
      .dout(ads_fifo_data),     // Bus [31:0] (to OKHost)
      .full(ads_fifo_full),     // status 
@@ -316,7 +317,7 @@ module top_level_module(
         if (sys_rst) begin
              ads_last_read <=32'h0;
         end
-        else if (ads_pipe_read) begin
+        else if (ads_data_valid) begin  // 
             ads_last_read <= ads_data_out;
         end
     end
@@ -589,10 +590,10 @@ module top_level_module(
      
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(8'h03), .ep_dataout(ep03wire));
      okWireIn       wi04 (.okHE(okHE),                             .ep_addr(8'h04), .ep_dataout(INDEX));
-     okWireOut      wo02 (.okHE(okHE), .okEH(okEHx[ 9*65 +: 65 ]), .ep_addr(8'h22), .ep_datain({31'h00, init_calib_complete}));
-     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 10*65 +: 65 ]), .ep_addr(8'h3e), .ep_datain(po0_ep_datain/*CAPABILITY*/));
-     okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(8'h80), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
-     okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(8'ha5), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain),   .ep_ready(pipe_out_ready));
+     okWireOut      wo02 (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(8'h22), .ep_datain({31'h00, init_calib_complete}));
+     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 15*65 +: 65 ]), .ep_addr(8'h3e), .ep_datain(po0_ep_datain/*CAPABILITY*/));
+     okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(8'h80), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
+     okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(8'ha5), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain),   .ep_ready(pipe_out_ready));
      
      fifo_w32_1024_r256_128 okPipeIn_fifo (
          .rst(ep03wire[2]),

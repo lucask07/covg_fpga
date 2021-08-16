@@ -54,6 +54,7 @@
 `define TI40_ADS_WB 15
 `define TI40_ADC_RST 16
 `define TI40_DAC805_WB 17 //17, 18
+`define TI40_ADS8686_FIFO_RST 18
 
 // TODO set this up! 
 `define NUM_OUTGOING_EPS 13
