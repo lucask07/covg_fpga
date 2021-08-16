@@ -54,7 +54,7 @@ def read_wire(ep_bit): # reads the wire and returns the value back
 
 ################## Actual executing code ##################
 # sets up the fpga by grabbing an instance of the class (as f) and initializing the device
-f = FPGA(bitfile = 'getDataA5.bit')
+f = FPGA(bitfile = 'fixDefines.bit')
 f.init_device() # programs the FPGA (loads bit file)
 
 # setup the control wire so we can drive signals coming from host to FPGA and vice versa
