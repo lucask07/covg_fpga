@@ -80,8 +80,6 @@
 // PipeOut - 0xA4
 //      31:0 - two 16 bit words of data from the AD7961[3]
 //
-//
-//
 
 `default_nettype wire // depending on compile order this may be needed. OpalKelly says its not a problem.
 
@@ -103,8 +101,8 @@ module top_level_module(
 	output wire [7:0] led, //LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
 
 	//AD796x
-    output wire [(FADC_NUM-1):0] adc_en0,          // Enable pins output
-    output wire adc_en2,                           // Enable pins output
+    output wire [(FADC_NUM-1):0] a_en0_hv,          // Enable pins output (one for each ADC)
+    output wire [2:0]a_en_hv,                       // Enable pins output (global); EN1, EN2, EN3
     
     input wire [(FADC_NUM-1):0]a_d_p,      // Data In, Positive Pair
     input wire [(FADC_NUM-1):0]a_d_n,      // Data In, Negative Pair
@@ -135,6 +133,22 @@ module top_level_module(
     input  wire ads_sdob, // TODO: not yet connected 
     output wire ads_convst,
     output wire ads_resetb, //TODO: add to wireout (with ADC enables, DN/UP, etc.) 
+    
+    // GPIO (6+6+4+4+4 = 24 total signals)
+    output wire [5:0]dn, // TODO: constraint generator prints [4:0]dn 
+    output wire [5:0]up,
+    output wire [3:0]gp_lvds_n, //TODO: need LVDS output driver
+    output wire [3:0]gp_lvds_p,
+    output wire [3:0]gpio, 
+
+    //power supply regulatoor enable signals (5 total signals)
+    output wire en_15v,
+    output wire en_1v8,
+    output wire en_3v3,
+    output wire en_5v,
+    output wire en_n15v,
+
+    output wire [1:0]en_ipump, // (2 total signals)
     
     //DDR3 
     inout  wire [31:0]  ddr3_dq,
