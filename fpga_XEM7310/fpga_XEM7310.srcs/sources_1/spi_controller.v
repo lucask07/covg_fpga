@@ -64,7 +64,7 @@ module spi_controller #(ADDR = 0)(
     wire int_o;
     wire rd_en; //signaling data is being grabbed by stae machine/controller
 
-    wire pulse, convst_out;
+    wire pulse;
     wire [3:0]read_en;
     wire [31:0] data_out;
 
@@ -100,7 +100,6 @@ module spi_controller #(ADDR = 0)(
     wire [31:0] wb_conv_data; // data to the wishbone converter 
     assign wb_conv_data = host_fpgab ? dac_val : data_out; 
 
-    wire data_valid;
     assign data_valid = (!wb_cmd_dataout[32] && !wb_cmd_dataout[33] && !rsp_stb);
 
     //module to take commands from the host and format them into commands that the Wishbone master will understand

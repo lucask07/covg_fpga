@@ -59,6 +59,16 @@
 
 // wire in at 0x00 
 
+// wire in at 0x01 
+`define WI01_ADS_HOST_FPGAB 0
+`define WI01_UP 1
+`define WI01_UP_LEN 6
+`define WI01_DN 7
+`define WI01_DN_LEN 6
+`define WI01_GPIO 13
+`define WI01_GPIO_LEN 6
+
+
 // wirein at 0x02 
 `define WI02_A_EN0 1
 `define WI02_A_EN0_LEN 4
@@ -78,6 +88,9 @@
 
 `define WI02_IPUMP_EN 23
 `define WI02_IPUMP_EN_LEN 2
+
+`define WI02_ADS_RESETB 25
+
 
 // TODO set this up! 
 `define NUM_OUTGOING_EPS 13
