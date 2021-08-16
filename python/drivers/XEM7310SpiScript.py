@@ -142,7 +142,7 @@ def writeRegBridge():
     f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
     print('Read 0x{:X}'.format(res))
 
-    res = f.xem.WriteRegister(0x2, 0x4000_88AA) # opal kelly function that writes to a register
+    res = f.xem.WriteRegister(0x2, 0x4000_0000) # opal kelly function that writes to a register
     f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
     print('Read 0x{:X}'.format(res))
 

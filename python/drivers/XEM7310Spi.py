@@ -16,7 +16,7 @@ ep = namedtuple('ep', 'addr bits type') # address of the DEVICE_ID reg so we can
 
 # wires out
 # mux_control   = ep(0x01, 0b111, 'wo') # tells mux to choose the ADS8686 board
-one_deep_fifo = ep(0x24, [i for i in range(32)], 'wo') # should hand back the same data as the FPGA_data wire?
+one_deep_fifo = ep(0x24, [i for i in range(32)], 'wo') # should hand back the same data as the fifo?
 
 # wire ins
 control       = ep(0x0, [i for i in range(32)], 'wi')  # note this is active low 
@@ -54,20 +54,20 @@ def read_wire(ep_bit): # reads the wire and returns the value back
 
 ################## Actual executing code ##################
 # sets up the fpga by grabbing an instance of the class (as f) and initializing the device
-f = FPGA(bitfile = 'fixed_endpoints.bit')
+f = FPGA(bitfile = 'getDataA5.bit')
 f.init_device() # programs the FPGA (loads bit file)
 
 # setup the control wire so we can drive signals coming from host to FPGA and vice versa
-f.set_wire(0x0, 0xFFFF, mask = 0xFFFF_FFFF)
+f.set_wire(0x0, 0x0, mask = 0xFFFF)
 
 # setup the CONVST signal so we can drive the wire high or low (use hex address 0x01, NOT 0x03)
 f.set_wire(0x01, 0x3, mask = 0x3)
 
 # setup the data wire to the FPGA so it can get data from the FPGA
-f.set_wire(0x05, 0xFFFF, mask = 0xFFFF_FFFF)
+f.set_wire(0x05, 0xFFFF, mask = 0xFFFF)
 
-# setup the fifo wire so we can read data back from the FPGA
-f.set_wire(0x24, 0xFFFF, mask = 0xFFFF_FFFF)
+# don't setup the fifo wire becaues it's an output, not an input
+# f.set_wire(0x24, 0xFFFF, mask = 0xFFFF)
 
 '''
 Wishbone information 
