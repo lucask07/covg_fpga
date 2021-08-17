@@ -246,7 +246,7 @@ IBUFDS
     #( 
         .DIFF_TERM("TRUE"),         // Differential Termination
         .IBUF_LOW_PWR("FALSE"),     // Low power="TRUE", Highest performance="FALSE" 
-        .IOSTANDARD("LVDS_33")         // Specify the input I/O standard
+        .IOSTANDARD("LVDS_25")         // Specify the input I/O standard
     ) 
     Data_In_IBUFDS 
     (
@@ -260,7 +260,7 @@ IBUFDS
     #(
         .DIFF_TERM("TRUE"),         // Differential Termination
         .IBUF_LOW_PWR("FALSE"),     // Low power="TRUE", Highest performance="FALSE" 
-        .IOSTANDARD("LVDS_33")         // Specify the input I/O standard
+        .IOSTANDARD("LVDS_25")         // Specify the input I/O standard
     ) 
     Serial_Clock_In_IBUFDS 
     (
@@ -304,7 +304,7 @@ Clock_Out_ODDR
 
 OBUFDS
     #(
-        .IOSTANDARD("LVDS_33"),     // Specify the output I/O standard
+        .IOSTANDARD("LVDS_25"),     // Specify the output I/O standard
         .SLEW("FAST")               // Specify the output slew rate
     )
     Clock_Out_OBUFDS
