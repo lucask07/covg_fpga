@@ -229,8 +229,29 @@ module top_level_module(
     assign up = ep01wire[(`WI01_UP+`WI01_UP_LEN - 1):`WI01_UP];
     assign dn = ep01wire[(`WI01_DN+`WI01_DN_LEN - 1):`WI01_DN];
     assign gpio = ep01wire[(`WI01_GPIO+`WI01_GPIO_LEN - 1):`WI01_GPIO];
-    
-    
+    wire [3:0]gp_lvds_se;
+    assign gp_lvds_se = ep01wire[(`WI01_GPIO_LVDS+`WI01_GPIO_LVDS_LEN - 1):`WI01_GPIO_LVDS];
+   
+    genvar m;
+    generate
+    for (m=0; m<=3; m=m+1) begin : lvds_obuf
+
+    // Single-Ended -> LVDS
+    OBUFDS 
+        #(
+            .IOSTANDARD("LVDS_25"),        // Specify the output I/O standard
+            .SLEW("FAST")                  // Specify the output slew rate
+        ) 
+        Cnv_Out_OBUFDS 
+        (
+            .O(gp_lvds_p[m]),              // Diff_p output (connect directly to top-level port)
+            .OB(gp_lvds_n[m]),             // Diff_n output (connect directly to top-level port)
+            .I(gp_lvds_se[m])              // Buffer input 
+        );
+    end 
+    endgenerate
+
+    /* ---------------- WI02 ---------------------- */
     okWireIn wi2 (.okHE(okHE), .ep_addr(8'h02), 
       .ep_dataout(ep02wire));
       
