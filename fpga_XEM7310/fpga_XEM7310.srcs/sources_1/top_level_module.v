@@ -371,6 +371,9 @@ module top_level_module(
                        .miso(ads_sdoa), //TODO: need to connect SDOB
                        .convst_out(ads_convst)
                        );
+   
+   wire [31:0] ads_fifo_data;
+   wire ads_pipe_read;
                                      	
    fifo_AD796x ads8686_fifo (//32 bit wide read and 16 bit wide write ports 
      .rst(ep40trig[`TI40_ADS8686_FIFO_RST]),
@@ -384,8 +387,6 @@ module top_level_module(
      .empty(ads_fifo_empty),   // status 
      .prog_full(ads_fifo_halffull));//status
     	
-    wire [31:0] ads_fifo_data;
-    wire ads_pipe_read;
     //pipeOut to transfer data in bulk from the ADS8686 FIFO
    okPipeOut pipeOutADS86 (.okHE(okHE), .okEH(okEHx[5*65 +: 65]),
                       .ep_addr(`ADS_POUT_OFFSET),  .ep_read(ads_pipe_read),
@@ -469,7 +470,7 @@ module top_level_module(
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen     
         spi_controller dac_0 (
           .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_data_out[j]),
-          .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(ds_sdo[j])
+          .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(ds_sdo[j]), .okClk(okClk), .addr(regAddress), .data_in(regDataOut), .write_in(regWrite)
         );
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
         //TODO (if needed) add WireOut to transfer data out (dac_out_0)
@@ -716,7 +717,7 @@ module top_level_module(
     spi_fifo_driven spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), 
              .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), .data_rdy_0(), .adc_val_0(), //not yet used
              // register bridge //TODO: add address increment based on generate k 
-             .ep_read(regRead), .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), .ep_datain(regDataIn),
+             /*.ep_read(regRead),*/ .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), /*.ep_datain(regDataIn),*/
              // DDR 
              .en_period(en_period),//in, 
              .clk_en(clk_en_fast_dac[k]),//out

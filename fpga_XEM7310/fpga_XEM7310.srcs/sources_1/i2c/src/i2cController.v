@@ -70,7 +70,7 @@ module i2cController(
 	
 	
 parameter  CLOCK_STRETCH_SUPPORT  = 1;
-parameter  CLOCK_DIVIDER          = 16'd32;
+parameter  CLOCK_DIVIDER          = 16'd500;
 
 
 reg  [5:0] cmem_addr;

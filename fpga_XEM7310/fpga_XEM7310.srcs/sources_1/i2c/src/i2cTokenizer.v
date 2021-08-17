@@ -50,7 +50,7 @@ module i2cTokenizer(
 	);
 	
 parameter  CLOCK_STRETCH_SUPPORT  = 1;
-parameter  CLOCK_DIVIDER          = 16'd32;
+parameter  CLOCK_DIVIDER          = 16'd500;
 
 reg  [15:0] divcount;
 reg         divenable;
