@@ -87,7 +87,7 @@
 localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
-localparam I2C_DCARDS = 4;
+localparam I2C_DCARDS_NUM = 4;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -150,6 +150,14 @@ module top_level_module(
     output wire en_n15v,
 
     output wire [1:0]en_ipump, // (2 total signals)
+    
+    inout [(I2C_DCARDS_NUM-1):0]dc_scl,
+    inout [(I2C_DCARDS_NUM-1):0]dc_sda,
+    
+    inout ls_scl,
+    inout ls_sda,
+    inout qw_scl,
+    inout qw_sda,
     
     //DDR3 
     inout  wire [31:0]  ddr3_dq,
@@ -258,7 +266,7 @@ module top_level_module(
                       .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep40trig));
     
     okTriggerIn trigIn41 (.okHE(okHE),
-                                    .ep_addr(8'h41), .ep_clk(clk_sys_fast), .ep_trigger(ep41trig));
+                                    .ep_addr(8'h41), .ep_clk(clk_sys), .ep_trigger(ep41trig));
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
 	// okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 
@@ -282,13 +290,18 @@ module top_level_module(
     //bit 13 is status signal telling host that AD7S8686 fifo is completely full
     //bit 14 is status signal telling host that AD7S8686 fifo is half full
     //bit 15 is status signal telling host that AD7S8686 fifo is empty    
+	
+	//TODO: reorganize triggerout 
+	wire [(I2C_DCARDS_NUM-1):0] i2c_done;
+	wire [1:0] i2c_aux_done;
 	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), 
-                           .ep_trigger({16'b0, 
+                           .ep_trigger({10'b0, i2c_aux_done, i2c_done,  
                            ads_fifo_empty, ads_fifo_halffull, ads_fifo_full,
                            adc_fifo_empty[3], adc_fifo_halffull[3], adc_fifo_full[3],
                            adc_fifo_empty[2], adc_fifo_halffull[2], adc_fifo_full[2],
                            adc_fifo_empty[1], adc_fifo_halffull[1], adc_fifo_full[1],
                            adc_fifo_empty[0], adc_fifo_halffull[0], adc_fifo_full[0], hostinterrupt}));
+            
        //register bridge for writing filter coefficients to BRAM and to the spi_controller 
        wire regWrite;
        wire regRead;
@@ -425,11 +438,13 @@ module top_level_module(
 
     /*---------------- DAC80508 -------------------*/
     wire [31:0]dac_wirein_data[(DAC80508_NUM-1):0];
+    wire [31:0]dac_data_out[(DAC80508_NUM-1):0];
+
     genvar j;
     generate
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen     
         spi_controller dac_0 (
-          .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_out_0),
+          .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_data_out[j]),
           .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(ds_sdo[j])
         );
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
@@ -680,7 +695,79 @@ module top_level_module(
     end
     endgenerate        
     /* ----------------- END AD5453 ------------------------------------ */
+
+    /*---------------- I2C -------------------*/    
     
+    /*---------------- daughercard I2C -------------------*/    
+
+    wire [15:0] i2c_memdin[(I2C_DCARDS_NUM-1):0];
+    wire [7:0] i2c_memdout[(I2C_DCARDS_NUM-1):0];
+    
+    okWireIn wi_i2c_dc0 (.okHE(okHE), .ep_addr(`I2C_DC_WIRE_IN0), .ep_dataout({i2c_memdin[1], i2c_memdin[0]}));
+    okWireIn wi_i2c_dc1 (.okHE(okHE), .ep_addr(`I2C_DC_WIRE_IN1), .ep_dataout({i2c_memdin[3], i2c_memdin[2]}));
+    okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`I2C_WIRE_OUT_ADDR), 
+                    .ep_datain({i2c_memdout[3], i2c_memdout[2], i2c_memdout[1], i2c_memdout[0]}));
+    
+    genvar l;
+    generate
+    for (l=0; l<=(I2C_DCARDS_NUM-1); l=l+1) begin : i2c_dc_gen
+    // generate for the 4 daughtercards... then hand create for the other two
+    i2cController i2c_controller_0 (
+        .clk (clk_sys),
+        .reset (ep40trig[`TI40_I2C_DC_RST + l]),
+        .start (ep40trig[`TI40_I2C_DC_START + l]), //trigger in 
+        .done (i2c_done[l]),   // trigger out
+        .memclk (clk_sys),  //the triggers are synchronized to clk_sys 
+        .memstart (ep41trig[`TI41_I2C_DC_MEMSTART + l]), //trigger in
+        .memwrite (ep41trig[`TI41_I2C_DC_MEMWRITE + l]), // trigger in
+        .memread (ep41trig[`TI41_I2C_DC_MEMREAD + l]),   // trigger in
+        .memdin (i2c_memdin[l]),     //wire in 
+        .memdout (i2c_memdout[l]),   //wire out
+        .i2c_sclk (dc_scl[l]),       // inout
+        .i2c_sdat (dc_sda[l])        // inout
+    );
+    end 
+    endgenerate
+    /*---------------- END daughercard I2C -------------------*/    
+
+    wire [15:0] i2c_aux_memdin[1:0];
+    wire [7:0] i2c_aux_memdout[1:0];
+    
+    okWireIn wi_i2c_aux (.okHE(okHE), .ep_addr(`I2C_AUX_WIRE_IN), .ep_dataout({i2c_aux_memdin[1], i2c_aux_memdin[0]}));
+    okWireOut wo_i2c_aux (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`I2C_AUX_WIRE_OUT), 
+                    .ep_datain({i2c_aux_memdout[1], i2c_aux_memdout[0]}));
+    
+    i2cController i2c_controller_4 (
+        .clk (clk_sys),
+        .reset (ep41trig[`TI41_I2C_AUX_RST + 0]),
+        .start (ep41trig[`TI41_I2C_AUX_START + 0]), //trigger in 
+        .done (i2c_aux_done[0]),   // trigger out
+        .memclk (clk_sys),  //the triggers are synchronized to clk_sys 
+        .memstart (ep41trig[`TI41_I2C_AUX_MEMSTART + 0]), //trigger in
+        .memwrite (ep41trig[`TI41_I2C_AUX_MEMWRITE + 0]), // trigger in
+        .memread (ep41trig[`TI41_I2C_AUX_MEMREAD + 0]),   // trigger in
+        .memdin (i2c_aux_memdin[0]),     //wire in 
+        .memdout (i2c_aux_memdout[0]),   //wire out
+        .i2c_sclk (ls_scl),       // inout
+        .i2c_sdat (ls_sda)        // inout
+    );
+
+    i2cController i2c_controller_5 (
+        .clk (clk_sys),
+        .reset (ep41trig[`TI41_I2C_AUX_RST + 1]),
+        .start (ep41trig[`TI41_I2C_AUX_START + 1]), //trigger in 
+        .done (i2c_aux_done[1]),   // trigger out
+        .memclk (clk_sys),  //the triggers are synchronized to clk_sys 
+        .memstart (ep41trig[`TI41_I2C_AUX_MEMSTART + 1]), //trigger in
+        .memwrite (ep41trig[`TI41_I2C_AUX_MEMWRITE + 1]), // trigger in
+        .memread (ep41trig[`TI41_I2C_AUX_MEMREAD + 1]),   // trigger in
+        .memdin (i2c_aux_memdin[1]),     //wire in 
+        .memdout (i2c_aux_memdout[1]),   //wire out
+        .i2c_sclk (qw_scl),       // inout
+        .i2c_sdat (qw_sda)        // inout
+    );
+    /*---------------- End I2C -------------------*/    
+
 	 //module to create a one second pulse on one of the LEDs (keepAlive test)
 	 one_second_pulse out_pulse(
 	 .clk(clk_sys), .rst(sys_rst), .slow_pulse(led[0])

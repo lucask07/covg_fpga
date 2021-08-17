@@ -24,9 +24,14 @@
 `define AD796x_POUT_OFFSET 8'hA1 
 `define ADS_POUT_OFFSET 8'hA5
 `define ADS_WIRE_IN_ADDR 8'h05
-`define ADS_WIRE_OUT_ADDR 8'h24 
-`define DS_WIRE_IN_OFFSET 8'h05
+`define DS_WIRE_IN_OFFSET 8'h06
+`define I2C_DC_WIRE_IN0 8'h08
+`define I2C_DC_WIRE_IN1 8'h09
+`define I2C_AUX_WIRE_IN 8'h10
 
+`define ADS_WIRE_OUT_ADDR 8'h24 
+`define I2C_WIRE_OUT_ADDR 8'h25 
+`define I2C_AUX_WIRE_OUT 8'h26
 
 //`define DS_TRIG_OFFSET 32'h08  // bit 8 
 
@@ -56,6 +61,18 @@
 `define TI40_DAC805_WB 17 //17, 18
 `define TI40_ADS8686_FIFO_RST 18
 `define TI40_ADC_RST 19 //19,20,21,22,
+`define TI40_I2C_DC_RST 23 //23,24,25,26
+`define TI40_I2C_DC_START 27 //27,28,29,30
+
+`define TI41_I2C_DC_MEMSTART 0 //0,1,2,3
+`define TI41_I2C_DC_MEMWRITE 4 //4,5,6,7
+`define TI41_I2C_DC_MEMREAD 8  //8,9,10,11
+
+`define TI41_I2C_AUX_RST 12      //12,13
+`define TI41_I2C_AUX_START 14    //14,15
+`define TI41_I2C_AUX_MEMSTART 16 //16,17
+`define TI41_I2C_AUX_MEMWRITE 18 //18,19
+`define TI41_I2C_AUX_MEMREAD 20  //20,21
 
 // wire in at 0x00 
 
