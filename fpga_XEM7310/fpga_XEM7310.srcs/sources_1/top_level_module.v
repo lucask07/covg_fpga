@@ -160,6 +160,8 @@ module top_level_module(
     inout qw_scl,
     inout qw_sda,
     
+    input wire [1:0]sma,
+    
     //DDR3 
     inout  wire [31:0]  ddr3_dq,
     output wire [14:0]  ddr3_addr,
