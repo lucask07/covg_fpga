@@ -272,7 +272,7 @@ IBUFDS
 // Conversion Out Single -> LVDS
 OBUFDS 
     #(
-        .IOSTANDARD("LVDS_33"),        // Specify the output I/O standard
+        .IOSTANDARD("LVDS_25"),        // Specify the output I/O standard
         .SLEW("FAST")               // Specify the output slew rate
     ) 
     Cnv_Out_OBUFDS 

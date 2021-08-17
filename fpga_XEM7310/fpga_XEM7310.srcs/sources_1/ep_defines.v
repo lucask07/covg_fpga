@@ -84,7 +84,8 @@
 `define WI01_DN_LEN 6
 `define WI01_GPIO 13
 `define WI01_GPIO_LEN 6
-
+`define WI01_GPIO_LVDS 20
+`define WI01_GPIO_LVDS_LEN 4
 
 // wirein at 0x02 
 `define WI02_A_EN0 1
