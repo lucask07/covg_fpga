@@ -31,11 +31,11 @@ module spi_fifo_driven(
      output wire mosi_0,
      input wire [15:0] adc_val_0,
      /*****Register Bridge and DDR Signals******/
-     input wire ep_read,
+     //input wire ep_read,
      input wire ep_write,
      input wire [31:0] ep_address,
      input wire [31:0] ep_dataout_coeff,
-     output wire [31:0] ep_datain,
+     //output wire [31:0] ep_datain,
      input wire [9:0] en_period,
      output wire clk_en,
      input wire ddr3_rst,
@@ -61,7 +61,7 @@ module spi_fifo_driven(
       wire int_o;
         
       wire full;
-      wire empty;
+      //wire empty;
       wire writeFifo;//this signal and the one below are used to generate the write enable signal for the FIFO
       reg wr_en;//
 	 
@@ -97,7 +97,7 @@ module spi_fifo_driven(
 	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd data_converter_0(
-	 .clk(clk), .okClk(fifoclk), .rst(sync_rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(ddr_dat_i/*filter_out*/), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
+	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(ddr_dat_i/*filter_out*/), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0), .data_rdy(dataready/*data_rdy_0*/), .regDataOut(ep_dataout_coeff[15:0]), .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
 	 );
 	 
@@ -110,7 +110,7 @@ module spi_fifo_driven(
      wire [31:0] coeff_bram_in;
 	 
 	 realTimeLPF_readwrite_coeff coeff_rd_0(
-	 .clk(clk), .rst(sync_rst), .wr_en(write_enable), .wr_done(write_done), .wr_adr(write_address),
+	 .clk(clk), .rst(rst), .wr_en(write_enable), .wr_done(write_done), .wr_adr(write_address),
 	 .coeff_out(coeffs_in), .ep_write(ep_write & (!ep_address[31])), .read_enable(read_coeff), .rd_adr(read_address),
 	 .bram_in(coeff_bram_in)
 	 );
@@ -125,7 +125,7 @@ module spi_fifo_driven(
          (
          .clk(clk),
          .clk_enable(data_rdy_0 | write_enable | write_done),
-         .reset(sync_rst),
+         .reset(rst),
          .filter_in(adc_val_0),
          .write_enable(write_enable),
          .write_done(write_done),
@@ -142,7 +142,7 @@ module spi_fifo_driven(
 	 
 	 //Wishbone Master module for AD796x and AD5453
     hbexec Wishbone_Master_0 (
-    .i_clk(clk), .i_reset(sync_rst), .i_cmd_stb(cmd_stb_0), .i_cmd_word(cmd_word_0), .o_cmd_busy(cmd_busy_0), .o_rsp_stb(rsp_stb_0),
+    .i_clk(clk), .i_reset(rst), .i_cmd_stb(cmd_stb_0), .i_cmd_word(cmd_word_0), .o_cmd_busy(cmd_busy_0), .o_rsp_stb(rsp_stb_0),
     .o_rsp_word(wb_cmd_dataout_0), .o_wb_cyc(cyc_0), .o_wb_stb(stb_0),
     .o_wb_we(we_0), .o_wb_addr(), .o_wb_data(dat_o_0), .o_wb_sel(sel_0),        
     .i_wb_ack(ack_0), .i_wb_stall(1'b0), .i_wb_err(err_0), .i_wb_data(dat_i_0)
@@ -150,7 +150,7 @@ module spi_fifo_driven(
     
     //SPI master core for AD796x and AD5453
     spi_top i_spi_top_0 (
-      .wb_clk_i(clk), .wb_rst_i(sync_rst), 
+      .wb_clk_i(clk), .wb_rst_i(rst), 
       .wb_adr_i(adr_0[4:0]), .wb_dat_i(dat_o_0), .wb_dat_o(dat_i_0), 
       .wb_sel_i(sel_0), .wb_we_i(we_0), .wb_stb_i(stb_0), 
       .wb_cyc_i(cyc_0), .wb_ack_o(ack_0), .wb_err_o(err_0), .wb_int_o(int_o_0),
