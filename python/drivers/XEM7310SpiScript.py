@@ -69,12 +69,12 @@ Txreg_addr = 0x01 # Tx/Rx register (at the same address! But has dual functional
 
 # Configuring the SPI controller
 creg_set = 0x3710 # Char length of 16. Samples Tx/Rx on NEG edge; sets ASS, IE
-clk_div = 0x6 # Takes the given clk at 25MHz and divides it so you get a 2MHz clk instead
+clk_div = 0x12 # 200 MHz / 0x12 / 2 = 5.555 MHz  ==> 2.88 us for 16 SPI clocks
 ss = 0x1 # sets the active ss line by setting the LSB of a SPI command to 1 during configuration
 
 # SPI write and read commands
-wb_w = 0x40000000  # indicates a wishbone transfer via writing to a chip (ADS8686) register (don't change)
-wb_r = 0x80000000 # indicates a wishbone transfer by reading a chip register (don't change)
+wb_w_reg = 0x40000000  # writes to the wishbone register 
+wb_set_reg = 0x80000000  # sets the wishbone address to access  
 
 # Used to  organize the code for building write commands to chip
 msg_w = 0x8000 # This is used to tell the ADS8686 board that we are going to write to one of it's registers by setting bit 15 high
@@ -97,9 +97,9 @@ def SPI_config():
     # f.xem.ActivateTriggerIn(0x40, 11)   # initiates host wishbone and SPI transactions
     f.set_wire(0x1, 1, 0xFFFF)             # sets the wire for spi_driver so the host is driving commands
 
-    for val in [wb_r | divreg_addr, wb_w | clk_div, # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
-                wb_r | creg_addr,   wb_w | creg_set,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
-                wb_r | ssreg_addr,  wb_w | ss]: # slave select (just setting bit0) [the controller has 8 ss lines]
+    for val in [wb_set_reg | divreg_addr, wb_w_reg | clk_div, # divider (need to look into settings of 1 and 2 didn't show 16 clock cycles) 
+                wb_set_reg | creg_addr,   wb_w_reg | creg_set,  # control register (CHAR_LEN = 16, bits 10,9, 13 and 12)
+                wb_set_reg | ssreg_addr,  wb_w_reg | ss]: # slave select (just setting bit0) [the controller has 8 ss lines]
         # print('Sending command 0x{:X}'.format(val))
         # print('Control address is 0x{:X}'.format(control.addr))
         # sets a wire to the FPGA to send each command and then triggers the Opal Kelly
@@ -114,9 +114,9 @@ def sendSPI(message): # what needs to be sent to the ADS?
 
     print('Sending 0x{:X}'.format(message))
 
-    for i in range(2):
-        for val in [wb_r | Txreg_addr, message, # go to the Tx register, store data to send (from cmd)
-                    wb_r | creg_addr,  wb_w | (creg_set | (1 << 8))]: # Tells the Control register - GO (bit 8)
+    for i in range(2): # do this twice so that the read back result is correct? 
+        for val in [wb_set_reg | Txreg_addr, wb_w_reg | message, # go to the Tx register, store data to send (from cmd)
+                    wb_set_reg | creg_addr,  wb_w_reg | (creg_set | (1 << 8))]: # Tells the Control register - GO (bit 8)
             # print('Sending command 0x{:X}'.format(val))
             # print('Control address is 0x{:X}'.format(control.addr))
             f.set_wire(control.addr, val, mask = 0xffffffff) # sets the wire to the ADS8686 and adds mask to get correct data back
@@ -124,7 +124,6 @@ def sendSPI(message): # what needs to be sent to the ADS?
     
     # Now read the result back and store it print to the console and return
     data = read_wire(one_deep_fifo) 
-
     print('Read back 0x{:X}'.format(data))
 
     return data
@@ -132,61 +131,63 @@ def sendSPI(message): # what needs to be sent to the ADS?
 def writeRegBridge():
     ''' Goes to the register bridge and writes a value that will be used during FPGA driven SPI '''
     
-    # go to the clk divider and set up posedge, go bit, IE, and cs
-    res = f.xem.WriteRegister(0x0, 400) # opal kelly function that writes to a register
-    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
-    print('Read 0x{:X}'.format(res))
+    # Configures the clock divider to determine the CONVST frequency 
+    res = f.xem.WriteRegister(0x0, 1000) # (1/200e6)*1000 = 5 us period  
+    f.xem.ActivateTriggerIn(0x40, 11) # load the register bridge data 
 
-    # write commands using 1111, 2222, 3333, 4444 to see what array of data_out is used
-    res = f.xem.WriteRegister(0x1, 0x8000_0001) # opal kelly function that writes to a register
-    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
-    print('Read 0x{:X}'.format(res))
+    # now load the sequence of wishbone commands that will be sent to the SPI converter 
+    res = f.xem.WriteRegister(0x1, 0x8000_0001) # Tx data register  
+    f.xem.ActivateTriggerIn(0x40, 11) # load the register bridge data 
 
-    res = f.xem.WriteRegister(0x2, 0x4000_0000) # opal kelly function that writes to a register
-    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
-    print('Read 0x{:X}'.format(res))
+    res = f.xem.WriteRegister(0x2, 0x4000_0000) # 0x0000 loaded into the Tx register -- i.e. NOP
+    f.xem.ActivateTriggerIn(0x40, 11) # load the register bridge data 
 
     res = f.xem.WriteRegister(0x3, 0x8000_0041) # opal kelly function that writes to a register
-    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
-    print('Read 0x{:X}'.format(res))
+    f.xem.ActivateTriggerIn(0x40, 11) # load the register bridge data 
 
     res = f.xem.WriteRegister(0x4, 0x4000_3710) # opal kelly function that writes to a register
-    f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
-    print('Read 0x{:X}'.format(res))
+    f.xem.ActivateTriggerIn(0x40, 11) # load the register bridge data 
 
-    f.set_wire(0x1, 0, 1) # lower the wire so the FPGA can take control of sending SPI commands, won't listen to python anymore
+    send_trig(clk_reset) # reset the clk divider 
+    f.set_wire(0x1, 0, 1) # lower the control bit for host vs. FPGA driven so the FPGA can take control of sending SPI commands, won't listen to python anymore
 
 def readRegBridge(reg):
-    ''' Checks the status of a register bridge register and hands back the value '''
+    pass 
+    ''' This is not supported by the Verilog 
+    ### Checks the status of a register bridge register and hands back the value 
     res = f.xem.ReadRegister(reg) # opal kelly function to write to a register
     f.xem.ActivateTriggerIn(0x40, 11) # tell the wb to start the data transmission process
 
     return res
+    ''' 
     
 def writeReg(msg, reg_name):
     ''' Writes to a specific register on the ads8686 by using wishbone commands and stored Hex
     values above to either configure a register to its default value or change a register appropriately
     (For example: setting the board to read voltages off the A channel instead of the B channel)
+
+    This should be only about the ADS8686 and nothing about wishbone
+
+    Build a 16-bit command to send on SPI
+
     '''
+    ads_write = 0x8000 # set bit 15 
     if(msg == 0): # if we want to read a register
-        cmd = ((dictofRegs[reg_name].addr) * 0x100) # get the MSB digits so we can set the register correctly
-        cmd = (cmd << 1) # to reset the register, shift it's address 1 to the left
-        cmd = (cmd | wb_w) # concatenate the reg addr w/a wishbone write (no message) to build a complete SPI command
+        cmd = ((dictofRegs[reg_name].addr) << 9) # The address is from bits 14-9 (so shift left 9)
+        cmd = (cmd) # send the address only 
     elif(msg == 'c'): # if we want to clear the register's contents
-        cmd = ((dictofRegs[reg_name].addr) * 0x100) # get the MSB digits so we can set the register correctly
-        cmd = (cmd << 1) # to reset the register, shift it's address 1 to the left
-        cmd = (cmd | wb_w | msg_w) # concatenate the reg addr w/a wishbone write (no message) to build a complete SPI command
+        cmd = ((dictofRegs[reg_name].addr) << 9) # The address is from bits 14-9 (so shift left 9)
+        cmd = (cmd | ads_write) # concatenate the reg addr w/ the ADS write bit to build a complete SPI command
     else: # otherwise, we're sending a message
-        cmd = ((dictofRegs[reg_name].addr) * 0x100) # get the MSB digits so we can set the register correctly
-        cmd = (cmd << 1) # to reset the register, shift it's address 1 to the left
-        cmd = (cmd | wb_w | msg | msg_w) # concatenate the reg addr w/wishbone write and message to build a complete SPI command
+        cmd = ((dictofRegs[reg_name].addr) << 9) # The address is from bits 14-9 (so shift left 9)
+        cmd = (cmd | ads_write | msg ) # concatenate the addr the ADS write bit and the data to send 
     
     # print('Your command is 0x{:X}'.format(cmd)) # print to the console to double check our math
     check = sendSPI(cmd) # store the sent result
 
     # print('Read back 0x{:X}'.format(check))
 
-    # check if the read address matches the defauly value and log the result
+    # check if the read address matches the default value and log the result
     if(check == dictofRegs[reg_name].default): # if the correct address was read back
         logging.info('     {} register: Default 0x{:X}, read {}'.format(reg_name, dictofRegs[reg_name].default, hex(check)))
     else: # if another register address was given
@@ -199,14 +200,47 @@ def readAll(): # reads all 43 reg's and prints their values
     for register in dictofRegs: # lists are indexed starting at 0, so i should too
         writeReg(0, str(register)) # use writeReg to send a blank message to see a reg's value
 
+
+def configure_ads():
+    ''' configure the ADS8686 for CONVST driven ADC reads '''
+
+    # control register 
+    base_creg = 0x0000 # default value 
+    writeReg('config', base_creg)
+
+    # set channels to be the fixed digital code 
+    writeReg('chan_sel', (0xb | 0xb << 4) )
+
+    # set the range of all channels to +/-5V 
+    range_val = 0x00AA # +/- 5V
+    writeReg('rangeA1', range_val) 
+    writeReg('rangeA2', range_val) 
+    writeReg('rangeB1', range_val) 
+    writeReg('rangeB2', range_val) 
+
+    # status register is read-only
+    # keep over range A,B as default 
+    writeReg('lpf', 0x0002)
+
+    # setup the sequencer 
+    # sequence0: fixed values and then continue 
+    #   8 SSREN; 7-4 CHSEL_B; 3-0 CHSEL_A 
+    backto_first_stack = 0x100
+
+    writeReg('seq0', (0xb | 0xb << 4))   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
+    writeReg('seq1', (0x8 | 0x8 << 4))   # AVDD
+    writeReg('seq2', (0x9 | 0x9 << 4))   # ALDO
+    writeReg('seq3', (0x0 | 0x0 << 4) | backto_first_stack)) #CH0 and cycle back to seq0
+
+    # enable the sequencer 
+    writeReg('config', base_creg | 0x40)
+
 ''' Eventually will move to the ads8686.py file since it is specific to this chip, but for now it'll stay here'''
 ################ Reads a V off the ads8686 #################
 def seqControl(): 
     ''' Configures the chan_sel reg, range regs, sequencer stack regs we want to use (up to 32 of them)
     so we can go through and read voltage conversion readings from the ADC from the channels we want '''
-    global seqCmds
     seqCmds = [] # list of the commands we want to send
-    global seqRegs
     seqRegs = [] # list of regnames we need to access
 
     # step 1: configure the channel select reg for the first reg we read
@@ -307,6 +341,8 @@ def seqControl():
         writeReg(seqCmds[x], seqRegs[x]) # formulate command and send msg
   
 def readSequence(seqCmds, seqRegs, reads):
+    ## LK: I don't understand this function and for now should not be used
+
     ''' sends CONVST pulses to start reading, then sends a pulse for each register we want 
     conversion results for (off the ADC) readCode to take the readings and convert them into a v  '''
     voltVals = np.array([], dtype = np.single) # stores each V that was read (after converting from 2's comp to float)
@@ -426,3 +462,16 @@ def changeSettings(view, choice):
     
     else: # if neither clkedge or clkfreq were entered, tell the user of the invalid entry
         print('Neither clkedge or clkfreq were entered. Please call the function again.')        
+
+
+print('Configuring the SPI controller')
+SPI_config() # this sets SPI to be host driven 
+
+print('Configuring the ADS with host driven SPI')
+configure_ads()
+
+print('writing the register bridge')
+writeRegBridge() # this switches to host driven SPI 
+
+# Not certain if the pipeOut is at 0xA0 (or 0xA5)?
+s,e = f.read_pipe_out(addr_offset = 0, data_len = 1024) 

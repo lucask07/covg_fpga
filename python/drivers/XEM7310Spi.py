@@ -20,7 +20,8 @@ one_deep_fifo = ep(0x24, [i for i in range(32)], 'wo') # should hand back the sa
 
 # wire ins
 control       = ep(0x0, [i for i in range(32)], 'wi')  # note this is active low 
-convst        = ep(0x1, 3, 'wi') # the input signal used to start converting data (helps us read a voltage from the chip)
+# convst is not longer implemented 
+# convst        = ep(0x1, 3, 'wi') # the input signal used to start converting data (helps us read a voltage from the chip)
 spi_driver    = ep(0x1, 0, 'wi') # who is driving SPI commands? High for host, low for FPGA
 # ads_reset = ep(0x03, 4, 'wi') # used to reset the chip instead of pushing the button
 FPGA_data     = ep(0x5, [i for i in range(32)], 'wi') # reads data from the FPGA (holds the last read back value)
@@ -58,35 +59,9 @@ f = FPGA(bitfile = 'fixDefines.bit')
 f.init_device() # programs the FPGA (loads bit file)
 
 # setup the control wire so we can drive signals coming from host to FPGA and vice versa
-f.set_wire(0x0, 0x0, mask = 0xFFFF)
-
-# setup the CONVST signal so we can drive the wire high or low (use hex address 0x01, NOT 0x03)
-f.set_wire(0x01, 0x3, mask = 0x3)
+f.set_wire(0x1, 1, 1) # Host driven SPI reads/write 
+send_trig(clk_reset)
 
 # setup the data wire to the FPGA so it can get data from the FPGA
-f.set_wire(0x05, 0xFFFF, mask = 0xFFFF)
-
-# don't setup the fifo wire becaues it's an output, not an input
-# f.set_wire(0x24, 0xFFFF, mask = 0xFFFF)
-
-'''
-Wishbone information 
-// SPI Master addresses (leave alone)
-//      Rx0 0x00 32 R Data receive register 0
-//      CTRL 0x10 32 R/W Control and status register w/ offset 4
-//      DIVIDER 0x14 32 R/W Clock divider register : w/ offset 5 
-//      SS 0x18 32 R/W Slave select register: w/ offset 6
-//
-// Wishbone Reference (from readLEDs)
-// Purpose: An example debug bus. This bus takes commands from an incoming
-//      34-bit command word, and issues those commands across a wishbone
-//      bus, returning the result from the bus command.  Basic bus commands are:
-// 
-//  2'b00   Read 
-//  2'b01   Write (lower 32-bits are the value to be written) --> why commands that write are prefixed with 0x4000 
-//  2'b10   Set address why commands that read are prefixed with 0x8000 
-//      Next 30 bits are the address
-//      bit[1] is an address difference bit
-//      bit[0] is an increment bit
-//  2'b11   Special command
-'''
+# no setup needed of the wire 
+# f.set_wire(0x05, 0xFFFF, mask = 0xFFFF)
