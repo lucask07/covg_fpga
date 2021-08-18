@@ -221,9 +221,9 @@ module top_level_module(
              
     /* ---------------- Ok Endpoints ----------------*/	
 	//wire to hold the data/commands from the host this will be routed to the wishbone formatter/state machine for the ADS7952
-	okWireIn wi0 (.okHE(okHE), .ep_addr(8'h00), .ep_dataout(ep00wire));
+	okWireIn wi0 (.okHE(okHE), .ep_addr(`UNCONNECTED_WIRE_IN), .ep_dataout(ep00wire));
 	// Wire in to select what slave the SPI data is routed to
-	okWireIn wi1 (.okHE(okHE), .ep_addr(8'h01), .ep_dataout(ep01wire));
+	okWireIn wi1 (.okHE(okHE), .ep_addr(`HOST_FPGAB_GPIO_WIRE_IN_ADDR), .ep_dataout(ep01wire));
     wire host_fpgab;
     assign host_fpgab = ep01wire[`WI01_ADS_HOST_FPGAB];   
     assign up = ep01wire[(`WI01_UP+`WI01_UP_LEN - 1):`WI01_UP];
@@ -252,7 +252,7 @@ module top_level_module(
     endgenerate
 
     /* ---------------- WI02 ---------------------- */
-    okWireIn wi2 (.okHE(okHE), .ep_addr(8'h02), 
+    okWireIn wi2 (.okHE(okHE), .ep_addr(`PWR_REG_ADC_EN_WIRE_IN_ADDR), 
       .ep_dataout(ep02wire));
       
      assign a_en0_hv = ep02wire[(`WI02_A_EN0+`WI02_A_EN0_LEN - 1):`WI02_A_EN0]; //1 for each channel
@@ -287,17 +287,17 @@ module top_level_module(
 	//ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode 
 	
 	okTriggerIn trigIn40 (.okHE(okHE),
-                      .ep_addr(8'h40), .ep_clk(clk_sys), .ep_trigger(ep40trig));
+                      .ep_addr(`GENERAL_RST_VALID_TRIG_IN_ADDR), .ep_clk(clk_sys), .ep_trigger(ep40trig));
     
     okTriggerIn trigIn41 (.okHE(okHE),
-                                    .ep_addr(8'h41), .ep_clk(clk_sys), .ep_trigger(ep41trig));
+                                    .ep_addr(`I2C_TRIG_IN_ADDR), .ep_clk(clk_sys), .ep_trigger(ep41trig));
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
 	// okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 
     //wire to hold general status output to host
-    okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h21), .ep_datain({31'b0, adc_pll_locked}));
-    okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[1*65 +: 65 ]), .ep_addr(8'h22), .ep_datain(dac_out_0));
-    okWireOut wo_dac_1 (.okHE(okHE), .okEH(okEHx[2*65 +: 65 ]), .ep_addr(8'h23), .ep_datain(dac_out_1));
+    okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(`ADC_PLL_LOCKED_STATUS_WIRE_OUT), .ep_datain({31'b0, adc_pll_locked}));
+    okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[1*65 +: 65 ]), .ep_addr(`DAC_OUT_0_WIRE_OUT), .ep_datain(dac_out_0));
+    okWireOut wo_dac_1 (.okHE(okHE), .okEH(okEHx[2*65 +: 65 ]), .ep_addr(`DAC_OUT_1_WIRE_OUT), .ep_datain(dac_out_1));
 	//status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
 	//bit 1 is status signal telling host that AD7961_0 fifo is completely full
 	//bit 2 is status signal telling host that AD7961_0 fifo is half full
@@ -318,7 +318,7 @@ module top_level_module(
 	//TODO: reorganize triggerout 
 	wire [(I2C_DCARDS_NUM-1):0] i2c_done;
 	wire [1:0] i2c_aux_done;
-	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(8'h60), .ep_clk(okClk), 
+	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(`FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(okClk), 
                            .ep_trigger({10'b0, i2c_aux_done, i2c_done,  
                            ads_fifo_empty, ads_fifo_halffull, ads_fifo_full,
                            adc_fifo_empty[3], adc_fifo_halffull[3], adc_fifo_full[3],
@@ -668,12 +668,12 @@ module top_level_module(
          end
      end
      
-     okWireIn       wi03 (.okHE(okHE),                             .ep_addr(8'h03), .ep_dataout(ep03wire));
-     okWireIn       wi04 (.okHE(okHE),                             .ep_addr(8'h04), .ep_dataout(INDEX));
-     okWireOut      wo02 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(8'h22), .ep_datain({31'h00, init_calib_complete}));
-     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(8'h3e), .ep_datain(po0_ep_datain/*CAPABILITY*/));
-     okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(8'h80), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
-     okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(8'ha5), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain),   .ep_ready(pipe_out_ready));
+     okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR_RST_RD_WR_EN_WIRE_IN_ADDR), .ep_dataout(ep03wire));
+     okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`CIRC_BUFFER_INDEX_WIRE_IN_ADDR), .ep_dataout(INDEX));
+     okWireOut      wo02 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(`DDR_STATUS_WIRE_OUT), .ep_datain({31'h00, init_calib_complete}));
+     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR_DAT_WIRE_OUT), .ep_datain(po0_ep_datain/*CAPABILITY*/));
+     okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR_DAT_IN_PIN_ADDR), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
+     okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR_DAT_OUT_POUT_ADDR), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain),   .ep_ready(pipe_out_ready));
      
      fifo_w32_1024_r256_128 okPipeIn_fifo (
          .rst(ep03wire[2]),

@@ -33,6 +33,25 @@
 `define I2C_WIRE_OUT_ADDR 8'h25 
 `define I2C_AUX_WIRE_OUT 8'h26
 
+`define UNCONNECTED_WIRE_IN 8'h00
+`define HOST_FPGAB_GPIO_WIRE_IN_ADDR 8'h01
+`define PWR_REG_ADC_EN_WIRE_IN_ADDR 8'h02
+`define DDR_RST_RD_WR_EN_WIRE_IN_ADDR 8'h03
+`define CIRC_BUFFER_INDEX_WIRE_IN_ADDR 8'h04
+
+`define GENERAL_RST_VALID_TRIG_IN_ADDR 8'h40
+`define I2C_TRIG_IN_ADDR 8'h41
+
+`define ADC_PLL_LOCKED_STATUS_WIRE_OUT 8'h21
+`define DAC_OUT_0_WIRE_OUT 8'h22
+`define DAC_OUT_1_WIRE_OUT 8'h23
+`define DDR_STATUS_WIRE_OUT 8'h27
+`define DDR_DAT_WIRE_OUT 8'h3e
+
+`define FIFO_FLAG_I2C_DONE_TRIG_OUT 8'h60
+
+`define DDR_DAT_IN_PIN_ADDR 8'h80
+`define DDR_DAT_OUT_POUT_ADDR 8'ha6
 //`define DS_TRIG_OFFSET 32'h08  // bit 8 
 
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
