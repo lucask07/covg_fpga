@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Tue Aug 17 13:41:09 2021
-# Process ID: 2160
+# Start of session at: Fri Aug 20 12:20:24 2021
+# Process ID: 7268
 # Current directory: C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
 # Command line: vivado.exe -log top_level_module.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_level_module.tcl
 # Log file: C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
@@ -15,7 +15,7 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 1656 
+INFO: Helper process launched with PID 8304 
 WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okCoreHarness.v:15361]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:87]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:88]
@@ -24,7 +24,7 @@ WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K m
 WARNING: [Synth 8-992] ddr3_rst is already implicitly declared earlier [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:546]
 WARNING: [Synth 8-2490] overwriting previous definition of module mux_8to1 [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/mux8to1.v:26]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 431.863 ; gain = 109.176
+Starting RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 432.332 ; gain = 108.730
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:92]
 	Parameter BLOCK_SIZE bound to: 128 - type: integer 
@@ -60,8 +60,8 @@ INFO: [Synth 8-6155] done synthesizing module 'ODDR2' (3#1) [C:/Users/iande/Docu
 INFO: [Synth 8-6155] done synthesizing module 'AD7961' (4#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/AD7961.v:66]
 INFO: [Synth 8-6157] synthesizing module 'reset_sync_low' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/reset_sync_low.v:23]
 INFO: [Synth 8-6155] done synthesizing module 'reset_sync_low' (5#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/reset_sync_low.v:23]
-INFO: [Synth 8-6157] synthesizing module 'fifo_AD796x' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-2160-LAPTOP-RK0H8TS5/realtime/fifo_AD796x_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'fifo_AD796x' (6#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-2160-LAPTOP-RK0H8TS5/realtime/fifo_AD796x_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'fifo_AD796x' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7268-LAPTOP-RK0H8TS5/realtime/fifo_AD796x_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'fifo_AD796x' (6#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7268-LAPTOP-RK0H8TS5/realtime/fifo_AD796x_stub.v:6]
 WARNING: [Synth 8-350] instance 'adc7961_fifo' of module 'fifo_AD796x' requires 12 connections, but only 10 given [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:445]
 INFO: [Synth 8-6157] synthesizing module 'GND' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
 INFO: [Synth 8-6155] done synthesizing module 'GND' (7#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
@@ -164,8 +164,8 @@ INFO: [Synth 8-6157] synthesizing module 'realTimeLPF_readwrite_coeff' [C:/Users
 	Parameter INIT bound to: 5'b10010 
 	Parameter CHECK bound to: 5'b10011 
 INFO: [Synth 8-6155] done synthesizing module 'realTimeLPF_readwrite_coeff' (23#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/realTimeLPF_readwrite_coeff.v:23]
-INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-2160-LAPTOP-RK0H8TS5/realtime/blk_mem_gen_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (24#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-2160-LAPTOP-RK0H8TS5/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7268-LAPTOP-RK0H8TS5/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (24#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7268-LAPTOP-RK0H8TS5/realtime/blk_mem_gen_0_stub.v:6]
 WARNING: [Synth 8-689] width (32) of port connection 'addrb' does not match port width (4) of module 'blk_mem_gen_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:120]
 INFO: [Synth 8-6157] synthesizing module 'Butterworth' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/Butterworth.v:54]
 INFO: [Synth 8-6155] done synthesizing module 'Butterworth' (25#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/Butterworth.v:54]
@@ -235,8 +235,8 @@ INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Users/iande/Documents/Viv
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
 INFO: [Synth 8-6155] done synthesizing module 'IBUFGDS' (33#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-2160-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (34#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-2160-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7268-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (34#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7268-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
 INFO: [Synth 8-6157] synthesizing module 'okWireOR' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
 	Parameter N bound to: 17 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'okWireOR' (35#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
@@ -580,7 +580,7 @@ WARNING: [Synth 8-3331] design okPipeOut has unconnected port okHE[112]
 WARNING: [Synth 8-3331] design okPipeOut has unconnected port okHE[111]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:11 ; elapsed = 00:00:12 . Memory (MB): peak = 519.238 ; gain = 196.551
+Finished RTL Elaboration : Time (s): cpu = 00:00:11 ; elapsed = 00:00:13 . Memory (MB): peak = 519.707 ; gain = 196.105
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -694,17 +694,17 @@ INFO: [Common 17-14] Message 'Synth 8-3295' appears 100 times and further instan
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:12 ; elapsed = 00:00:12 . Memory (MB): peak = 519.238 ; gain = 196.551
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:12 ; elapsed = 00:00:14 . Memory (MB): peak = 519.707 ; gain = 196.105
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:12 ; elapsed = 00:00:12 . Memory (MB): peak = 519.238 ; gain = 196.551
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:12 ; elapsed = 00:00:14 . Memory (MB): peak = 519.707 ; gain = 196.105
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 267 Unisim elements for replacement
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'ad7960_gen[0].adc7961/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'ad7960_gen[1].adc7961/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'ad7960_gen[2].adc7961/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'ad7960_gen[3].adc7961/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
-INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
+INFO: [Netlist 29-28] Unisim Transformation completed in 1 CPU seconds
 INFO: [Device 21-403] Loading part xc7a75tfgg484-1
 INFO: [Project 1-570] Preparing netlist for logic optimization
 
@@ -741,40 +741,9 @@ Finished Parsing XDC File [c:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fp
 Parsing XDC File [c:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w256_128_r32_1024/fifo_w256_128_r32_1024/fifo_w256_128_r32_1024_in_context.xdc] for cell 'okPipeOut_fifo'
 Finished Parsing XDC File [c:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w256_128_r32_1024/fifo_w256_128_r32_1024/fifo_w256_128_r32_1024_in_context.xdc] for cell 'okPipeOut_fifo'
 Parsing XDC File [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okUH[0]', please type 'create_clock -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:69]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:71]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:71]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okUH[4] okUH[3] okUH[2] okUH[1] okUH[0]', please type 'set_input_delay -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:71]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:72]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:72]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okUH[4] okUH[3] okUH[2] okUH[1] okUH[0]', please type 'set_input_delay -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:72]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing '2', please type 'set_multicycle_path -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:73]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:75]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:75]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okUHU[31] okUHU[30] okUHU[29] okUHU[28] okUHU[27] okUHU[26] okUHU[25] okUHU[24] okUHU[23] okUHU[22] okUHU[21] okUHU[20] okUHU[19] okUHU[18] okUHU[17] okUHU[16] okUHU[15] okUHU[14] okUHU[13] okUHU[12] okUHU[11] okUHU[10] okUHU[9] okUHU[8] okUHU[7] okUHU[6] okUHU[5] okUHU[4] okUHU[3] okUHU[2] okUHU[1] okUHU[0]', please type 'set_input_delay -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:75]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:76]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:76]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okUHU[31] okUHU[30] okUHU[29] okUHU[28] okUHU[27] okUHU[26] okUHU[25] okUHU[24] okUHU[23] okUHU[22] okUHU[21] okUHU[20] okUHU[19] okUHU[18] okUHU[17] okUHU[16] okUHU[15] okUHU[14] okUHU[13] okUHU[12] okUHU[11] okUHU[10] okUHU[9] okUHU[8] okUHU[7] okUHU[6] okUHU[5] okUHU[4] okUHU[3] okUHU[2] okUHU[1] okUHU[0]', please type 'set_input_delay -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:76]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing '2', please type 'set_multicycle_path -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:77]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:79]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:79]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okHU[2] okHU[1] okHU[0]', please type 'set_output_delay -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:79]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:80]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:80]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okHU[2] okHU[1] okHU[0]', please type 'set_output_delay -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:80]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:82]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:82]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okUHU[31] okUHU[30] okUHU[29] okUHU[28] okUHU[27] okUHU[26] okUHU[25] okUHU[24] okUHU[23] okUHU[22] okUHU[21] okUHU[20] okUHU[19] okUHU[18] okUHU[17] okUHU[16] okUHU[15] okUHU[14] okUHU[13] okUHU[12] okUHU[11] okUHU[10] okUHU[9] okUHU[8] okUHU[7] okUHU[6] okUHU[5] okUHU[4] okUHU[3] okUHU[2] okUHU[1] okUHU[0]', please type 'set_output_delay -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:82]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:83]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:83]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'okUHU[31] okUHU[30] okUHU[29] okUHU[28] okUHU[27] okUHU[26] okUHU[25] okUHU[24] okUHU[23] okUHU[22] okUHU[21] okUHU[20] okUHU[19] okUHU[18] okUHU[17] okUHU[16] okUHU[15] okUHU[14] okUHU[13] okUHU[12] okUHU[11] okUHU[10] okUHU[9] okUHU[8] okUHU[7] okUHU[6] okUHU[5] okUHU[4] okUHU[3] okUHU[2] okUHU[1] okUHU[0]', please type 'set_output_delay -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:83]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'sys_clkp', please type 'create_clock -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:97]
-WARNING: [Vivado 12-627] No clocks matched 'sys_clk'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:98]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:98]
-WARNING: [Vivado 12-627] No clocks matched 'mmcm0_clk0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:98]
-WARNING: [Vivado 12-627] No clocks matched 'okUH0'. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:98]
-INFO: [Vivado 12-626] No clocks found. Please use 'create_clock' or 'create_generated_clock' command to create clocks. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:98]
-CRITICAL WARNING: [Common 17-165] Too many positional options when parsing 'group', please type 'set_clock_groups -help' for usage info. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:98]
+WARNING: [Constraints 18-96] Setting input delay on a clock pin 'okUH[0]' is not supported, ignoring it [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:71]
+WARNING: [Constraints 18-96] Setting input delay on a clock pin 'okUH[0]' is not supported, ignoring it [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:72]
+INFO: [Timing 38-2] Deriving generated clocks [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:98]
 WARNING: [Vivado 12-4702] SLEW is not a supported property on input port(s). Setting is ignored. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc:105]
 Finished Parsing XDC File [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc]
 INFO: [Project 1-236] Implementation specific constraints were found while reading constraint file [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc]. These constraints will be ignored for synthesis but will be used in implementation. Impacted constraints are listed in the file [.Xil/top_level_module_propImpl.xdc].
@@ -797,16 +766,29 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
   RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.028 . Memory (MB): peak = 912.125 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.036 . Memory (MB): peak = 912.328 ; gain = 0.000
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7960_gen[0].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7960_gen[1].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7960_gen[2].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7960_gen[3].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ads8686_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'okPipeIn_fifo' at clock pin 'wr_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'okPipeOut_fifo' at clock pin 'rd_clk' is different from the actual clock period '5.000', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[0].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[1].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[2].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[3].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[4].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[5].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:36 ; elapsed = 00:00:38 . Memory (MB): peak = 912.125 ; gain = 589.438
+Finished Constraint Validation : Time (s): cpu = 00:00:37 ; elapsed = 00:00:40 . Memory (MB): peak = 912.328 ; gain = 588.727
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:37 ; elapsed = 00:00:38 . Memory (MB): peak = 912.125 ; gain = 589.438
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:37 ; elapsed = 00:00:40 . Memory (MB): peak = 912.328 ; gain = 588.727
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -968,7 +950,7 @@ Applied set_property DONT_TOUCH = true for okPipeIn_fifo. (constraint file  auto
 Applied set_property DONT_TOUCH = true for okPipeOut_fifo. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okHI/core0/core0/\a0/cb0 /U0/\inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:37 ; elapsed = 00:00:38 . Memory (MB): peak = 912.125 ; gain = 589.438
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:38 ; elapsed = 00:00:40 . Memory (MB): peak = 912.328 ; gain = 588.727
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-5545] ROM "clk_div" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "data_reg" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
@@ -1127,7 +1109,7 @@ s_preamble_startstopwait |                             1001 | 000000000000000000
       s_payload_stopwait |                             1110 | 00000000000000000000000000100001
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'i2cController'
-INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm1E118ABF3900'
+INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm217352786100'
 ---------------------------------------------------------------------------------------------------
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
@@ -1174,7 +1156,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'realTimeLPF_readwrite_coeff'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:43 ; elapsed = 00:00:45 . Memory (MB): peak = 912.125 ; gain = 589.438
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:43 ; elapsed = 00:00:45 . Memory (MB): peak = 912.328 ; gain = 588.727
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-223] decloning instance 'ad7960_gen[0].sync_adc_rst_0' (reset_sync_low) to 'ad7960_gen[1].sync_adc_rst_0'
 INFO: [Synth 8-223] decloning instance 'ad7960_gen[0].sync_adc_rst_0' (reset_sync_low) to 'ad7960_gen[2].sync_adc_rst_0'
@@ -1684,7 +1666,7 @@ INFO: [Synth 8-3333] propagating constant 0 across sequential element (i_2/wo_da
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (i_2/wo_dac_0/\wirehold_reg[15] )
 INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:40 ; elapsed = 00:01:44 . Memory (MB): peak = 912.125 ; gain = 589.438
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:26 ; elapsed = 00:01:29 . Memory (MB): peak = 912.328 ; gain = 588.727
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1707,13 +1689,13 @@ INFO: [Synth 8-5578] Moved timing constraint from pin 'u_ddr3_256_32/ui_clk' to 
 INFO: [Synth 8-5578] Moved timing constraint from pin 'core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst/src_arst' to pin 'core0/core0/a0/l62a5479e7989ce7f4d5507c695cc69cf_reg/Q'
 INFO: [Synth 8-5819] Moved 4 constraints on hierarchical pins to their respective driving/loading pins
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:54 ; elapsed = 00:01:59 . Memory (MB): peak = 912.125 ; gain = 589.438
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:40 ; elapsed = 00:01:44 . Memory (MB): peak = 912.328 ; gain = 588.727
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:01:56 ; elapsed = 00:02:01 . Memory (MB): peak = 912.125 ; gain = 589.438
+Finished Timing Optimization : Time (s): cpu = 00:01:52 ; elapsed = 00:01:57 . Memory (MB): peak = 994.027 ; gain = 670.426
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1722,16 +1704,15 @@ Report RTL Partitions:
 +------+-----------------------+------------+----------+
 |1     |okHost__GC0            |           1|      1796|
 |2     |AD7961__GC0            |           4|       195|
-|3     |top_level_module__GCB0 |           1|      5313|
-|4     |top_level_module__GCB1 |           1|      1210|
-|5     |top_level_module__GCB2 |           1|      7148|
-|6     |top_level_module__GCB3 |           1|      7195|
+|3     |top_level_module__GCB1 |           1|      1210|
+|4     |top_level_module__GCB2 |           1|      7148|
+|5     |top_level_module_GT0   |           1|     11734|
 +------+-----------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:02:04 ; elapsed = 00:02:09 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Finished Technology Mapping : Time (s): cpu = 00:02:02 ; elapsed = 00:02:07 . Memory (MB): peak = 1029.250 ; gain = 705.648
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1755,7 +1736,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:02:06 ; elapsed = 00:02:11 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Finished IO Insertion : Time (s): cpu = 00:02:04 ; elapsed = 00:02:09 . Memory (MB): peak = 1029.250 ; gain = 705.648
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -1768,7 +1749,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:02:06 ; elapsed = 00:02:11 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Finished Renaming Generated Instances : Time (s): cpu = 00:02:05 ; elapsed = 00:02:10 . Memory (MB): peak = 1029.250 ; gain = 705.648
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1780,25 +1761,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:07 ; elapsed = 00:02:12 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:06 ; elapsed = 00:02:11 . Memory (MB): peak = 1029.250 ; gain = 705.648
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:02:07 ; elapsed = 00:02:12 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Finished Renaming Generated Ports : Time (s): cpu = 00:02:06 ; elapsed = 00:02:11 . Memory (MB): peak = 1029.250 ; gain = 705.648
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:02:07 ; elapsed = 00:02:12 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Finished Handling Custom Attributes : Time (s): cpu = 00:02:07 ; elapsed = 00:02:12 . Memory (MB): peak = 1029.250 ; gain = 705.648
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:02:07 ; elapsed = 00:02:13 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Finished Renaming Generated Nets : Time (s): cpu = 00:02:07 ; elapsed = 00:02:12 . Memory (MB): peak = 1029.250 ; gain = 705.648
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -1839,11 +1820,11 @@ Report Cell Usage:
 |17    |CARRY4                 |   309|
 |18    |DNA_PORT               |     1|
 |19    |LUT1                   |   532|
-|20    |LUT2                   |   454|
-|21    |LUT3                   |   553|
-|22    |LUT4                   |  2047|
-|23    |LUT5                   |   780|
-|24    |LUT6                   |  2043|
+|20    |LUT2                   |   483|
+|21    |LUT3                   |   557|
+|22    |LUT4                   |  2048|
+|23    |LUT5                   |   715|
+|24    |LUT6                   |  2051|
 |25    |LUT6_2                 |    50|
 |26    |MMCME2_BASE            |     1|
 |27    |MUXF7                  |    31|
@@ -1868,11 +1849,11 @@ Report Cell Usage:
 |46    |OBUFT                  |     7|
 +------+-----------------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:02:07 ; elapsed = 00:02:13 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Finished Writing Synthesis Report : Time (s): cpu = 00:02:07 ; elapsed = 00:02:12 . Memory (MB): peak = 1029.250 ; gain = 705.648
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 2221 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:01:36 ; elapsed = 00:01:52 . Memory (MB): peak = 1019.379 ; gain = 303.805
-Synthesis Optimization Complete : Time (s): cpu = 00:02:08 ; elapsed = 00:02:13 . Memory (MB): peak = 1019.379 ; gain = 696.691
+Synthesis Optimization Runtime : Time (s): cpu = 00:01:34 ; elapsed = 00:01:50 . Memory (MB): peak = 1029.250 ; gain = 313.027
+Synthesis Optimization Complete : Time (s): cpu = 00:02:07 ; elapsed = 00:02:12 . Memory (MB): peak = 1029.250 ; gain = 705.648
 INFO: [Project 1-571] Translating synthesized netlist
 INFO: [Netlist 29-17] Analyzing 581 Unisim elements for replacement
 WARNING: [Netlist 29-151] Pin 'C1' on instance 'ad7960_gen[0].adc7961/Clock_Out_ODDR' of cell type 'ODDR2' does not have an equivalent function on the new cell type 'ODDR'. Net 'C10' that is connected to this pin will not be connected to the replacement instance.
@@ -1895,11 +1876,11 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-646 Infos, 457 Warnings, 13 Critical Warnings and 0 Errors encountered.
+637 Infos, 461 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:02:16 ; elapsed = 00:02:21 . Memory (MB): peak = 1019.379 ; gain = 696.691
+synth_design: Time (s): cpu = 00:02:14 ; elapsed = 00:02:19 . Memory (MB): peak = 1029.250 ; gain = 705.648
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.324 . Memory (MB): peak = 1019.379 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Tue Aug 17 13:43:46 2021...
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.157 . Memory (MB): peak = 1029.250 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Fri Aug 20 12:23:00 2021...
