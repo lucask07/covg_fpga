@@ -5,7 +5,7 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt 
 import pickle as pkl
-from drivers.utils import rev_lookup, bin, test_bit, twos_comp
+from interfaces.utils import rev_lookup, bin, test_bit, twos_comp
 
 from collections import namedtuple
 ep = namedtuple('ep', 'addr bits type')

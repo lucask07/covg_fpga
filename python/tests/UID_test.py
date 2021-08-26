@@ -1,4 +1,10 @@
-# Test file for the 24AA025UID ID chip
+"""Early test file for the read and write functionality of the 24AA025UID ID chip.
+
+August 2021
+
+Abe Stroschein, ajstroschein@stthomas.edu
+"""
+
 import sys
 import os
 import logging
@@ -13,9 +19,9 @@ for i in range(15):
     else:
         # If we aren't in covg_fpga, move up a folder and check again
         covg_fpga_path = os.path.dirname(covg_fpga_path)
-        
+
 sys.path.append(interfaces_path)
-from interfaces import FPGA, IDChipController
+from interfaces.interfaces import FPGA, UID_24AA025UID, count_bytes, int_to_list
 
 logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'UID_test.log'), filemode='w',
                     encoding='utf-8', level=logging.INFO)
@@ -31,47 +37,50 @@ f = FPGA(bitfile=bitfile)
 f.init_device()
 
 # Instantiate ID chip
-uid = IDChipController(f)
-addr_pins = 0b000
+uid = UID_24AA025UID(fpga=f, addr_pins=0b000)
 
 # Read serial number, check manufacturer and device codes
-serial_number = uid.get_serial_number(addr_pins)
+serial_number = uid.get_serial_number()
+#expecting serial code = [0, 188, 123, 132]
 message = f'Serial Number: {serial_number}'
 print(message)
 logging.info(message)
 
-manufacturer_code = uid.get_manufacturer_code(addr_pins)
+manufacturer_code = uid.get_manufacturer_code()
 message = f'Manufacturer Code: {manufacturer_code}'
 print(message)
 logging.info(message)
-if manufacturer_code == uid.parameters['MANUFACTURER_CODE']:
+print(uid.parameters['MANUFACTURER_CODE'].default)
+if manufacturer_code == uid.parameters['MANUFACTURER_CODE'].default:
     logging.info('Manufacturer Code MATCH')
 else:
     logging.warning('Manufacurer Code NOT MATCHED')
 
-device_code = uid.get_device_code(addr_pins)
+device_code = uid.get_device_code()
 print(f'Device Code: {device_code}')
-if manufacturer_code == uid.parameters['DEVICE_CODE']:
+if device_code == uid.parameters['DEVICE_CODE'].default:
     logging.info('Device Code MATCH')
 else:
     logging.warning('Device Code NOT MATCHED')
 
 # Test writing data
-data = 0x1234567890
+data = 0x237583
 print(f'Writing data = {hex(data)}')
 logging.info(f'Write data = {hex(data)}')
-uid.write(addr_pins, data)
+uid.write(data)
 
 # Read back the data we wrote
-read_back = uid.read(addr_pins, word_address=0, words_read=5)
+read_back = uid.read(word_address=0, words_read=count_bytes(data))
 print(f'Read back data = {read_back}')
 if read_back == None:
     logging.warning(f'Read data = {read_back}')
 else:
-    logging.info(f'Read data = {hex(read_back)}')
+    read_back_hex = [hex(x) for x in read_back]
+    logging.info(f'Read data = {read_back_hex}')
+
 
 # Check if it is the same
-if read_back == data:
+if read_back == int_to_list(data):
     logging.info('Read data and Write data MATCH')
 else:
     logging.warning('Read data and Write data NOT MATCHED')
