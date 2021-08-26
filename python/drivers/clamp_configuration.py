@@ -15,7 +15,7 @@ sys.path.append(interfaces_path)
 from interfaces import IOExpanderController, Register
 
 # This is our main function. All parameters should pass through here. The function should get the codes
-# corresponding to the parameters, assemble them as 2 bytes to set on the I/O Expander (with masking for 
+# corresponding to the parameters, assemble them as 2 bytes to set on the I/O Expander (with masking for
 # bits we do not change), set the pins to those 2 bytes, and return the configuration information so the
 # file that uses this function can log the configuration.
 
@@ -50,13 +50,22 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     RF_1_Out_code    = RF_1_Out_dict.get(RF_1_Out)
 
     # Assemble messages
+    num = 0
+    s0 = ''
+    s1 = ''
     upper_byte_1 = reverse_bits((ADC_SEL_code << 4) | DAC_SEL_code)
     lower_byte_1 = reverse_bits((CCOMP_code << 4) | RF1_code)
     message1 = (upper_byte_1 << 8) | lower_byte_1
+    for i in range(15,-1,-1):
+        cur=(message1>>i) & 1 #(right shift operation on num and i and bitwise AND with 1)
+        s0+=str(cur)
 
     upper_byte_2 = reverse_bits((ADG_RES_code << 5) | (PClamp_CTRL_code << 4) | (P1_E_CTRL_code << 3) | (P1_CAL_CTRL_code << 2) | (P2_E_CTRL_code << 1) | P2_CAL_CTRL_code)
     lower_byte_2 = reverse_bits((gain_code << 5) | (FDBK_code << 4) | (mode_code << 2) | (EN_ipump_code << 1) | RF_1_Out_code)
     message2 = (upper_byte_2 << 8) | lower_byte_2
+    for i in range(15,-1,-1):
+        cur=(message2>>i) & 1 #(right shift operation on num and i and bitwise AND with 1)
+        s1+=str(cur)
 
     # Create masks
     mask1 = 0
@@ -87,11 +96,11 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     io2.configure_pins(addr_pins_2, [0x00, 0x00])
 
     # Write messages
-    print(f'Writing 1: {bin(message1)} ({hex(message1)})')
+    print(f'Writing 1: {s0} ({hex(message1)} {message1})')
     print(f'   Mask 1: {bin(mask1)}')
     io1.write(addr_pins_1, message1, mask1)
 
-    print(f'Writing 2: {bin(message2)} ({hex(message2)})')
+    print(f'Writing 2: {s1} ({hex(message2)} {message2})')
     print(f'   Mask 2: {bin(mask2)}')
     io2.write(addr_pins_2, message2, mask2)
 
@@ -100,8 +109,22 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     list_read2 = io2.read(addr_pins_2)
     read1 = (list_read1[0] << 8) | list_read1[1]
     read2 = (list_read2[0] << 8) | list_read2[1]
-    print('Reading 1', bin(read1))
-    print('Reading 2', bin(read2))
+
+    read1_bin = '{:016b}'.format(read1) #making the read outputs into 16 bits so that they are easjer to analyze
+    read2_bin = '{:016b}'.format(read2)
+
+    read1_bin1 = read1_bin[0:8]#slicing the first 8 bits of read 1
+    read1_bin2 = read1_bin[8:16]#slicing the second 8 bits of read 1
+    read2_bin1 = read2_bin[0:8]#slicing the first 8 bits of read 2
+    read2_bin2 = read2_bin[8:16]#slicing the second 8 bits of read 2
+
+    read1_rev1 = read1_bin1[::-1]#Reversing the first 8 bits and second 8 bits since the FPGA reads back the bits in reverse
+    read1_rev2 = read1_bin2[::-1]
+    read2_rev1 = read2_bin1[::-1]
+    read2_rev2 = read2_bin2[::-1]
+
+    print('Reading 1: 0b'+read1_rev1+read1_rev2, hex(read1), read1)
+    print('Reading 2: 0b'+read2_rev1+read2_rev2, hex(read2), read2)
 
     # Return configuration and code for logging or other purposes.
     return [
