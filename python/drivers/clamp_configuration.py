@@ -12,7 +12,8 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces import IOExpanderController, Register
+from interfaces.interfaces import TCA9555, registers_from_excel
+from interfaces.utils import reverse_bits
 
 # This is our main function. All parameters should pass through here. The function should get the codes
 # corresponding to the parameters, assemble them as 2 bytes to set on the I/O Expander (with masking for
@@ -88,25 +89,25 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     mask2 = (reverse_bits(mask2 // 16**2) << 8) | reverse_bits(mask2 % 16**2)
 
     # I/O Expander chips
-    io1 = IOExpanderController(fpga)
-    io2 = IOExpanderController(fpga)
+    io1 = TCA9555(fpga=fpga, addr_pins=addr_pins_1)
+    io2 = TCA9555(fpga=fpga, addr_pins=addr_pins_2)
 
     # Set pins to outputs
-    io1.configure_pins(addr_pins_1, [0x00, 0x00])
-    io2.configure_pins(addr_pins_2, [0x00, 0x00])
+    io1.configure_pins([0x00, 0x00])
+    io2.configure_pins([0x00, 0x00])
 
     # Write messages
     print(f'Writing 1: {s0} ({hex(message1)} {message1})')
     print(f'   Mask 1: {bin(mask1)}')
-    io1.write(addr_pins_1, message1, mask1)
+    io1.write(message1, mask1)
 
     print(f'Writing 2: {s1} ({hex(message2)} {message2})')
     print(f'   Mask 2: {bin(mask2)}')
-    io2.write(addr_pins_2, message2, mask2)
+    io2.write(message2, mask2)
 
     # Read messages
-    list_read1 = io1.read(addr_pins_1)
-    list_read2 = io2.read(addr_pins_2)
+    list_read1 = io1.read()
+    list_read2 = io2.read()
     read1 = (list_read1[0] << 8) | list_read1[1]
     read2 = (list_read2[0] << 8) | list_read2[1]
 
@@ -147,16 +148,7 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
         f'Code 2 = {message2}'
     ]
 
-# Function to reverse the bits in a byte. Use for writing each byte to the I/O Expander because the MSB goes to pin 07 or 17 rather than 00 or 10
-def reverse_bits(number, bit_width=8):
-    reversed_number = 0
-    for i in range(bit_width):
-        reversed_number <<= 1
-        reversed_number |= number & 0b1
-        number >>= 1
-    return reversed_number
-
-config_params = Register.dict_from_excel('clamp_configuration')
+config_params = registers_from_excel('clamp_configuration')
 
 #Dictonaries
 ADC_SEL_dict = { #Select the signal to output (Usually only output one signal at a time)
@@ -164,6 +156,7 @@ ADC_SEL_dict = { #Select the signal to output (Usually only output one signal at
     'CAL_SIG2'  : 0b1011,
     'INAMP_OUT' : 0b1101,
     'CC'        : 0b1110,
+    'noDrive'   : 0b1111,
     None        : 0b0000
 }
 DAC_SEL_dict = {#Choose to drive/store CAL_Sig1 and CAL_Sig2
@@ -173,6 +166,7 @@ DAC_SEL_dict = {#Choose to drive/store CAL_Sig1 and CAL_Sig2
     'gnd_CAL1'   : 0b1110,
     'store_CAL1' : 0b0110,
     'store_CAL2' : 0b1001,
+    'noDrive'    : 0b1111,
     None         : 0b0000
 }
 CCOMP_dict = {#Choosing the capacitor value for Compensation Switching Circuit
@@ -256,11 +250,10 @@ P2_CAL_CTRL_dict = {
 }
 
 gain_dict = {#Selecet the gain of the instrumentation AMP in ADC Driver circuit
-    50   : 0b000,
-    51   : 0b001,
-    54   : 0b010,
+    2   : 0b100,
+    5   : 0b010,
+    10   : 0b001,
     55   : 0b011,
-    59   : 0b100,
     60   : 0b101,
     63   : 0b110,
     64   : 0b111,

@@ -1,6 +1,6 @@
 import time
 from fpga import FPGA
-from drivers.utils import rev_lookup, bin, test_bit, twos_comp
+from interfaces.utils import rev_lookup, bin, test_bit, twos_comp
 
 regs = {}
 regs['led'] =  {'wire': 0x00, 'lsb': 8, 'length': 7 }  
