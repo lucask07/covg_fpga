@@ -21,7 +21,8 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 
 sys.path.append(interfaces_path)
-from interfaces.interfaces import FPGA, UID_24AA025UID, count_bytes, int_to_list
+from interfaces.interfaces import FPGA, UID_24AA025UID
+from interfaces.utils import count_bytes, int_to_list
 
 logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'UID_test.log'), filemode='w',
                     encoding='utf-8', level=logging.INFO)

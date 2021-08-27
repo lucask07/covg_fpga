@@ -37,7 +37,7 @@ f.init_device()
 #Resistance Capacitance IN_AMP_OUT Gain can all be changed independently.
 
 #Command for Voltage Clamp Feedback loop
-log_info = configure_clamp(f, ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2', CCOMP=47, RF1=3,ADG_RES=10, PClamp_CTRL=1, P1_E_CTRL=1, P1_CAL_CTRL=0, P2_E_CTRL=1, P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage', EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110, addr_pins_2=0b000)
+log_info = configure_clamp(f, ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2', CCOMP=4.7, RF1=3,ADG_RES=10, PClamp_CTRL=1, P1_E_CTRL=1, P1_CAL_CTRL=0, P2_E_CTRL=1, P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage', EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110, addr_pins_2=0b000)
 #Command for voltage clamp with cell connected
 #log_info = configure_clamp(f, ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2', CCOMP=47, RF1=3,ADG_RES=10, PClamp_CTRL=0, P1_E_CTRL=0, P1_CAL_CTRL=0, P2_E_CTRL=0, P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage', EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110, addr_pins_2=0b000)
 #Command for currrent clamp Feedback Loop

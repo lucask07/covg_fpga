@@ -69,7 +69,7 @@ def count_bytes(num):
     return bytes
 
 
-def int_to_list(integer):
+def int_to_list(integer, num_bytes=None):
     """Convert an integer into a list of integers 1 byte long.
     
     The MSB will be at index 0 in the list.
@@ -86,5 +86,16 @@ def int_to_list(integer):
     # In case integer began at 0.
     if len(list_int) == 0:
         list_int.append(0)
+
+    if num_bytes is not None:
+        # User entered a number of bytes
+        # Check if the integer fits into the given number of bytes
+        if num_bytes < len(list_int):
+            return False
+        else:
+            # Fill the list with 0 for remaining bytes
+            for i in range(num_bytes - len(list_int)):
+                # Can append to the end because the list will be reversed in the return
+                list_int.append(0)
 
     return list_int[::-1]
