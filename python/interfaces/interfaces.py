@@ -437,7 +437,7 @@ class TCA9555(I2CController):
     ))
 
     # Add the registers from the Excel file to the parameters
-    reg_dict = registers_from_excel('IOExpander')
+    reg_dict = registers_from_excel('TCA9555')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     def __init__(self, fpga, addr_pins, parameters=DEFAULT_PARAMETERS):
@@ -454,7 +454,7 @@ class TCA9555(I2CController):
 
     # Method to write 2 bytes of data to the pins.
     # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 0100 and Write bit automatically
-    def write(self, data, mask=0xffff):
+    def write(self, data, register_name='OUTPUT', mask=0xffff):
         dev_addr = self.parameters['ADDRESS_HEADER'] | (self.addr_pins << 1)
 
         # Compare with current data to mask unchanged values
@@ -471,14 +471,14 @@ class TCA9555(I2CController):
         # Turn data into a list of bytes for i2c_write method
         list_data = [new_data // (16**2), new_data % (16**2)]
         self.i2c_write_long(
-            dev_addr, [self.parameters['OUTPUT'].address], 2, list_data)
+            dev_addr, [self.parameters[register_name].address], 2, list_data)
 
     # Method to read 2 bytes of data from the pins.
     # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 0100 and Read bit automatically
 
-    def read(self):
+    def read(self, register_name='INPUT'):
         dev_addr = self.parameters['ADDRESS_HEADER'] | (self.addr_pins << 1) | 0b1
-        return self.i2c_read_long(dev_addr, [self.parameters['INPUT'].address], 2)
+        return self.i2c_read_long(dev_addr, [self.parameters[register_name].address], 2)
 
 # Class for the ID chip 24AA025UID extending the I2CController class. Handles reading and writing.
 class UID_24AA025UID(I2CController):
@@ -495,24 +495,37 @@ class UID_24AA025UID(I2CController):
 
     # Method to write up to 8 bytes of data to a given word address within the chip.
     # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 1010 and Write bit automatically
-    def write(self, data, word_address=0x00):
+    def write(self, data, word_address=0x00, num_bytes=None):
         dev_addr = self.parameters['ADDRESS_HEADER'] | (self.addr_pins << 1)
-        # Determine the byte length of the data
-        shifted_data = data
-        number_of_bytes = 0
-        while shifted_data != 0:
-            number_of_bytes += 1
-            shifted_data >>= 8
+        print(f'word_address: {hex(word_address)}\ndata: {hex(data)}\nnum_bytes: {num_bytes}')
 
         # Convert data into a list
-        list_data = []
-        for i in range(number_of_bytes - 1, -1, -1):
-            current_byte = 0x1 << (8*i)
-            list_data.append(data // current_byte)
-            data = data % current_byte
+        if num_bytes is None:
+            # User did not specify a number of bytes
+            list_data = int_to_list(integer=data)
+            num_bytes = len(list_data)
+        else:
+            # User specified a number of bytes
+            list_data = int_to_list(integer=data, num_bytes=num_bytes)
 
-        self.i2c_write_long(
-            dev_addr, [word_address], number_of_bytes, list_data)
+        if list_data is False:
+            # int_to_list returns False when the data is longer than the number of bytes
+            print('ERROR: data exceeds given number of bytes')
+            return False
+
+        if num_bytes > 16:
+            # After 16 bytes (1 page), the UID chip will rollover and overwrite data from ealier.
+            # To fix this, we start a new I2C write command at the next page
+            self.i2c_write_long(devAddr=dev_addr, regAddr=[word_address], data_length=16, data=list_data[:16])
+            # We can recursively call this function instead of looping through multiple times.
+            recurse_data = data % (0x1 << (8 * (num_bytes - 16)))
+            print(f'{data} % {(0x1 << (8 * (num_bytes - 16)))} = {recurse_data}')
+            self.write(data=recurse_data, word_address=word_address + 16, num_bytes=num_bytes - 16)
+            return True
+
+        # Data is no more than 16 bytes (1 page) and can be written with 1 I2C command.
+        self.i2c_write_long(dev_addr, [word_address], num_bytes, list_data)
+        return True
 
     # Method to read data from a given word address within the chip.
     # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 1010 and Read bit automatically.
@@ -566,7 +579,7 @@ class DAC53401(I2CController):
         # Mask only the bits for the specified register.
         mask = 0
         for bit in range(register.bit_index_high, register.bit_index_low - 1, -1):
-            mask += 0x1 << bit
+            mask |= 0x1 << bit
 
         # Compare with current data to mask unchanged values
         read_out = self.read(register_name)
