@@ -21,6 +21,26 @@
 // establish the addresses of all OpalKelly endpoints here. This will ease keeping tracking between the 
 //  Verilog code and the API easier. 
 
+// Naming system
+// CLASS_PARAM_NAME_GEN_BIT_GEN_ADDR // address=ASSOCIATED_ADDRESS_PARAM bit_width=0123456789
+// "CLASS" = Python class name
+// - Matches chip names for SPI
+// - I2C_DC or I2C_DAQ for I2C on the Daughtercard or the DAQ board
+// "PARAM_NAME" = parameter name to be used in the Python
+// "GEN_BIT" = included if the parameter holds a bit and we can add the bit_width
+//     of the parameter to get the bit for the next instance
+// "GEN_ADDR" = included if the parameter holds an address and we can add 1 to
+//     get the address for the next instance
+// "// address=ASSOCIATED_ADDRESS_PARAM" = the address associated with a bit parameter
+// - If dependent on an address held by another parameter, use that parameter's name
+//     as it is in this file
+// - Otherwise, use the hardcoded associated address
+// "// bit_width=0123456789" = the bit width of the parameter
+
+// Parameters holding an address should have the address written in hexadecimal
+// Parameters holding a bit should have the bit written in decimal without the size specification
+// Comments that are not "// address=" or "// bit_width=" should go on a separate line from the parameter definition
+
 `define AD796x_POUT_OFFSET 8'hA1 
 `define ADS_POUT_OFFSET 8'hA5
 `define ADS_WIRE_IN_ADDR 8'h05
