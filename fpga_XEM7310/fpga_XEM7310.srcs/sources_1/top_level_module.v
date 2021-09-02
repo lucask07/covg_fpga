@@ -2,20 +2,20 @@
 //////////////////////////////////////////////////////////////////////////////////
 // Company: UST
 // Engineer: Ian Delgadillo Bonequi
-// 
-// Create Date:    18:09:30 01/05/2021 
-// Design Name: 
-// Module Name:    top_level_module 
-// Project Name: 
-// Target Devices: 
-// Tool versions: 
-// Description: 
 //
-// Dependencies: 
+// Create Date:    18:09:30 01/05/2021
+// Design Name:
+// Module Name:    top_level_module
+// Project Name:
+// Target Devices:
+// Tool versions:
+// Description:
 //
-// Revision: 
+// Dependencies:
+//
+// Revision:
 // Revision 0.01 - File Created
-// Additional Comments: 
+// Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
 // Clocks:
@@ -83,7 +83,7 @@
 
 `default_nettype wire // depending on compile order this may be needed. OpalKelly says its not a problem.
 
-`include "ep_defines.v" 
+`include "ep_defines.v"
 localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
@@ -96,52 +96,52 @@ module top_level_module(
 	inout wire okAA,
     input wire sys_clkn,
 	input wire sys_clkp,
-	
+
 	input wire pushreset,//pushbutton reset
 	output wire [7:0] led, //LEDs on OpalKelly device; bit 0 will pulse every one second to indicate the FPGA is working
-	                       //TODO: connect other signals to led 
+	                       //TODO: connect other signals to led
 
 	//AD796x
     output wire [(FADC_NUM-1):0] a_en0_hv,          // Enable pins output (one for each ADC)
     output wire [2:0]a_en_hv,                       // Enable pins output (global); EN1, EN2, EN3
-    
+
     input wire [(FADC_NUM-1):0]a_d_p,      // Data In, Positive Pair
     input wire [(FADC_NUM-1):0]a_d_n,      // Data In, Negative Pair
     input wire [(FADC_NUM-1):0]a_dco_p,    // Echoed Clock In, Positive Pair
     input wire [(FADC_NUM-1):0]a_dco_n,    // Echoed Clock In, Negative Pair
-    
+
     output wire [(FADC_NUM-1):0]a_cnv_p,   // Convert Out, Positive Pair
     output wire [(FADC_NUM-1):0]a_cnv_n,   // Convert Out, Negative Pair
     output wire [(FADC_NUM-1):0]a_clk_p,   // Clock Out, Positive Pair
     output wire [(FADC_NUM-1):0]a_clk_n,   // Clock Out, Negative Pair
-	
+
     // DAC80508 (ds for DAC slow)
-    input wire  [(DAC80508_NUM-1):0]ds_sdo,    // DAC85058 input data is not necessary 
+    input wire  [(DAC80508_NUM-1):0]ds_sdo,    // DAC85058 input data is not necessary
     output wire [(DAC80508_NUM-1):0]ds_sclk,
     output wire [(DAC80508_NUM-1):0]ds_csb,
     output wire [(DAC80508_NUM-1):0]ds_sdi,
-    
+
     //AD5453 (SPI)
     output wire [(AD5453_NUM-1):0]d_sclk,
     output wire [(AD5453_NUM-1):0]d_csb,
-    output wire [(AD5453_NUM-1):0]d_sdi,   
-    
+    output wire [(AD5453_NUM-1):0]d_sdi,
+
     //ADS8686
     output wire ads_csb,
     output wire ads_sclk,
     output wire ads_sdi,
     input  wire ads_sdoa,
-    input  wire ads_sdob, // TODO: not yet connected 
+    input  wire ads_sdob, // TODO: not yet connected
     output wire ads_convst,
-    output wire ads_resetb, 
+    output wire ads_resetb,
     input wire ads_busy,  // TODO: not yet connected
-    
+
     // GPIO (6+6+4+4+4 = 24 total signals)
-    output wire [5:0]dn, // TODO: constraint generator prints [4:0]dn 
+    output wire [5:0]dn, // TODO: constraint generator prints [4:0]dn
     output wire [5:0]up,
-    output wire [3:0]gp_lvds_n, //TODO: need LVDS output driver (for now leave unconnected) 
+    output wire [3:0]gp_lvds_n, //TODO: need LVDS output driver (for now leave unconnected)
     output wire [3:0]gp_lvds_p,
-    output wire [3:0]gpio, 
+    output wire [3:0]gpio,
 
     //power supply regulator enable signals (5 total signals)
     output wire en_15v,
@@ -151,18 +151,18 @@ module top_level_module(
     output wire en_n15v,
 
     output wire [1:0]en_ipump, // (2 total signals)
-    
+
     inout [(I2C_DCARDS_NUM-1):0]dc_scl,
     inout [(I2C_DCARDS_NUM-1):0]dc_sda,
-    
+
     inout ls_scl,
     inout ls_sda,
     inout qw_scl,
     inout qw_sda,
-    
+
     input wire [1:0]sma,
-    
-    //DDR3 
+
+    //DDR3
     inout  wire [31:0]  ddr3_dq,
     output wire [14:0]  ddr3_addr,
     output wire [2 :0]  ddr3_ba,
@@ -177,90 +177,90 @@ module top_level_module(
     inout  wire [3 :0]  ddr3_dqs_p,
     inout  wire [3 :0]  ddr3_dqs_n,
     output wire         ddr3_reset_n
-    
+
 	);
-	//System Clock from input differential pair 
+	//System Clock from input differential pair
 	wire clk_sys;
 	IBUFGDS osc_clk(
 		  .O(clk_sys),
 		  .I(sys_clkp),
 		  .IB(sys_clkn)
 	);
-	
+
 	//pll generating "Fast" clock for Ad796x.v
 	wire adc_clk;
 	wire adc_pll_locked;
-	
+
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
-	.reset(ep40trig[`TI40_PLL_RST]), 
+	.reset(ep40trig[`TI40_PLL_RST]),
 	.clk_out1(adc_clk), //out at 200 MHz
 	.locked(adc_pll_locked)
-	); 
-	 //FrontPanel (HostInterface) wires	
+	);
+	 //FrontPanel (HostInterface) wires
 	wire okClk;
 	wire [112:0] okHE;
 	wire [64:0] okEH;
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
 	//TODO: better way to keep track of these
 	wire [17*65-1:0] okEHx;
-	
+
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire, ep01wire, ep02wire, ep40trig, ep41trig;
-	
+
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
 	assign sys_rst = (pushreset | ep40trig[`TI40_RST]); // TODO: TI40_RST is not found
-	
+
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
 	okWireOR # (.N(17)) wireOR (okEH, okEHx); //TODO
-    
+
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
              .okClk(okClk), .okHE(okHE), .okEH(okEH));
-             
-    /* ---------------- Ok Endpoints ----------------*/	
+
+    /* ---------------- Ok Endpoints ----------------*/
 	//wire to hold the data/commands from the host this will be routed to the wishbone formatter/state machine for the ADS7952
 	okWireIn wi0 (.okHE(okHE), .ep_addr(`UNCONNECTED_WIRE_IN), .ep_dataout(ep00wire));
 	// Wire in to select what slave the SPI data is routed to
 	okWireIn wi1 (.okHE(okHE), .ep_addr(`HOST_FPGAB_GPIO_WIRE_IN_ADDR), .ep_dataout(ep01wire));
     wire host_fpgab;
-    assign host_fpgab = ep01wire[`WI01_ADS_HOST_FPGAB];   
+    assign host_fpgab = ep01wire[`WI01_ADS_HOST_FPGAB];
     assign up = ep01wire[(`WI01_UP+`WI01_UP_LEN - 1):`WI01_UP];
     assign dn = ep01wire[(`WI01_DN+`WI01_DN_LEN - 1):`WI01_DN];
     assign gpio = ep01wire[(`WI01_GPIO+`WI01_GPIO_LEN - 1):`WI01_GPIO];
     wire [3:0]gp_lvds_se;
     assign gp_lvds_se = ep01wire[(`WI01_GPIO_LVDS+`WI01_GPIO_LVDS_LEN - 1):`WI01_GPIO_LVDS];
-   
+
     genvar m;
     generate
     for (m=0; m<=3; m=m+1) begin : lvds_obuf
 
     // Single-Ended -> LVDS
-    OBUFDS 
+    OBUFDS
         #(
             .IOSTANDARD("LVDS_25"),        // Specify the output I/O standard
             .SLEW("FAST")                  // Specify the output slew rate
-        ) 
-        Cnv_Out_OBUFDS 
+        )
+        Cnv_Out_OBUFDS
         (
             .O(gp_lvds_p[m]),              // Diff_p output (connect directly to top-level port)
             .OB(gp_lvds_n[m]),             // Diff_n output (connect directly to top-level port)
-            .I(gp_lvds_se[m])              // Buffer input 
+            .I(gp_lvds_se[m])              // Buffer input
         );
-    end 
+    end
     endgenerate
 
     /* ---------------- WI02 ---------------------- */
-    okWireIn wi2 (.okHE(okHE), .ep_addr(`PWR_REG_ADC_EN_WIRE_IN_ADDR), 
+    okWireIn wi2 (.okHE(okHE), .ep_addr(`PWR_REG_ADC_EN_WIRE_IN_ADDR),
       .ep_dataout(ep02wire));
-      
+
      assign a_en0_hv = ep02wire[(`WI02_A_EN0+`WI02_A_EN0_LEN - 1):`WI02_A_EN0]; //1 for each channel
      assign a_en_hv = ep02wire[(`WI02_A_EN+`WI02_A_EN_LEN - 1):`WI02_A_EN];    // global
 
      wire [9:0] en_period; //TODO: different for each channel?
      assign en_period = ep02wire[(`WI02_EN_PERIOD_LEN+`WI02_EN_PERIOD - 1):`WI02_EN_PERIOD];
-      
+
      //power supply regulatoor enable signals (5 total signals)
      assign en_15v = ep02wire[`WI02_15V_EN];
      assign en_1v8 = ep02wire[`WI02_1V8_EN];
@@ -268,10 +268,10 @@ module top_level_module(
      assign en_5v = ep02wire[`WI02_5V_EN];
      assign en_n15v = ep02wire[`WI02_N15V_EN];
 
-     assign en_ipump = ep02wire[(`WI02_IPUMP_EN + `WI02_IPUMP_EN_LEN - 1):`WI02_IPUMP_EN]; // (2 total signals) 
-     
+     assign en_ipump = ep02wire[(`WI02_IPUMP_EN + `WI02_IPUMP_EN_LEN - 1):`WI02_IPUMP_EN]; // (2 total signals)
+
      assign ads_resetb = ep02wire[`WI02_ADS_RESETB];
-      
+
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
 	//ep40trig[1] will be used as the master reset for the rest of the design
@@ -283,12 +283,12 @@ module top_level_module(
 	//ep40trig[7] is the reset for adc7961_3_fifo
 	//ep40trig[8] will be used to trigger the Wishbone formatter/state machine for dac_0, telling the state machine that wi0 is valid
 	//ep40trig[9] will be used to trigger the Wishbone formatter/state machine for dac_1, telling the state machine that wi0 is valid
-	//ep40trig[10] reset the programmable clock divider for the ADS8686 spi 
-	//ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode 
-	
+	//ep40trig[10] reset the programmable clock divider for the ADS8686 spi
+	//ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode
+
 	okTriggerIn trigIn40 (.okHE(okHE),
                       .ep_addr(`GENERAL_RST_VALID_TRIG_IN_ADDR), .ep_clk(clk_sys), .ep_trigger(ep40trig));
-    
+
     okTriggerIn trigIn41 (.okHE(okHE),
                                     .ep_addr(`I2C_TRIG_IN_ADDR), .ep_clk(clk_sys), .ep_trigger(ep41trig));
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
@@ -313,26 +313,26 @@ module top_level_module(
     //bit 12 is status signal telling host that AD7961_3 fifo is empty
     //bit 13 is status signal telling host that AD7S8686 fifo is completely full
     //bit 14 is status signal telling host that AD7S8686 fifo is half full
-    //bit 15 is status signal telling host that AD7S8686 fifo is empty    
-	
-	//TODO: reorganize triggerout 
+    //bit 15 is status signal telling host that AD7S8686 fifo is empty
+
+	//TODO: reorganize triggerout
 	wire [(I2C_DCARDS_NUM-1):0] i2c_done;
 	wire [1:0] i2c_aux_done;
-	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(`FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(okClk), 
-                           .ep_trigger({10'b0, i2c_aux_done, i2c_done,  
+	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(`FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(okClk),
+                           .ep_trigger({10'b0, i2c_aux_done, i2c_done,
                            ads_fifo_empty, ads_fifo_halffull, ads_fifo_full,
                            adc_fifo_empty[3], adc_fifo_halffull[3], adc_fifo_full[3],
                            adc_fifo_empty[2], adc_fifo_halffull[2], adc_fifo_full[2],
                            adc_fifo_empty[1], adc_fifo_halffull[1], adc_fifo_full[1],
                            adc_fifo_empty[0], adc_fifo_halffull[0], adc_fifo_full[0], hostinterrupt}));
-            
-       //register bridge for writing filter coefficients to BRAM and to the spi_controller 
+
+       //register bridge for writing filter coefficients to BRAM and to the spi_controller
        wire regWrite;
        wire regRead;
        wire [31:0] regAddress;
        wire [31:0] regDataOut;
        wire [31:0] regDataIn; // Was reg, gave error in Vivado synthesis
-       
+
        okRegisterBridge regBridge (
            .okHE(okHE),
            .okEH(okEHx[4*65 +: 65]),
@@ -343,7 +343,7 @@ module top_level_module(
            .ep_datain(regDataIn)
        );
 	// ---------------------- END OpalKelly EndPoints (global) --------
-    	
+
 	// --------------------- Begin ADS8686 --------------------------
     wire [31:0] ads_wire_in;
     wire [31:0] ads_data_out;
@@ -353,70 +353,70 @@ module top_level_module(
     spi_controller uut(
                        .clk(clk_sys),
                        .reset(sys_rst),
-                       .divider_reset(ep40trig[`TI40_ADS_CLK_DIV]), 
-                       .dac_val(ads_wire_in), 
-                       .dac_convert_trigger(ep40trig[`TI40_ADS_WB]), // trigger wishbone transfers 
-                       .host_fpgab(host_fpgab), // if 1 host driven commands; if 0 
-                       // OKRegister bridge inputs 
+                       .divider_reset(ep40trig[`TI40_ADS_CLK_DIV]),
+                       .dac_val(ads_wire_in),
+                       .dac_convert_trigger(ep40trig[`TI40_ADS_WB]), // trigger wishbone transfers
+                       .host_fpgab(host_fpgab), // if 1 host driven commands; if 0
+                       // OKRegister bridge inputs
                        .okClk(okClk),
                        .addr(regAddress),
                        .data_in(regDataOut),
                        .write_in(regWrite),
-                       // outputs 
+                       // outputs
                        .dac_out(ads_data_out), // connect to FIFO
-                       .data_valid(ads_data_valid), 
+                       .data_valid(ads_data_valid),
                        .ss(ads_csb),
                        .sclk(ads_sclk),
                        .mosi(ads_sdi),
                        .miso(ads_sdoa), //TODO: need to connect SDOB
                        .convst_out(ads_convst)
                        );
-   
+
    wire [31:0] ads_fifo_data;
    wire ads_pipe_read;
-                                     	
-   fifo_AD796x ads8686_fifo (//32 bit wide read and 16 bit wide write ports 
+
+   fifo_AD796x ads8686_fifo (//32 bit wide read and 16 bit wide write ports
      .rst(ep40trig[`TI40_ADS8686_FIFO_RST]),
      .wr_clk(clk_sys),
      .rd_clk(okClk),
      .din(ads_data_out),         // Bus [15:0] (from ADC)
-     .wr_en(ads_data_valid),    // from ADC 
+     .wr_en(ads_data_valid),    // from ADC
      .rd_en(ads_pipe_read),      // from OKHost
      .dout(ads_fifo_data),     // Bus [31:0] (to OKHost)
-     .full(ads_fifo_full),     // status 
-     .empty(ads_fifo_empty),   // status 
+     .full(ads_fifo_full),     // status
+     .empty(ads_fifo_empty),   // status
      .prog_full(ads_fifo_halffull));//status
-    	
+
     //pipeOut to transfer data in bulk from the ADS8686 FIFO
    okPipeOut pipeOutADS86 (.okHE(okHE), .okEH(okEHx[5*65 +: 65]),
                       .ep_addr(`ADS_POUT_OFFSET),  .ep_read(ads_pipe_read),
-                      .ep_datain(ads_fifo_data));  
+                      .ep_datain(ads_fifo_data));
 
-   reg [31:0] ads_last_read;  
-   always @(posedge clk_sys) begin 
+   reg [31:0] ads_last_read;
+   always @(posedge clk_sys) begin
         if (sys_rst) begin
              ads_last_read <=32'h0;
         end
-        else if (ads_data_valid) begin  // 
+        else if (ads_data_valid) begin  //
             ads_last_read <= ads_data_out;
         end
     end
     okWireOut wo_ads (.okHE(okHE), .okEH(okEHx[6*65 +: 65 ]), .ep_addr(`ADS_WIRE_OUT_ADDR), .ep_datain(ads_last_read));
 
-    // ------------ end ADS8686 -----------------------------------
-	
+  // ------------ end ADS8686 -----------------------------------
+
 	/* ---------------- AD796x 5 MSPS ADC  ----------------*/
-    wire [(FADC_NUM-1):0] adc_reset; //asynchronous adc (AD796x resets)  
+  wire [(FADC_NUM-1):0] adc_reset; //asynchronous adc (AD796x resets)
 
 	wire [(FADC_NUM-1):0] adc_sync_rst;
-    wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
+  wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
 	wire [(FADC_NUM-1):0]write_en_adc_o;
-    wire [15:0] adc_val[0:(FADC_NUM-1)]; 
-    wire [(FADC_NUM-1):0] adc_fifo_full;
-    wire [(FADC_NUM-1):0] adc_fifo_halffull;
-    wire [(FADC_NUM-1):0] adc_fifo_empty;
-    wire [(FADC_NUM-1):0] adc_pipe_ep_read;
-    wire [(FADC_NUM-1):0] adc_fifo_reset;
+  wire [15:0] adc_val[0:(FADC_NUM-1)];
+  wire [(FADC_NUM-1):0] adc_fifo_full;
+  wire [(FADC_NUM-1):0] adc_fifo_halffull;
+  wire [(FADC_NUM-1):0] adc_fifo_empty;
+  wire [(FADC_NUM-1):0] adc_pipe_ep_read;
+  wire [(FADC_NUM-1):0] adc_fifo_reset;
 
 	genvar i;
     generate
@@ -438,28 +438,28 @@ module top_level_module(
         .data_rd_rdy_o(write_en_adc_o[i]), // Signals that new data is available
         .data_o(adc_val[i])
         );
-        
-        //AD796x reset synchronizer 
+
+        //AD796x reset synchronizer
         reset_sync_low sync_adc_rst_0 (.clk(clk_sys), .async_rst(adc_reset[i]), .sync_rst(adc_sync_rst[i]));
 
-        fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports 
+        fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports
           .rst(ep40trig[`TI40_ADC_FIFO_RST + i]),
           .wr_clk(clk_sys),
           .rd_clk(okClk),
           .din({adc_val[i]}),         // Bus [15:0] (from ADC)
-          .wr_en(write_en_adc_o[i]),// from ADC 
+          .wr_en(write_en_adc_o[i]),// from ADC
           .rd_en(adc_pipe_ep_read[i]),      // from OKHost
           .dout(adc_pipe_ep_datain[i]),     // Bus [31:0] (to OKHost)
-          .full(adc_fifo_full[i]),     // status 
-          .empty(adc_fifo_empty[i]),   // status 
+          .full(adc_fifo_full[i]),     // status
+          .empty(adc_fifo_empty[i]),   // status
           .prog_full(adc_fifo_halffull[i]));//status
-          
+
           //pipeOut for data from AD7961
-          okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(7+i)*65 +: 65]), 
-                    .ep_addr(`AD796x_POUT_OFFSET + i), .ep_read(adc_pipe_ep_read[i]), 
+          okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(7+i)*65 +: 65]),
+                    .ep_addr(`AD796x_POUT_OFFSET + i), .ep_read(adc_pipe_ep_read[i]),
                     .ep_datain(adc_pipe_ep_datain[i]));
      end
-     endgenerate 
+     endgenerate
 
     /*---------------- DAC80508 -------------------*/
     wire [31:0]dac_wirein_data[(DAC80508_NUM-1):0];
@@ -467,7 +467,7 @@ module top_level_module(
 
     genvar j;
     generate
-    for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen     
+    for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen
         spi_controller dac_0 (
           .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_data_out[j]),
           .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(ds_sdo[j]), .okClk(okClk), .addr(regAddress), .data_in(regDataOut), .write_in(regWrite)
@@ -475,9 +475,9 @@ module top_level_module(
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
         //TODO (if needed) add WireOut to transfer data out (dac_out_0)
     end
-    endgenerate 
-    /*---------------- END DAC80508 -------------------*/ 
-    
+    endgenerate
+    /*---------------- END DAC80508 -------------------*/
+
    //General purpose clock divide - currently used as "helper" clocking module for reading form DDR3
    //TODO: was a clk_en that was assigned to dataready
    wire dataready;
@@ -488,21 +488,21 @@ module top_level_module(
         .en_period(en_period),
         .clk_en(dataready)
     );
-    
+
     /* --------------- DDR3 ---------------------------*/
      ////////////////////////////*DDR3 INTERFACE INSTANTIATIONS*//////////////////////////////////////////////
      // OK RAMTest Parameters
-     localparam BLOCK_SIZE = 128; // 512 bytes / 4 bytes per word, 
+     localparam BLOCK_SIZE = 128; // 512 bytes / 4 bytes per word,
      localparam FIFO_SIZE = 1023; // note that Xilinx does not allow use of the full 1024 words
      localparam BUFFER_HEADROOM = 20; // headroom for the FIFO count to account for latency
-     
+
      // Capability bitfield, used to indicate features supported by this bitfile:
      // [0] - Supports passing calibration status through FrontPanel
      localparam CAPABILITY = 16'h0001;
-     
+
      wire          init_calib_complete;
      reg           rst_sys_ddr;
-     
+
      wire [29 :0]  app_addr;
      wire [2  :0]  app_cmd;
      wire          app_en;
@@ -515,12 +515,12 @@ module top_level_module(
      wire [31 :0]  app_wdf_mask;
      wire          app_wdf_rdy;
      wire          app_wdf_wren;
-     
+
      wire          clk_ddr_ui;
      wire          rst_ddr_ui;
-     
+
      wire [31:0]  ep03wire;
-     
+
      wire         pipe_in_read;
      wire [255:0] pipe_in_data;
      wire [6:0]   pipe_in_rd_count;
@@ -529,7 +529,7 @@ module top_level_module(
      wire         pipe_in_full;
      wire         pipe_in_empty;
      reg          pipe_in_ready;
-     
+
      wire         pipe_out_write;
      wire [255:0] pipe_out_data;
      wire [9:0]   pipe_out_rd_count;
@@ -537,22 +537,22 @@ module top_level_module(
      wire         pipe_out_full;
      wire         pipe_out_empty;
      reg          pipe_out_ready;
-     
+
      // Pipe Fifos
      wire         pi0_ep_write;
      wire         po0_ep_read;
-     wire [31:0]  pi0_ep_dataout;     
+     wire [31:0]  pi0_ep_dataout;
      wire [31:0] INDEX;
      wire          ddr3_rst;// MIG/DDR3 synchronous reset
      wire [31:0]  po0_ep_datain;// MIG/DDR3 data out
      wire rd_en_0;
-     
+
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
      .async_rst(ep03wire[2]),
      .sync_rst(ddr3_rst)
      );
-     
+
      //MIG Infrastructure Reset
      reg [31:0] rst_cnt;
      initial rst_cnt = 32'b0;
@@ -565,7 +565,7 @@ module top_level_module(
              rst_sys_ddr <= 1'b0;
          end
      end
-     
+
      // MIG User Interface instantiation
      ddr3_256_32 u_ddr3_256_32 (
          // Memory interface ports
@@ -582,7 +582,7 @@ module top_level_module(
          .ddr3_dqs_n                     (ddr3_dqs_n),
          .ddr3_dqs_p                     (ddr3_dqs_p),
          .init_calib_complete            (init_calib_complete),
-         
+
          .ddr3_dm                        (ddr3_dm),
          .ddr3_odt                       (ddr3_odt),
          // Application interface ports
@@ -605,13 +605,13 @@ module top_level_module(
          .app_zq_ack                     (),
          .ui_clk                         (clk_ddr_ui), // output from Mig
          .ui_clk_sync_rst                (rst_ddr_ui),
-         
+
          .app_wdf_mask                   (app_wdf_mask),
-         
+
          .sys_clk_i(clk_sys),
          .sys_rst                        (rst_sys_ddr)
          );
-         
+
      // OK MIG DDR3 Testbench Instatiation
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
@@ -620,34 +620,34 @@ module top_level_module(
          .reads_en           (ep03wire[0]),
          .writes_en          (ep03wire[1]),
          .calib_done         (init_calib_complete),
-     
+
          .ib_re              (pipe_in_read),
          .ib_data            (pipe_in_data),
          .ib_count           (pipe_in_rd_count),
          .ib_valid           (pipe_in_valid),
          .ib_empty           (pipe_in_empty),
-         
+
          .ob_we              (pipe_out_write),
          .ob_data            (pipe_out_data),
          .ob_count           (pipe_out_wr_count),
          .ob_full            (pipe_out_full),
-         
+
          .app_rdy            (app_rdy),
          .app_en             (app_en),
          .app_cmd            (app_cmd),
          .app_addr           (app_addr),
-         
+
          .app_rd_data        (app_rd_data),
          .app_rd_data_end    (app_rd_data_end),
          .app_rd_data_valid  (app_rd_data_valid),
-         
+
          .app_wdf_rdy        (app_wdf_rdy),
          .app_wdf_wren       (app_wdf_wren),
          .app_wdf_data       (app_wdf_data),
          .app_wdf_end        (app_wdf_end),
          .app_wdf_mask       (app_wdf_mask)
          );
-     
+
      //Block Throttle
      always @(posedge okClk) begin
          // Check for enough space in input FIFO to pipe in another block
@@ -658,7 +658,7 @@ module top_level_module(
          end
          else begin
              pipe_in_ready <= 1'b0;
-         end    
+         end
          // Check for enough space in output FIFO to pipe out another block
          if(pipe_out_rd_count >= BLOCK_SIZE) begin
              pipe_out_ready <= 1'b1;
@@ -667,14 +667,14 @@ module top_level_module(
              pipe_out_ready <= 1'b0;
          end
      end
-     
+
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR_RST_RD_WR_EN_WIRE_IN_ADDR), .ep_dataout(ep03wire));
      okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`CIRC_BUFFER_INDEX_WIRE_IN_ADDR), .ep_dataout(INDEX));
      okWireOut      wo02 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(`DDR_STATUS_WIRE_OUT), .ep_datain({31'h00, init_calib_complete}));
      okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR_DAT_WIRE_OUT), .ep_datain(po0_ep_datain/*CAPABILITY*/));
      okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR_DAT_IN_PIN_ADDR), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
      okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR_DAT_OUT_POUT_ADDR), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain),   .ep_ready(pipe_out_ready));
-     
+
      fifo_w32_1024_r256_128 okPipeIn_fifo (
          .rst(ep03wire[2]),
          .wr_clk(okClk),
@@ -688,7 +688,7 @@ module top_level_module(
          .valid(pipe_in_valid),
          .rd_data_count(pipe_in_rd_count), // Bus [6 : 0]
          .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0]
-     
+
      fifo_w256_128_r32_1024 okPipeOut_fifo (
          .rst(ep03wire[2]),
          .wr_clk(clk_ddr_ui),
@@ -702,48 +702,48 @@ module top_level_module(
          .valid(),
          .rd_data_count(pipe_out_rd_count), // Bus [9 : 0]
          .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
-    
+
     /* ------------------ END DDR3 ------------------- */
-    
+
     /* ------------------ AD5453 SPI ------------------- */
-    
+
     wire [(AD5453_NUM-1):0] rd_en_fast_dac;
     wire [(AD5453_NUM-1):0] clk_en_fast_dac;
-    
+
     genvar k;
     generate
     for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
-    // instantiate old top-level (but only for the AD5453 SPI) 
-    spi_fifo_driven spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst), 
+    // instantiate old top-level (but only for the AD5453 SPI)
+    spi_fifo_driven spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
              .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), .data_rdy_0(), .adc_val_0(), //not yet used
-             // register bridge //TODO: add address increment based on generate k 
+             // register bridge //TODO: add address increment based on generate k
              /*.ep_read(regRead),*/ .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), /*.ep_datain(regDataIn),*/
-             // DDR 
-             .en_period(en_period),//in, 
+             // DDR
+             .en_period(en_period),//in,
              .clk_en(clk_en_fast_dac[k]),//out
              .ddr3_rst(ddr3_rst),//in
-             .ddr_dat_i(po0_ep_datain[13:0]), //in 
+             .ddr_dat_i(po0_ep_datain[13:0]), //in
              .rd_en_0(rd_en_fast_dac[k]), //out
              .regTrigger(ep40trig[`TI40_AD5453_WB]) //input
              );
     end
-    endgenerate        
-    
+    endgenerate
+
     assign rd_en_0 = rd_en_fast_dac[0];
-    assign clk_en = clk_en_fast_dac[0];  
-    
+    assign clk_en = clk_en_fast_dac[0];
+
     /* ----------------- END AD5453 ------------------------------------ */
 
-    /*---------------- I2C -------------------*/    
-    /*---------------- daughercard I2C -------------------*/    
+    /*---------------- I2C -------------------*/
+    /*---------------- daughercard I2C -------------------*/
     wire [15:0] i2c_memdin[(I2C_DCARDS_NUM-1):0];
     wire [7:0] i2c_memdout[(I2C_DCARDS_NUM-1):0];
-    
+
     okWireIn wi_i2c_dc0 (.okHE(okHE), .ep_addr(`I2C_DC_WIRE_IN0), .ep_dataout({i2c_memdin[1], i2c_memdin[0]}));
     okWireIn wi_i2c_dc1 (.okHE(okHE), .ep_addr(`I2C_DC_WIRE_IN1), .ep_dataout({i2c_memdin[3], i2c_memdin[2]}));
-    okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ 15*65 +: 65 ]), .ep_addr(`I2C_WIRE_OUT_ADDR), 
+    okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ 15*65 +: 65 ]), .ep_addr(`I2C_WIRE_OUT_ADDR),
                     .ep_datain({i2c_memdout[3], i2c_memdout[2], i2c_memdout[1], i2c_memdout[0]}));
-    
+
     genvar l;
     generate
     for (l=0; l<=(I2C_DCARDS_NUM-1); l=l+1) begin : i2c_dc_gen
@@ -751,39 +751,39 @@ module top_level_module(
     i2cController i2c_controller_0 (
         .clk (clk_sys),
         .reset (ep40trig[`TI40_I2C_DC_RST + l]),
-        .start (ep40trig[`TI40_I2C_DC_START + l]), //trigger in 
+        .start (ep40trig[`TI40_I2C_DC_START + l]), //trigger in
         .done (i2c_done[l]),   // trigger out
-        .memclk (clk_sys),  //the triggers are synchronized to clk_sys 
+        .memclk (clk_sys),  //the triggers are synchronized to clk_sys
         .memstart (ep41trig[`TI41_I2C_DC_MEMSTART + l]), //trigger in
         .memwrite (ep41trig[`TI41_I2C_DC_MEMWRITE + l]), // trigger in
         .memread (ep41trig[`TI41_I2C_DC_MEMREAD + l]),   // trigger in
-        .memdin (i2c_memdin[l]),     //wire in 
+        .memdin (i2c_memdin[l]),     //wire in
         .memdout (i2c_memdout[l]),   //wire out
         .i2c_sclk (dc_scl[l]),       // inout
         .i2c_sdat (dc_sda[l])        // inout
     );
-    end 
+    end
     endgenerate
-    /*---------------- END daughercard I2C -------------------*/    
+    /*---------------- END daughercard I2C -------------------*/
 
     wire [15:0] i2c_aux_memdin[1:0];
     wire [7:0] i2c_aux_memdout[1:0];
-    
+
     okWireIn wi_i2c_aux (.okHE(okHE), .ep_addr(`I2C_AUX_WIRE_IN), .ep_dataout({i2c_aux_memdin[1], i2c_aux_memdin[0]}));
-    okWireOut wo_i2c_aux (.okHE(okHE), .okEH(okEHx[ 16*65 +: 65 ]), .ep_addr(`I2C_AUX_WIRE_OUT), 
+    okWireOut wo_i2c_aux (.okHE(okHE), .okEH(okEHx[ 16*65 +: 65 ]), .ep_addr(`I2C_AUX_WIRE_OUT),
                     .ep_datain({i2c_aux_memdout[1], i2c_aux_memdout[0]}));
-    
+
     i2cController i2c_controller_4 (
         .clk (clk_sys),
         .reset (ep41trig[`TI41_I2C_AUX_RST + 0]),
-        .start (ep41trig[`TI41_I2C_AUX_START + 0]), //trigger in 
+        .start (ep41trig[`TI41_I2C_AUX_START + 0]), //trigger in
         .done (i2c_aux_done[0]),   // trigger out
-        .memclk (clk_sys),  //the triggers are synchronized to clk_sys 
+        .memclk (clk_sys),  //the triggers are synchronized to clk_sys
         .memstart (ep41trig[`TI41_I2C_AUX_MEMSTART + 0]), //trigger in
         .memwrite (ep41trig[`TI41_I2C_AUX_MEMWRITE + 0]), // trigger in
         .memread (ep41trig[`TI41_I2C_AUX_MEMREAD + 0]),   // trigger in
-        .memdin (i2c_aux_memdin[0]),     //wire in 
-        .memdout (i2c_aux_memdout[0]),   //wire out
+        .memdin (i2c_aux_memdin[0]),     //wire in [7:0]
+        .memdout (i2c_aux_memdout[0]),   //wire out [7:0]
         .i2c_sclk (ls_scl),       // inout
         .i2c_sdat (ls_sda)        // inout
     );
@@ -791,18 +791,18 @@ module top_level_module(
     i2cController i2c_controller_5 (
         .clk (clk_sys),
         .reset (ep41trig[`TI41_I2C_AUX_RST + 1]),
-        .start (ep41trig[`TI41_I2C_AUX_START + 1]), //trigger in 
+        .start (ep41trig[`TI41_I2C_AUX_START + 1]), //trigger in
         .done (i2c_aux_done[1]),   // trigger out
-        .memclk (clk_sys),  //the triggers are synchronized to clk_sys 
+        .memclk (clk_sys),  //the triggers are synchronized to clk_sys
         .memstart (ep41trig[`TI41_I2C_AUX_MEMSTART + 1]), //trigger in
         .memwrite (ep41trig[`TI41_I2C_AUX_MEMWRITE + 1]), // trigger in
         .memread (ep41trig[`TI41_I2C_AUX_MEMREAD + 1]),   // trigger in
-        .memdin (i2c_aux_memdin[1]),     //wire in 
-        .memdout (i2c_aux_memdout[1]),   //wire out
+        .memdin (i2c_aux_memdin[1]),     //wire in [7:0]
+        .memdout (i2c_aux_memdout[1]),   //wire out [7:0]
         .i2c_sclk (qw_scl),       // inout
         .i2c_sdat (qw_sda)        // inout
     );
-    /*---------------- End I2C -------------------*/    
+    /*---------------- End I2C -------------------*/
 
 	 //module to create a one second pulse on one of the LEDs (keepAlive test)
 	 one_second_pulse out_pulse(
