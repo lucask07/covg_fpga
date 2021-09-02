@@ -116,7 +116,7 @@ module top_level_module(
     output wire [(FADC_NUM-1):0]a_clk_n,   // Clock Out, Negative Pair
 	
     // DAC80508 (ds for DAC slow)
-    input wire  [(DAC80508_NUM-1):0]ds_sdo,    // DAC85058 input data is not necessary 
+    output wire  [(DAC80508_NUM-1):0]ds_sdo,    // DAC85058; daq_v2 build has DAC85058ZC which means SDO is CLRB; will tie to logic high.  
     output wire [(DAC80508_NUM-1):0]ds_sclk,
     output wire [(DAC80508_NUM-1):0]ds_csb,
     output wire [(DAC80508_NUM-1):0]ds_sdi,
@@ -406,9 +406,7 @@ module top_level_module(
     // ------------ end ADS8686 -----------------------------------
 	
 	/* ---------------- AD796x 5 MSPS ADC  ----------------*/
-    wire [(FADC_NUM-1):0] adc_reset; //asynchronous adc (AD796x resets)  
 
-	wire [(FADC_NUM-1):0] adc_sync_rst;
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
 	wire [(FADC_NUM-1):0]write_en_adc_o;
     wire [15:0] adc_val[0:(FADC_NUM-1)]; 
@@ -438,9 +436,6 @@ module top_level_module(
         .data_rd_rdy_o(write_en_adc_o[i]), // Signals that new data is available
         .data_o(adc_val[i])
         );
-        
-        //AD796x reset synchronizer 
-        reset_sync_low sync_adc_rst_0 (.clk(clk_sys), .async_rst(adc_reset[i]), .sync_rst(adc_sync_rst[i]));
 
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports 
           .rst(ep40trig[`TI40_ADC_FIFO_RST + i]),
@@ -470,8 +465,9 @@ module top_level_module(
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen     
         spi_controller dac_0 (
           .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`TI40_DAC805_WB+j]), .dac_out(dac_data_out[j]),
-          .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(ds_sdo[j]), .okClk(okClk), .addr(regAddress), .data_in(regDataOut), .write_in(regWrite)
+          .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(1'b0), .okClk(okClk), .addr(regAddress), .data_in(regDataOut), .write_in(regWrite)
         );
+        assign ds_sdo[j] = 1'b1; // using DAC80508ZC which replaces SDO with CLRB
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DS_WIRE_IN_OFFSET + j), .ep_dataout(dac_wirein_data[j]));
         //TODO (if needed) add WireOut to transfer data out (dac_out_0)
     end
