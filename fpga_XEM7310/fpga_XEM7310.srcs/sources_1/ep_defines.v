@@ -1,25 +1,25 @@
 //////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
+// Company:
+// Engineer:
+//
 // Create Date: 07/28/2021 01:22:20 PM
-// Design Name: 
-// Module Name: ep_defines 
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
+// Design Name:
+// Module Name: ep_defines
+// Project Name:
+// Target Devices:
+// Tool Versions:
+// Description:
+//
+// Dependencies:
+//
 // Revision:
 // Revision 0.01 - File Created
 // Additional Comments:
-// 
+//
 //////////////////////////////////////////////////////////////////////////////////
 
-// establish the addresses of all OpalKelly endpoints here. This will ease keeping tracking between the 
-//  Verilog code and the API easier. 
+// establish the addresses of all OpalKelly endpoints here. This will ease keeping tracking between the
+//  Verilog code and the API easier.
 
 // Naming system
 // CLASS_PARAM_NAME_GEN_BIT_GEN_ADDR // address=ASSOCIATED_ADDRESS_PARAM bit_width=0123456789
@@ -136,7 +136,7 @@
 `define I2C_DAQ_MEMWRITE_GEN_BIT 18 // address=I2C_TRIG_IN_ADDR bit_width=1
 `define I2C_DAQ_MEMREAD_GEN_BIT 20 // address=I2C_TRIG_IN_ADDR bit_width=1
 
-// wire in at 0x00 
+// wire in at 0x00
 
 // wire in at 0x01 
 `define ADS8686_HOST_FPGA_BIT 0 // address=HOST_FPGAB_GPIO_WIRE_IN_ADDR bit_width=1
