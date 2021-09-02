@@ -11,6 +11,9 @@ import pytest
 import os
 import sys
 
+# DAC53401 chip is on the Clamp board
+pytestmark = pytest.mark.Clamp
+
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 cwd = os.getcwd()
@@ -68,7 +71,6 @@ def test_write(dut, data):
     dut.write(data)
 
 
-# TODO: read first so we can tell if the chip is on the board correctly
 def test_read(dut):
     dut.read()
 

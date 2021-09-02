@@ -99,11 +99,11 @@ def configure_clamp(fpga, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
     # Write messages
     print(f'Writing 1: {s0} ({hex(message1)} {message1})')
     print(f'   Mask 1: {bin(mask1)}')
-    io1.write(message1, mask1)
+    io1.write(data=message1, mask=mask1)
 
     print(f'Writing 2: {s1} ({hex(message2)} {message2})')
     print(f'   Mask 2: {bin(mask2)}')
-    io2.write(message2, mask2)
+    io2.write(data=message2, mask=mask2)
 
     # Read messages
     list_read1 = io1.read()
@@ -170,9 +170,10 @@ DAC_SEL_dict = {#Choose to drive/store CAL_Sig1 and CAL_Sig2
     None         : 0b0000
 }
 CCOMP_dict = {#Choosing the capacitor value for Compensation Switching Circuit
+# 0001 0100 1000 0010
     0     : 0b0000,
-    4.7   : 0b0001,
-    1     : 0b0010,
+    1   : 0b0010,
+    4.7     : 0b0001,
     5.7   : 0b0011,
     200   : 0b0100,
     204.7 : 0b0101,
