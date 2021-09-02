@@ -251,13 +251,12 @@ class FPGA:
 class I2CController:
     DEFAULT_PARAMETERS = dict(
         # addresses for the OpalKelly interfaces (ins and outs)
-        I2C_TRIGIN_RST=0,
-        I2C_TRIGIN_GO=0,
+        RESET=1,
         # MEM_RESET is memstart in the Verilog (resets memory pointer)
-        I2C_TRIGIN_MEM_RESET=1,
-        I2C_TRIGIN_MEM_WRITE=2,
-        I2C_TRIGIN_MEM_READ=3,
-        I2C_TRIGOUT_DONE=0,
+        MEMSTART=0,
+        MEMWRITE=2,
+        MEMREAD=3,
+        DONE=0,
         I2C_MAX_TIMEOUT_MS=5000,
 
         PIPE_RESULTS=False,
@@ -319,26 +318,26 @@ class I2CController:
 
         # Reset the memory pointer and transfer the buffer.
         self.fpga.xem.ActivateTriggerIn(
-            self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_MEM_RESET'])
+            self.parameters['TRIG_IN'].address, self.parameters['RESET'])
         for i in range(data_length + self.i2c['m_nDataStart']):
             # print('(transmit) WireIn Value = {}'.format(self.i2c['m_pBuf'][i]))
-            mask = 0xff << self.parameters['I2C_WIREIN_DATA'].bit_index_low
-            value = self.i2c['m_pBuf'][i] << self.parameters['I2C_WIREIN_DATA'].bit_index_low
+            mask = 0xff << self.parameters['WIRE_IN'].bit_index_low
+            value = self.i2c['m_pBuf'][i] << self.parameters['WIRE_IN'].bit_index_low
             self.fpga.xem.SetWireInValue(
-                self.parameters['I2C_WIREIN_DATA'].address, value, mask)
+                self.parameters['WIRE_IN'].address, value, mask)
             self.fpga.xem.UpdateWireIns()
             self.fpga.xem.ActivateTriggerIn(
-                self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_MEM_WRITE'])
+                self.parameters['TRIG_IN'].address, self.parameters['MEMWRITE'])
 
         # Start I2C transaction
         self.fpga.xem.ActivateTriggerIn(
-            self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_GO'])
+            self.parameters['TRIG_IN'].address, self.parameters['MEMSTART'])
 
         # Wait for transaction to finish
         for i in range(int(self.parameters['I2C_MAX_TIMEOUT_MS'] / 10)):
             self.fpga.xem.UpdateTriggerOuts()
             # change to waiting for True
-            if self.fpga.xem.IsTriggered(self.parameters['I2C_TRIGOUT'].address, (1 << self.parameters['I2C_TRIGOUT_DONE'])):
+            if self.fpga.xem.IsTriggered(self.parameters['DONE'].address, (1 << self.parameters['DONE'].bit)):
                 return True
             time.sleep(0.01)
 
@@ -351,51 +350,51 @@ class I2CController:
 
         # Reset the memory pointer and transfer the buffer.
         self.fpga.xem.ActivateTriggerIn(
-            self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_MEM_RESET'])
+            self.parameters['TRIG_IN'].address, self.parameters['RESET'])
 
         for i in range(self.i2c['m_nDataStart']):
             # print('WireIn Value = {}'.format(self.i2c['m_pBuf'][i]))
             # TODO: check this change (LJK)
-            mask = 0xff << self.parameters['I2C_WIREIN_DATA'].bit_index_low
-            value = self.i2c['m_pBuf'][i] << self.parameters['I2C_WIREIN_DATA'].bit_index_low
+            mask = 0xff << self.parameters['WIRE_IN'].bit_index_low
+            value = self.i2c['m_pBuf'][i] << self.parameters['WIRE_IN'].bit_index_low
             self.fpga.xem.SetWireInValue(
-                self.parameters['I2C_WIREIN_DATA'].address, value, mask)
+                self.parameters['WIRE_IN'].address, value, mask)
             #self.fpga.xem.SetWireInValue(
-            #    self.parameters['I2C_WIREIN_DATA'].address, self.i2c['m_pBuf'][i], 0x00ff)
+            #    self.parameters['WIRE_IN'].address, self.i2c['m_pBuf'][i], 0x00ff)
             self.fpga.xem.UpdateWireIns()
             self.fpga.xem.ActivateTriggerIn(
-                self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_MEM_WRITE'])
+                self.parameters['TRIG_IN'].address, self.parameters['MEMWRITE'])
 
         # Start I2C transaction
         self.fpga.xem.ActivateTriggerIn(
-            self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_GO'])
+            self.parameters['TRIG_IN'].address, self.parameters['MEMSTART'])
 
         # Wait for transaction to finish
         for _ in range(int(self.parameters['I2C_MAX_TIMEOUT_MS']/10)):
             self.fpga.xem.UpdateTriggerOuts()
             # change to 1, LJK
-            if self.fpga.xem.IsTriggered(self.parameters['I2C_TRIGOUT'].address, (1 << self.parameters['I2C_TRIGOUT_DONE'])):
+            if self.fpga.xem.IsTriggered(self.parameters['DONE'].address, (1 << self.parameters['DONE'].bit)):
                 if self.parameters['WIRE_RESULTS']:
                     # Read data: Reset the memory pointer
                     self.fpga.xem.ActivateTriggerIn(
-                        self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_MEM_RESET'])
+                        self.parameters['TRIG_IN'].address, self.parameters['RESET'])
                     data = [None]*data_length
                     for i in range(data_length):
                         self.fpga.xem.UpdateWireOuts()
                         # TODO: check this change (LJK)
                         data_tmp = self.fpga.xem.GetWireOutValue(
-                            self.parameters['I2C_WIREOUT_DATA'].address)
-                        mask = 0xff << self.parameters['I2C_WIREOUT_DATA'].bit_index_low
-                        data[i] = (data_tmp & mask) >> self.parameters['I2C_WIREOUT_DATA'].bit_index_low
+                            self.parameters['WIRE_OUT'].address)
+                        mask = 0xff << self.parameters['WIRE_OUT'].bit_index_low
+                        data[i] = (data_tmp & mask) >> self.parameters['WIRE_OUT'].bit_index_low
                         self.fpga.xem.ActivateTriggerIn(
-                            self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_MEM_READ'])
+                            self.parameters['TRIG_IN'].address, self.parameters['MEMREAD'])
                     return data
                 if self.parameters['PIPE_RESULTS']:
                     data_read = np.int(np.ceil(data_length*4/16)*16)
                     buf, e = self.read_pipe_out(0xA0 + 0, data_read)
                     # reset FIFO
                     self.fpga.xem.ActivateTriggerIn(
-                        self.parameters['I2C_TRIGIN'].address, self.parameters['I2C_TRIGIN_MEM_READ'])
+                        self.parameters['TRIG_IN'].address, self.parameters['MEMREAD'])
                     return list(buf[0::4])[0:data_length]
             time.sleep(0.01)
 
@@ -454,9 +453,9 @@ class I2CController:
         """
 
         return self.fpga.xem.ActivateTriggerIn(
-            self.parameters['I2C_TRIGIN_RST'].address,
-            self.parameters['I2C_TRIGIN_RST'],
-            self.parameters['I2C_TRIGIN_RST'])
+            self.parameters['RESET'].address,
+            self.parameters['RESET'].bit,
+            self.parameters['RESET'].bit)
 
 # Class for the I/O Expander TCA9555 extending the I2CController class. Handles pin configuration as inputs/outputs, reading, and writing.
 
@@ -851,12 +850,12 @@ class SPIController:
         self.fpga.set_wire(
             self.parameters['WB_IN'].address, command, 0xffffffff)
         # DEBUG: temporary for logging DAC80508 test
-        # print(f'ActivateTriggerIn(address={hex(self.parameters["WB_CONVERT_TRIGGER"].address)}, index={hex(self.parameters["WB_CONVERT_TRIGGER"].bit_index_high)}')
+        # print(f'ActivateTriggerIn(address={hex(self.parameters["WB_CONVERT"].address)}, index={hex(self.parameters["WB_CONVERT"].bit_index_high)}')
         self.fpga.xem.ActivateTriggerIn(
-            self.parameters['WB_CONVERT_TRIGGER'].address, self.parameters['WB_CONVERT_TRIGGER'].bit_index_high)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
+            self.parameters['WB_CONVERT'].address, self.parameters['WB_CONVERT'].bit_index_high)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
 
     def wb_is_acknowledged(self):
-        response = self.fpga.read_wire(self.parameters['WB_OUT'].address)
+        response = self.fpga.read_wire(self.parameters['OUT'].address)
         return response == self.parameters['ACK']
 
     # Method to send a Wishbone command setting the address of the register we interact with.
@@ -873,7 +872,7 @@ class SPIController:
     # Method to read the data from the current register
     def wb_read(self):
         self.wb_send_cmd(self.parameters['WB_READ'])
-        return self.fpga.read_wire(self.parameters['WB_OUT'].address)
+        return self.fpga.read_wire(self.parameters['OUT'].address)
 
     # Method to set the GO_BSY bit of the CTRL register to logic 1, initiating a SPI transmission.
     def wb_go(self):
@@ -1022,9 +1021,9 @@ class DAC80508(SPIController):
         self.slave_address = slave_address
         super().__init__(fpga, master_config, parameters, debug)
         self.parameters['WB_IN'] = self.parameters['WB_IN_' + str(chip_number)]
-        self.parameters['WB_OUT'] = self.parameters['WB_OUT_'
+        self.parameters['OUT'] = self.parameters['OUT_'
                                                     + str(chip_number)]
-        self.parameters['WB_CONVERT_TRIGGER'] = self.parameters['WB_CONVERT_TRIGGER_'
+        self.parameters['WB_CONVERT'] = self.parameters['WB_CONVERT_'
                                                                 + str(chip_number)]
 
     # Method to write to any register on the chip.
