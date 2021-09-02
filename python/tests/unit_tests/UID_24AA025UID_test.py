@@ -11,6 +11,9 @@ import pytest
 import os
 import sys
 
+# 24AA025UID chip is on the Clamp board
+pytestmark = pytest.mark.Clamp
+
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 cwd = os.getcwd()
@@ -56,24 +59,15 @@ def test_get_device_code(dut):
     assert got == expected
 
 
-@pytest.mark.parametrize('data', [
-    0b0000_0000,
-    0b0000_0011,
-    0b0000_1100,
-    0b0011_0000,
-    0b1100_0000,
-    0b0000_1111,
-    0b1111_0000,
-    0b1111_1111
-])
-def test_write(dut, data):
+@pytest.mark.parametrize('data', [(0b1 << (x + 1)) - 1 for x in range(0, 1024, 4)])
+def test_write_read(dut, data):
+    from interfaces.utils import count_bytes, int_to_list
     dut.write(data)
+    got = dut.read(word_address=0, words_read=count_bytes(data))
+    assert got == int_to_list(data)
 
 
-def test_read(dut):
-    dut.read()
-
-
+@pytest.mark.skip(reason='Cannot know the serial number to compare against.')
 def test_get_serial_number(dut):
     dut.get_serial_number()
 
