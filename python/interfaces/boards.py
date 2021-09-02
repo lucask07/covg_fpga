@@ -12,11 +12,12 @@ Abe Stroschein, ajstroschein@stthomas.edu
 from interfaces.interfaces import *
 from interfaces.utils import reverse_bits
 
+
 class Clamp:
     """Class for the Clamp board daughtercards.
-    
+
     Clamp board daughtercard: https://github.com/lucask07/covg_clamp/blob/main/docs/bath_clamp_v1.pdf
-    
+
     Attributes
     ----------
     TCA_0 : TCA9555
@@ -49,11 +50,11 @@ class Clamp:
         self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1)
         self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins)
         self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins)
-        self.serial_number = None # Will get serial code from UID chip in setup()
+        self.serial_number = None  # Will get serial code from UID chip in setup()
 
     def init_board(self):
         """Tests and configures the board.
-        
+
         Tests connectivity with each chip, configures board for Voltage Clamp
         Feedback Loop, and gets the serial number from the UID chip.
         """
@@ -266,13 +267,13 @@ class Clamp:
             0: 0,
             1: 1,
             None: 0
-        }  
+        }
 
         # Define configuration params for mask later
         input_params_1 = {'ADC_SEL': ADC_SEL,
-                        'DAC_SEL': DAC_SEL, 'CCOMP': CCOMP, 'RF1': RF1}
+                          'DAC_SEL': DAC_SEL, 'CCOMP': CCOMP, 'RF1': RF1}
         input_params_2 = {'ADG_RES': ADG_RES, 'PClamp_CTRL': PClamp_CTRL, 'P1_E_CTRL': P1_E_CTRL, 'P1_CAL_CTRL': P1_CAL_CTRL,
-                        'P2_E_CTRL': P2_E_CTRL, 'P2_CAL_CTRL': P2_CAL_CTRL, 'gain': gain, 'FDBK': FDBK, 'mode': mode, 'EN_ipump': EN_ipump, 'RF_1_Out': RF_1_Out}
+                          'P2_E_CTRL': P2_E_CTRL, 'P2_CAL_CTRL': P2_CAL_CTRL, 'gain': gain, 'FDBK': FDBK, 'mode': mode, 'EN_ipump': EN_ipump, 'RF_1_Out': RF_1_Out}
 
         # Get codes from the corresponding dictionaries
         # I/O Expander 1 (self.TCA_0)
@@ -324,7 +325,7 @@ class Clamp:
                 continue
             else:
                 mask1 += ((2**config_params[key].bit_width - 1)
-                        << config_params[key].bit_index_low)
+                          << config_params[key].bit_index_low)
 
         mask2 = 0
         for key in input_params_2:
@@ -333,11 +334,13 @@ class Clamp:
                 continue
             else:
                 mask2 += ((2**config_params[key].bit_width - 1)
-                        << config_params[key].bit_index_low)
+                          << config_params[key].bit_index_low)
 
         # Reverse bytes in masks
-        mask1 = (reverse_bits(mask1 // 16**2) << 8) | reverse_bits(mask1 % 16**2)
-        mask2 = (reverse_bits(mask2 // 16**2) << 8) | reverse_bits(mask2 % 16**2)
+        mask1 = (reverse_bits(mask1 // 16**2)
+                 << 8) | reverse_bits(mask1 % 16**2)
+        mask2 = (reverse_bits(mask2 // 16**2)
+                 << 8) | reverse_bits(mask2 % 16**2)
 
         # Set pins to outputs
         self.TCA_0.configure_pins([0x00, 0x00])
@@ -388,3 +391,113 @@ class Clamp:
             f'Code 1 = {message1}',
             f'Code 2 = {message2}'
         ]
+
+
+class Daq:
+    """Class for the DAQ board.
+
+    DAQ board: https://github.com/lucask07/open_covg_daq_pcb/blob/main/docs/covg_daq_v2.pdf
+
+    Attributes
+    ----------
+    TCA_0 : TCA9555
+        First I/O Expander controlling DAC output gain.
+    TCA_1 : TCA9555
+        Second I/O Expander controlling DAC output gain.
+    UID : UID_24AA025UID
+        Unique ID chip for serial number and general memory.
+    Power : ENABLE GPIOs that control power supplies
+        Signals that enable power supplies
+    DAC :
+
+    DAC :
+
+    ADC : AD7961
+
+    Methods
+    -------
+    init_board()
+
+    """
+    class Power:
+
+        DEFAULT_PARAMETERS = dict(
+            WI02_15V_EN=18,
+            WI02_1V8_EN=19,
+            WI02_3V3_EN=20,
+            WI02_5V_EN=21,
+            WI02_N15V_EN=22,
+            PWR_REG_ADC_EN_WIRE_IN_ADDR=0x02,
+            SUPPLY_NAMES=['1V8', '5V', '3V3', '15V', 'N15V']
+            )
+
+        def __init__(self, fpga, parameters=DEFAULT_PARAMETERS, debug=False):
+            self.fpga = fpga
+            self.parameters = parameters
+            self.debug = debug  # TODO: Turning on debug will show more output
+
+        def supply_on(self, name):
+            """ turn a single power supply on
+                input:  name is a string. options are 15V, 3V3, 1V8, 5V, N15V
+            """
+            if name in self.SUPPLY_NAMES:
+                self.fpga.set_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
+                                       self.parameters['WI02_{}_EN'.format(name)])
+            else:
+                print('{} not in list of power supplies'.format(name))
+
+        def supply_off(self, name):
+            """ turn a single power supply on
+                input:  name is a string. options are 15V, 3V3, 1V8, 5V, N15V
+            """
+            if name in self.SUPPLY_NAMES:
+                return self.fpga.clear_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
+                                                self.parameters['WI02_{}_EN'.format(name)])
+            else:
+                print('{} not in list of power supplies'.format(name))
+
+        def all_on(self):
+            """ turn on all supplies following a power-on sequencing procedure
+
+            AD7961 has a power-up sequence:
+            When powering up the AD7961 device, first apply 1.8 V (VDD2,
+            VIO) to the device, then ramp 5 V (VDD1). Set the reference
+            configuration pins, EN0, EN1, and EN2, to the correct values.
+            When an internal reference buffer is used (governed by the EN1
+            and EN0 values), apply the external reference of 2.048 V to the
+            REFIN pin or 5 V/4.096 V to the REF pin.
+            """
+            # turn on 1.8 V
+            self.fpga.set_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
+                                   self.parameters['WI02_1V8_EN'])
+            # time.sleep unnecessary due to delay of the wire in API calls
+            # turn on 5V
+            self.fpga.set_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
+                                   self.parameters['WI02_5V_EN'])
+
+            # turn on 3.3 V
+            self.fpga.set_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
+                                   self.parameters['WI02_3V3_EN'])
+
+            # turn on 15V and neg15V simultaneously
+            mask = (1 << self.parameters['WI02_15V_EN']) | \
+                (1 << self.parameters['WI02_N15V_EN'])
+            value = mask
+            self.fpga.set_wire(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
+                               value, mask)
+
+            return True
+
+        def all_off(self):
+            """ turn off all supplies simultaneously
+            """
+            # create multi-bit mask
+            mask = 0
+            for name in self.parameters['SUPPLY_NAMES']:
+                mask = mask | (1 << self.parameters[name])
+
+            value = 0
+            self.fpga.set_wire(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
+                               value, mask)
+
+            return True
