@@ -16,45 +16,147 @@ from collections import namedtuple
 from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list
 
 
-Register = namedtuple(
-    'Register', 'address, default, bit_index_high, bit_index_low, bit_width')
+class Register:
+
+    def __init__(self, address, default, bit_index_high, bit_index_low, bit_width):
+        self.address = address
+        self.default = default
+        self.bit_index_high = bit_index_high
+        self.bit_index_low = bit_index_low
+        self.bit_width = bit_width
+
+    @classmethod
+    def get_chip_registers(cls, sheet, workbook_path=None):
+        """Return a dictionary of Registers from an page in an Excel spreadsheet."""
+
+        if workbook_path == None:
+            workbook_path = os.getcwd()
+            # The Registers spreadsheet is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+            for i in range(15):
+                if os.path.basename(workbook_path) == 'covg_fpga':
+                    workbook_path = os.path.join(workbook_path, 'Registers.xlsx')
+                    break
+                else:
+                    # If we aren't in covg_fpga, move up a folder and check again
+                    workbook_path = os.path.dirname(workbook_path)
+
+        reg_dict = {}
+        sheet_data = pd.read_excel(workbook_path, sheet)
+        for row in range(len(sheet_data)):
+            row_data = sheet_data.iloc[row]
+            reg_dict[row_data['Name']] = Register(
+                address=int(row_data['Hex Address'], 16),
+                default=int(row_data['Default Value'], 16),
+                bit_width=int(row_data['Bit Width']),
+                bit_index_high=(None if row_data['Bit Index (High)'] == 'None' else int(
+                    row_data['Bit Index (High)'])),  # Bit Index of None means the register takes up the whole endpoint
+                bit_index_low=(None if row_data['Bit Index (Low)'] == 'None' else int(row_data['Bit Index (Low)'])))
+        return reg_dict
 
 
-def registers_from_excel(sheet, workbook_path=None):
-    """Return a dictionary of Registers from an page in an Excel spreadsheet."""
+class Endpoint:
+    endpoints_from_defines = dict()
 
-    if workbook_path == None:
-        workbook_path = os.getcwd()
-        # The Registers spreadsheet is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-        for i in range(15):
-            if os.path.basename(workbook_path) == 'covg_fpga':
-                workbook_path = os.path.join(workbook_path, 'Registers.xlsx')
-                break
+    def __init__(self, address, bit, bit_width, gen_bit, gen_address):
+        self.address = address
+        self.bit = bit
+        self.bit_index_low = bit
+        self.bit_index_high = bit + bit_width
+        self.bit_width = bit_width
+        self.gen_bit = gen_bit
+        self.gen_address = gen_address
+
+    @classmethod
+    def update_endpoints_from_defines(cls, ep_defines_path='../../fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ep_defines.v'):
+        """Store and return a dictionary of Endpoints for each chip in ep_defines.v."""
+        
+        # Get all lines
+        with open(ep_defines_path, 'r') as file:
+            lines = file.readlines()
+
+        # Get all the parameters from the lines
+        for line in lines:
+            # Check if the line defines a parameter
+            print(line) # DEBUG
+            pieces = line.split(' ')
+            # Ex. line = "`define AD7961_PIPE_OUT_GEN_ADDR 8'hA1 // address=TEST_ADDRESS bit_width=32"
+            #   pieces = ["`define", "AD7961_PIPE_OUT_GEN_ADDR", "8'hA1", "//", "address=TEST_ADDRESS", "bit_width=32"]
+            if pieces[0] != '`define':
+                # Line does not define a parameter, skip
+                continue
+            
+            # Extract data from definition
+            # Class name
+            class_name_end = pieces.find('_')
+            if class_name_end == -1:
+                # .find() returns -1 if not found, without an underscore we cannot
+                # tell where the class and parameter names are separated
+                print('FAIL: no parameter name found')
+                print(line)
+                continue
+            class_name = pieces[1][:class_name_end]
+
+            # Whether to generate bits
+            remaining_name = pieces[1][class_name_end + 1:]
+            previous_len = len(remaining_name)
+            remaining_name = remaining_name.replace('_GEN_BIT', '')
+            # If the remaining name is shorter it is because GEN_BIT was replaced
+            gen_bit = len(remaining_name) < previous_len
+
+            # Whether to generate address
+            previous_len = len(remaining_name)
+            remaining_name = remaining_name.replace('_GEN_ADDR', '')
+            # If the remaining name is shorter it is because GEN_ADDR was replaced
+            gen_address = len(remaining_name) < previous_len
+
+            # Parameter name
+            param_name = remaining_name
+
+            # Address, bit, and bit_widt
+            if "8'h" in pieces[2]:
+                # Parameter holds an address, take that value
+                address = int(pieces[2][3:], base=16)
+                bit = 0
+                bit_width = int(pieces[4])
             else:
-                # If we aren't in covg_fpga, move up a folder and check again
-                workbook_path = os.path.dirname(workbook_path)
+                # Parameter holds a bit, take address from comment
+                comment_address = pieces[4].split('=')[1]
+                if "8'h" in comment_address:
+                    # Address comment has a hex value
+                    address = int(comment_address[3:], 16)
+                else:
+                    # Address comment has the name of another parameter so store
+                    # the interfaces.py name of that parameter so we can look it
+                    # up going through all lines
+                    address_name = pieces[4].split('=')[1]
+                    address_name_no_class = address_name.split('_', maxsplit=1)[1]
+                    address_name_no_gen = address_name_no_class.split('_GEN', max_split=1)[0]
+                    address = address_name_no_gen
+                bit = int(pieces[2])
+                bit_width = int(pieces[5].split('=')[1])
 
-    reg_dict = {}
-    sheet_data = pd.read_excel(workbook_path, sheet)
-    for row in range(len(sheet_data)):
-        row_data = sheet_data.iloc[row]
-        reg_dict[row_data['Name']] = Register(
-            address=int(row_data['Hex Address'], 16),
-            default=int(row_data['Default Value'], 16),
-            bit_width=int(row_data['Bit Width']),
-            bit_index_high=(None if row_data['Bit Index (High)'] == 'None' else int(
-                row_data['Bit Index (High)'])),  # Bit Index of None means the register takes up the whole endpoint
-            bit_index_low=(None if row_data['Bit Index (Low)'] == 'None' else int(row_data['Bit Index (Low)'])))
-    return reg_dict
+            endpoint = Endpoint(address, bit, bit_width, gen_bit, gen_address)
 
+            # Put defined endpoint in endpoints_from_defines dictionary
+            if Endpoint.endpoints_from_defines.get(class_name) is None:
+                # Class doesn't exist yet in the dictionary
+                Endpoint.endpoints_from_defines[class_name] = {param_name: endpoint}
+            else:
+                # Class already exists in the dictionary
+                Endpoint.endpoints_from_defines[class_name][param_name] = endpoint
 
-Endpoint = namedtuple(
-    'Endpoint', 'address, bit_index_high, bit_index_low, bit_width')
+        # Go through endpoints_from_defines and find hex addresses for those with endpoint 
+        # name references instead
+        # TODO
 
+        return Endpoint.endpoints_from_defines
 
-def endpoints_from_defines(chip_name, ep_defines_path):
-    """Return a dictionary of Endpoints for a chip in ep_defines.v."""
-    pass
+    @classmethod
+    def get_chip_endpoints(chip_name):
+        if Endpoint.endpoints_from_defines == dict():
+            Endpoint.update_endpoints_from_defines()
+        return Endpoint.endpoints_from_defines.get(chip_name)
+
 
 # Class for the FPGA itself. Handles FPGA configuration, setting wire values, and other FPGA specific functions.
 
@@ -264,7 +366,7 @@ class I2CController:
     )
 
     # Add the registers from the Excel file to the parameters
-    reg_dict = registers_from_excel('I2C_QW')  # TODO: put back to I2C
+    reg_dict = Register.get_chip_registers('I2C')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     def __init__(self, fpga,  # TODO: pass in worksheet name ?
@@ -467,7 +569,7 @@ class TCA9555(I2CController):
     ))
 
     # Add the registers from the Excel file to the parameters
-    reg_dict = registers_from_excel('TCA9555')
+    reg_dict = Register.get_chip_registers('TCA9555')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     def __init__(self, fpga, addr_pins, parameters=DEFAULT_PARAMETERS):
@@ -519,7 +621,7 @@ class UID_24AA025UID(I2CController):
     DEFAULT_PARAMETERS.update(dict(
         ADDRESS_HEADER=0b10100000
     ))
-    reg_dict = registers_from_excel('24AA025UID')
+    reg_dict = Register.get_chip_registers('24AA025UID')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     # TODO - need a way to pass in an I2C controller excel worksheet
@@ -596,7 +698,7 @@ class UID_24AA025UID(I2CController):
 
 class DAC53401(I2CController):
     DEFAULT_PARAMETERS = dict(I2CController.DEFAULT_PARAMETERS)
-    reg_dict = registers_from_excel('DAC53401')
+    reg_dict = Register.get_chip_registers('DAC53401')
     DEFAULT_PARAMETERS.update(reg_dict)
     DEFAULT_PARAMETERS['ADDRESS_HEADER'] = 0b10010000
 
@@ -826,15 +928,15 @@ class SPIController:
     )
 
     # Add the registers from the Excel file to the parameters
-    reg_dict = registers_from_excel('SPI')
+    reg_dict = Register.get_chip_registers('SPI')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     WB_1_PARAMETERS = dict(DEFAULT_PARAMETERS)
-    reg_dict_WB_1 = registers_from_excel('SPI_WB_1')
+    reg_dict_WB_1 = Register.get_chip_registers('SPI_WB_1')
     WB_1_PARAMETERS.update(reg_dict_WB_1)
 
     WB_2_PARAMETERS = dict(DEFAULT_PARAMETERS)
-    reg_dict_WB_2 = registers_from_excel('SPI_WB_2')
+    reg_dict_WB_2 = Register.get_chip_registers('SPI_WB_2')
     WB_2_PARAMETERS.update(reg_dict_WB_2)
 
     def __init__(self, fpga, master_config=DEFAULT_PARAMETERS.get('CTRL').default, parameters=DEFAULT_PARAMETERS, debug=False):
@@ -1011,8 +1113,8 @@ class DAC80508(SPIController):
     ))
 
     # Get registers from spreadsheet
-    reg_dict = registers_from_excel('DAC80508')
-    config_dict = registers_from_excel('DAC80508_CONFIG')
+    reg_dict = Register.get_chip_registers('DAC80508')
+    config_dict = Register.get_chip_registers('DAC80508_CONFIG')
     DEFAULT_PARAMETERS.update(reg_dict)
     DEFAULT_PARAMETERS.update(dict(CONFIG_DICT=config_dict))
 
@@ -1151,7 +1253,7 @@ class DAC80508(SPIController):
 
 class AD5453(SPIController):
     DEFAULT_PARAMETERS = dict(SPIController.DEFAULT_PARAMETERS)
-    DEFAULT_PARAMETERS.update(registers_from_excel('AD5453'))
+    DEFAULT_PARAMETERS.update(Register.get_chip_registers('AD5453'))
     DEFAULT_PARAMETERS.update(dict(
         bits=12,
         vref=2.5*2
@@ -1187,7 +1289,7 @@ class AD5453(SPIController):
 
 class ADS7952(SPIController):
     DEFAULT_PARAMETERS = dict(SPIController.DEFAULT_PARAMETERS)
-    DEFAULT_PARAMETERS.update(registers_from_excel('ADS7952'))
+    DEFAULT_PARAMETERS.update(Register.get_chip_registers('ADS7952'))
 
     def __init__(self, fpga, master_config=0x3010, parameters=DEFAULT_PARAMETERS, debug=False):
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
@@ -1245,7 +1347,7 @@ class ADS7952(SPIController):
 # Class for the ADS8686 ADC chip.
 class ADS8686(SPIController):
     DEFAULT_PARAMETERS = dict(SPIController.DEFAULT_PARAMETERS)
-    DEFAULT_PARAMETERS.update(registers_from_excel('ADS8686'))
+    DEFAULT_PARAMETERS.update(Register.get_chip_registers('ADS8686'))
 
     def __init__(self, fpga, master_config=0x3010, parameters=DEFAULT_PARAMETERS, debug=False):
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
@@ -1280,7 +1382,7 @@ class AD7961:
         'chan': 0
     }
     # the AD7961 does not have internal registers -- just OK endpoints
-    DEFAULT_PARAMETERS.update(registers_from_excel('AD7961'))
+    DEFAULT_PARAMETERS.update(Register.get_chip_registers('AD7961'))
 
     # TODO: update -> read-in eps
     # EPS = endpoints_from_defines(
