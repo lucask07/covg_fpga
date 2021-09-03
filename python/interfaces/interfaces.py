@@ -185,6 +185,18 @@ class Endpoint:
             Endpoint.update_endpoints_from_defines()
         return Endpoint.endpoints_from_defines.get(chip_name)
 
+    
+    @classmethod
+    def increment_endpoints(cls, endpoints_dict):
+        for key in endpoints_dict:
+            endpoint = endpoints_dict[key]
+            if endpoint.gen_bit:
+                endpoint.bit += endpoint.bit_width
+                endpoint.bit_index_low = endpoint.bit
+                endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
+            if endpoint.gen_address:
+                endpoint.address += 1
+
 
 # Class for the FPGA itself. Handles FPGA configuration, setting wire values, and other FPGA specific functions.
 
@@ -382,10 +394,12 @@ class I2CController:
 
     I2C_MAX_TIMEOUT_MS = 50
 
-    def __init__(self, fpga, endpoints, i2c={'m_pBuf': [], 'm_nDataStart': 7}):
+    def __init__(self, fpga, endpoints, i2c={'m_pBuf': [], 'm_nDataStart': 7}, increment=False):
         self.i2c = i2c
         self.fpga = fpga
         self.endpoints = endpoints
+        if increment:
+            Endpoint.increment_endpoints(endpoints)
 
     # STARTS - Defines the preamble bytes after which a start bit is
     #      transmitted. For example, if STARTS=0x04, a start bit is
@@ -924,10 +938,12 @@ class SPIController:
 
     registers = Register.get_chip_registers('SPI')
 
-    def __init__(self, fpga, endpoints, master_config=registers.get('CTRL').default):
+    def __init__(self, fpga, endpoints, master_config=registers.get('CTRL').default, increment=True):
         self.fpga = fpga
         self.master_config = master_config
         self.endpoints = endpoints
+        if increment:
+            Endpoint.increment_endpoints(endpoints)
 
     # Method to send a command to the Wishbone. Sent in 32 bits through the WbSignal_converter Verilog module to reformat to 34 bits.
     def wb_send_cmd(self, command):
@@ -1339,7 +1355,7 @@ class AD7961:
     # EPS = endpoints_from_defines(
     #    chip_name='AD7961', ep_defines_path=EP_DEFINES_PATH)
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('AD7961'), chan=0):
+    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('AD7961'), chan=0, increment=True):
         self.fpga = fpga
         self.endpoints = endpoints
         self.chan = chan  # starts at 0
@@ -1352,6 +1368,8 @@ class AD7961:
         #             'TI40_ADC_FIFO_RST': 4,
         #             'WI02_A_EN0': 1,
         #             'WI02_A_EN': 15}
+        if increment:
+            Endpoint.increment_endpoints(endpoints)
 
     def get_status(self):
         """ Get AD796x status:
