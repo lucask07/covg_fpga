@@ -67,7 +67,7 @@ class Endpoint:
         self.gen_address = gen_address
 
     @classmethod
-    def update_endpoints_from_defines(cls, ep_defines_path='../../fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ep_defines.v'):
+    def update_endpoints_from_defines(cls, ep_defines_path=os.path.join(os.getcwd(), '..', 'fpga_XEM7310', 'fpga_XEM7310.srcs', 'sources_1', 'ep_defines.v')):
         """Store and return a dictionary of Endpoints for each chip in ep_defines.v."""
         
         # Get all lines
@@ -77,7 +77,6 @@ class Endpoint:
         # Get all the parameters from the lines
         for line in lines:
             # Check if the line defines a parameter
-            print(line) # DEBUG
             pieces = line.split(' ')
             # Ex. line = "`define AD7961_PIPE_OUT_GEN_ADDR 8'hA1 // address=TEST_ADDRESS bit_width=32"
             #   pieces = ["`define", "AD7961_PIPE_OUT_GEN_ADDR", "8'hA1", "//", "address=TEST_ADDRESS", "bit_width=32"]
@@ -87,7 +86,7 @@ class Endpoint:
             
             # Extract data from definition
             # Class name
-            class_name_end = pieces.find('_')
+            class_name_end = pieces[1].find('_')
             if class_name_end == -1:
                 # .find() returns -1 if not found, without an underscore we cannot
                 # tell where the class and parameter names are separated
@@ -111,26 +110,29 @@ class Endpoint:
 
             # Parameter name
             param_name = remaining_name
+            if param_name == 'NUM_OUTGOING_EPS':
+                # This parameter is not an endpoint and does not match the
+                # format of the others so we skip it
+                continue
 
             # Address, bit, and bit_widt
             if "8'h" in pieces[2]:
                 # Parameter holds an address, take that value
                 address = int(pieces[2][3:], base=16)
                 bit = 0
-                bit_width = int(pieces[4])
+                bit_width = int(pieces[4].split('=')[1])
             else:
                 # Parameter holds a bit, take address from comment
                 comment_address = pieces[4].split('=')[1]
-                if "8'h" in comment_address:
+                if '0x' in comment_address:
                     # Address comment has a hex value
-                    address = int(comment_address[3:], 16)
+                    address = int(comment_address[2:], 16)
                 else:
                     # Address comment has the name of another parameter so store
                     # the interfaces.py name of that parameter so we can look it
                     # up going through all lines
                     address_name = pieces[4].split('=')[1]
-                    address_name_no_class = address_name.split('_', maxsplit=1)[1]
-                    address_name_no_gen = address_name_no_class.split('_GEN', max_split=1)[0]
+                    address_name_no_gen = address_name.split('_GEN', maxsplit=1)[0]
                     address = address_name_no_gen
                 bit = int(pieces[2])
                 bit_width = int(pieces[5].split('=')[1])
@@ -147,12 +149,26 @@ class Endpoint:
 
         # Go through endpoints_from_defines and find hex addresses for those with endpoint 
         # name references instead
-        # TODO
+        for group_name in Endpoint.endpoints_from_defines:
+            group = Endpoint.endpoints_from_defines[group_name]
+            for endpoint_name in group:
+                endpoint = group[endpoint_name]
+                if type(endpoint.address) == str:
+                    # Address is a name
+                    class_name, ep_name = endpoint.address.split('_', maxsplit=1)
+                    referenced_group = Endpoint.endpoints_from_defines.get(class_name)
+                    if referenced_group is None:
+                        print(f'{group_name}[{endpoint_name}]: Referenced group "{class_name}" not found.')
+                        continue
+                    endpoint.address = referenced_group.get(ep_name).address
+                    if endpoint.address is None:
+                        print(f'{group_name}[{endpoint_name}]: Referenced address "{"_".join((class_name, ep_name))}" not found.')
+                        continue
 
         return Endpoint.endpoints_from_defines
 
     @classmethod
-    def get_chip_endpoints(chip_name):
+    def get_chip_endpoints(cls, chip_name):
         if Endpoint.endpoints_from_defines == dict():
             Endpoint.update_endpoints_from_defines()
         return Endpoint.endpoints_from_defines.get(chip_name)
