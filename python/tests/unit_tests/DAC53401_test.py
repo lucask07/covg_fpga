@@ -36,11 +36,11 @@ i2c_bitfile = os.path.join(interfaces_path, 'i2c.bit')
 def dut():
     # global top_level_module_bitfile
     global i2c_bitfile
-    from interfaces.interfaces import FPGA, DAC53401
+    from interfaces.interfaces import FPGA, DAC53401, Endpoint
     # f = FPGA(bitfile=top_level_module_bitfile)
     f = FPGA(bitfile=i2c_bitfile)
     assert f.init_device()
-    yield DAC53401(fpga=f, addr_pins=0b000)
+    yield DAC53401(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2C-DC'), addr_pins=0b000)
     # Teardown
     f.xem.Close()
 
@@ -137,7 +137,7 @@ def test_config_margins(dut, margin_high, margin_low):
 
 @pytest.mark.parametrize('step', [x for x in range(0b1000)])
 def test_config_step(dut, step):
-    dut.config_step(dut, step)
+    dut.config_step(step)
 
 
 @pytest.mark.parametrize('rate', [x for x in range(0b1_0000)])
