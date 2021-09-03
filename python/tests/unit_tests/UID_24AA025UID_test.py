@@ -36,11 +36,11 @@ i2c_bitfile = os.path.join(interfaces_path, 'i2c.bit')
 def dut():
     # global top_level_module_bitfile
     global i2c_bitfile
-    from interfaces.interfaces import FPGA, UID_24AA025UID
+    from interfaces.interfaces import FPGA, UID_24AA025UID, Endpoint
     # f = FPGA(bitfile=top_level_module_bitfile)
     f = FPGA(bitfile=i2c_bitfile)
     assert f.init_device()
-    yield UID_24AA025UID(fpga=f, addr_pins=0b000)
+    yield UID_24AA025UID(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2C-DC'), addr_pins=0b000)
     # Teardown
     f.xem.Close()
 
