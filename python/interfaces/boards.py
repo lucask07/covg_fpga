@@ -132,7 +132,7 @@ class Clamp:
                         P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None,
                         gain=None, FDBK=None, mode=None, EN_ipump=None,
                         RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000):
-        config_params = registers_from_excel('clamp_configuration')
+        config_params = Register.get_chip_registers('clamp_configuration')
         """Configures the board using the I/O Expanders."""
 
         #Dictonaries
