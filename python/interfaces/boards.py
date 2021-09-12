@@ -440,7 +440,7 @@ class Daq:
             """ turn a single power supply on
                 input:  name is a string. options are 15V, 3V3, 1V8, 5V, N15V
             """
-            if name in self.SUPPLY_NAMES:
+            if name in self.parameters['SUPPLY_NAMES']:
                 self.fpga.set_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
                                        self.parameters['WI02_{}_EN'.format(name)])
             else:
@@ -450,7 +450,7 @@ class Daq:
             """ turn a single power supply on
                 input:  name is a string. options are 15V, 3V3, 1V8, 5V, N15V
             """
-            if name in self.SUPPLY_NAMES:
+            if name in self.parameters['SUPPLY_NAMES']:
                 return self.fpga.clear_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
                                                 self.parameters['WI02_{}_EN'.format(name)])
             else:
@@ -494,7 +494,7 @@ class Daq:
             # create multi-bit mask
             mask = 0
             for name in self.parameters['SUPPLY_NAMES']:
-                mask = mask | (1 << self.parameters[name])
+                mask = mask | (1 << self.parameters['WI02_{}_EN'.format(name)])
 
             value = 0
             self.fpga.set_wire(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
