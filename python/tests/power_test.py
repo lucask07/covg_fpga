@@ -69,19 +69,12 @@ for ch in range(1, 4):
 
 
 def log_dc_pwr(dc_pwr, data, desc='none'):
-
+    """ measure current from each 3 PWR supply channels and
+        update into dictionary with timestamp (ms)
+    """
     for ch in range(1, 4):
         data['ch{}'.format(ch)]['val'] = np.append(data['ch{}'.format(ch)]['val'],
                                         dc_pwr.get('meas_i', configs={'chan': ch}))
-        data['ch{}'.format(ch)]['timestamp'] = np.append(data['ch{}'.format(ch)]['timestamp'], get_timestamp())
-        data['ch{}'.format(ch)]['description'].append(desc)
-
-
-def log_dc_pwr_tester(dc_pwr, data, desc='none'):
-
-    for ch in range(1, 4):
-        data['ch{}'.format(ch)]['val'] = np.append(data['ch{}'.format(ch)]['val'],
-                                        1.1342+ch)
         data['ch{}'.format(ch)]['timestamp'] = np.append(data['ch{}'.format(ch)]['timestamp'], get_timestamp())
         data['ch{}'.format(ch)]['description'].append(desc)
 

@@ -34,10 +34,11 @@ STOP = 0
 @pytest.fixture(scope='module')
 def i2c_controller():
     global i2c_test_bitfile
-    from interfaces.interfaces import FPGA, I2CController
+    test_endpoints = {}
+    from interfaces.interfaces import FPGA, I2CController, Endpoint
     f = FPGA(bitfile=i2c_test_bitfile)
     assert f.init_device()
-    yield I2CController(f)
+    yield I2CController(fpga=f, endpoints=test_endpoints)
     # Teardown
     f.xem.Close()
 

@@ -37,11 +37,11 @@ from interfaces.utils import int_to_list
 def dut():
     # global top_level_module_bitfile
     global i2c_bitfile
-    from interfaces.interfaces import FPGA, TCA9555
+    from interfaces.interfaces import FPGA, TCA9555, Endpoint
     # f = FPGA(bitfile=top_level_module_bitfile)
     f = FPGA(bitfile=i2c_bitfile)
     assert f.init_device()
-    yield TCA9555(fpga=f, addr_pins=0b000)
+    yield TCA9555(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2C-DC'), addr_pins=0b000)
     # Teardown
     f.xem.Close()
 
@@ -56,9 +56,10 @@ def dut():
 def test_power_up_defaults(dut, register_name):
     # Only want to know if the chip is connected in this first test.
     # Note: this test will likely fail if run after using the chip
-    dev_addr = dut.parameters['ADDRESS_HEADER'] | (dut.addr_pins << 1) | 0b1
-    got = dut.i2c_read_long(dev_addr, [dut.parameters[register_name].address], 2)
-    expected = int_to_list(dut.parameters[register_name].default)
+    from interfaces.interfaces import TCA9555
+    dev_addr = TCA9555.ADDRESS_HEADER | (dut.addr_pins << 1) | 0b1
+    got = dut.i2c_read_long(dev_addr, [TCA9555.registers[register_name].address], 2)
+    expected = int_to_list(TCA9555.registers[register_name].default)
     if len(expected) == 1:
         # Data was only 1 byte, read will return a list of 2 bytes
         expected.append(0)
