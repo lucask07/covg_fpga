@@ -239,11 +239,11 @@ class FPGA:
 
     def set_wire_bit(self, address, bit):
         """ set to 1 a single bit in a OpalKelly wire in """
-        return self.xem.set_wire(address, value=1 << bit, mask=1 << bit)
+        return self.set_wire(address, value=1 << bit, mask=1 << bit)
 
     def clear_wire_bit(self, address, bit):
         """ set to 0 a single bit in a OpalKelly wire in """
-        return self.xem.set_wire(address, value=0, mask=1 << bit)
+        return self.set_wire(address, value=0, mask=1 << bit)
 
 
 # Class for controllers on the FPGA using I2C protocol. Handles configuration, reading, writing, and reset.
@@ -468,7 +468,7 @@ class TCA9555(I2CController):
     ))
 
     # Add the registers from the Excel file to the parameters
-    reg_dict = registers_from_excel('TCA9555')
+    reg_dict = registers_from_excel('IOExpander')
     DEFAULT_PARAMETERS.update(reg_dict)
 
     def __init__(self, fpga, addr_pins, parameters=DEFAULT_PARAMETERS):
@@ -1254,6 +1254,13 @@ class ADS8686(SPIController):
                          parameters=parameters, debug=debug)
         self.channel = 0
 
+"""
+# Configuring the SPI controller
+creg_set = 0x3710 # Char length of 16. Samples Tx/Rx on NEG edge; sets ASS, IE
+clk_div = 0x12 # 200 MHz / 0x12 / 2 = 5.555 MHz  ==> 2.88 us for 16 SPI clocks
+ss = 0x1 # sets the active ss line by setting the LSB of a SPI command to 1 during configuration
+"""
+
     # Method to read a desired channel on the chip
     def read_channel(self, channel):
         pass  # TODO: write method
@@ -1299,7 +1306,8 @@ class AD7961:
                     'TI40_ADC_RST': 19,
                     'TI40_ADC_FIFO_RST': 4,
                     'WI02_A_EN0': 1,
-                    'WI02_A_EN': 15}
+                    'WI02_A_EN': 15,
+                    'WI02_A_EN_LEN': 3}
 
     def get_status(self):
         """ Get AD796x status:
