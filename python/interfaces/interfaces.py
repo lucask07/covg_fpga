@@ -116,10 +116,15 @@ class Endpoint:
         self.gen_bit = gen_bit
         self.gen_address = gen_address
 
+    def __str__(self):
+        str_rep = 'Endpoint at address 0x{:0x}, bit {} [high {} to low {}]'.format(
+            self.address, self.bit, self.bit_index_high, self.bit_index_low)
+        return str_rep
+
     @classmethod
     def update_endpoints_from_defines(cls, ep_defines_path=None):
         """Store and return a dictionary of Endpoints for each chip in ep_defines.v."""
-        
+
         # Find ep_defines.v path
         if ep_defines_path == None:
             ep_defines_path = os.getcwd()
@@ -145,7 +150,7 @@ class Endpoint:
             if pieces[0] != '`define':
                 # Line does not define an endpoint, skip
                 continue
-            
+
             # Extract data from definition
             # Class name
             class_name_end = pieces[1].find('_')
@@ -209,7 +214,7 @@ class Endpoint:
                 # Class already exists in the dictionary
                 Endpoint.endpoints_from_defines[class_name][ep_name] = endpoint
 
-        # Go through endpoints_from_defines and find hex addresses for those with endpoint 
+        # Go through endpoints_from_defines and find hex addresses for those with endpoint
         # name references instead
         for group_name in Endpoint.endpoints_from_defines:
             group = Endpoint.endpoints_from_defines[group_name]
@@ -237,7 +242,7 @@ class Endpoint:
             Endpoint.update_endpoints_from_defines()
         return Endpoint.endpoints_from_defines.get(chip_name)
 
-    
+
     @classmethod
     def increment_endpoints(cls, endpoints_dict):
         """Increment all Endpoints in endpoints_dict.
@@ -1618,7 +1623,7 @@ class DAC80508(SPIController):
 
 
 class AD5453(SPIController):
-    
+
     registers = Register.get_chip_registers('AD5453')
     bits=12,
     vref=2.5*2
@@ -1760,7 +1765,7 @@ class AD7961:
         """
         status = self.get_fifo_status()
         # a = self.fpga.read_wire(self.eps['ADC_PLL_LOCKED_STATUS_WIRE_OUT'])
-        a = self.fpga.read_wire(self.endpoints['AD7961_PLL_LOCKED'])
+        a = self.fpga.read_wire(self.endpoints['AD7961_PLL_LOCKED'].address)
         pll_lock = test_bit(a, 0)  # TODO: parameters
         status['pll_lock'] = pll_lock
         for k in status:
@@ -1835,7 +1840,7 @@ class AD7961:
         # will always set the EN0 specific to this channel
         # optionally also modify the global enables (all channels)
         # mask = gen_mask(self.eps['WI02_A_EN0'] + self.chan)
-        mask = gen_mask(self.endpoints['AD7961_ENABLE'] + self.chan)
+        mask = gen_mask(self.endpoints['AD7961_ENABLE'].bit + self.chan)
         if global_enables:
             # global enables (connect to all AD7961); create a list of bit position
             # gl_mask = [x+self.eps['WI02_A_EN']

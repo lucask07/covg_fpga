@@ -10,6 +10,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 from interfaces.interfaces import *
+from interfaces.interfaces import Endpoint
 from interfaces.utils import reverse_bits
 
 
@@ -430,17 +431,23 @@ class Daq:
             PWR_REG_ADC_EN_WIRE_IN_ADDR=0x02,
             SUPPLY_NAMES=['1V8', '5V', '3V3', '15V', 'N15V']
             )
+        endpoints = Endpoint.get_chip_endpoints('GP')
 
-        def __init__(self, fpga, parameters=DEFAULT_PARAMETERS, debug=False):
+        # def __init__(self, fpga, endpoints,
+        #              parameters=DEFAULT_PARAMETERS, debug=False):
+        def __init__(self, fpga,
+                     parameters=DEFAULT_PARAMETERS, debug=False):
+
             self.fpga = fpga
             self.parameters = parameters
+            #self.endpoints = endpoints
             self.debug = debug  # TODO: Turning on debug will show more output
 
         def supply_on(self, name):
             """ turn a single power supply on
                 input:  name is a string. options are 15V, 3V3, 1V8, 5V, N15V
             """
-            if name in self.SUPPLY_NAMES:
+            if name in self.parameters['SUPPLY_NAMES']:
                 self.fpga.set_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
                                        self.parameters['WI02_{}_EN'.format(name)])
             else:
@@ -450,7 +457,7 @@ class Daq:
             """ turn a single power supply on
                 input:  name is a string. options are 15V, 3V3, 1V8, 5V, N15V
             """
-            if name in self.SUPPLY_NAMES:
+            if name in self.parameters['SUPPLY_NAMES']:
                 return self.fpga.clear_wire_bit(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
                                                 self.parameters['WI02_{}_EN'.format(name)])
             else:
@@ -494,7 +501,7 @@ class Daq:
             # create multi-bit mask
             mask = 0
             for name in self.parameters['SUPPLY_NAMES']:
-                mask = mask | (1 << self.parameters[name])
+                mask = mask | (1 << self.parameters['WI02_{}_EN'.format(name)])
 
             value = 0
             self.fpga.set_wire(self.parameters['PWR_REG_ADC_EN_WIRE_IN_ADDR'],
