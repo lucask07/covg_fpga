@@ -50,7 +50,7 @@
 `define I2C-DAQ_WIRE_IN 8'h10 // bit_width=16
 `define I2C-DAQ_IN_GEN_BIT 0 // address=I2C-DAQ_WIRE_IN bit_width=16
 
-`define ADS8686_WIRE_OUT 8'h24 // bit_width=32
+`define ADS8686_OUT 8'h24 // bit_width=32
 `define I2C-DC_WIRE_OUT 8'h25 // bit_width=8
 `define I2C-DC_OUT_GEN_BIT 0 // address=I2C-DC_WIRE_OUT bit_width=8
 `define I2C-DAQ_WIRE_OUT 8'h26 // bit_width=8
