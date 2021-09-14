@@ -35,28 +35,26 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, TCA9555
+from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, TCA9555, Endpoint
 from interfaces.boards import Daq  # TODO: should I instantiate the Daq board or just pieces from it?
                               # TODO: for now, pieces, eventually the DAQ board
-
-
-#logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'DAC80508_test.log'), filemode='w',
-#                    encoding='utf-8', level=logging.INFO)
-
-logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.log'), filemode='w',
-                    level=logging.INFO)
 
 
 def get_timestamp():
     return int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
 
+logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.log'), filemode='w',
+                    level=logging.INFO)
+
+eps = Endpoint.endpoints_from_defines
 
 ADS_EN = False
 AD7961_EN = False
 
 # set up DC power supply
 # name within the configuration file (config.yaml)
-dc_pwr = open_by_name(name='rigol_ps2')
+dc_pwr = open_by_name(name='rigol_pwr1')  # 7V in
+dc_pwr2 = open_by_name(name='rigol_ps2') # +/-16.5V
 
 current_meas = {}
 for ch in range(1, 4):
@@ -68,47 +66,64 @@ for ch in range(1, 4):
     current_meas['ch{}'.format(ch)]['description'] = []
 
 
-def log_dc_pwr(dc_pwr, data, desc='none'):
-    """ measure current from each 3 PWR supply channels and
+def log_dc_pwr(dc_pwr, dc_pwr2, data, desc='none'):
+    """ measure current from CH1 and  CH1,CH2 of two PWR supplies channels and
         update into dictionary with timestamp (ms)
     """
-    for ch in range(1, 4):
+    for ch in [1]:
         data['ch{}'.format(ch)]['val'] = np.append(data['ch{}'.format(ch)]['val'],
                                         dc_pwr.get('meas_i', configs={'chan': ch}))
+        data['ch{}'.format(ch)]['timestamp'] = np.append(data['ch{}'.format(ch)]['timestamp'], get_timestamp())
+        data['ch{}'.format(ch)]['description'].append(desc)
+    # second supply
+    for ch in [1,2]:
+        data['ch{}'.format(ch)]['val'] = np.append(data['ch{}'.format(ch)]['val'],
+                                        dc_pwr2.get('meas_i', configs={'chan': ch}))
         data['ch{}'.format(ch)]['timestamp'] = np.append(data['ch{}'.format(ch)]['timestamp'], get_timestamp())
         data['ch{}'.format(ch)]['description'].append(desc)
 
 
 def pwr_off():
-    dc_pwr.set('out_state', 'OFF', configs={'chan': 1})
+    for ch in [1, 2, 3]:
+        dc_pwr.set('out_state', 'OFF', configs={'chan': ch})
+    for ch in [1, 2, 3]:
+        dc_pwr2.set('out_state', 'OFF', configs={'chan': ch})
 
 
 atexit.register(pwr_off)
 
-# setup channel 1
-dc_pwr.set('out_state', 'OFF', configs={'chan': 1})
+# pwr off all channels
+pwr_off()
 
-# Channel 1 setup
-dc_pwr.set('i', 1.3, configs={'chan': 1})
+# Channel 1 and 2 setup
+for ch in [1, 2]:
+    dc_pwr2.set('i', 0.2, configs={'chan': ch})
+    dc_pwr2.set('v', 16.5, configs={'chan': ch})
+    dc_pwr2.set('ovp', 16.7, configs={'chan': ch})
+    dc_pwr2.set('ocp', 0.225, configs={'chan': ch})
+
+# Channel 1 on supply1 for Vin
+dc_pwr.set('i', 0.55, configs={'chan': 1})
 dc_pwr.set('v', 7, configs={'chan': 1})
 dc_pwr.set('ovp', 7.2, configs={'chan': 1})
-dc_pwr.set('ocp', 1.5, configs={'chan': 1})
+dc_pwr.set('ocp', 0.75, configs={'chan': 1})
+
+# turn on the 7V in, but keep +/-16.6 down
 dc_pwr.set('out_state', 'ON', configs={'chan': 1})
 
-meas_i = dc_pwr.get('meas_i', configs={'chan': 1})
-meas_i_status.update({'startup_nobitfile': meas_i})
+log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_nobitfile')
 
 # Set up FPGA
 f = FPGA(bitfile=os.path.join(covg_fpga_path, 'fpga_XEM7310',
                               'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit'))
 f.init_device()
 time.sleep(2)
-meas_i = dc_pwr.get('meas_i', configs={'chan': 1})
-meas_i_status.update({'startup_bitfile': meas_i})
+
+log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_bitfile')
 
 # reset FPGA using trigger in
-TI40_RST = 1
-f.xem.ActivateTriggerIn(0x40, TI40_RST)
+f.xem.ActivateTriggerIn(eps['GP']['SYSTEM_RESET'].address,
+                        eps['GP']['SYSTEM_RESET'].bit)
 
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
@@ -118,11 +133,30 @@ ad7961s = []
 for i in range(AD7961_CHANS):
     ad7961s.append(AD7961(f, chan=i))
 
-for i in range(AD7961_CHANS):
-    ad7961s[i].power_down_all()
+if 0:
+    for i in range(AD7961_CHANS):
+        ad7961s[i].power_down_all()
 
+
+# TODO wrpt endpoints stuff:
+"""
+1) AD7961 global enables are wrong ['GP']['ENABLE']
+2) I2C wireout isn't long enough?
+3) get rid of increment -- might just want daughtercard 3
+4) are the multiple SPI controllers setup with endpoints correctly?
+5) when is endpoints intended to be read?
+"""
+
+# TODO -- this needs to be incremented by one, need to instantiate a second device?
 # Instantiate ID chip
-uid = UID_24AA025UID(fpga=f, addr_pins=0b000)
+uid1 = UID_24AA025UID(fpga=f,
+                     endpoints=Endpoint.get_chip_endpoints('I2C-DAQ'),
+                     addr_pins=0b000)
+
+# uid2 = UID_24AA025UID(fpga=f,
+#                      endpoints=Endpoint.get_chip_endpoints('I2C-DAQ'),
+#                      addr_pins=0b000, increment=True)
+
 #  TODO: wirein and wireout bit indices are not at 0
 #  TODO: input the name of the excel worksheet
 
@@ -134,19 +168,19 @@ f.clear_wire_bit(0x02, WI02_ADS_RESETB)
 # power supply turn on and check current
 for name in ['1V8', '5V', '3V3']:
     pwr.supply_on(name)
-    meas_i = dc_pwr.get('meas_i', configs={'chan': 1})
-    meas_i_status.update({name: meas_i})
+    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='turnon_{}'.format(name))
     time.sleep(0.05)
 
 # +15 and -15V simultaneously
-pwr.all_on()
+# pwr.all_on()
+for ch in [1, 2]:
+    dc_pwr2.set('out_state', 'ON', configs={'chan': ch})
 time.sleep(0.05)
-meas_i = dc_pwr.get('meas_i', configs={'chan': 1})
-meas_i_status.update({'15V_N15V': meas_i})
+log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='turnon_15n15V')
 
 time.sleep(0.01)
 #  pwr.all_off()
-print(meas_i_status)
+print(current_meas)
 
 if 0:
     # UID
@@ -182,8 +216,7 @@ if 0:
     for i in range(WI02_IPUMP_EN_LEN):
         f.clear_wire_bit(0x02, WI02_IPUMP_EN + i)
 
-    meas_i = dc_pwr.get('meas_i', configs={'chan': 1})
-    meas_i_status.update({'IPUMP_DISABLE': meas_i})
+    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ipump_disable')
 
     # check amps for 14-bit DAC
 
@@ -221,25 +254,22 @@ if 0:
     io_1.configure_pins(0xffff)  # set all pins to outputs
     io_1.write(0x0000)  # set all pins to zero
 
-    meas_i = dc_pwr.get('meas_i', configs={'chan': 1})
-    meas_i_status.update({'io_expanders_0': meas_i})
+    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
 
     # enable one AD7961 and remeasure current
     if AD7961_EN:
         ad7961s[0].power_up_adc()
         time.sleep(0.05)
-        meas_i = dc_pwr.get('meas_i', configs={'chan': 1})
-        meas_i_status.update({'enable_ad7961': meas_i})
+        log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
         ad7961s[0].power_down_adc()
 
     # enable ADS868 and remeasure current
     if ADS_EN:
         f.set_wire_bit(0x02, WI02_ADS_RESETB)
         time.sleep(0.01)
-        meas_i = dc_pwr.get('meas_i', configs={'chan': 1})
-        meas_i_status.update({'enable_ads8686': meas_i})
+        log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ads_release_reset')
 
-    print(meas_i_status)
+    print(current_meas)
 
     # lower all I/O wires
     pwr.all_off()
@@ -247,10 +277,3 @@ if 0:
 # probe these signals with a multimeter:
 # 1) VCM_OUT from the AD7961
 # 2) EN to the AD7961
-
-
-def update_dict(upd):
-
-    upd.update({'three': 3, 'tree': 12})
-    upd['array'] = np.append(upd['array'], 1.112)
-    return 0

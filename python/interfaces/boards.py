@@ -10,6 +10,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 from interfaces.interfaces import *
+from interfaces.interfaces import Endpoint
 from interfaces.utils import reverse_bits
 
 
@@ -430,10 +431,16 @@ class Daq:
             PWR_REG_ADC_EN_WIRE_IN_ADDR=0x02,
             SUPPLY_NAMES=['1V8', '5V', '3V3', '15V', 'N15V']
             )
+        endpoints = Endpoint.get_chip_endpoints('GP')
 
-        def __init__(self, fpga, parameters=DEFAULT_PARAMETERS, debug=False):
+        # def __init__(self, fpga, endpoints,
+        #              parameters=DEFAULT_PARAMETERS, debug=False):
+        def __init__(self, fpga,
+                     parameters=DEFAULT_PARAMETERS, debug=False):
+
             self.fpga = fpga
             self.parameters = parameters
+            #self.endpoints = endpoints
             self.debug = debug  # TODO: Turning on debug will show more output
 
         def supply_on(self, name):
