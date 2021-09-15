@@ -35,7 +35,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, TCA9555, Endpoint
+from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, TCA9555, Endpoint, ADS8686, disp_device
 from interfaces.boards import Daq  # TODO: should I instantiate the Daq board or just pieces from it?
                               # TODO: for now, pieces, eventually the DAQ board
 
@@ -54,7 +54,7 @@ AD7961_EN = False
 # set up DC power supply
 # name within the configuration file (config.yaml)
 dc_pwr = open_by_name(name='rigol_pwr1')  # 7V in
-dc_pwr2 = open_by_name(name='rigol_ps2') # +/-16.5V
+dc_pwr2 = open_by_name(name='rigol_ps2')  # +/-16.5V
 
 current_meas = {}
 for ch in range(1, 4):
@@ -153,9 +153,14 @@ uid1 = UID_24AA025UID(fpga=f,
                      endpoints=Endpoint.get_chip_endpoints('I2C-DAQ'),
                      addr_pins=0b000)
 
-# uid2 = UID_24AA025UID(fpga=f,
-#                      endpoints=Endpoint.get_chip_endpoints('I2C-DAQ'),
-#                      addr_pins=0b000, increment=True)
+uid2 = UID_24AA025UID(fpga=f,
+                     endpoints=Endpoint.get_chip_endpoints('I2C-DAQ'),
+                     addr_pins=0b000, increment=True)
+
+
+uid_dc1 = UID_24AA025UID(fpga=f,
+                     endpoints=Endpoint.get_chip_endpoints('I2C-DC'),
+                     addr_pins=0b000)
 
 #  TODO: wirein and wireout bit indices are not at 0
 #  TODO: input the name of the excel worksheet

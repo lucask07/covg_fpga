@@ -45,15 +45,15 @@
 `define ADS8686_PIPE_OUT_GEN_ADDR 8'hA5 // bit_width=32
 `define ADS8686_WB_IN 8'h05 // bit_width=32
 `define DAC80508_WB_IN_GEN_ADDR 8'h06 // bit_width=32
-`define I2C-DC_WIRE_IN_GEN_ADDR 8'h08 // bit_width=32
+`define I2C-DC_WIRE_IN_GEN_ADDR 8'h08 // bit_width=16
 `define I2C-DC_IN_GEN_BIT 0 // address=I2C-DC_WIRE_IN_GEN_ADDR bit_width=16
-`define I2C-DAQ_WIRE_IN 8'h10 // bit_width=16
+`define I2C-DAQ_WIRE_IN_GEN_ADDR 8'h10 // bit_width=16
 `define I2C-DAQ_IN_GEN_BIT 0 // address=I2C-DAQ_WIRE_IN bit_width=16
 
-`define ADS8686_WIRE_OUT 8'h24 // bit_width=32
+`define ADS8686_OUT 8'h24 // bit_width=32
 `define I2C-DC_WIRE_OUT 8'h25 // bit_width=8
 `define I2C-DC_OUT_GEN_BIT 0 // address=I2C-DC_WIRE_OUT bit_width=8
-`define I2C-DAQ_WIRE_OUT 8'h26 // bit_width=8
+`define I2C-DAQ_WIRE_OUT_GEN_ADDR 8'h26 // bit_width=8
 `define I2C-DAQ_OUT_GEN_BIT 0 // address=I2C-DAQ_WIRE_OUT bit_width=8
 
 `define GP_UNCONNECTED_WIRE_IN 8'h00 // bit_width=32
@@ -95,7 +95,7 @@
 
 `define DDR3_BLOCK_PIPE_IN 8'h80 // bit_width=32
 `define DDR3_BLOCK_PIPE_OUT 8'ha6 // bit_width=32
-//`define DS_TRIG_OFFSET 32'h08 // bit 8 
+//`define DS_TRIG_OFFSET 32'h08 // bit 8
 
 //ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
 //ep40trig[1] will be used as the master reset for the rest of the design
@@ -107,14 +107,14 @@
 //ep40trig[7] is the reset for adc7961_3_fifo
 //ep40trig[8] will be used to trigger the Wishbone formatter/state machine for dac_0, telling the state machine that wi0 is valid
 //ep40trig[9] will be used to trigger the Wishbone formatter/state machine for dac_1, telling the state machine that wi0 is valid
-//ep40trig[10] reset the programmable clock divider for the ADS8686 spi 
-//ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode 
+//ep40trig[10] reset the programmable clock divider for the ADS8686 spi
+//ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode
 
 
 // trigger in at 0x40
 // `define TI40_ 0
 `define GP_SYSTEM_RESET 1 // address=GP_RST_VALID_TRIG_IN bit_width=1
-// `define TI40_ 2 // not used 
+// `define TI40_ 2 // not used
 `define AD7961_PLL_RESET 3 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD7961_FIFO_RESET_GEN_BIT 4 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD5453_REG_TRIG_GEN_BIT 8 // address=GP_RST_VALID_TRIG_IN bit_width=1
@@ -136,42 +136,40 @@
 `define I2C-DAQ_MEMWRITE_GEN_BIT 18 // address=I2C_TRIG_IN bit_width=1
 `define I2C-DAQ_MEMREAD_GEN_BIT 20 // address=I2C_TRIG_IN bit_width=1
 
-// wire in at 0x00 
+// wire in at 0x00
 
-// wire in at 0x01 
+// wire in at 0x01
 `define ADS8686_HOST_FPGA_BIT 0 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
-`define GP_UP_WIRE_IN 1 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
-`define GP_UP_WIRE_IN_LEN 6 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
-`define GP_DOWN_WIRE_IN 7 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
-`define GP_DOWN_WIRE_IN_LEN 6 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
-`define GP_GPIO_WIRE_IN 13 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
-`define GP_GPIO_WIRE_IN_LEN 6 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
-`define GP_LVDS_WIRE_IN 20 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
-`define GP_LVDS_WIRE_IN_LEN 4 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define GPIO_UP_WIRE_IN 1 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define GPIO_UP_WIRE_IN_LEN 6 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define GPIO_DOWN_WIRE_IN 7 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define GPIO_DOWN_WIRE_IN_LEN 6 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define GPIO_3V3_WIRE_IN 13 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define GPIO_3V3_WIRE_IN_LEN 6 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define GPIO_LVDS_WIRE_IN 20 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define GPIO_LVDS_WIRE_IN_LEN 4 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 
-// wirein at 0x02 
+// wirein at 0x02
 `define AD7961_ENABLE 1 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 `define AD7961_ENABLE_LENGTH 4 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
 `define AD5453_PERIOD_ENABLE 5 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
-`define AD5454_PERIOD_ENABLE_LEN 10 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define AD5453_PERIOD_ENABLE_LEN 10 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
-`define GP_ENABLE 15 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
-`define GP_ENABLE_LEN 3 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define AD7961_GLOBAL_ENABLE 15 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define AD7961_GLOBAL_ENABLE_LEN 3 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
-// power supply enables 
-`define GP_POWER_15V_ENABLE 18 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
-`define GP_POWER_1V8_ENABLE 19 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
-`define GP_POWER_3V3_ENABLE 20 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
-`define GP_POWER_5V_ENABLE 21 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
-`define GP_POWER_N15V_ENABLE 22 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+// power supply enables
+`define POWER_15V_ENABLE 18 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define POWER_1V8_ENABLE 19 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define POWER_3V3_ENABLE 20 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define POWER_5V_ENABLE 21 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define POWER_N15V_ENABLE 22 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
 `define GP_CURRENT_PUMP_ENABLE 23 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 `define GP_CURRENT_PUMP_ENABLE_LEN 2 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
 `define ADS8686_RESET 25 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
-
-// TODO set this up! 
+// TODO set this up!
 `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
-
