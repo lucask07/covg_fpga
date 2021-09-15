@@ -467,8 +467,9 @@ module top_level_module(
           .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(ds_sdo[j]), .okClk(okClk), .addr(regAddress), .data_in(regDataOut), .write_in(regWrite)
         );
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DAC80508_WB_IN_GEN_ADDR + j), .ep_dataout(dac_wirein_data[j]));
-				// TODO: wireout is not needed (nor supported with the Clear version of the DAC80508)
-				okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(i + 1))*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR), .ep_datain(dac_out[i]));
+        // TODO: wireout is not needed (nor supported with the Clear version of the DAC80508)
+        okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(j + 1)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR), .ep_datain(dac_data_out[j]));
+
     end
     endgenerate
     /*---------------- END DAC80508 -------------------*/
@@ -736,13 +737,13 @@ module top_level_module(
 
     generate
         for (i = 0; i < (I2C_DCARDS_NUM / 2); i = i + 1) begin : i2c_dc_wire_gen
-            okWireIn wi_i2c_dc0 (.okHE(okHE), .ep_addr(`I2C_DC_WIRE_IN_GEN_ADDR + i), .ep_dataout({i2c_memdin[(i * 2) + 1], i2c_memdin[i * 2]}));
+            okWireIn wi_i2c_dc0 (.okHE(okHE), .ep_addr(`I2CDC_WIRE_IN_GEN_ADDR + i), .ep_dataout({i2c_memdin[(i * 2) + 1], i2c_memdin[i * 2]}));
         end
     endgenerate
 
     generate
         for (i = 0; i < (I2C_DCARDS_NUM / 4); i = i + 1) begin
-            okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ (15 + i)*65 +: 65 ]), .ep_addr(`I2C_DC_WIRE_OUT + i),
+            okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ (15 + i)*65 +: 65 ]), .ep_addr(`I2CDC_WIRE_OUT + i),
                             .ep_datain({i2c_memdout[i + 3], i2c_memdout[i + 2], i2c_memdout[i + 1], i2c_memdout[i + 0]}));
         end
     endgenerate
@@ -753,13 +754,13 @@ module top_level_module(
     // generate for the 4 daughtercards... then hand create for the other two
     i2cController i2c_controller_0 (
         .clk (clk_sys),
-        .reset (ep40trig[`I2C_DC_RESET_GEN_BIT + l]),
-        .start (ep40trig[`I2C_DC_START_GEN_BIT + l]), //trigger in
+        .reset (ep40trig[`I2CDC_RESET_GEN_BIT + l]),
+        .start (ep40trig[`I2CDC_START_GEN_BIT + l]), //trigger in
         .done (i2c_done[l]),   // trigger out
         .memclk (clk_sys),  //the triggers are synchronized to clk_sys
-        .memstart (ep41trig[`I2C_DC_MEMSTART_GEN_BIT + l]), //trigger in
-        .memwrite (ep41trig[`I2C_DC_MEMWRITE_GEN_BIT + l]), // trigger in
-        .memread (ep41trig[`I2C_DC_MEMREAD_GEN_BIT + l]),   // trigger in
+        .memstart (ep41trig[`I2CDC_MEMSTART_GEN_BIT + l]), //trigger in
+        .memwrite (ep41trig[`I2CDC_MEMWRITE_GEN_BIT + l]), // trigger in
+        .memread (ep41trig[`I2CDC_MEMREAD_GEN_BIT + l]),   // trigger in
         .memdin (i2c_memdin[l]),     //wire in
         .memdout (i2c_memdout[l]),   //wire out
         .i2c_sclk (dc_scl[l]),       // inout
@@ -772,20 +773,20 @@ module top_level_module(
     wire [15:0] i2c_aux_memdin[1:0];
     wire [7:0] i2c_aux_memdout[1:0];
 
-    okWireIn wi_i2c_aux (.okHE(okHE), .ep_addr(`I2C_DAQ_WIRE_IN_GEN_ADDR), .ep_dataout({i2c_aux_memdin[1], i2c_aux_memdin[0]}));
-    okWireOut wo_i2c_aux (.okHE(okHE), .okEH(okEHx[ 16*65 +: 65 ]), .ep_addr(`I2C_DAQ_WIRE_OUT_GEN_ADDR),
+    okWireIn wi_i2c_aux (.okHE(okHE), .ep_addr(`I2CDAQ_WIRE_IN_GEN_ADDR), .ep_dataout({i2c_aux_memdin[1], i2c_aux_memdin[0]}));
+    okWireOut wo_i2c_aux (.okHE(okHE), .okEH(okEHx[ 16*65 +: 65 ]), .ep_addr(`I2CDAQ_WIRE_OUT_GEN_ADDR),
                     .ep_datain({i2c_aux_memdout[1], i2c_aux_memdout[0]}));
 
 		// level shifted I2C bus
     i2cController i2c_controller_4 (
         .clk (clk_sys),
-        .reset (ep41trig[`I2C_DAQ_RESET_GEN_BIT + 0]),
-        .start (ep41trig[`I2C_DAQ_START_GEN_BIT + 0]), //trigger in
+        .reset (ep41trig[`I2CDAQ_RESET_GEN_BIT + 0]),
+        .start (ep41trig[`I2CDAQ_START_GEN_BIT + 0]), //trigger in
         .done (i2c_aux_done[0]),   // trigger out
         .memclk (clk_sys),  //the triggers are synchronized to clk_sys
-        .memstart (ep41trig[`I2C_DAQ_MEMSTART_GEN_BIT + 0]), //trigger in
-        .memwrite (ep41trig[`I2C_DAQ_MEMWRITE_GEN_BIT + 0]), // trigger in
-        .memread (ep41trig[`I2C_DAQ_MEMREAD_GEN_BIT + 0]),   // trigger in
+        .memstart (ep41trig[`I2CDAQ_MEMSTART_GEN_BIT + 0]), //trigger in
+        .memwrite (ep41trig[`I2CDAQ_MEMWRITE_GEN_BIT + 0]), // trigger in
+        .memread (ep41trig[`I2CDAQ_MEMREAD_GEN_BIT + 0]),   // trigger in
         .memdin (i2c_aux_memdin[0]),     //wire in
         .memdout (i2c_aux_memdout[0]),   //wire out
         .i2c_sclk (ls_scl),       // inout
@@ -795,13 +796,13 @@ module top_level_module(
 		// QW 3.3v I2C bus
     i2cController i2c_controller_5 (
         .clk (clk_sys),
-        .reset (ep41trig[`I2C_DAQ_RESET_GEN_BIT + 1]),
-        .start (ep41trig[`I2C_DAQ_START_GEN_BIT + 1]), //trigger in
+        .reset (ep41trig[`I2CDAQ_RESET_GEN_BIT + 1]),
+        .start (ep41trig[`I2CDAQ_START_GEN_BIT + 1]), //trigger in
         .done (i2c_aux_done[1]),   // trigger out
         .memclk (clk_sys),  //the triggers are synchronized to clk_sys
-        .memstart (ep41trig[`I2C_DAQ_MEMSTART_GEN_BIT + 1]), //trigger in
-        .memwrite (ep41trig[`I2C_DAQ_MEMWRITE_GEN_BIT + 1]), // trigger in
-        .memread (ep41trig[`I2C_DAQ_MEMREAD_GEN_BIT + 1]),   // trigger in
+        .memstart (ep41trig[`I2CDAQ_MEMSTART_GEN_BIT + 1]), //trigger in
+        .memwrite (ep41trig[`I2CDAQ_MEMWRITE_GEN_BIT + 1]), // trigger in
+        .memread (ep41trig[`I2CDAQ_MEMREAD_GEN_BIT + 1]),   // trigger in
         .memdin (i2c_aux_memdin[1]),     //wire in
         .memdout (i2c_aux_memdout[1]),   //wire out
         .i2c_sclk (qw_scl),       // inout
