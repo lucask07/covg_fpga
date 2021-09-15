@@ -17,6 +17,26 @@ from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list
 
 
 class Register:
+    """Class for internal registers on a device.
+    
+    Attributes
+    ----------
+    address : int
+        Address location of the register.
+    default : int
+        Default value of the register.
+    bit_index_high : int
+        Index of the MSB in the register.
+    bit_index_low : int
+        Index of the LSB in the register.
+    bit_width : int
+        Width of the register in bits.
+        
+    Methods
+    -------
+    get_chip_registers(sheet, workbook_path=None)
+        Returns a dictionary of Registers from a page in an Excel spreadsheet.
+    """
 
     def __init__(self, address, default, bit_index_high, bit_index_low, bit_width):
         self.address = address
@@ -32,7 +52,7 @@ class Register:
 
     @classmethod
     def get_chip_registers(cls, sheet, workbook_path=None):
-        """Return a dictionary of Registers from an page in an Excel spreadsheet."""
+        """Return a dictionary of Registers from a page in an Excel spreadsheet."""
 
         if workbook_path == None:
             workbook_path = os.getcwd()
@@ -60,13 +80,43 @@ class Register:
 
 
 class Endpoint:
+    """Class for Opal Kelly endpoints on the FPGA.
+    
+    Attributes
+    ----------
+    endpoints_from_defines : dict
+        Dictionary of each group of endpoints paired with inner dictionaries
+        of endpoint names to Endpoint objects, starts empty.
+    address : int
+        Address location of the Endpoint.
+    bit_index_low : int
+        Index of the LSB of the Endpoint.
+    bit_index_high : int
+        Index of the MSB of the Endpoint.
+    bit_width : int
+        Width of the Endpoint in bits.
+    gen_bit : bool
+        Whether to increment the bits when incrementing the endpoint.
+    gen_address : bool
+        Whether to increment the address when incrementing the endpoint.
+
+    Methods
+    -------
+    update_endpoints_from_defines(ep_defines_path=None)
+        Return and store Endpoints in ep_defines.v in endpoints_from_defines.
+    get_chip_endpoints(chip_name)
+        Return the dictionary of Endpoints for a specific chip or group.
+    increment_endpoints(endpoints_dict)
+        Increment all Endpoints in endpoints_dict according to their gen_bit
+        and gen_address values.
+    """
+
     endpoints_from_defines = dict()
 
-    def __init__(self, address, bit, bit_width, gen_bit, gen_address):
+    def __init__(self, address, bit_index_low, bit_width, gen_bit, gen_address):
         self.address = address
-        self.bit = bit
-        self.bit_index_low = bit
-        self.bit_index_high = bit + bit_width
+        self.bit_index_low = bit_index_low
+        self.bit_index_high = bit_index_low + bit_width
         self.bit_width = bit_width
         self.gen_bit = gen_bit
         self.gen_address = gen_address
@@ -191,12 +241,20 @@ class Endpoint:
 
     @classmethod
     def get_chip_endpoints(cls, chip_name):
+        """Return a dictionary of Endpoints for a specific chip or group."""
+
         if Endpoint.endpoints_from_defines == dict():
             Endpoint.update_endpoints_from_defines()
         return Endpoint.endpoints_from_defines.get(chip_name)
 
     @classmethod
     def increment_endpoints(cls, endpoints_dict):
+        """Increment all Endpoints in endpoints_dict.
+        
+        Use each Endpoint's gen_bit and gen_addr values to determine whether to
+        increment bits and addresses, respectively.
+        """
+
         for key in endpoints_dict:
             endpoint = endpoints_dict[key]
             if endpoint.gen_bit:
@@ -229,16 +287,38 @@ class Endpoint:
 # and other FPGA specific functions.
 
 class FPGA:
+    """Class for the Opal Kelly FPGA itself.
+    
+    Attributes
+    ----------
+    bitfile : str
+        Path to the bitfile to load on the FPGA.
+    xem : ok.okCFrontPanel
+        Opal Kelly API connection to the FPGA.
+    device_info : ok.okTDeviceInfo
+        General information about the FPGA.
+    
+    Methods
+    -------
+    init_device()
+        Initialize the FPGA for use.
+    """
+
     # TODO: change to complete bitfile when Verilog is combined
     def __init__(self, bitfile=os.path.join('..', '..', 'fpga_test.bit')):
 
         self.bitfile = bitfile
-        self.i2c = {'m_pBuf': [], 'm_nDataStart': 7}
         # self.pll = ok.PLL22150()
         # I don't know why, but uncommenting this makes things fail
         return
 
     def init_device(self):
+        """Initialize the FPGA for use and print device information.
+        
+        Connect to the FPGA and load the bitfile. Return False on any errors.
+        Only run this once or the FPGA connection will fail.
+        """
+
         # Open the first device we find.
         self.xem = ok.okCFrontPanel()
         if (self.xem.NoError != self.xem.OpenBySerial("")):
@@ -246,15 +326,15 @@ class FPGA:
             return(False)
 
         # Get some general information about the device.
-        self.devInfo = ok.okTDeviceInfo()
-        if (self.xem.NoError != self.xem.GetDeviceInfo(self.devInfo)):
+        self.device_info = ok.okTDeviceInfo()
+        if (self.xem.NoError != self.xem.GetDeviceInfo(self.device_info)):
             print("Unable to retrieve device information.")
             return(False)
-        print("         Product: " + self.devInfo.productName)
+        print("         Product: " + self.device_info.productName)
         print("Firmware version: %d.%d" %
-              (self.devInfo.deviceMajorVersion, self.devInfo.deviceMinorVersion))
-        print("   Serial Number: %s" % self.devInfo.serialNumber)
-        print("       Device ID: %s" % self.devInfo.deviceID)
+              (self.device_info.deviceMajorVersion, self.device_info.deviceMinorVersion))
+        print("   Serial Number: %s" % self.device_info.serialNumber)
+        print("       Device ID: %s" % self.device_info.deviceID)
 
         self.xem.LoadDefaultPLLConfiguration()
 
@@ -277,6 +357,7 @@ class FPGA:
         return self
 
     def read_pipe_out(self, addr, data_len=1024):
+        """Return the filled buffer and error code after reading an OK PipeOut."""
 
         buf = bytearray(np.asarray(np.ones(data_len), np.uint8))
         e = self.xem.ReadFromPipeOut(addr, buf)
@@ -287,6 +368,8 @@ class FPGA:
         return buf, e
 
     def set_wire(self, address, value, mask=0xFFFF):
+        """Return the error code after setting an OK WireIn value."""
+
         # DEBUG: temporary for logging DAC80508 test
         # print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)}')
         error_code = self.xem.SetWireInValue(address, value, mask)
@@ -294,10 +377,14 @@ class FPGA:
         return error_code
 
     def read_wire(self, address):
+        """Return the read data after reading an OK WireOut."""
+
         self.xem.UpdateWireOuts()
         return self.xem.GetWireOutValue(address)
 
     def set_bit(self, ep_bit, adc_chan=None):
+        """Set all bits in an Endpoint high."""
+
         if adc_chan is None:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
@@ -308,6 +395,8 @@ class FPGA:
         self.xem.UpdateWireIns()
 
     def clear_bit(self, ep_bit, adc_chan=None):
+        """Set all bits in an Endpoint low."""
+
         if adc_chan is None:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
@@ -318,6 +407,8 @@ class FPGA:
         self.xem.UpdateWireIns()
 
     def toggle_low(self, ep_bit, adc_chan=None):
+        """Toggle all bits in an Endpoint low then back to high."""
+
         if adc_chan is None:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
@@ -331,6 +422,8 @@ class FPGA:
         self.xem.UpdateWireIns()
 
     def toggle_high(self, ep_bit, adc_chan=None):
+        """Toggle all bits in an Endpoint high then back to low."""
+
         if adc_chan is None:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
@@ -343,22 +436,27 @@ class FPGA:
         self.xem.UpdateWireIns()
 
     def send_trig(self, ep_bit):
-        '''
-            expects a single bit, not yet implement for list of bits
-        '''
+        """Return the error code after activating an OK TriggerIn Endpoint.
+        
+        Expects a single bit, not yet implement for multiple bits and will only
+        activate the LSB if the Endpoint containts multiple bits.
+        """
+
         return self.xem.ActivateTriggerIn(ep_bit.address, ep_bit.bit_index_low)
 
     def read_ep(self, ep_bit):
+        """Return the error code after reading an OK WireOut Endpoint."""
         self.xem.UpdateWireOuts()
         read_out = self.xem.GetWireOutValue(ep_bit.address)
         return read_out
 
-    def get_pll_freq(self, output):
-        f = self.pll.GetOutputFrequency(output)
-        print('Pll f = {} [MHz]'.format(f))
-        return f
+    # def get_pll_freq(self, output):
+    #     f = self.pll.GetOutputFrequency(output)
+    #     print('Pll f = {} [MHz]'.format(f))
+    #     return f
 
     def get_time(self):
+        """Return the total time from the FPGA since initializing the bitfile."""
         self.send_trig(Endpoint(0x40, 10, 10, 1))
         low_end = self.read_wire(0x25)
         high_end = self.read_wire(0x26)
@@ -407,17 +505,45 @@ class FPGA:
         return available_endpoints
 
     def set_wire_bit(self, address, bit):
-        """ set to 1 a single bit in a OpalKelly wire in """
-        return self.set_wire(address, value=1 << bit, mask=1 << bit)
+        """Set a single bit to 1 in a OpalKelly wire in."""
+        return self.xem.set_wire(address, value=1 << bit, mask=1 << bit)
 
     def clear_wire_bit(self, address, bit):
-        """ set to 0 a single bit in a OpalKelly wire in """
-        return self.set_wire(address, value=0, mask=1 << bit)
+        """Clear a single bit to 0 in a OpalKelly wire in."""
+        return self.xem.set_wire(address, value=0, mask=1 << bit)
 
 
-# Class for controllers on the FPGA using I2C protocol. Handles configuration, reading, writing, and reset.
-# Requires First.bit file for FPGA.
 class I2CController:
+    """Class for controllers on the FPGA using I2C protocol.
+    
+    Attributes
+    ----------
+    I2C_MAX_TIMEOUT_MS : int
+        Maximum wait time until transmission timeout in milliseconds.
+    i2c : dict
+        Dictionary of I2C memory buffer and data start location.
+    fpga : FPGA
+        FPGA instance this controller uses to communicate.
+    endpoints : dict
+        Endpoints on the FPGA this controller uses to communicate.
+    increment : bool
+        Whether to increment generated endpoints after this instantiation.
+
+    Methods
+    -------
+    i2c_configure(data_length, starts, stops, preamble)
+        Configure the buffer for the next transmission.
+    i2c_transmit(data, data_length)
+        Send data along the SCL and SDA lines.
+    i2c_receive(data_length, results='wire')
+        Take in data from the SCL and SDA lines.
+    i2c_write_long(devAddr, regAddr, data_length, data)
+        Send a write command with given data to regAddr on devAddr.
+    i2c_read_long(devAddr, regAddr, data_length)
+        Read data_length bytes from regAddr on devAddr.
+    reset_device()
+        Reset the I2C controller using an OK TriggerIn.
+    """
 
     I2C_MAX_TIMEOUT_MS = 50
 
@@ -448,6 +574,7 @@ class I2CController:
     # from the HDL
 
     def i2c_configure(self, data_length, starts, stops, preamble):
+        """Configure the buffer for the next transmission."""
 
         if data_length > 7:
             print('Data too long')
@@ -465,6 +592,7 @@ class I2CController:
         self.i2c['m_nDataStart'] = 4 + data_length
 
     def i2c_transmit(self, data, data_length):
+        """Send data along the SCL and SDA lines."""
 
         self.i2c['m_pBuf'][3] = data_length
         for i in range(data_length):
@@ -498,6 +626,7 @@ class I2CController:
         print('Timeout error in transmit')
 
     def i2c_receive(self, data_length, results='wire'):
+        """Take in data from the SCL and SDA lines."""
 
         self.i2c['m_pBuf'][0] |= 0x80
         self.i2c['m_pBuf'][3] = data_length
@@ -554,13 +683,16 @@ class I2CController:
 
         print('Timeout Exception in Rx')
 
-    def i2c_write8(self, devAddr, regAddr, data_length, data):
+    # def i2c_write8(self, devAddr, regAddr, data_length, data):
 
-        preamble = [devAddr & 0xfe, regAddr]
-        self.i2c_configure(2, 0x00, 0x00, preamble)
-        return self.i2c_transmit(data, data_length)
+    #     preamble = [devAddr & 0xfe, regAddr]
+    #     self.i2c_configure(2, 0x00, 0x00, preamble)
+    #     return self.i2c_transmit(data, data_length)
 
     def i2c_write_long(self, devAddr, regAddr, data_length, data):
+        """Send a write command with given data to regAddr on devAddr.
+        
+        regAddr must be given in a list."""
 
         preamble = [devAddr & 0xfe] + regAddr  # + data
         self.i2c_configure(len(preamble), 0x00, 1 << len(preamble), preamble)
@@ -569,30 +701,31 @@ class I2CController:
     # Sequence is
     # [START] DEV_ADDR(W) REG_ADDR [START] DEV_ADDR(R) VALUE
     # LJK - this command does not execute OK API calls
-    def i2c_read8(self, devAddr, regAddr, data_length):
+    # def i2c_read8(self, devAddr, regAddr, data_length):
 
-        # for the pressure sensors that only need the slave address and a read bit and then send out 4 bytes.
-        if regAddr is None:
-            preamble = [devAddr | 0x01]
-            self.i2c_configure(1, 0x01, 0x00, preamble)
-        else:
-            preamble = [devAddr & 0xfe, regAddr, devAddr | 0x01]
-            # signature: i2c_configure(data_length, starts (a one for each byte that gets a start), stops, preamble):
-            self.i2c_configure(3, 0x02, 0x00, preamble)
-        data = self.i2c_receive(data_length)
+    #     # for the pressure sensors that only need the slave address and a read bit and then send out 4 bytes.
+    #     if regAddr is None:
+    #         preamble = [devAddr | 0x01]
+    #         self.i2c_configure(1, 0x01, 0x00, preamble)
+    #     else:
+    #         preamble = [devAddr & 0xfe, regAddr, devAddr | 0x01]
+    #         # signature: i2c_configure(data_length, starts (a one for each byte that gets a start), stops, preamble):
+    #         self.i2c_configure(3, 0x02, 0x00, preamble)
+    #     data = self.i2c_receive(data_length)
 
-        return data
+    #     return data
 
     # Sequence is
     # [START] DEV_ADDR(W) REG_ADDR [START] DEV_ADDR(R) VALUE
     # LJK - this command does not execute OK API calls
     def i2c_read_long(self, devAddr, regAddr, data_length):
-        '''
+        """Read data_length bytes from regAddr on devAddr.
+
         devAddr : 8 bit address (don't set the read bit (LSB) since this is done in this function)
         regAddr:  written to device (this is a list and must be even if length 1)
         data_length : number of bytes expected to receive
-
-        '''
+        """
+        
         preamble = [devAddr & 0xfe] + regAddr + [devAddr | 0x01]
         # signature: i2c_configure(data_length, starts (a one for each byte that gets a start), stops, preamble):
         start_positions = 0x01 << len(regAddr)
@@ -602,37 +735,61 @@ class I2CController:
         return data
 
     def reset_device(self):
-        """
-        reset the I2C controller using a trigger in
-        """
+        """Reset the I2C controller using an OK TriggerIn."""
 
         return self.fpga.xem.ActivateTriggerIn(
             self.endpoints['RESET'].address,
             self.endpoints['RESET'].bit_index_low)
 
-# Class for the I/O Expander TCA9555 extending the I2CController class. Handles pin configuration as inputs/outputs, reading, and writing.
-
 
 class TCA9555(I2CController):
+    """Class for the I/O Expander TCA9555.
+    
+    Subclass of the I2CController class. Attributes and methods below are
+    differences in this class from I2CController only.
+    
+    Attributes
+    ----------
+    ADDRESS_HEADER : int
+        7-bit device address with R/W bit space and 4 MSBs filled in specific
+        to this chip. The rest is left as 0 to be filled in later.
+    registers : dict
+        Name-Register pairs for the internal registers of the TCA9555 chip.
+    addr_pins : int
+        3 LSBs of the 7-bit device address formed alongside the address header
+        used to differentiate between different instances of the TCA9555 chip.
 
-    ADDRESS_HEADER=0b01000000
+    Methods
+    -------
+    configure_pins(data)
+        Configure the chip's pins as inputs (1's) or outputs (0's).
+    write(data, register_name='OUTPUT', mask=0xffff)
+        Write 2 bytes of data to the pins.
+    read(register_name="INPUT")
+        Read 2 bytes of data from the pins.
+    """
+
+    ADDRESS_HEADER=0b0100_0000
     registers = Register.get_chip_registers('TCA9555')
 
-    def __init__(self, fpga, endpoints, addr_pins):
-        super().__init__(fpga=fpga, endpoints=endpoints)
+    def __init__(self, fpga, endpoints, addr_pins, increment=False):
+        super().__init__(fpga=fpga, endpoints=endpoints, increment=increment)
         self.addr_pins = addr_pins
 
-    # Method to configure the pins as inputs (1's) or outputs (0's)
+
     def configure_pins(self, data):
+        """Configure the chip's pins as inputs (1's) or outputs (0's)."""
+
         # Inputs = 1
         # Outputs = 0
         dev_addr = self.ADDRESS_HEADER + (self.addr_pins << 1)
         self.i2c_write_long(
             dev_addr, [TCA9555.registers['CONFIG'].address], 2, data)
 
-    # Method to write 2 bytes of data to the pins.
-    # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 0100 and Write bit automatically
+
     def write(self, data, register_name='OUTPUT', mask=0xffff):
+        """Write 2 bytes of data to the pins."""
+        
         dev_addr = self.ADDRESS_HEADER | (self.addr_pins << 1)
 
         # Compare with current data to mask unchanged values
@@ -651,28 +808,56 @@ class TCA9555(I2CController):
         self.i2c_write_long(
             dev_addr, [TCA9555.registers[register_name].address], 2, list_data)
 
-    # Method to read 2 bytes of data from the pins.
-    # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 0100 and Read bit automatically
 
     def read(self, register_name='INPUT'):
+        """Read 2 bytes of data from the pins."""
         dev_addr = self.ADDRESS_HEADER | (
             self.addr_pins << 1) | 0b1
         return self.i2c_read_long(dev_addr, [TCA9555.registers[register_name].address], 2)
 
-# Class for the ID chip 24AA025UID extending the I2CController class. Handles reading and writing.
-
 
 class UID_24AA025UID(I2CController):
+    """Class for the ID chip 24AA025UID.
+    
+    Subclass of the I2CController class. Attributes and methods below are
+    differences in this class from I2CController only.
+    
+    Attributes
+    ----------
+    ADDRESS_HEADER : int
+        7-bit device address with R/W bit space and 4 MSBs filled in specific
+        to this chip. The rest is left as 0 to be filled in later.
+    registers : dict
+        Name-Register pairs for the internal registers of the TCA9555 chip.
+    addr_pins : int
+        3 LSBs of the 7-bit device address formed alongside the address header
+        used to differentiate between different instances of the TCA9555 chip.
+
+    Methods
+    -------
+    write(data, word_address=0x00, num_bytes=None)
+        Write data into memory at word_address.
+    read(word_address=0x00, words_read=1)
+        Return words_read words of data from memory at word_address.
+    get_serial_number()
+        Return the unique 32-serial number stored in memory on the chip.
+    get_manufacturer_code()
+        Return the chip's manufacturer code.
+    get_device_code()
+        Return the chip's device code.
+    """
+
     ADDRESS_HEADER=0b10100000
     registers = Register.get_chip_registers('24AA025UID')
 
-    def __init__(self, fpga, endpoints, addr_pins):
-        super().__init__(fpga=fpga, endpoints=endpoints)
+    def __init__(self, fpga, endpoints, addr_pins, increment=False):
+        super().__init__(fpga=fpga, endpoints=endpoints, increment=increment)
         self.addr_pins = addr_pins
 
-    # Method to write up to 8 bytes of data to a given word address within the chip.
-    # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 1010 and Write bit automatically
+
     def write(self, data, word_address=0x00, num_bytes=None):
+        """Write data into memory at word_address."""
+
         dev_addr = UID_24AA025UID.ADDRESS_HEADER | (self.addr_pins << 1)
         print(f'word_address: {hex(word_address)}\ndata: {hex(data)}\nnum_bytes: {num_bytes}')
 
@@ -706,16 +891,19 @@ class UID_24AA025UID(I2CController):
         self.i2c_write_long(dev_addr, [word_address], num_bytes, list_data)
         return True
 
-    # Method to read data from a given word address within the chip.
-    # We only need to be given the { A2 A1 A0 } pin values for the device, we can add the 1010 and Read bit automatically.
+
     def read(self, word_address=0x00, words_read=1):
+        """Return words_read words of data from memory at word_address."""
+
         # A word is a byte, 8 bits
         dev_addr = UID_24AA025UID.ADDRESS_HEADER | (
             self.addr_pins << 1) | 0b1
         return self.i2c_read_long(dev_addr, [word_address], words_read)
 
-    # Method to get the manufactured 32-bit serial number for the chip. This is different for every chip.
+
     def get_serial_number(self):
+        """Return the unique 32-serial number stored in memory on the chip."""
+
         serial_list = self.read(
             word_address=UID_24AA025UID.registers['SERIAL_NUMBER'].address, words_read=4)
         serial_number = 0
@@ -725,20 +913,86 @@ class UID_24AA025UID(I2CController):
 
         return serial_number
 
-    # Method to get the manufacturer code. Should be 0x29.
+
     def get_manufacturer_code(self):
+        """Return the chip's manufacturer code. 
+        
+        For the chips we are using, it should be 0x29.
+        """
+
         return self.read(word_address=UID_24AA025UID.registers['MANUFACTURER_CODE'].address)[0]
 
-    # Method to get the device code. Should be 0x41.
-    def get_device_code(self):
-        return self.read(word_address=UID_24AA025UID.registers['DEVICE_CODE'].address)[0]
 
-# Class for the I2C DAC chip DAC53401. Handles reading, writing, and configuration. This is a child class of the parent I2CController class.
+    def get_device_code(self):
+        """Return the chip's device code.
+        
+        For the chips we are using, it should be 0x41.
+        """
+
+        return self.read(word_address=UID_24AA025UID.registers['DEVICE_CODE'].address)[0]
 
 
 class DAC53401(I2CController):
-    registers = Register.get_chip_registers('DAC53401')
+    """Class for the I2C DAC chip DAC53401.
+    
+    Subclass of the I2CController class. Attributes and methods below are
+    differences in this class from I2CController only.
+    
+    Attributes
+    ----------
+    ADDRESS_HEADER : int
+        7-bit device address with R/W bit space and 4 MSBs filled in specific
+        to this chip. The rest is left as 0 to be filled in later.
+    registers : dict
+        Name-Register pairs for the internal registers of the TCA9555 chip.
+    addr_pins : int
+        3 LSBs of the 7-bit device address formed alongside the address header
+        used to differentiate between different instances of the TCA9555 chip.
+
+    Methods
+    -------
+    write(data, register_name='DAC_DATA')
+        Write data to any register on the chip.
+    read(register_name='DAC_DATA')
+        Return data from any register on the chip.
+    write_voltage(voltage)
+        Write a voltage output from the DAC.
+    enable_internal_reference()
+        Enable the DAC's internal reference.
+    set_gain(gain)
+        Set the DAC's output gain value.
+    get_gain()
+        Return the DAC's current output gain value.
+    config_func(function_name)
+        Configure the function generator.
+    start_func()
+        Start function generation.
+    stop_func()
+        Stop function generation.
+    config_margins(margin_high=None, margin_low=None)
+        Configure margin high and low values.
+    config_step(step)
+        Configure the number of bits to step through.
+    config_rate(rate)
+        Configure the rate to step through each bit.
+    reset()
+        Reset the chip using a software reset.
+    lock()
+        Lock the registers of the device so they cannot be changed.
+    unlock()
+        Unlock the registers of the device so they can be changed again.
+    power_up()
+        Power up the DAC output.
+    power_down_10k()
+        Power down the DAC output to 10K ohms.
+    power_down_high_impedance()
+        Power down the DAC output to high impedance (default).
+    get_id()
+        Return the device ID and version ID as one integer.
+    """
+
     ADDRESS_HEADER = 0b10010000
+    registers = Register.get_chip_registers('DAC53401')
 
     #        Address Pins Guide
     # Slave Address   |   A0 Pin
@@ -747,12 +1001,13 @@ class DAC53401(I2CController):
     #           010   |   SDA
     #           011   |   SCL
 
-    def __init__(self, fpga, endpoints, addr_pins):
-        super().__init__(fpga=fpga, endpoints=endpoints)
+    def __init__(self, fpga, endpoints, addr_pins, increment=False):
+        super().__init__(fpga=fpga, endpoints=endpoints, increment=increment)
         self.addr_pins = addr_pins
 
-    # Method to write to any register on the chip.
     def write(self, data, register_name='DAC_DATA'):
+        """Write data to any register on the chip."""
+
         dev_addr = DAC53401.ADDRESS_HEADER | (self.addr_pins << 1)
         register = DAC53401.registers[register_name]
         data <<= register.bit_index_low
@@ -777,8 +1032,9 @@ class DAC53401(I2CController):
         self.i2c_write_long(
             dev_addr, [register.address], number_of_bytes, list_data)
 
-    # Method to read from any register on the chip.
     def read(self, register_name='DAC_DATA'):
+        """Return data from any register on the chip."""
+
         dev_addr = DAC53401.ADDRESS_HEADER | (self.addr_pins << 1)
         register = DAC53401.registers[register_name]
         # Ex. 16-bit register: | Byte 1 [15:8] | Byte 0 [7:0] |
@@ -805,16 +1061,26 @@ class DAC53401(I2CController):
 
         return desired_data
 
-    # Method to write a voltage output from the DAC.
     def write_voltage(self, voltage):
+        """Write a voltage output from the DAC."""
+
         self.write(voltage, 'DAC_DATA')
 
-    # Method to enable the internal reference. Necessary to set the gain value.
     def enable_internal_reference(self):
+        """Enable the DAC's internal reference.
+        
+        This is necessary to set the gain value.
+        """
+
         self.write(0x1, 'REF_EN')
 
-    # Method to set the gain value. Gain can be set to 1.5x, 2x, 3x, or 4x the internal reference. Internal reference must be enabled.
     def set_gain(self, gain):
+        """Set the DAC's output gain value.
+        
+        Gain can be set to 1.5x, 2x, 3x, or 4x the internal reference.
+        Internal reference must be enabled.
+        """
+
         gain_dict = {
             1.5: 0b00,
             2: 0b01,
@@ -828,8 +1094,9 @@ class DAC53401(I2CController):
             return False
         self.write(gain_code, 'DAC_SPAN')
 
-    # Method to get the gain value.
     def get_gain(self):
+        """Return the DAC's current output gain value."""
+
         gain_dict = {
             0b00: 1.5,
             0b01: 2,
@@ -840,16 +1107,23 @@ class DAC53401(I2CController):
         gain_code = self.read('DAC_SPAN')
         return gain_dict.get(gain_code)
 
-    # Method to configure the function generator.
     def config_func(self, function_name):
+        """Configure the function generator.
+        
+        'triangle': Triangle wave between MARGIN_HIGH code to MARGIN_LOW code
+            with slope defined by SLEW_RATE.
+        'sawtooth_falling': Saw-Tooth wave between MARGIN_HIGH code to
+            MARGIN_LOW code with slope defined by SLEW_RATE and immeidate falling edge.
+        'sawtooth_rising': Saw-Tooth wave between MARGIN_HIGH code to
+            MARGIN_LOW code with slope defined by SLEW_RATE and immeidate rising edge.
+        'square': Square wave between MARGIN_HIGH code to MARGIN_LOW code with
+            pulse high and low period defined by defined by SLEW_RATE.
+        """
+
         func_dict = {
-            # Generates a Triangle wave between MARGIN_HIGH code to MARGIN_LOW code with slope defined by SLEW_RATE.
             'triangle': 0b00,
-            # Generates a Saw-Tooth wave between MARGIN_HIGH code to MARGIN_LOW code with slope defined by SLEW_RATE and immeidate falling edge.
             'sawtooth_falling': 0b01,
-            # Generates a Saw-Tooth wave between MARGIN_HIGH code to MARGIN_LOW code with slope defined by SLEW_RATE and immeidate rising edge.
             'sawtooth_rising': 0b10,
-            # Generates a Square wave between MARGIN_HIGH code to MARGIN_LOW code with pulse high and low period defined by defined by SLEW_RATE.
             'square': 0b11
         }
 
@@ -859,25 +1133,34 @@ class DAC53401(I2CController):
             return False
         self.write(func_code, 'FUNC_CONFIG')
 
-    # Method to start function generation. The waveform generated is based on the FUNC_CONFIG and MARGIN_LOW, MARGIN_HIGH registers.
-    # Waveform configured through config_func() and config_margins() functions.
+
     def start_func(self):
+        """Start function generation.
+        
+        Waveform configured through config_func() and config_margins() functions.
+        """
         self.write(0b1, 'START_FUNC_GEN')
 
-    # Method to stop function generation.
+
     def stop_func(self):
+        """Stop function generation."""
+
         self.write(0b0, 'START_FUNC_GEN')
 
-    # Method to configure the margins.
+
     def config_margins(self, margin_high=None, margin_low=None):
+        """Configure margin high and low values."""
+
         if margin_high != None:
             self.write(margin_high, 'MARGIN_HIGH')
 
         if margin_low != None:
             self.write(margin_low, 'MARGIN_LOW')
 
-    # Method to configure the number of bits to step through.
+
     def config_step(self, step):
+        """Configure the number of bits to step through."""
+
         step_dict = {
             1: 0b000,
             2: 0b001,
@@ -895,8 +1178,10 @@ class DAC53401(I2CController):
             return False
         self.write(step_code, 'CODE_STEP')
 
-    # Method to configuer the rate to step through each bit.
+
     def config_rate(self, rate):
+        """Configure the rate to step through each bit."""
+
         # Instead of asking the user to type in the timing, the rates are organized slowest to fastest and numbered 1-16
         rate_dict = {
             1: 0b1011,  # 1638.4 * 1.75 us
@@ -923,44 +1208,99 @@ class DAC53401(I2CController):
             return False
         self.write(rate_code, 'SLEW_RATE')
 
-    # Method to reset the device using a software reset.
+
     def reset(self):
+        """Reset the chip using a software reset."""
+
         self.write(0b1010, 'SW_RESET')
 
-    # Method to lock the registers of the device.
+
     def lock(self):
+        """Lock the registers of the device so they cannot be changed."""
+
         self.write(0b1, 'DEVICE_LOCK')
 
-    # Method to unlock the registers of the device.
+
     def unlock(self):
+        """Unlock the registers of the device so they can be changed again."""
+
         self.write(0b0101, 'DEVICE_UNLOCK_CODE')
 
-    # Method to power up the DAC.
+
     def power_up(self):
+        """Power up the DAC output."""
+
         self.write(0b00, 'DAC_PDN')
 
-    # Method to power down the DAC to 10K.
+
     def power_down_10k(self):
+        """Power down the DAC output to 10K ohms."""
+
         self.write(0b01, 'DAC_PDN')
 
-    # Method to power down the DAC to high impedance (default).
+
     def power_down_high_impedance(self):
+        """Power down the DAC output to high impedance (default)."""
+
         self.write(0b10, 'DAC_PDN')
 
-    # Method to get the DEVICE_ID and the VERSION_ID of the chip
+
     def get_id(self):
+        """Return the device ID and version ID as one integer."""
+
         device_id = self.read('DEVICE_ID')
         version_id = self.read('VERSION_ID')
         return (device_id << DAC53401.registers['DEVICE_ID'].bit_index_low) | (version_id << DAC53401.registers['VERSION_ID'].bit_index_low)
 
 
-# Class for controllers on the FPGA using SPI protocol. Handles reading, writing, slave select, and configuration of the control register.
-# Requires top_level_module.bit file for FPGA.
 class SPIController:
+    """Class for controllers on the FPGA using SPI protocol.
+    
+    Attributes
+    ----------
+    WB_SET_ADDRESS : int
+        Set address command for the Wishbone.
+    WB_WRITE : int
+        Write command for the Wishbone.
+    WB_READ : int
+        Read command for the Wishbone.
+    WB_CLK_FREQ : int
+        Frequency of the clock the Wishbone runs on.
+    fpga : FPGA
+        FPGA instance this controller uses to communicate.
+    endpoints : dict
+        Endpoints on the FPGA this controller uses to communicate.
+    master_config : int
+        Value of the CTRL register in the Wishbone.
+    increment : bool
+        Whether to increment generated endpoints after this instantiation.
+    registers : dict
+        Name-Register pairs for the internal registers of the Wishbone.
+
+    Methods
+    -------
+    wb_send_cmd(command)
+        description
+    wb_is_acknowledged()
+    wb_set_address(address)
+    wb_write(data)
+    wb_read()
+    wb_go()
+    select_slave(slave_address)
+    set_divider(divider)
+    set_frequency(frequency)
+    write(data, register=0)
+    read(register=0)
+    configure_master_bin(data)
+    configure_master(ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0)
+    get_master_configuration()
+    reset_master()
+    """
+
     WB_SET_ADDRESS=0x80000000,  # These 3 are from the SPI core manual
     WB_WRITE=0x40000000,
     WB_READ=0x00000000,
-    ACK=0x200000000,
+    # ACK=0x200000000,
     WB_CLK_FREQ=200,  # clk_sys = 200 MHz in the top_level_module.v comments
 
     registers = Register.get_chip_registers('SPI')
@@ -972,8 +1312,13 @@ class SPIController:
         if increment:
             Endpoint.increment_endpoints(endpoints)
 
-    # Method to send a command to the Wishbone. Sent in 32 bits through the WbSignal_converter Verilog module to reformat to 34 bits.
     def wb_send_cmd(self, command):
+        """Send a command to the Wishbone.
+        
+        Sent in 32 bits through the WbSignal_converter Verilog module tos
+        reformat to 34 bits.
+        """
+
         print(f'wb_send_cmd: {hex(self.endpoints["WB_IN"].address)}, {hex(command)}')
         self.fpga.set_wire(
             self.endpoints['WB_IN'].address, command, 0xffffffff)
@@ -982,28 +1327,35 @@ class SPIController:
         self.fpga.xem.ActivateTriggerIn(
             self.endpoints['WB_CONVERT'].address, self.endpoints['WB_CONVERT'].bit_index_low)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
 
-    def wb_is_acknowledged(self):
-        response = self.fpga.read_wire(self.endpoints['OUT'].address)
-        return response == SPIController.ACK
+    # def wb_is_acknowledged(self):
+    #     response = self.fpga.read_wire(self.endpoints['OUT'].address)
+    #     return response == SPIController.ACK
 
-    # Method to send a Wishbone command setting the address of the register we interact with.
     def wb_set_address(self, address):
+        """Set the address of the register we interact with in the Wishbone."""
+
         self.wb_send_cmd(
             SPIController.WB_SET_ADDRESS | (address << 2) | 0x1)  # TODO: comment here what the | 0x1 is for when I figure it out
         return self.wb_is_acknowledged()  # TODO: test if acknowledge actually comes back
 
-    # Method to write up to 30 bytes of data to the currently selected register.
     def wb_write(self, data):
+        """Write up to 30 bytes of data to the currently selected register."""
+
         self.wb_send_cmd(SPIController.WB_WRITE | data)
         return self.wb_is_acknowledged()  # TODO: test if acknowledge actually comes back
 
-    # Method to read the data from the current register
     def wb_read(self):
+        """Return the data stored in the currently selected register."""
+
         self.wb_send_cmd(SPIController.WB_READ)
         return self.fpga.read_wire(self.endpoints['OUT'].address)
 
-    # Method to set the GO_BSY bit of the CTRL register to logic 1, initiating a SPI transmission.
     def wb_go(self):
+        """Initiate a SPI transmission.
+        
+        Initiated by setting the GO_BSY bit of the CTRL register to  1.
+        """
+
         ack = self.wb_set_address(SPIController.registers['CTRL'].address)
         # TODO: fix ack
         # if ack:
@@ -1030,8 +1382,11 @@ class SPIController:
 
         return True
 
-    # Method to write a slave_address to the SS register, selecting that slave device.
     def select_slave(self, slave_address):
+        """Selecting a slave device.
+        
+        Set the correspoinding bit in the Slave Select register to 1."""
+
         # Set address to SS register
         self.wb_set_address(SPIController.registers['SS'].address)
 
@@ -1039,13 +1394,19 @@ class SPIController:
         # Don't need to mask the write because we only select 1 slave device at a time
         self.wb_write(slave_address)
 
-    # Method to set the DIVIDER register.
     def set_divider(self, divider):
+        """Set the value of the Wishbone's DIVIDER register."""
+
         self.wb_set_address(SPIController.registers['DIVIDER'].address)
         self.wb_write(divider)
 
-    # Method to set the DIVIDER register according to the input target frequency in MHz
     def set_frequency(self, frequency):
+        """Set the frequency of SCL.
+        
+        Set the DIVIDER register of the Wishbone with the corresponding divider
+        for the target frequency. Frequency must be given in MHz.
+        """
+
         divider = max(
             round((SPIController.WB_CLK_FREQ) / (frequency * 2)), 1) - 1
         # Make sure divider does not exceed 32 bits
@@ -1053,8 +1414,14 @@ class SPIController:
         self.set_divider(divider)
         return divider
 
-    # Method to write up to 30 bits of data to register Tx0, Tx1, Tx2, or Tx3
-    def write(self, data, register=0):  # register should be 0, 1, 2, or 3
+    def write(self, data, register=0):
+        """Write data on the SCL and SDA lines.
+        
+        Register should be either 0, 1, 2, or 3.
+        """
+
+        # TODO: determine if register argument is really necessary
+
         # Set address to Tx register
         ack = self.wb_set_address(SPIController.registers['Tx' + str(register)].address)
         # TODO: fix ack
@@ -1080,8 +1447,12 @@ class SPIController:
         # Set GO_BSY bit
         return self.wb_go()
 
-    # Method to read data from register
     def read(self, register=0):
+        """Return data from the selected data receive register.
+        
+        Register should be 0, 1, 2, or 3.
+        """
+
         # Set address to the Rx register Rx0, Rx1, Rx2, or Rx3
         ack = self.wb_set_address(SPIController.registers['Rx' + str(register)].address)
 
@@ -1097,14 +1468,24 @@ class SPIController:
         # Read data
         return self.wb_read()
 
-    # Method to set the CTRL register using binary
     def configure_master_bin(self, data):
+        """Set the value of the Wishbone's CTRL register directly."""
+
         self.wb_set_address(SPIController.registers['CTRL'].address)
         self.wb_write(data)
         self.master_config = data
 
-    # Method to set the CTRL register using several arguments
     def configure_master(self, ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0):
+        """Set the Wishbone's CTRL register using several arguments.
+        
+        ASS: Automatic Slave Select
+        IE: Set interrupt output active after a transfer is finished
+        LSB: Send LSB first
+        Tx_NEG: Change output signal on falling edge of SCLK
+        Rx_NEG: Latch input signal on falling edge of SCLK
+        CHAR_LEN: Number of bits transmitted per transfer (up to 64).
+        """
+
         params = {'ASS': ASS, 'IE': IE, 'LSB': LSB,
                   'Tx_NEG': Tx_NEG, 'Rx_NEG': Rx_NEG, 'CHAR_LEN': CHAR_LEN}
 
@@ -1137,10 +1518,10 @@ class DAC80508(SPIController):
 
     registers = Register.get_chip_registers('DAC80508')
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('DAC80508'), master_config=0x3218, slave_address=0x1):
+    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('DAC80508'), master_config=0x3218, slave_address=0x1, increment=True):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
         self.slave_address = slave_address
-        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
+        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints, increment=increment)
 
     # Method to write to any register on the chip.
     def write(self, register_name, data, mask=0xffff):
@@ -1272,9 +1653,10 @@ class AD5453(SPIController):
     bits=12,
     vref=2.5*2
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('AD5453'), master_config=0x3010):
+    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('AD5453'), master_config=0x3010, increment=True):
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
-        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
+        super().__init__(fpga=fpga, master_config=master_config,
+                         endpoints=endpoints, increment=increment)
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
 
@@ -1291,9 +1673,10 @@ class AD5453(SPIController):
 class ADS7952(SPIController):
     registers = Register.get_chip_registers('ADS7952')
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS7952'), master_config=0x3010):
+    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS7952'), master_config=0x3010, increment=True):
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
-        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
+        super().__init__(fpga=fpga, master_config=master_config,
+                         endpoints=endpoints, increment=increment)
         self.channel = 0
 
     def to_voltage(self, a):
@@ -1347,9 +1730,10 @@ class ADS7952(SPIController):
 class ADS8686(SPIController):
     registers = Register.get_chip_registers('ADS8686')
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS8686'), master_config=0x3010):
+    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS8686'), master_config=0x3010, increment=True):
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
-        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
+        super().__init__(fpga=fpga, master_config=master_config,
+                         endpoints=endpoints, increment=increment)
         self.channel = 0
 
     # Method to read a desired channel on the chip
