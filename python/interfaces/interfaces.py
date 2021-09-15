@@ -25,6 +25,11 @@ class Register:
         self.bit_index_low = bit_index_low
         self.bit_width = bit_width
 
+    def __str__(self):
+        str_rep = 'Register with address 0x{:0x}, bit-high {} to low {}, width = {}'.format(
+            self.address, self.bit_index_high, self.bit_index_low, self.bit_width)
+        return str_rep
+
     @classmethod
     def get_chip_registers(cls, sheet, workbook_path=None):
         """Return a dictionary of Registers from an page in an Excel spreadsheet."""
@@ -190,7 +195,6 @@ class Endpoint:
             Endpoint.update_endpoints_from_defines()
         return Endpoint.endpoints_from_defines.get(chip_name)
 
-
     @classmethod
     def increment_endpoints(cls, endpoints_dict):
         for key in endpoints_dict:
@@ -200,11 +204,29 @@ class Endpoint:
                 endpoint.bit_index_low = endpoint.bit
                 endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
             if endpoint.gen_address:
+                # TODO: also keep track of bit_high, bit_low within the address?
                 endpoint.address += 1
 
+    @classmethod
+    def advance_endpoints_bynum(cls, endpoints_dict, num):
+        print('Number to advance is {}'.format(num))
+        # num is the number to advance from the base addresses and bits
+        for key in endpoints_dict:
+            endpoint = endpoints_dict[key]
+            if endpoint.gen_bit:
+                endpoint.bit = (endpoint.bit + (endpoint.bit_width*num)) % 32
+                endpoint.bit_index_low = endpoint.bit
+                endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
+            if endpoint.gen_address:
+                endpoint.bit = (endpoint.bit + (endpoint.bit_width*num)) % 32
+                endpoint.bit_index_low = endpoint.bit
+                endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
+                endpoint.address += ((endpoint.bit_width*num)//32)
+            endpoints_dict[key] = endpoint
+        return endpoints_dict
 
-# Class for the FPGA itself. Handles FPGA configuration, setting wire values, and other FPGA specific functions.
-
+# Class for the FPGA itself. Handles FPGA configuration, setting wire values,
+# and other FPGA specific functions.
 
 class FPGA:
     # TODO: change to complete bitfile when Verilog is combined
@@ -1360,7 +1382,8 @@ class AD7961:
     # EPS = endpoints_from_defines(
     #    chip_name='AD7961', ep_defines_path=EP_DEFINES_PATH)
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('AD7961'), chan=0, increment=True):
+    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('AD7961'),
+                 chan=0, increment=True):
         self.fpga = fpga
         self.endpoints = endpoints
         self.chan = chan  # starts at 0
@@ -1384,7 +1407,7 @@ class AD7961:
         """
         status = self.get_fifo_status()
         # a = self.fpga.read_wire(self.eps['ADC_PLL_LOCKED_STATUS_WIRE_OUT'])
-        a = self.fpga.read_wire(self.endpoints['AD7961_PLL_LOCKED'].address)
+        a = self.fpga.read_wire(self.endpoints['PLL_LOCKED'].address)
         pll_lock = test_bit(a, 0)  # TODO: parameters
         status['pll_lock'] = pll_lock
         for k in status:
@@ -1393,11 +1416,12 @@ class AD7961:
         return status
 
     def get_fifo_status(self):
-        flags = ['full', 'half', 'empty']
+        flags = ['FULL', 'HALF', 'EMPTY']
         fifo_status = {}
         self.fpga.xem.UpdateTriggerOuts()
         for k in flags:
-            fifo_status[k] = self.fpga.xem.IsTriggered(0x60, 1 + self.chan*3)
+            fifo_status[k] = self.fpga.xem.IsTriggered(self.endpoints['FIFO_{}'.format(k)].address,
+                                                       self.endpoints['FIFO_{}'.format(k)].bit)
         return fifo_status
 
     """
@@ -1428,26 +1452,22 @@ class AD7961:
         self.set_enables(0b0000)  # TODO: should I return anything here?
 
     def reset_pll(self):
-        # return self.fpga.xem.ActivateTriggerIn(0x40,
-        #                                        self.eps['TI40_PLL_RST'] + self.chan)
-        return self.fpga.xem.ActivateTriggerIn(0x40,
-                                               self.endpoints['AD7961_PLL_RESET'].bit_index_low + self.chan)
+        return self.fpga.xem.ActivateTriggerIn(self.endpoints['PLL_RESET'].address,
+                                               self.endpoints['PLL_RESET'].bit_index_low)
 
     def reset_fifo(self):
         """resets the FIFO for the ADC data
             one per channel"""
-        # return self.fpga.xem.ActivateTriggerIn(0x40,
-        #                                        self.eps['TI40_ADC_FIFO_RST'] + self.chan)
-        return self.fpga.xem.ActivateTriggerIn(0x40,
-                                               self.eps['AD7961_FIFO_RESET_GEN_BIT'].bit_index_low + self.chan)
+        return self.fpga.xem.ActivateTriggerIn(self.endpoints['FIFO_RESET'].address,
+                                               self.endpoints['FIFO_RESET'].bit_index_low)
 
     def reset_adc(self):
         """resets the FPGA controller for the ADC
             one per channel"""
         # return self.fpga.xem.ActivateTriggerIn(0x40,
         #                                        self.eps['TI40_ADC_RST'] + self.chan)
-        return self.fpga.xem.ActivateTriggerIn(0x40,
-                                               self.eps['AD7961_RESET_GEN_BIT'].bit_index_low + self.chan)
+        return self.fpga.xem.ActivateTriggerIn(self.endpoints['RESET'].address,
+                                               self.endpoints['RESET'].bit_index_low + self.chan)
 
     def power_down_fpga(self):
         """power down the FPGA controller through wirein"""
@@ -1456,28 +1476,26 @@ class AD7961:
         pass
 
     def set_enables(self, value=0b0000, global_enables=True):
-        # will always set the EN0 specific to this channel
+        # will always set the EN0 specific to this channel (LSB in values)
         # optionally also modify the global enables (all channels)
-        # mask = gen_mask(self.eps['WI02_A_EN0'] + self.chan)
-        mask = gen_mask(self.endpoints['AD7961_ENABLE'].bit + self.chan)
+
+        mask = gen_mask(self.endpoints['ENABLE'].bit + self.chan)
         if global_enables:
             # global enables (connect to all AD7961); create a list of bit position
-            # gl_mask = [x+self.eps['WI02_A_EN']
-            #            for x in range(self.eps['WI02_A_EN_LEN'])]
-            gl_mask = [x+self.endpoints['GP_ENABLE']
-                       for x in range(self.endpoints['GP_ENABLE_LEN'])]
+            gl_mask = [x+self.endpoints['GLOBAL_ENABLE'].bit
+                       for x in range(self.endpoints['GLOBAL_ENABLE_LEN'].bit)]
             # or global mask with the signal channel EN0 mask
             mask = gen_mask(gl_mask) | mask
         # setup the values
         # value = (self.eps['WI02_A_EN0'] + self.chan)
-        value = (self.endpoints['AD7961_ENABLE'] + self.chan)
+        value = 1 << (self.endpoints['ENABLE'].bit + self.chan)  # TODO: check this
         if global_enables:
             #  globabl enables are the 3 MSBs
-            # val_global = (value & 0b1110) << (self.eps['WI02_A_EN']-1)  # minus 1 since
-            val_global = (value & 0b1110) << (self.eps['GP_ENABLE']-1)  # minus 1 since
+            val_global = (value & 0b1110) << (self.endpoints['GLOBAL_ENABLE'].bit-1)  # minus 1 since
             value = value | val_global
 
-        self.fpga.set_wire(0x02, value, mask=mask)
+        print('Enables setting value = 0x{:0x} with mask = value = 0x{:0x}')
+        self.fpga.set_wire(self.endpoints['ENABLE'].address, value, mask=mask)
 
     def convert_data(self, buf):
         bits = 16  # for AD7961 bits=18 for AD7960
@@ -1503,7 +1521,7 @@ class AD7961:
     # TODO: incorporate/connect QT graphing (UIscript.py)
     def read(self):
         # s, e = self.fpga.read_pipe_out(self.eps['AD796x_POUT_OFFSET'] + self.chan)
-        s, e = self.fpga.read_pipe_out(self.eps['AD7961_PO_OFFSET'] + self.chan)
+        s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'])
         data = self.convert_data(s)
         return data
 
@@ -1514,9 +1532,9 @@ class AD7961:
 
         while cnt < swps:
             # check the FIFO half-full flag
-            if (self.fpga.xem.IsTriggered(0x60, 2 + self.chan*3)):
-                # s, e = self.fpga.read_pipe_out(self.eps['AD796x_POUT_OFFSET'] + self.chan)
-                s, e = self.fpga.read_pipe_out(self.eps['AD7961_PO_OFFSET'] + self.chan)
+            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALF'].address,
+                                          self.endpoints['FIFO_HALF'].bit)):
+                s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'])
                 st += s
                 cnt = cnt + 1
                 print(cnt)
@@ -1524,3 +1542,19 @@ class AD7961:
 
         data = self.convert_data(st)
         return data
+
+
+def disp_device(dev, reg=True):
+
+    print('Displaying endpoints')
+    for k in dev.endpoints:
+        print(k + ': ' + str(dev.endpoints[k]))
+
+    print('-'*40)
+    if reg:
+        print('Displaying registers')
+        try:
+            for r in dev.registers:
+                print(r + ': ' + str(dev.registers[r]))
+        except:
+            pass
