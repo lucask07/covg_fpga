@@ -255,7 +255,7 @@ module top_level_module(
     okWireIn wi2 (.okHE(okHE), .ep_addr(`GP_PWR_REG_ADC_EN_WIRE_IN),
       .ep_dataout(ep02wire));
 
-     assign a_en0_hv = ep02wire[(`AD7961_ENABLE+`AD7961_ENABLE_LEN - 1):`AD7961_ENABLE]; //1 for each channel
+     assign a_en0_hv = ep02wire[(`AD7961_ENABLE_GEN_BIT+`AD7961_ENABLE_LEN - 1):`AD7961_ENABLE_GEN_BIT]; //1 for each channel
      assign a_en_hv = ep02wire[(`AD7961_GLOBAL_ENABLE+`AD7961_GLOBAL_ENABLE_LEN - 1):`AD7961_GLOBAL_ENABLE];    // global
 
      wire [9:0] en_period; //TODO: different for each channel?
@@ -318,12 +318,16 @@ module top_level_module(
 	wire [(I2C_DCARDS_NUM-1):0] i2c_done;
 	wire [1:0] i2c_aux_done;
 	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(`GP_FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(okClk),
-                           .ep_trigger({10'b0, i2c_aux_done, i2c_done,
-                           ads_fifo_empty, ads_fifo_halffull, ads_fifo_full,
-                           adc_fifo_empty[3], adc_fifo_halffull[3], adc_fifo_full[3],
-                           adc_fifo_empty[2], adc_fifo_halffull[2], adc_fifo_full[2],
-                           adc_fifo_empty[1], adc_fifo_halffull[1], adc_fifo_full[1],
-                           adc_fifo_empty[0], adc_fifo_halffull[0], adc_fifo_full[0], hostinterrupt}));
+                           .ep_trigger({10'b0,
+													 i2c_aux_done,      // 2 bits wide: 21-20
+													 i2c_done,          // 4 bits wide: 19-16
+                           ads_fifo_empty,    // bit 15
+													 ads_fifo_halffull, // bit 14
+													 ads_fifo_full,     // bit 13
+                           adc_fifo_empty,    // 4 bits wide: 12-6
+													 adc_fifo_halffull, // 4 bits wide: 8-5
+													 adc_fifo_full,     // 4 bits wide: 4-1
+													 hostinterrupt}));  // bit 0
 
        //register bridge for writing filter coefficients to BRAM and to the spi_controller
        wire regWrite;
