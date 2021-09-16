@@ -25,7 +25,7 @@
 // CLASS_PARAM_NAME_GEN_BIT_GEN_ADDR // address=ASSOCIATED_ADDRESS_PARAM bit_width=0123456789
 // "CLASS" = Python class name
 // - Matches chip names for SPI
-// - I2C-DC or I2C-DAQ for I2C on the Daughtercard or the DAQ board
+// - I2CDC or I2CDAQ for I2C on the Daughtercard or the DAQ board (Verilog does not allow hyphens)
 // "PARAM_NAME" = parameter name to be used in the Python
 // "GEN_BIT" = included if the parameter holds a bit and we can add the bit_width
 //     of the parameter to get the bit for the next instance
@@ -46,15 +46,15 @@
 `define ADS8686_WB_IN 8'h05 // bit_width=32
 `define DAC80508_WB_IN_GEN_ADDR 8'h06 // bit_width=32
 `define I2CDC_WIRE_IN_GEN_ADDR 8'h08 // bit_width=16
-`define I2CDC_IN_GEN_BIT 0 // address=I2C-DC_WIRE_IN_GEN_ADDR bit_width=16
+`define I2CDC_IN_GEN_BIT 0 // address=I2CDC_WIRE_IN_GEN_ADDR bit_width=16
 `define I2CDAQ_WIRE_IN_GEN_ADDR 8'h10 // bit_width=16
-`define I2CDAQ_IN_GEN_BIT 0 // address=I2C-DAQ_WIRE_IN bit_width=16
+`define I2CDAQ_IN_GEN_BIT 0 // address=I2CDAQ_WIRE_IN bit_width=16
 
 `define ADS8686_OUT 8'h24 // bit_width=32
 `define I2CDC_WIRE_OUT 8'h25 // bit_width=8
-`define I2CDC_OUT_GEN_BIT 0 // address=I2C-DC_WIRE_OUT bit_width=8
+`define I2CDC_OUT_GEN_BIT 0 // address=I2CDC_WIRE_OUT bit_width=8
 `define I2CDAQ_WIRE_OUT_GEN_ADDR 8'h26 // bit_width=8
-`define I2CDAQ_OUT_GEN_BIT 0 // address=I2C-DAQ_WIRE_OUT bit_width=8
+`define I2CDAQ_OUT_GEN_BIT 0 // address=I2CDAQ_WIRE_OUT bit_width=8
 
 `define GP_UNCONNECTED_WIRE_IN 8'h00 // bit_width=32
 `define GP_HOST_FPGAB_GPIO_WIRE_IN 8'h01 // bit_width=32
@@ -74,16 +74,16 @@
 `define DDR3_WIRE_OUT 8'h3e // bit_width=32
 
 `define GP_FIFO_FLAG_I2C_DONE_TRIG_OUT 8'h60 // bit_width=32
-`define I2C-DAQ_DONE 17 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
-`define I2C-DC_DONE 16 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define I2CDAQ_DONE_GEN_BIT 20 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define I2CDC_DONE_GEN_BIT 16 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define ADS8686_FIFO_EMPTY 15 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define ADS8686_FIFO_HALFULL 14 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define ADS8686_FIFO_FULL 13 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
-`define AD7961_FIFO_EMPTY_GEN_BIT 3 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define AD7961_FIFO_EMPTY_GEN_BIT 8 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 6 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 9 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 12 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
-`define AD7961_FIFO_HALFULL_GEN_BIT 2 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define AD7961_FIFO_HALFULL_GEN_BIT 5 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 5 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 8 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 11 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
@@ -123,9 +123,9 @@
 `define DAC80508_WB_CONVERT_GEN_BIT 17 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_FIFO_RESET 18 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD7961_RESET_GEN_BIT 19 // address=GP_RST_VALID_TRIG_IN bit_width=1
+
 `define I2CDC_RESET_GEN_BIT 23 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define I2CDC_START_GEN_BIT 27 // address=GP_RST_VALID_TRIG_IN bit_width=1
-
 `define I2CDC_MEMSTART_GEN_BIT 0 // address=I2C_TRIG_IN bit_width=1
 `define I2CDC_MEMWRITE_GEN_BIT 4 // address=I2C_TRIG_IN bit_width=1
 `define I2CDC_MEMREAD_GEN_BIT 8 // address=I2C_TRIG_IN bit_width=1
@@ -150,7 +150,7 @@
 `define GPIO_LVDS_WIRE_IN_LEN 4 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 
 // wirein at 0x02
-`define AD7961_ENABLE 1 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define AD7961_ENABLE_GEN_BIT 1 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 `define AD7961_ENABLE_LEN 4 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
 `define AD5453_PERIOD_ENABLE 5 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
