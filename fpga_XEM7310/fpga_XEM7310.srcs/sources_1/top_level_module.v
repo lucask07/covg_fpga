@@ -317,7 +317,7 @@ module top_level_module(
 	//TODO: reorganize triggerout
 	wire [(I2C_DCARDS_NUM-1):0] i2c_done;
 	wire [1:0] i2c_aux_done;
-	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(`GP_FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(okClk),
+	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(`GP_FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(clk_sys),
                            .ep_trigger({10'b0,
 													 i2c_aux_done,      // 2 bits wide: 21-20
 													 i2c_done,          // 4 bits wide: 19-16
