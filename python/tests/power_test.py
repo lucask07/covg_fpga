@@ -35,7 +35,13 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, TCA9555, Endpoint, ADS8686, disp_device
+from interfaces.interfaces import Endpoint
+eps1 = Endpoint.update_endpoints_from_defines()
+
+from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, TCA9555, disp_device, ADS8686, advance_endpoints_bynum
+
+eps = Endpoint.endpoints_from_defines
+
 from interfaces.boards import Daq  # TODO: should I instantiate the Daq board or just pieces from it?
                               # TODO: for now, pieces, eventually the DAQ board
 
@@ -46,7 +52,7 @@ def get_timestamp():
 logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.log'), filemode='w',
                     level=logging.INFO)
 
-eps = Endpoint.endpoints_from_defines
+# eps = Endpoint.endpoints_from_defines
 
 ADS_EN = False
 AD7961_EN = False
@@ -97,10 +103,10 @@ pwr_off()
 
 # Channel 1 and 2 setup
 for ch in [1, 2]:
-    dc_pwr2.set('i', 0.2, configs={'chan': ch})
+    dc_pwr2.set('i', 0.39, configs={'chan': ch})
     dc_pwr2.set('v', 16.5, configs={'chan': ch})
     dc_pwr2.set('ovp', 16.7, configs={'chan': ch})
-    dc_pwr2.set('ocp', 0.225, configs={'chan': ch})
+    dc_pwr2.set('ocp', 0.400, configs={'chan': ch})
 
 # Channel 1 on supply1 for Vin
 dc_pwr.set('i', 0.55, configs={'chan': 1})
@@ -122,8 +128,22 @@ time.sleep(2)
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_bitfile')
 
 # reset FPGA using trigger in
-f.xem.ActivateTriggerIn(eps['GP']['SYSTEM_RESET'].address,
-                        eps['GP']['SYSTEM_RESET'].bit)
+# f.xem.ActivateTriggerIn(eps['GP']['SYSTEM_RESET'].address,
+#                         eps['GP']['SYSTEM_RESET'].bit_index_low)
+
+uid = UID_24AA025UID(fpga=f,
+                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
+                     addr_pins=0b000,
+                     increment=False)
+
+ads = ADS8686(fpga=f,
+              endpoints=Endpoint.get_chip_endpoints('ADS8686'),
+              increment=False)
+
+ads_cfg = ads.read('config')
+
+dac0 = DAC80508(fpga=f, increment=True)
+dac1 = DAC80508(fpga=f, increment=True)
 
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
@@ -131,44 +151,21 @@ pwr.all_off()  # disable all power enables
 AD7961_CHANS = 4
 ad7961s = []
 for i in range(AD7961_CHANS):
-    ad7961s.append(AD7961(f, chan=i))
+    ad7961s.append(AD7961(f, increment=True))
 
-if 0:
-    for i in range(AD7961_CHANS):
-        ad7961s[i].power_down_all()
-
+for i in range(AD7961_CHANS):
+    ad7961s[i].power_down_all()
 
 # TODO wrpt endpoints stuff:
 """
-1) AD7961 global enables are wrong ['GP']['ENABLE']
-2) I2C wireout isn't long enough?
-3) get rid of increment -- might just want daughtercard 3
 4) are the multiple SPI controllers setup with endpoints correctly?
 5) when is endpoints intended to be read?
 """
 
-# TODO -- this needs to be incremented by one, need to instantiate a second device?
-# Instantiate ID chip
-uid1 = UID_24AA025UID(fpga=f,
-                     endpoints=Endpoint.get_chip_endpoints('I2C-DAQ'),
-                     addr_pins=0b000)
-
-uid2 = UID_24AA025UID(fpga=f,
-                     endpoints=Endpoint.get_chip_endpoints('I2C-DAQ'),
-                     addr_pins=0b000, increment=True)
-
-
-uid_dc1 = UID_24AA025UID(fpga=f,
-                     endpoints=Endpoint.get_chip_endpoints('I2C-DC'),
-                     addr_pins=0b000)
-
 #  TODO: wirein and wireout bit indices are not at 0
 #  TODO: input the name of the excel worksheet
 
-WI02_ADS_RESETB = 25
-f.clear_wire_bit(0x02, WI02_ADS_RESETB)
-# time.sleep(0.01)
-# f.set_wire_bit(0x02, WI02_ADS_RESETB)
+ads.hw_reset(val=True)  # put ADS into hardware reset
 
 # power supply turn on and check current
 for name in ['1V8', '5V', '3V3']:
@@ -187,97 +184,146 @@ time.sleep(0.01)
 #  pwr.all_off()
 print(current_meas)
 
-if 0:
-    # UID
-    read = uid.get_manufacturer_code()
-    default = uid.parameters['MANUFACTURER_CODE'].default
-    if read != default:
-        print(f'UID MANUFACTURER_CODE FAILED\n    '
-              f'(read) {read} != (default) {default}')
+# UID
+read = uid.get_manufacturer_code()
+default = uid.registers['MANUFACTURER_CODE'].default
+if read != default:
+    print(f'UID MANUFACTURER_CODE FAILED\n    '
+          f'(read) {read} != (default) {default}')
 
-    read = uid.get_device_code()
-    default = uid.parameters['DEVICE_CODE'].default
-    if read != default:
-        print(f'UID DEVICE_CODE FAILED\n    '
-              f'(read) {read} != (default) {default}')
+read = uid.get_device_code()
+default = uid.registers['DEVICE_CODE'].default
+if read != default:
+    print(f'UID DEVICE_CODE FAILED\n    '
+          f'(read) {read} != (default) {default}')
 
-    # AD7961
+# check to see if i2c is consistent
+read_test = []
+for i in range(100):
+    read_test.append(uid.get_manufacturer_code())
 
-    # set enable for AD7961 to low-power (11.4 mA from 5 V )
-    #  Q: what supplies need to be configured for this enable to work?
-    #  A: just 1.8 V (high-side is 2.5 V)
 
-    # disable the AD7961 FPGA block for reading (clk and conv output)
-    #  Q: is this possible?
-    #  A: possible, but not setup in the FPGA now. Reset is controlled by a trigger-in
+# AD7961
 
-    # set reset for the ADS8686 (draws 55 mA when static)
-    #  Q: what is the default output setting in Xilinx?
+# set enable for AD7961 to low-power (11.4 mA from 5 V )
+#  Q: what supplies need to be configured for this enable to work?
+#  A: just 1.8 V (high-side is 2.5 V)
 
-    # TODO: error in schematic note
-    #       should be "high-Z or high will enable"
-    WI02_IPUMP_EN = 23
-    WI02_IPUMP_EN_LEN = 2
-    for i in range(WI02_IPUMP_EN_LEN):
-        f.clear_wire_bit(0x02, WI02_IPUMP_EN + i)
+# disable the AD7961 FPGA block for reading (clk and conv output)
+#  Q: is this possible?
+#  A: possible, but not setup in the FPGA now. Reset is controlled by a trigger-in
 
-    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ipump_disable')
+# set reset for the ADS8686 (draws 55 mA when static)
+#  Q: what is the default output setting in Xilinx?
 
-    # check amps for 14-bit DAC
+# TODO: error in schematic note
+#       should be "high-Z or high will enable"
+for bit_pos in range(eps['GP']['CURRENT_PUMP_ENABLE'].bit_index_low,
+                     eps['GP']['CURRENT_PUMP_ENABLE'].bit_index_high + 1):
 
-    # check diff term for LVDS inputs?
-    # -- what was it for the XEM6310? - in constraints
-    # diff term is specified as true in the IBUFDS instantiation (so OK)
+    f.clear_wire_bit(eps['GP']['CURRENT_PUMP_ENABLE'].address,
+                     bit_pos)
 
-    # add up current for LVDS
-    #  Q: current per pin
-    #  A: ~4mA
+log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ipump_disable')
 
-    # need a supply power up procedure/order and a prediction of the current of PWR only
-    # Q: what was supply draw alone?
-    # A: 34 mA with all supplies enabled; 5 mA with none enabled
+# check amps for 14-bit DAC
 
-    # need calculator based on input voltage -- more current required at lower voltages --> DONE
+# check diff term for LVDS inputs?
+# -- what was it for the XEM6310? - in constraints
+# diff term is specified as true in the IBUFDS instantiation (so OK)
 
-    # check DAC80508:
-    # Q: does it have CLR pin?
-    # A: yes, the manf# is ZC - zero and clear
-    # TODO: change FPGA output pins (tie high? since CLRB) --> DONE
+# add up current for LVDS
+#  Q: current per pin
+#  A: ~4mA
 
-    # setup QW I2C bus for I/O expanders
-    # Note: the VREF gain for the high-speed DACs defaults to x4.88 if the I/O
-    #       expanders are not configured. So no concern of damage if we don't configure these
+# need a supply power up procedure/order and a prediction of the current of PWR only
+# Q: what was supply draw alone?
+# A: 34 mA with all supplies enabled; 5 mA with none enabled
 
-    # desired I/O expander:
-    # DAC gains and current output select
-    io_0 = TCA9555(fpga=f, addr_pins=0b000)  # DAC gains 0,1,2,3
-    io_1 = TCA9555(fpga=f, addr_pins=0b100)  # DAC gains 4,5; ISEL
+# need calculator based on input voltage -- more current required at lower voltages --> DONE
 
-    io_0.configure_pins(0xffff)  # set all pins to outputs
-    io_0.write(0x0000)  # set all pins to zero
+# check DAC80508:
+# Q: does it have CLR pin?
+# A: yes, the manf# is ZC - zero and clear
+# TODO: change FPGA output pins (tie high? since CLRB) --> DONE
 
-    io_1.configure_pins(0xffff)  # set all pins to outputs
-    io_1.write(0x0000)  # set all pins to zero
+# setup QW I2C bus for I/O expanders
+# Note: the VREF gain for the high-speed DACs defaults to x4.88 if the I/O
+#       expanders are not configured. So no concern of damage if we don't configure these
 
-    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
+# desired I/O expander:
+# DAC gains and current output select
+io_0 = TCA9555(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'),
+               addr_pins=0b000, increment=False)  # DAC gains 0,1,2,3
+io_1 = TCA9555(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'),
+               addr_pins=0b100, increment=False)  # DAC gains 4,5;
+                                                  # ISEL1[3:0]; ISEL2[3:0]
 
-    # enable one AD7961 and remeasure current
-    if AD7961_EN:
-        ad7961s[0].power_up_adc()
-        time.sleep(0.05)
-        log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
-        ad7961s[0].power_down_adc()
+io_0.configure_pins([0x00, 0x00])  # set all pins to outputs (=0)
+io_0.write(0x0000)  # set all pins to zero --
+                    # minimizes the DAC gain and should lower current draw
 
-    # enable ADS868 and remeasure current
-    if ADS_EN:
-        f.set_wire_bit(0x02, WI02_ADS_RESETB)
-        time.sleep(0.01)
-        log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ads_release_reset')
+io_1.configure_pins([0x00, 0x00])  # set all pins to outputs
 
-    print(current_meas)
+# ISEL = 1 gives voltage outputs
+# ISEL = 0 routes Howland Ipump out
+io_1.write(0x00FF)  # set all gain pins to zero & all ISEL to have the voltage output
+ # TODO: check ordering of the io write
 
-    # lower all I/O wires
-    pwr.all_off()
+log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
+
+# enable one AD7961 and remeasure current
+if AD7961_EN:
+    ad7961s[0].power_up_adc()
+    time.sleep(0.05)
+    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
+    ad7961s[0].power_down_adc()
+
+# enable ADS868 and remeasure current
+if ADS_EN:
+    ads.hw_reset(val=False)  # release reset
+    time.sleep(0.01)
+    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ads_release_reset')
+    time.sleep(1)
+    ads.hw_reset(val=True)  # back to reset
+
+print(current_meas)
+
+for dac in [dac0, dac1]:
+    dac.reset_master()  # TODO -- I don't think this works?
+
+    print('Setting divider...')
+    dac.set_divider(0x8)  # XEM6310 worked with divider of 4, XEM7310 runs twice as fast so divider of 8.
+
+    print('Configuring Wishbone...')
+    spi_ctrl_reg_val = 0x3218  # Sets CHAR_LEN=24, Rx_NEG, ASS, IE
+    dac.configure_master_bin(spi_ctrl_reg_val)
+
+    dac.set_gain(0x01ff)
+    print('Gain changed')
+
+    # Write 0xff to 0x03 (CONFIG register)
+    dac.set_config_bin(0xff)
+    print('Outputs powered down')
+
+    # Write 0x00 to 0x03 (CONFIG register)
+    dac.set_config_bin(0x00)
+    print('Outputs powered on')
+
+    # Write to all outputs
+    voltage = 0xffff
+    for i in range(8):
+        if dac.write('DAC'+str(i), voltage):
+            message = f'Write {hex(voltage)}={voltage}V SUCCESS'
+            # print(message)
+            logging.info(message)
+        else:
+            message = f'Write {hex(voltage)}={voltage}V FAIL'
+            logging.warning(message)
+
+
+# lower all I/O wires
+# pwr.all_off()
 
 # probe these signals with a multimeter:
 # 1) VCM_OUT from the AD7961
