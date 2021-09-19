@@ -14,7 +14,7 @@ import sys
 import time
 from collections import namedtuple
 from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list
-
+import copy
 
 class Register:
     """Class for internal registers on a device.
@@ -246,7 +246,8 @@ class Endpoint:
 
         if Endpoint.endpoints_from_defines == dict():
             Endpoint.update_endpoints_from_defines()
-        return Endpoint.endpoints_from_defines.get(chip_name)
+
+        return copy.deepcopy(Endpoint.endpoints_from_defines.get(chip_name))
 
     @classmethod
     def increment_endpoints(cls, endpoints_dict):
@@ -265,6 +266,7 @@ class Endpoint:
             if endpoint.gen_address:
                 # TODO: also keep track of bit_high, bit_low within the address?
                 endpoint.address += 1
+
 
 def advance_endpoints_bynum(endpoints_dict, num):
     """
@@ -366,9 +368,11 @@ class FPGA:
         return self
 
     def read_pipe_out(self, addr, data_len=1024):
-        """Return the filled buffer and error code after reading an OK PipeOut."""
-
-        buf = bytearray(np.asarray(np.ones(data_len), np.uint8))
+        """Return the filled buffer and error code after reading an OK PipeOut.
+            data_len is length in bytes (must be multiple of 16)
+            returns: bytearray; error code
+        """
+        buf = bytearray(data_len)
         e = self.xem.ReadFromPipeOut(addr, buf)
         print('read_pipe_out:', addr, buf)
 
@@ -651,21 +655,21 @@ class I2CController:
             value = self.i2c['m_pBuf'][i] << self.endpoints['WIRE_IN'].bit_index_low
             self.fpga.xem.SetWireInValue(
                 self.endpoints['WIRE_IN'].address, value, mask)
-            #self.fpga.xem.SetWireInValue(
-            #    self.endpoints['WIRE_IN'].address, self.i2c['m_pBuf'][i], 0x00ff)
             self.fpga.xem.UpdateWireIns()
             self.fpga.xem.ActivateTriggerIn(
                 self.endpoints['MEMWRITE'].address, self.endpoints['MEMWRITE'].bit_index_low)
 
         # Start I2C transaction
         self.fpga.xem.ActivateTriggerIn(
-            self.endpoints['START'].address, self.endpoints['START'].bit_index_low)
+            self.endpoints['START'].address,
+            self.endpoints['START'].bit_index_low)
 
         # Wait for transaction to finish
         for _ in range(int(I2CController.I2C_MAX_TIMEOUT_MS / 10)):
             self.fpga.xem.UpdateTriggerOuts()
             # change to 1, LJK
-            if self.fpga.xem.IsTriggered(self.endpoints['DONE'].address, (1 << self.endpoints['DONE'].bit_index_low)):
+            if self.fpga.xem.IsTriggered(self.endpoints['DONE'].address,
+                                         (1 << self.endpoints['DONE'].bit_index_low)):
                 if results.lower() == 'wire':
                     # Read data: Reset the memory pointer
                     self.fpga.xem.ActivateTriggerIn(
@@ -682,6 +686,7 @@ class I2CController:
                             self.endpoints['MEMREAD'].address, self.endpoints['MEMREAD'].bit_index_low)
                     return data
                 if results.lower() == 'pipe':
+                    # should not be used. OK pipe is not configured.
                     data_read = np.int(np.ceil(data_length*4/16)*16)
                     buf, e = self.read_pipe_out(0xA0 + 0, data_read)
                     # reset FIFO
@@ -1306,11 +1311,11 @@ class SPIController:
     reset_master()
     """
 
-    WB_SET_ADDRESS=0x80000000,  # These 3 are from the SPI core manual
-    WB_WRITE=0x40000000,
-    WB_READ=0x00000000,
-    # ACK=0x200000000,
-    WB_CLK_FREQ=200,  # clk_sys = 200 MHz in the top_level_module.v comments
+    WB_SET_ADDRESS=0x80000000  # These 3 are from the SPI core manual
+    WB_WRITE=0x40000000
+    WB_READ=0x00000000
+    # ACK=0x200000000
+    WB_CLK_FREQ=200  # clk_sys = 200 MHz in the top_level_module.v comments
 
     registers = Register.get_chip_registers('SPI')
 
@@ -1318,8 +1323,10 @@ class SPIController:
         self.fpga = fpga
         self.master_config = master_config
         self.endpoints = endpoints
-        if increment:
-            Endpoint.increment_endpoints(endpoints)
+
+        # TODO: increment in SPIController as well?
+        #if increment:
+        #    Endpoint.increment_endpoints(endpoints)
 
     def wb_send_cmd(self, command):
         """Send a command to the Wishbone.
@@ -1336,7 +1343,8 @@ class SPIController:
         self.fpga.xem.ActivateTriggerIn(
             self.endpoints['WB_CONVERT'].address, self.endpoints['WB_CONVERT'].bit_index_low)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
 
-    # def wb_is_acknowledged(self):
+    def wb_is_acknowledged(self):
+        pass
     #     response = self.fpga.read_wire(self.endpoints['OUT'].address)
     #     return response == SPIController.ACK
 
@@ -1516,7 +1524,8 @@ class SPIController:
     # Method to reset the Wishbone Master and SPI Core
     def reset_master(self):
         self.fpga.xem.ActivateTriggerIn(
-            self.endpoints['MASTER_RESET'].address, self.endpoints['MASTER_RESET'].bit_index_low)
+            self.endpoints['MASTER_RESET'].address,
+            self.endpoints['MASTER_RESET'].bit_index_low)
 
 # Class for DAC80508 chip extending SPIController. Handles read, write, configuration, gain configuration, id, and reset.
 
@@ -1527,10 +1536,15 @@ class DAC80508(SPIController):
 
     registers = Register.get_chip_registers('DAC80508')
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('DAC80508'), master_config=0x3218, slave_address=0x1, increment=True):
+    def __init__(self, fpga, endpoints=None, master_config=0x3218, slave_address=0x1, increment=False):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
+        if endpoints is None:
+            endpoints = Endpoint.get_chip_endpoints('DAC80508')
         self.slave_address = slave_address
         super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints, increment=increment)
+
+        if increment:
+            Endpoint.increment_endpoints(Endpoint.endpoints_from_defines.get('DAC80508'))
 
     # Method to write to any register on the chip.
     def write(self, register_name, data, mask=0xffff):
@@ -1662,7 +1676,11 @@ class AD5453(SPIController):
     bits=12,
     vref=2.5*2
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('AD5453'), master_config=0x3010, increment=True):
+    def __init__(self, fpga, endpoints=None, master_config=0x3010, increment=True):
+
+        if endpoints is None:
+            endpoints = Endpoint.get_chip_endpoints('AD5453')
+
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
         super().__init__(fpga=fpga, master_config=master_config,
                          endpoints=endpoints, increment=increment)
@@ -1678,7 +1696,7 @@ class AD5453(SPIController):
     def write(self, data):
         super().write((self.clk_edge_bits << 12) | data)
 
-
+"""
 class ADS7952(SPIController):
     registers = Register.get_chip_registers('ADS7952')
 
@@ -1733,30 +1751,209 @@ class ADS7952(SPIController):
     # Method to set up the chip for use
     def setup(self):
         pass  # TODO: figure out what needs to be set up, if anything
+"""
 
 
 # Class for the ADS8686 ADC chip.
 class ADS8686(SPIController):
     registers = Register.get_chip_registers('ADS8686')
+    msg_w = 0x8000
+    range = {10:  0b00,
+             2.5: 0b01,
+             5:   0b10}
+    lpf_khz = {39:  0b00,
+               15:  0b01,
+               376: 0b10}
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS8686'), master_config=0x3010, increment=True):
+    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS8686'),
+                 master_config=0x3010, increment=False):
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
         super().__init__(fpga=fpga, master_config=master_config,
                          endpoints=endpoints, increment=increment)
-        self.channel = 0
+        self.ranges = [5]*16  # voltage ranges of all 16 channels
+        # TODO: OK to initializize the SPI controller here?
+
+    def write(self, msg, reg_name):
+        reg = self.registers[reg_name].address << 9
+        return super().write(reg | ADS8686.msg_w | msg)
+
+    def read(self, reg_name):
+        reg = self.registers[reg_name].address << 9
+        super().write(reg)
+        return super().read()
 
     # Method to read a desired channel on the chip
     def read_channel(self, channel):
         pass  # TODO: write method
 
-    # Method to read from the current set channel on the chip
-    def read(self):
-        self.read_channel(self.channel)
-
     # Method to set up the chip
-    def setup(self):
-        pass  # TODO: write method
+    def setup(self):  # TODO -- defaults to modify the SPI setup
+        self.configure_master(self.master_config)
+        self.set_frequency(5)
+        self.select_slave(1)
 
+    def set_range(self, vals):
+        """ if a single value then all channels are given that value
+        if a list of length 16 then each channel gets a separate range
+
+        vals must be 10, 5, or 2.5
+        """
+        if not isinstance(vals, list):
+            vals = [vals]*16
+        if len(vals) != 16:
+            print('Value must be a single number of list of length 16')
+        self.ranges = vals
+
+        towrite = 0
+        regs = ['rangeA1', 'rangeA2', 'rangeB1', 'rangeB2']
+        for idx, val in enumerate(vals):
+            towrite += ADS8686.range[val] << ((idx % 4)*2)
+            if idx % 4 == 3:
+                print('Writing 0x{:x} to reg {}'.format(towrite, regs[idx//4]))
+                self.write(towrite, regs[idx//4])
+                towrite = 0
+
+    def reg_to_voltage(self, reg_val, chan_num=0):
+        """ Calculates the channels voltage from the register value
+        using the stored gain range
+
+        reg_val: list of ints or int
+        """
+        #  TODO: setup for sequence of channels
+        val = twos_comp(reg_val, 16)  # 16-bit channel readings
+        lsb = (self.ranges[chan_num]*2)/2**16
+        return val*lsb
+
+    def write_reg_bridge(self, clk_div=1000):
+        """ setup the clk divider and spi_controller to continuously regAddr
+        ADC data
+        """
+        # Configures the clock divider to determine the CONVST frequency
+        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x0,
+                                  clk_div) # (1/200e6)*1000 = 5 us period
+        # now load the sequence of wishbone commands that will be sent to the SPI converter
+        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x1,
+                                  0x8000_0001)  # Tx data register
+
+        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x2,
+                                  0x4000_0000)  # 0x0000 loaded into the Tx register -- for NOP
+
+        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x3,
+                                  0x8000_0041)  #
+
+        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x4,
+                                  0x4000_3710)  #
+        # reset the clk divider
+        self.fpga.send_trig(self.endpoints['CLK_DIV_RESET'])
+        self.set_fpga_mode()  # lower the control bit for host vs. FPGA driven
+                              # so the FPGA takes control of sending SPI
+
+    def set_lpf(self, lpf):
+        if lpf not in ADS8686.lpf_khz.keys():
+            print('Error in ADS8686 LPF setup.')
+            print('   Skipping ADS8686 LPF setup')
+            print('   Frequency options are: {}'.format(list(ADS8686.lpf_khz.keys())))
+            print('-'*40)
+        else:
+            self.write(ADS8686.lpf_khz[lpf], 'lpf')  # 376 khZ
+
+    def setup_sequencer(self, range=5, lpf=376):
+        base_creg = 0x0000  # default value
+        self.write(base_creg, 'config')
+
+        # set channels to be the fixed digital code
+        # channel B = 0x5555; channel A = 0xAAAA
+        #  this is over-written by sequencer anyways
+        self.write((0xb | (0xb << 4)), 'chan_sel')
+
+        # set the range of all channels to +/-5V
+        self.set_range(range)  # sets all channels to +/-5V
+        self.set_lpf(lpf)
+
+        # setup the sequencer
+        # sequence0: fixed values and then continue
+        #   8 SSREN; 7-4 CHSEL_B; 3-0 CHSEL_A
+        backto_first_stack = 0x100  # SSREN is bit 8
+
+        self.write((0xb | (0xb << 4)), 'seq0')   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
+        self.write((0x8 | (0x8 << 4)), 'seq1')   # AVDD
+        self.write((0x9 | (0x9 << 4)), 'seq2')   # ALDO
+        # CH0 and cycle back to seq0
+        self.write(((0x0 | 0x0 << 4) | backto_first_stack), 'seq3')
+
+        # enable the sequencer
+        self.write(base_creg | 0x20, 'config')
+
+    def set_host_mode(self):
+        """ Configure SPI controller to be host driven """
+        self.fpga.set_wire_bit(self.endpoints['HOST_FPGA_BIT'].address,
+                               self.endpoints['HOST_FPGA_BIT'].bit_index_low)
+
+    def set_fpga_mode(self):
+        """ Configure SPI controller to be host driven """
+        self.fpga.clear_wire_bit(self.endpoints['HOST_FPGA_BIT'].address,
+                                 self.endpoints['HOST_FPGA_BIT'].bit_index_low)
+
+    def hw_reset(self, val=True):
+        #  ADS8686 active low hardware reset
+        if val:
+            self.fpga.clear_wire_bit(self.endpoints['RESET'].address,
+                                     self.endpoints['RESET'].bit_index_low)
+
+        elif not val:
+            self.fpga.set_wire_bit(self.endpoints['RESET'].address,
+                                   self.endpoints['RESET'].bit_index_low)
+
+    def read_pipe_data(self):
+        """
+        read SPI data from the pipe_out.
+        checking the FIFO half-full trigger in
+        FIFO is 32 bit wide output, 16 bit wide input (same as AD7961 FIFO)
+        """
+        s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
+        data = self.convert_data(s)
+        return data
+
+        """
+        PIPE_OUT: Endpoint at address 0xa5, [high 32 to low 0]
+        WB_IN: Endpoint at address 0x5, [high 32 to low 0]
+        OUT: Endpoint at address 0x24, [high 32 to low 0]
+        FIFO_EMPTY: Endpoint at address 0x60, [high 16 to low 15]
+        FIFO_HALFULL: Endpoint at address 0x60, [high 15 to low 14]
+        FIFO_FULL: Endpoint at address 0x60, [high 14 to low 13]
+        """
+
+    def convert_data(self, buf):
+        """ deswizzle data
+            incoming data is 1 byte at a time
+            data from ADC is 2 bytes wide (2nd byte is MSB)
+
+            returns: array of adc data converted from twos_comp representation
+        """
+
+        bits = 16
+        d = np.frombuffer(buf, dtype=np.uint8).astype(np.uint32)
+        d2 = d[0::2] + (d[1::2] << 8)
+        d_twos = twos_comp(d2, bits)
+        return d_twos
+
+    def adc_stream_mult(self, swps=4):
+        cnt = 0
+        st = bytearray(np.asarray(np.ones(0, np.uint8)))
+        self.fpga.xem.UpdateTriggerOuts()
+
+        while cnt < swps:
+            # check the FIFO half-full flag
+            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALF'].address,
+                                          self.endpoints['FIFO_HALF'].bit_index_low)):
+                s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
+                st += s
+                cnt = cnt + 1
+                print(cnt)
+            self.fpga.xem.UpdateTriggerOuts()
+
+        data = self.convert_data(st)
+        return data
 
 # Class for the AD7961 Fast ADC. Does not use SPI or I2C (uses LVDS).
 class AD7961:
@@ -1771,8 +1968,10 @@ class AD7961:
 
     # the AD7961 does not have internal registers -- just OK endpoints
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('AD7961'),
+    def __init__(self, fpga, endpoints=None,
                  chan=0, increment=False):
+        if endpoints is None:
+            endpoints = Endpoint.get_chip_endpoints('AD7961')
         self.fpga = fpga
         self.endpoints = endpoints
         self.chan = chan  # starts at 0
@@ -1786,7 +1985,7 @@ class AD7961:
         #             'WI02_A_EN0': 1,
         #             'WI02_A_EN': 15}
         if increment:
-            Endpoint.increment_endpoints(endpoints)
+            Endpoint.increment_endpoints(Endpoint.endpoints_from_defines.get('AD7961'))
 
     def get_status(self):
         """ Get AD796x status:
@@ -1908,7 +2107,7 @@ class AD7961:
     # TODO: incorporate/connect QT graphing (UIscript.py)
     def read(self):
         # s, e = self.fpga.read_pipe_out(self.eps['AD796x_POUT_OFFSET'] + self.chan)
-        s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'])
+        s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
         data = self.convert_data(s)
         return data
 
@@ -1921,7 +2120,7 @@ class AD7961:
             # check the FIFO half-full flag
             if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALF'].address,
                                           self.endpoints['FIFO_HALF'].bit_index_low)):
-                s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'])
+                s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
                 st += s
                 cnt = cnt + 1
                 print(cnt)

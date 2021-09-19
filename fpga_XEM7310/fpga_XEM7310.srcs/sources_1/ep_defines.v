@@ -171,5 +171,7 @@
 
 `define ADS8686_RESET 25 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
+`define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
+
 // TODO set this up!
 `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
