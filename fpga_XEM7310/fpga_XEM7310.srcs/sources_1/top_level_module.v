@@ -353,7 +353,7 @@ module top_level_module(
     wire ads_data_valid;
 
     okWireIn wi_ads (.okHE(okHE), .ep_addr(`ADS8686_WB_IN), .ep_dataout(ads_wire_in));
-    spi_controller uut(
+    spi_controller #(.ADDR(`ADS8686_REGBRIDGE_OFFSET)) uut(
                        .clk(clk_sys),
                        .reset(sys_rst),
                        .divider_reset(ep40trig[`ADS8686_CLK_DIV_RESET]),
