@@ -317,7 +317,7 @@ module top_level_module(
 	//TODO: reorganize triggerout
 	wire [(I2C_DCARDS_NUM-1):0] i2c_done;
 	wire [1:0] i2c_aux_done;
-	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 3*65 +: 65 ]), .ep_addr(`GP_FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(clk_sys),
+	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(`GP_FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(clk_sys),
                            .ep_trigger({10'b0,
 													 i2c_aux_done,      // 2 bits wide: 21-20
 													 i2c_done,          // 4 bits wide: 19-16
@@ -338,7 +338,7 @@ module top_level_module(
 
        okRegisterBridge regBridge (
            .okHE(okHE),
-           .okEH(okEHx[4*65 +: 65]),
+           .okEH(okEHx[2*65 +: 65]),
            .ep_write(regWrite),
            .ep_read(regRead),
            .ep_address(regAddress),
@@ -391,7 +391,7 @@ module top_level_module(
      .prog_full(ads_fifo_halffull));//status
 
     //pipeOut to transfer data in bulk from the ADS8686 FIFO
-   okPipeOut pipeOutADS86 (.okHE(okHE), .okEH(okEHx[5*65 +: 65]),
+   okPipeOut pipeOutADS86 (.okHE(okHE), .okEH(okEHx[3*65 +: 65]),
                       .ep_addr(`ADS8686_PIPE_OUT_GEN_ADDR),  .ep_read(ads_pipe_read),
                       .ep_datain(ads_fifo_data));
 
@@ -404,7 +404,7 @@ module top_level_module(
             ads_last_read <= ads_data_out;
         end
     end
-    okWireOut wo_ads (.okHE(okHE), .okEH(okEHx[6*65 +: 65 ]), .ep_addr(`ADS8686_OUT), .ep_datain(ads_last_read));
+    okWireOut wo_ads (.okHE(okHE), .okEH(okEHx[4*65 +: 65 ]), .ep_addr(`ADS8686_OUT), .ep_datain(ads_last_read));
 
   // ------------ end ADS8686 -----------------------------------
 
@@ -459,7 +459,7 @@ module top_level_module(
           .prog_full(adc_fifo_halffull[i]));//status
 
           //pipeOut for data from AD7961
-          okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(7+i)*65 +: 65]),
+          okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(5+i)*65 +: 65]),
                     .ep_addr(`AD7961_PIPE_OUT_GEN_ADDR + i), .ep_read(adc_pipe_ep_read[i]),
                     .ep_datain(adc_pipe_ep_datain[i]));
      end
@@ -478,7 +478,7 @@ module top_level_module(
         );
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DAC80508_WB_IN_GEN_ADDR + j), .ep_dataout(dac_wirein_data[j]));
         // TODO: wireout is not needed (nor supported with the Clear version of the DAC80508)
-        okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(j + 1)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR), .ep_datain(dac_data_out[j]));
+        okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(9+j)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR), .ep_datain(dac_data_out[j]));
 
     end
     endgenerate
