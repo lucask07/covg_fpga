@@ -87,11 +87,8 @@ module AD7961
 //------------------------------------------------------------------------------
 // FPGA Clock Frequency
 parameter real          FPGA_CLOCK_FREQ         = 200;
-//parameter real          FPGA_CLOCK_FREQ         = 100;
-// parameter real          FPGA_CLOCK_FREQ         = 50;
 // Conversion signal generation
 parameter real          TCYC                    = 0.200;
-// parameter real          TCYC                    = 0.400;
 parameter       [31:0]  ADC_CYC_CNT             = FPGA_CLOCK_FREQ * TCYC - 1;
 
 // Serial Interface
