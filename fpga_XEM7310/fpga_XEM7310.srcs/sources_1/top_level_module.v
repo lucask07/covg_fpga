@@ -608,7 +608,7 @@ module top_level_module(
 
          .app_wdf_mask                   (app_wdf_mask),
 
-         .sys_clk_i(clk_sys),
+         .sys_clk_i                      (clk_sys),
          .sys_rst                        (rst_sys_ddr)
          );
 
