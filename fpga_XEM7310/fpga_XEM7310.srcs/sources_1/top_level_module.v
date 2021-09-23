@@ -197,6 +197,15 @@ module top_level_module(
 	.clk_out1(adc_clk), //out at 200 MHz
 	.locked(adc_pll_locked)
 	);
+	
+	assign led[1] = ~adc_pll_locked;
+	assign led[2] = ~adc_fifo_empty[0]; // LEDs light when low
+	assign led[3] = ~adc_fifo_halffull[1];
+	assign led[4] = ~adc_fifo_full[1];
+	assign led[5] = ~ep40trig[`AD7961_PLL_RESET];
+	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i]);
+    assign led[7] = 1'b0;
+
 	 //FrontPanel (HostInterface) wires
 	wire okClk;
 	wire [112:0] okHE;
@@ -295,7 +304,8 @@ module top_level_module(
 	// okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 
     //wire to hold general status output to host
-    okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(`AD7961_PLL_LOCKED), .ep_datain({31'b0, adc_pll_locked}));
+    // https://stackoverflow.com/questions/18067571/indexing-vectors-and-arrays-with
+    okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(`AD7961_PLL_LOCKED), .ep_datain({28'b0, 3'b101, adc_pll_locked}));
 
 	//status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
 	//bit 1 is status signal telling host that AD7961_0 fifo is completely full
