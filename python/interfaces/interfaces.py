@@ -1937,15 +1937,15 @@ class ADS8686(SPIController):
         d_twos = twos_comp(d2, bits)
         return d_twos
 
-    def adc_stream_mult(self, swps=4):
+    def stream_mult(self, swps=4):
         cnt = 0
         st = bytearray(np.asarray(np.ones(0, np.uint8)))
         self.fpga.xem.UpdateTriggerOuts()
 
         while cnt < swps:
             # check the FIFO half-full flag
-            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALF'].address,
-                                          self.endpoints['FIFO_HALF'].bit_index_low)):
+            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALFFULL'].address,
+                                          self.endpoints['FIFO_HALFFULL'].bit_index_low)):
                 s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
                 st += s
                 cnt = cnt + 1
@@ -2004,7 +2004,7 @@ class AD7961:
         return status
 
     def get_fifo_status(self):
-        flags = ['FULL', 'HALF', 'EMPTY']
+        flags = ['FULL', 'HALFFULL', 'EMPTY']
         fifo_status = {}
         self.fpga.xem.UpdateTriggerOuts()
         for k in flags:
@@ -2015,23 +2015,27 @@ class AD7961:
     """
     Enable pins:
     0000 - power down
-    0001 - enabled with ref buffer on; 28 MHZ
+    1001 - enabled with ref buffer on; 28 MHZ
     0100 - test patterns on LVDS
-    0101 - enabled with ref buffer on; 9 MHZ
+    1101 - enabled with ref buffer on; 9 MHZ
+    Note that EN[3]=1 enables the VCM output buffer.
     """
 
     def power_down_adc(self):
-        self.set_enables(0b0, global_enables=False)
+        # power down single channel of the ADC
         # fails if the global enables are 010 for LVDS test patterns
+        # don't
+        self.set_enables(0b0, global_enables=False)
+
 
     def test_pattern(self):
-        self.set_enables(0x0100)  # TODO: write
+        self.set_enables(0x0100)
 
     def power_up_adc(self, bw='28M'):
         if bw == '28M':
-            self.set_enables(0x0001)
+            self.set_enables(0x1001)
         elif bw == '9M':
-            self.set_enables(0x0101)
+            self.set_enables(0x1101)
         else:
             print('incorrect input sampling bandwidth for {}:Channel{}'.format(self.name,
                                                                         self.chan))
@@ -2074,13 +2078,14 @@ class AD7961:
             mask = gen_mask(gl_mask) | mask
         # setup the values
         # value = (self.eps['WI02_A_EN0'] + self.chan)
-        value = 1 << (self.endpoints['ENABLE'].bit_index_low)  # TODO: check this
+        value_chan = (value & 0b0001) << (self.endpoints['ENABLE'].bit_index_low)
         if global_enables:
             #  globabl enables are the 3 MSBs
-            val_global = (value & 0b1110) << (self.endpoints['GLOBAL_ENABLE'].bit_index_low-1)  # minus 1 since
-            value = value | val_global
+            val_global = (value & 0b1110) << (self.endpoints['GLOBAL_ENABLE'].bit_index_low - 1)  # minus 1 since
+            print('Global value = 0x{:0x}'.format(val_global))
+            value = value_chan | val_global
 
-        print('Enables setting value = 0x{:0x} with mask = value = 0x{:0x}')
+        print('Enables setting value = 0x{:0x} with mask = = 0x{:0x}'.format(value, mask))
         self.fpga.set_wire(self.endpoints['ENABLE'].address, value, mask=mask)
 
     def convert_data(self, buf):
@@ -2100,33 +2105,38 @@ class AD7961:
         # reset FIFO
         self.reset_fifo()
         # enable ADC
-        self.power_up_dac()
+        self.power_up_adc()
         # TODO: the FIFO is guaranteed to overflow
 
     # TODO: test composite ADC function that enables, reads, converts and plots
     # TODO: incorporate/connect QT graphing (UIscript.py)
-    def read(self):
+    def read(self, convert=True):
         # s, e = self.fpga.read_pipe_out(self.eps['AD796x_POUT_OFFSET'] + self.chan)
         s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
-        data = self.convert_data(s)
+        if convert:
+            data = self.convert_data(s)
+        else:
+            data = s
         return data
 
-    def adc_stream_mult(self, swps=4):
+    def stream_mult(self, swps=4, convert=True):
         cnt = 0
         st = bytearray(np.asarray(np.ones(0, np.uint8)))
         self.fpga.xem.UpdateTriggerOuts()
 
         while cnt < swps:
             # check the FIFO half-full flag
-            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALF'].address,
-                                          self.endpoints['FIFO_HALF'].bit_index_low)):
+            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALFFULL'].address,
+                                          self.endpoints['FIFO_HALFFULL'].bit_index_low)):
                 s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
                 st += s
                 cnt = cnt + 1
                 print(cnt)
             self.fpga.xem.UpdateTriggerOuts()
-
-        data = self.convert_data(st)
+        if convert:
+            data = self.convert_data(st)
+        else:
+            data = st
         return data
 
 
