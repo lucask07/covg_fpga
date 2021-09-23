@@ -134,17 +134,15 @@ log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_bitfile')
 
 uid = UID_24AA025UID(fpga=f,
                      endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
-                     addr_pins=0b000,
-                     increment=False)
+                     addr_pins=0b000)
 
 ads = ADS8686(fpga=f,
-              endpoints=Endpoint.get_chip_endpoints('ADS8686'),
-              increment=False)
+              endpoints=Endpoint.get_chip_endpoints('ADS8686'))
 
 ads_cfg = ads.read('config')
 
-dac0 = DAC80508(fpga=f, increment=True)
-dac1 = DAC80508(fpga=f, increment=True)
+dac0 = DAC80508(fpga=f)
+dac1 = DAC80508(fpga=f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('DAC80508'), 1))
 
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
@@ -152,10 +150,11 @@ pwr.all_off()  # disable all power enables
 AD7961_CHANS = 4
 ad7961s = []
 for i in range(AD7961_CHANS):
-    ad7961s.append(AD7961(f, increment=True))
+    ad7961s.append(AD7961(f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD7961'),i)))
 
 for i in range(AD7961_CHANS):
     ad7961s[i].power_down_all()
+    ad7961s[i].reset_wire(1)
 
 # TODO wrpt endpoints stuff:
 """
@@ -256,9 +255,9 @@ log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ipump_disable')
 # desired I/O expander:
 # DAC gains and current output select
 io_0 = TCA9555(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'),
-               addr_pins=0b000, increment=False)  # DAC gains 0,1,2,3
+               addr_pins=0b000)  # DAC gains 0,1,2,3
 io_1 = TCA9555(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'),
-               addr_pins=0b100, increment=False)  # DAC gains 4,5;
+               addr_pins=0b100)  # DAC gains 4,5;
                                                   # ISEL1[3:0]; ISEL2[3:0]
 
 io_0.configure_pins([0x00, 0x00])  # set all pins to outputs (=0)
@@ -276,11 +275,11 @@ log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
 
 # enable one AD7961 and remeasure current
 if AD7961_EN:
-    ad7961s[0].power_up_adc()
+    setup = ad7961s[0].setup(reset_pll=True)  # resets FIFO and ADC controller
     ad7961s[0].test_pattern()
     time.sleep(0.05)
-    ad7961s[0].setup() # resets FIFO and ADC controller
-    time.sleep(0.05)
+    ad7961s[0].reset_fifo()
+    time.sleep(0.05)  # FIFO fills in 204 us
     log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
     data_ad7961_test_pattern = ad7961s[0].stream_mult(swps=4, convert = False)
 
