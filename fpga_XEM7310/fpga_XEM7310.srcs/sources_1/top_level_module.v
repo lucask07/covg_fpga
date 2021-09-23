@@ -305,7 +305,7 @@ module top_level_module(
 
     //wire to hold general status output to host
     // https://stackoverflow.com/questions/18067571/indexing-vectors-and-arrays-with
-    okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(`AD7961_PLL_LOCKED), .ep_datain({28'b0, 3'b101, adc_pll_locked}));
+    okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(`AD7961_PLL_LOCKED_WIRE_OUT), .ep_datain({28'b0, 3'b101, adc_pll_locked}));
 
 	//status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
 	//bit 1 is status signal telling host that AD7961_0 fifo is completely full
@@ -331,10 +331,10 @@ module top_level_module(
                            .ep_trigger({10'b0,
 													 i2c_aux_done,      // 2 bits wide: 21-20
 													 i2c_done,          // 4 bits wide: 19-16
-                           ads_fifo_empty,    // bit 15
+                                                     ads_fifo_empty,    // bit 15
 													 ads_fifo_halffull, // bit 14
 													 ads_fifo_full,     // bit 13
-                           adc_fifo_empty,    // 4 bits wide: 12-6
+                                                     adc_fifo_empty,    // 4 bits wide: 12-6
 													 adc_fifo_halffull, // 4 bits wide: 8-5
 													 adc_fifo_full,     // 4 bits wide: 4-1
 													 hostinterrupt}));  // bit 0
