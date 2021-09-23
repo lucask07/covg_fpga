@@ -54,8 +54,9 @@ logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.
 
 # eps = Endpoint.endpoints_from_defines
 
-ADS_EN = False
-AD7961_EN = False
+ADS_EN = True
+AD7961_EN = True
+EN_15V = True
 
 # set up DC power supply
 # name within the configuration file (config.yaml)
@@ -175,10 +176,11 @@ for name in ['1V8', '5V', '3V3']:
 
 # +15 and -15V simultaneously
 # pwr.all_on()
-for ch in [1, 2]:
-    dc_pwr2.set('out_state', 'ON', configs={'chan': ch})
-time.sleep(0.05)
-log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='turnon_15n15V')
+if EN_15V:
+    for ch in [1, 2]:
+        dc_pwr2.set('out_state', 'ON', configs={'chan': ch})
+    time.sleep(0.05)
+    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='turnon_15n15V')
 
 time.sleep(0.01)
 #  pwr.all_off()
@@ -268,16 +270,30 @@ io_1.configure_pins([0x00, 0x00])  # set all pins to outputs
 # ISEL = 1 gives voltage outputs
 # ISEL = 0 routes Howland Ipump out
 io_1.write(0x00FF)  # set all gain pins to zero & all ISEL to have the voltage output
- # TODO: check ordering of the io write
+ # TODO: check ordering of the io write; seems correct
 
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
 
 # enable one AD7961 and remeasure current
 if AD7961_EN:
     ad7961s[0].power_up_adc()
+    ad7961s[0].test_pattern()
+    time.sleep(0.05)
+    ad7961s[0].setup() # resets FIFO and ADC controller
     time.sleep(0.05)
     log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
-    ad7961s[0].power_down_adc()
+    data_ad7961_test_pattern = ad7961s[0].stream_mult(swps=4, convert = False)
+
+    ad7961s[0].power_up_adc()  # standard sampling
+    time.sleep(0.05)
+    data_ad7961_data = ad7961s[0].stream_mult()
+    ad7961s[0].get_fifo_status()
+
+with open('test_pattern.npy', 'wb') as f:
+    np.save(f, data_ad7961_test_pattern)
+
+with open('test_data.npy', 'wb') as f:
+    np.save(f, data_ad7961_data)
 
 # enable ADS868 and remeasure current
 if ADS_EN:
@@ -285,12 +301,27 @@ if ADS_EN:
     time.sleep(0.01)
     log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ads_release_reset')
     time.sleep(1)
-    ads.hw_reset(val=True)  # back to reset
+    ads.setup()
+    ads.set_host_mode()
+    cfg = ads.read('config')
+    chan_sel = ads.read('chan_sel')
+    range_a1 = ads.read('rangeA1')
+    ads.set_range(5)
+    lpf1 = ads.read('lpf')
+    ads.set_lpf(376)
+    lpf2 = ads.read('lpf')
+    ads.setup_sequencer()
+    ads.write_reg_bridge()
+    ads.set_fpga_mode()
+    data_ads = ads.stream_mult()
+
+    # ads.hw_reset(val=True)  # back to reset
 
 print(current_meas)
 
+# these DAC signals come out before the bipolar amplifier
 for dac in [dac0, dac1]:
-    dac.reset_master()  # TODO -- I don't think this works?
+    # dac.reset_master()  # TODO -- I don't think this works?
 
     print('Setting divider...')
     dac.set_divider(0x8)  # XEM6310 worked with divider of 4, XEM7310 runs twice as fast so divider of 8.

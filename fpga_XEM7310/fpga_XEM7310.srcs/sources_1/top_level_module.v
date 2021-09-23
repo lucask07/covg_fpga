@@ -378,7 +378,7 @@ module top_level_module(
    wire [31:0] ads_fifo_data;
    wire ads_pipe_read;
 
-   fifo_AD796x ads8686_fifo (//32 bit wide read and 16 bit wide write ports
+   fifo_AD796x ads8686_fifo ( //32 bit wide read and 16 bit wide write ports
      .rst(ep40trig[`ADS8686_FIFO_RESET]),
      .wr_clk(clk_sys),
      .rd_clk(okClk),

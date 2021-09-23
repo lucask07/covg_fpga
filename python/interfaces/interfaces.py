@@ -242,11 +242,17 @@ class Endpoint:
 
     @classmethod
     def get_chip_endpoints(cls, chip_name):
-        """Return a dictionary of Endpoints for a specific chip or group."""
+        """Return a copy of the dictionary of Endpoints for a specific chip or group."""
 
         if Endpoint.endpoints_from_defines == dict():
             Endpoint.update_endpoints_from_defines()
 
+        # copy.deepcopy() is important here because it makes a copy of the
+        # dictionary so that when we increment it for multiple instantiations
+        # of the chip, each previously instantiated chip will not have its
+        # endpoints affected by the increment, only future instantiations.
+        # Using deepcopy() ensures that any dictionaries inside the dictionary
+        # we copy also get copied, not left as references.
         return copy.deepcopy(Endpoint.endpoints_from_defines.get(chip_name))
 
     @classmethod
@@ -539,8 +545,6 @@ class I2CController:
         FPGA instance this controller uses to communicate.
     endpoints : dict
         Endpoints on the FPGA this controller uses to communicate.
-    increment : bool
-        Whether to increment generated endpoints after this instantiation.
 
     Methods
     -------
@@ -560,12 +564,10 @@ class I2CController:
 
     I2C_MAX_TIMEOUT_MS = 50
 
-    def __init__(self, fpga, endpoints, i2c={'m_pBuf': [], 'm_nDataStart': 7}, increment=False):
+    def __init__(self, fpga, endpoints, i2c={'m_pBuf': [], 'm_nDataStart': 7}):
         self.i2c = i2c
         self.fpga = fpga
         self.endpoints = endpoints
-        if increment:
-            Endpoint.increment_endpoints(endpoints)
 
     # STARTS - Defines the preamble bytes after which a start bit is
     #      transmitted. For example, if STARTS=0x04, a start bit is
@@ -786,8 +788,8 @@ class TCA9555(I2CController):
     ADDRESS_HEADER=0b0100_0000
     registers = Register.get_chip_registers('TCA9555')
 
-    def __init__(self, fpga, endpoints, addr_pins, increment=False):
-        super().__init__(fpga=fpga, endpoints=endpoints, increment=increment)
+    def __init__(self, fpga, addr_pins, endpoints):
+        super().__init__(fpga=fpga, endpoints=endpoints)
         self.addr_pins = addr_pins
 
 
@@ -864,8 +866,9 @@ class UID_24AA025UID(I2CController):
     ADDRESS_HEADER=0b10100000
     registers = Register.get_chip_registers('24AA025UID')
 
-    def __init__(self, fpga, endpoints, addr_pins, increment=False):
-        super().__init__(fpga=fpga, endpoints=endpoints, increment=increment)
+    def __init__(self, fpga, addr_pins, endpoints):
+        # No endpoints default because I2CDC or I2CDAQ does not make sense as a default either way
+        super().__init__(fpga=fpga, endpoints=endpoints)
         self.addr_pins = addr_pins
 
 
@@ -1015,8 +1018,8 @@ class DAC53401(I2CController):
     #           010   |   SDA
     #           011   |   SCL
 
-    def __init__(self, fpga, endpoints, addr_pins, increment=False):
-        super().__init__(fpga=fpga, endpoints=endpoints, increment=increment)
+    def __init__(self, fpga, addr_pins, endpoints):
+        super().__init__(fpga=fpga, endpoints=endpoints)
         self.addr_pins = addr_pins
 
     def write(self, data, register_name='DAC_DATA'):
@@ -1286,29 +1289,39 @@ class SPIController:
         Endpoints on the FPGA this controller uses to communicate.
     master_config : int
         Value of the CTRL register in the Wishbone.
-    increment : bool
-        Whether to increment generated endpoints after this instantiation.
     registers : dict
         Name-Register pairs for the internal registers of the Wishbone.
 
     Methods
     -------
     wb_send_cmd(command)
-        description
-    wb_is_acknowledged()
+        Send a command to the Wishbone.
     wb_set_address(address)
+        Set the address of the register we interact with in the Wishbone.
     wb_write(data)
+        Write up to 30 bytes of data to the currently selected register.
     wb_read()
+        Return the data stored in the currently selected register.
     wb_go()
+        Initiate a SPI transmission.
     select_slave(slave_address)
+        Select a slave device.
     set_divider(divider)
+        Set the value of the Wishbone's DIVIDER register.
     set_frequency(frequency)
+        Set the frequency of SCL.
     write(data, register=0)
+        Write data on the SCL and SDA lines.
     read(register=0)
+        Return data from the selected data receive register.
     configure_master_bin(data)
+        Set the value of the Wishbone's CTRL register directly.
     configure_master(ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0)
+        Set the Wishbone's CTRL register using several arguments.
     get_master_configuration()
+        Return the current configuration of CTRL register.
     reset_master()
+        Reset the Wishbone Master and SPI Core.
     """
 
     WB_SET_ADDRESS=0x80000000  # These 3 are from the SPI core manual
@@ -1319,14 +1332,10 @@ class SPIController:
 
     registers = Register.get_chip_registers('SPI')
 
-    def __init__(self, fpga, endpoints, master_config=registers.get('CTRL').default, increment=True):
+    def __init__(self, fpga, endpoints, master_config=registers.get('CTRL').default):
         self.fpga = fpga
         self.master_config = master_config
         self.endpoints = endpoints
-
-        # TODO: increment in SPIController as well?
-        #if increment:
-        #    Endpoint.increment_endpoints(endpoints)
 
     def wb_send_cmd(self, command):
         """Send a command to the Wishbone.
@@ -1512,49 +1521,86 @@ class SPIController:
                 params[param] << SPIController.registers[param].bit_index_low)
         self.configure_master_bin(configuration)
 
-    # Method to get the current configuration of the non-reserved CTRL register bits in a dictionary
-    # Includes ASS, IO, LSB, Tx_NEG, Rx_NEG, CHAR_LEN
     def get_master_configuration(self):
+        """Return the current configuration of CTRL register.
+        
+        Includes ASS, IO, LSB, Tx_NEG, Rx_NEG, CHAR_LEN.
+        """
+
         self.wb_set_address(SPIController.registers['CTRL'].address)
         config_data = self.wb_read()
         #TODO: convert to text data to show individual settings
         # return config
         return config_data
 
-    # Method to reset the Wishbone Master and SPI Core
     def reset_master(self):
+        """Reset the Wishbone Master and SPI Core."""
+
         self.fpga.xem.ActivateTriggerIn(
             self.endpoints['MASTER_RESET'].address,
             self.endpoints['MASTER_RESET'].bit_index_low)
 
-# Class for DAC80508 chip extending SPIController. Handles read, write, configuration, gain configuration, id, and reset.
-
 
 class DAC80508(SPIController):
+    """ Class for SPI DAC chip DAC80508.
+    
+    Subclass of the SPIController class. Attributes and methods below are
+    differences in this class from I2CController only.
+    
+    Attributes
+    ----------
+    WRITE_OPERATION : int
+        SPI data prefix for writing to the DAC.
+    READ_OPERATION : int
+        SPI data prefix for reading from the DAC.
+    registers : dict
+        Name-Register pairs for the internal registers of the DAC80508.
+
+    Methods
+    -------
+    write(register_name, data, mask=0xffff)
+        Write to any register on the chip.
+    read(register_name)
+        Return data from any register on the chip.
+    set_config_bin(data, mask=0xffff)
+        Set the configuration register with a binary number.
+    set_config(ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0,
+               DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0,
+               DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0)
+        Set the configuration register with multiple arguments.
+    get_config(display_values=True)
+        Return and print the current configuration register data.
+    set_gain(data, mask=0x01ff)
+        Set the gain value.
+    get_gain()
+        Get the gain value.
+    get_id(display=True)
+        Print the device info and return its ID.
+    reset()
+        Soft reset the chip.
+    """
+
     WRITE_OPERATION = 0x000000
     READ_OPERATION = 0x800000
 
     registers = Register.get_chip_registers('DAC80508')
 
-    def __init__(self, fpga, endpoints=None, master_config=0x3218, slave_address=0x1, increment=False):
+    def __init__(self, fpga, master_config=0x3218, slave_address=0x1, endpoints=None):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DAC80508')
         self.slave_address = slave_address
-        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints, increment=increment)
-
-        if increment:
-            Endpoint.increment_endpoints(Endpoint.endpoints_from_defines.get('DAC80508'))
+        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
 
     # Method to write to any register on the chip.
     def write(self, register_name, data, mask=0xffff):
+        """Write to any register on the chip."""
+
         # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
         reg = DAC80508.registers.get(register_name)
         if reg == None:
             print(f'{register_name} not in registers')
             return False
-
-        # self.select_slave(self.slave_address)
 
         # Get current data
         current_data = self.read(register_name)
@@ -1572,16 +1618,16 @@ class DAC80508(SPIController):
             print(f'Write {hex(data)} to {register_name}: FAIL')
         return ack
 
-    # Method to read from any register on the chip.
 
     def read(self, register_name):
+        """Return data from any register on the chip."""
+
         # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
         reg = DAC80508.registers.get(register_name)
         if reg == None:
             print(f'{register_name} not in registers')
             return False
 
-        self.select_slave(self.slave_address)
         # Issue read command
         # 23=1 (read), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=0xXXXX (do not cares)
         transmission = DAC80508.READ_OPERATION | (reg.address << 16)
@@ -1593,13 +1639,15 @@ class DAC80508(SPIController):
         data_read = read_out & 0xffff  # Data is only in bottom 16 bits
         return data_read
 
-    # Method to set the configuration register with a binary number.
     def set_config_bin(self, data, mask=0xffff):
+        """Set the configuration register with a binary number."""
+
         # Write new config
         return self.write('CONFIG', data, mask)
 
-    # Method to set the configuration register with multiple arguments.
-    def set_config(self, ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0, DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0, DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0, ):
+    def set_config(self, ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0, DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0, DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0):
+        """Set the configuration register with multiple arguments."""
+
         params = [ALM_SEL, ALM_EN, CRC_EN, FSDO,
                   DSDO, REF_PWDWN, DAC7_PWDWN, DAC6_PWDWN, DAC5_PWDWN, DAC4_PWDWN, DAC3_PWDWN, DAC2_PWDWN, DAC1_PWDWN, DAC0_PWDWN]
         mask = ''
@@ -1618,8 +1666,9 @@ class DAC80508(SPIController):
             data += params[i]*2**bit
         self.set_config_bin(data, mask)
 
-    # Method to read the current configuration register data.
     def get_config(self, display_values=True):
+        """Return and print the current configuration register data."""
+
         config = self.read('CONFIG')
         if not config:
             print('Get Configuration: FAIL')
@@ -1632,16 +1681,19 @@ class DAC80508(SPIController):
                 print(f"{key}: {bool(config & DAC80508.registers.get(key).bit_index_low)}")
         return config
 
-    # Method to set the gain value.
     def set_gain(self, data, mask=0x01ff):
+        """Set the gain value."""
+
         return self.write('GAIN', data, mask)
 
-    # Method to get the gain value.
     def get_gain(self):
+        """Get the gain value."""
+        
         return self.read('GAIN')
 
-    # Method to get the device info from its ID.
     def get_id(self, display=True):
+        """Print the device info and return its ID."""
+
         id = self.read('ID')
         print(f'ID = {id} = {bin(id)}')
         if not id:  # Check to see if the read worked
@@ -1659,8 +1711,9 @@ class DAC80508(SPIController):
             print(f'Version ID: {version_id}')
         return id
 
-    # Method to soft reset the chip.
     def reset(self):
+        """Soft reset the chip."""
+
         ack = self.write('TRIGGER', 0b1010, 0x000f)
         if self.debug:
             if ack:
@@ -1676,14 +1729,13 @@ class AD5453(SPIController):
     bits=12,
     vref=2.5*2
 
-    def __init__(self, fpga, endpoints=None, master_config=0x3010, increment=True):
+    def __init__(self, fpga, master_config=0x3010, endpoints=None):
 
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('AD5453')
 
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
-        super().__init__(fpga=fpga, master_config=master_config,
-                         endpoints=endpoints, increment=increment)
+        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
 
@@ -1765,11 +1817,11 @@ class ADS8686(SPIController):
                15:  0b01,
                376: 0b10}
 
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS8686'),
-                 master_config=0x3010, increment=False):
+    def __init__(self, fpga, master_config=0x3010, endpoints=None):
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
-        super().__init__(fpga=fpga, master_config=master_config,
-                         endpoints=endpoints, increment=increment)
+        if endpoints is None:
+            endpoints = Endpoint.get_chip_endpoints('ADS8686')
+        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
         self.ranges = [5]*16  # voltage ranges of all 16 channels
         # TODO: OK to initializize the SPI controller here?
 
@@ -1937,15 +1989,15 @@ class ADS8686(SPIController):
         d_twos = twos_comp(d2, bits)
         return d_twos
 
-    def adc_stream_mult(self, swps=4):
+    def stream_mult(self, swps=4):
         cnt = 0
         st = bytearray(np.asarray(np.ones(0, np.uint8)))
         self.fpga.xem.UpdateTriggerOuts()
 
         while cnt < swps:
             # check the FIFO half-full flag
-            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALF'].address,
-                                          self.endpoints['FIFO_HALF'].bit_index_low)):
+            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALFFULL'].address,
+                                          self.endpoints['FIFO_HALFFULL'].bit_index_low)):
                 s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
                 st += s
                 cnt = cnt + 1
@@ -1968,8 +2020,7 @@ class AD7961:
 
     # the AD7961 does not have internal registers -- just OK endpoints
 
-    def __init__(self, fpga, endpoints=None,
-                 chan=0, increment=False):
+    def __init__(self, fpga, chan=0, endpoints=None):
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('AD7961')
         self.fpga = fpga
@@ -1984,8 +2035,6 @@ class AD7961:
         #             'TI40_ADC_FIFO_RST': 4,
         #             'WI02_A_EN0': 1,
         #             'WI02_A_EN': 15}
-        if increment:
-            Endpoint.increment_endpoints(Endpoint.endpoints_from_defines.get('AD7961'))
 
     def get_status(self):
         """ Get AD796x status:
@@ -2004,7 +2053,7 @@ class AD7961:
         return status
 
     def get_fifo_status(self):
-        flags = ['FULL', 'HALF', 'EMPTY']
+        flags = ['FULL', 'HALFFULL', 'EMPTY']
         fifo_status = {}
         self.fpga.xem.UpdateTriggerOuts()
         for k in flags:
@@ -2015,23 +2064,27 @@ class AD7961:
     """
     Enable pins:
     0000 - power down
-    0001 - enabled with ref buffer on; 28 MHZ
+    1001 - enabled with ref buffer on; 28 MHZ
     0100 - test patterns on LVDS
-    0101 - enabled with ref buffer on; 9 MHZ
+    1101 - enabled with ref buffer on; 9 MHZ
+    Note that EN[3]=1 enables the VCM output buffer.
     """
 
     def power_down_adc(self):
-        self.set_enables(0b0, global_enables=False)
+        # power down single channel of the ADC
         # fails if the global enables are 010 for LVDS test patterns
+        # don't
+        self.set_enables(0b0, global_enables=False)
+
 
     def test_pattern(self):
-        self.set_enables(0x0100)  # TODO: write
+        self.set_enables(0x0100)
 
     def power_up_adc(self, bw='28M'):
         if bw == '28M':
-            self.set_enables(0x0001)
+            self.set_enables(0x1001)
         elif bw == '9M':
-            self.set_enables(0x0101)
+            self.set_enables(0x1101)
         else:
             print('incorrect input sampling bandwidth for {}:Channel{}'.format(self.name,
                                                                         self.chan))
@@ -2074,13 +2127,14 @@ class AD7961:
             mask = gen_mask(gl_mask) | mask
         # setup the values
         # value = (self.eps['WI02_A_EN0'] + self.chan)
-        value = 1 << (self.endpoints['ENABLE'].bit_index_low)  # TODO: check this
+        value_chan = (value & 0b0001) << (self.endpoints['ENABLE'].bit_index_low)
         if global_enables:
             #  globabl enables are the 3 MSBs
-            val_global = (value & 0b1110) << (self.endpoints['GLOBAL_ENABLE'].bit_index_low-1)  # minus 1 since
-            value = value | val_global
+            val_global = (value & 0b1110) << (self.endpoints['GLOBAL_ENABLE'].bit_index_low - 1)  # minus 1 since
+            print('Global value = 0x{:0x}'.format(val_global))
+            value = value_chan | val_global
 
-        print('Enables setting value = 0x{:0x} with mask = value = 0x{:0x}')
+        print('Enables setting value = 0x{:0x} with mask = = 0x{:0x}'.format(value, mask))
         self.fpga.set_wire(self.endpoints['ENABLE'].address, value, mask=mask)
 
     def convert_data(self, buf):
@@ -2100,33 +2154,38 @@ class AD7961:
         # reset FIFO
         self.reset_fifo()
         # enable ADC
-        self.power_up_dac()
+        self.power_up_adc()
         # TODO: the FIFO is guaranteed to overflow
 
     # TODO: test composite ADC function that enables, reads, converts and plots
     # TODO: incorporate/connect QT graphing (UIscript.py)
-    def read(self):
+    def read(self, convert=True):
         # s, e = self.fpga.read_pipe_out(self.eps['AD796x_POUT_OFFSET'] + self.chan)
         s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
-        data = self.convert_data(s)
+        if convert:
+            data = self.convert_data(s)
+        else:
+            data = s
         return data
 
-    def adc_stream_mult(self, swps=4):
+    def stream_mult(self, swps=4, convert=True):
         cnt = 0
         st = bytearray(np.asarray(np.ones(0, np.uint8)))
         self.fpga.xem.UpdateTriggerOuts()
 
         while cnt < swps:
             # check the FIFO half-full flag
-            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALF'].address,
-                                          self.endpoints['FIFO_HALF'].bit_index_low)):
+            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALFFULL'].address,
+                                          self.endpoints['FIFO_HALFFULL'].bit_index_low)):
                 s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
                 st += s
                 cnt = cnt + 1
                 print(cnt)
             self.fpga.xem.UpdateTriggerOuts()
-
-        data = self.convert_data(st)
+        if convert:
+            data = self.convert_data(st)
+        else:
+            data = st
         return data
 
 
