@@ -148,6 +148,7 @@
 `define GPIO_3V3_WIRE_IN_LEN 6 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 `define GPIO_LVDS_WIRE_IN 20 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 `define GPIO_LVDS_WIRE_IN_LEN 4 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define AD7961_WIRE_RESET_GEN_BIT 24 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 
 // wirein at 0x02
 `define AD7961_ENABLE_GEN_BIT 1 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1

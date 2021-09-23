@@ -422,10 +422,16 @@ module top_level_module(
 	genvar i;
     generate
     for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7960_gen
+    
+        sync_reset ad7961_sync_reset(
+            clk_sys,
+            ep01wire[`AD7961_WIRE_RESET_GEN_BIT+i],
+            adc_sync_rst[i]);
+        
         AD7961 adc7961(
         .m_clk_i(clk_sys),                // 200 MHz Clock, used for timing (only for 5 MSPS tracking)
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
-        .reset_n_i(~ep40trig[`AD7961_RESET_GEN_BIT+i]),          // Reset signal, active low
+        .reset_n_i(~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
         .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
         .d_pos_i(a_d_p[i]),                    // Data Ii, Positive Pair
         .d_neg_i(a_d_n[i]),                    // Data In, Negative Pair
