@@ -531,6 +531,10 @@ class FPGA:
         """Clear a single bit to 0 in a OpalKelly wire in."""
         return self.set_wire(address, value=0, mask=1 << bit)
 
+    def read_wire_bit(self, address, bit):
+        """Read a single bit in a OpalKelly wire in."""
+        value = self.read_wire(address)
+        return (value & (1 << bit)) >> bit
 
 class I2CController:
     """Class for controllers on the FPGA using I2C protocol.
@@ -1523,7 +1527,7 @@ class SPIController:
 
     def get_master_configuration(self):
         """Return the current configuration of CTRL register.
-        
+
         Includes ASS, IO, LSB, Tx_NEG, Rx_NEG, CHAR_LEN.
         """
 
@@ -1543,10 +1547,10 @@ class SPIController:
 
 class DAC80508(SPIController):
     """ Class for SPI DAC chip DAC80508.
-    
+
     Subclass of the SPIController class. Attributes and methods below are
     differences in this class from I2CController only.
-    
+
     Attributes
     ----------
     WRITE_OPERATION : int
@@ -1618,7 +1622,6 @@ class DAC80508(SPIController):
             print(f'Write {hex(data)} to {register_name}: FAIL')
         return ack
 
-
     def read(self, register_name):
         """Return data from any register on the chip."""
 
@@ -1688,7 +1691,7 @@ class DAC80508(SPIController):
 
     def get_gain(self):
         """Get the gain value."""
-        
+
         return self.read('GAIN')
 
     def get_id(self, display=True):
@@ -1806,8 +1809,68 @@ class ADS7952(SPIController):
 """
 
 
+class ADCDATA():
+    def __init__(self):
+        pass
+
+    def deswizzle(self, buf):
+        d = np.frombuffer(buf, dtype=np.uint8).astype(np.uint32)
+        if self.num_bits == 16:
+            d1 = d[0::4] + (d[1::4] << 8)  # TODO: check the byte ordering
+            d2 = d[2::4] + (d[3::4] << 8)
+        elif self.num_bits == 18:
+            # TODO: check 18-bit data conversion
+            d2 = (d[3::4] << 8) + d[1::4] + ((d[0::4] << 16) & 0x03)
+
+        c = np.empty((d1.size + d2.size,), dtype=d1.dtype)
+        c[0::2] = d1
+        c[1::2] = d2
+
+        return c
+
+    def convert_twos(self, d):
+        return twos_comp(d, self.num_bits)
+
+    def convert_data(self, buf):
+        """
+        deswizle and convert the twos complement representation
+        """
+        return self.convert_twos(self.deswizzle(buf))
+
+
+    # TODO: test composite ADC function that enables, reads, converts and plots
+    # TODO: incorporate/connect QT graphing (UIscript.py)
+    def read(self, twos_comp_conv=True):
+        # s, e = self.fpga.read_pipe_out(self.eps['AD796x_POUT_OFFSET'] + self.chan)
+        s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
+        if twos_comp_conv:
+            data = self.convert_data(s)
+        else:
+            data = self.deswizzle(s)
+        return data
+
+    def stream_mult(self, swps=4, twos_comp_conv=True):
+        cnt = 0
+        st = bytearray(np.asarray(np.ones(0, np.uint8)))
+        self.fpga.xem.UpdateTriggerOuts()
+
+        while cnt < swps:
+            # check the FIFO half-full flag
+            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALFFULL'].address,
+                                          self.endpoints['FIFO_HALFFULL'].bit_index_low)):
+                s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
+                st += s
+                cnt = cnt + 1
+                print(cnt)
+            self.fpga.xem.UpdateTriggerOuts()
+        if twos_comp_conv:
+            data = self.convert_data(st)
+        else:
+            data = self.deswizzle(st)
+        return data
+
 # Class for the ADS8686 ADC chip.
-class ADS8686(SPIController):
+class ADS8686(SPIController, ADCDATA):
     registers = Register.get_chip_registers('ADS8686')
     msg_w = 0x8000
     range = {10:  0b00,
@@ -1817,13 +1880,14 @@ class ADS8686(SPIController):
                15:  0b01,
                376: 0b10}
 
-    def __init__(self, fpga, master_config=0x3010, endpoints=None):
-        # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
+    def __init__(self, fpga, master_config=0x3610, endpoints=None):
+        # master_config=0x3610 Sets CHAR_LEN=16, ASS (auto SlaveSelect),
+        # IE (interrupt enable), Tx/Rx Negative Edge
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('ADS8686')
         super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
         self.ranges = [5]*16  # voltage ranges of all 16 channels
-        # TODO: OK to initializize the SPI controller here?
+        self.num_bits = 16
 
     def write(self, msg, reg_name):
         reg = self.registers[reg_name].address << 9
@@ -1847,7 +1911,6 @@ class ADS8686(SPIController):
     def set_range(self, vals):
         """ if a single value then all channels are given that value
         if a list of length 16 then each channel gets a separate range
-
         vals must be 10, 5, or 2.5
         """
         if not isinstance(vals, list):
@@ -1881,20 +1944,20 @@ class ADS8686(SPIController):
         ADC data
         """
         # Configures the clock divider to determine the CONVST frequency
-        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x0,
-                                  clk_div) # (1/200e6)*1000 = 5 us period
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x0,
+                                          clk_div)  # (1/200e6)*1000 = 5 us period
         # now load the sequence of wishbone commands that will be sent to the SPI converter
-        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x1,
-                                  0x8000_0001)  # Tx data register
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x1,
+                                          0x8000_0001)  # Tx data register
 
-        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x2,
-                                  0x4000_0000)  # 0x0000 loaded into the Tx register -- for NOP
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x2,
+                                          0x4000_0000)  # 0x0000 loaded into the Tx register -- for NOP
 
-        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x3,
-                                  0x8000_0041)  #
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x3,
+                                          0x8000_0041)  #
 
-        res = self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x4,
-                                  0x4000_3710)  #
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x4,
+                                          0x4000_3710)  #
         # reset the clk divider
         self.fpga.send_trig(self.endpoints['CLK_DIV_RESET'])
         self.set_fpga_mode()  # lower the control bit for host vs. FPGA driven
@@ -1956,59 +2019,9 @@ class ADS8686(SPIController):
             self.fpga.set_wire_bit(self.endpoints['RESET'].address,
                                    self.endpoints['RESET'].bit_index_low)
 
-    def read_pipe_data(self):
-        """
-        read SPI data from the pipe_out.
-        checking the FIFO half-full trigger in
-        FIFO is 32 bit wide output, 16 bit wide input (same as AD7961 FIFO)
-        """
-        s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
-        data = self.convert_data(s)
-        return data
-
-        """
-        PIPE_OUT: Endpoint at address 0xa5, [high 32 to low 0]
-        WB_IN: Endpoint at address 0x5, [high 32 to low 0]
-        OUT: Endpoint at address 0x24, [high 32 to low 0]
-        FIFO_EMPTY: Endpoint at address 0x60, [high 16 to low 15]
-        FIFO_HALFULL: Endpoint at address 0x60, [high 15 to low 14]
-        FIFO_FULL: Endpoint at address 0x60, [high 14 to low 13]
-        """
-
-    def convert_data(self, buf):
-        """ deswizzle data
-            incoming data is 1 byte at a time
-            data from ADC is 2 bytes wide (2nd byte is MSB)
-
-            returns: array of adc data converted from twos_comp representation
-        """
-
-        bits = 16
-        d = np.frombuffer(buf, dtype=np.uint8).astype(np.uint32)
-        d2 = d[0::2] + (d[1::2] << 8)
-        d_twos = twos_comp(d2, bits)
-        return d_twos
-
-    def stream_mult(self, swps=4):
-        cnt = 0
-        st = bytearray(np.asarray(np.ones(0, np.uint8)))
-        self.fpga.xem.UpdateTriggerOuts()
-
-        while cnt < swps:
-            # check the FIFO half-full flag
-            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALFFULL'].address,
-                                          self.endpoints['FIFO_HALFFULL'].bit_index_low)):
-                s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
-                st += s
-                cnt = cnt + 1
-                print(cnt)
-            self.fpga.xem.UpdateTriggerOuts()
-
-        data = self.convert_data(st)
-        return data
 
 # Class for the AD7961 Fast ADC. Does not use SPI or I2C (uses LVDS).
-class AD7961:
+class AD7961(ADCDATA):
     """An interface to the AD7961 ADC
     Passed the FPGA object
     Allows for multiple channels
@@ -2027,6 +2040,8 @@ class AD7961:
         self.endpoints = endpoints
         self.chan = chan  # starts at 0
         self.name = 'AD7961'
+        self.num_bits = 16  # for AD7961 bits=18 for AD7960
+
         # self.eps = {'AD796x_POUT_OFFSET': 0xA1,
         #             'ADC_PLL_LOCKED_STATUS_WIRE_OUT': 0x21,
         #             'GENERAL_RST_VALID_TRIG_IN_ADDR': 0x40,
@@ -2043,14 +2058,16 @@ class AD7961:
         Returns: dictionary of status
         """
         status = self.get_fifo_status()
-        # a = self.fpga.read_wire(self.eps['ADC_PLL_LOCKED_STATUS_WIRE_OUT'])
-        a = self.fpga.read_wire(self.endpoints['PLL_LOCKED'].address)
-        pll_lock = test_bit(a, 0)  # TODO: parameters
+        pll_lock = self.get_pll_status()
         status['pll_lock'] = pll_lock
         for k in status:
             print('{} status of {} = {}'.format(self.name,
                                                 k, status[k]))
         return status
+
+    def get_pll_status(self):
+        return self.fpga.read_wire_bit(self.endpoints['PLL_LOCKED'].address,
+                                       self.endpoints['PLL_LOCKED'].bit_index_low)
 
     def get_fifo_status(self):
         flags = ['FULL', 'HALFFULL', 'EMPTY']
@@ -2076,8 +2093,8 @@ class AD7961:
         # don't
         self.set_enables(0b0, global_enables=False)
 
-
     def test_pattern(self):
+        # enable PRBS test pattern on the LVDS interface
         self.set_enables(0x0100)
 
     def power_up_adc(self, bw='28M'):
@@ -2102,17 +2119,31 @@ class AD7961:
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['FIFO_RESET'].address,
                                                self.endpoints['FIFO_RESET'].bit_index_low)
 
-    def reset_adc(self):
+    def reset_trig(self):
         """resets the FPGA controller for the ADC
-            one per channel"""
+            one per channel
+            uses the Opal Kelly Trigger"""
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['RESET'].address,
                                                self.endpoints['RESET'].bit_index_low)
+
+    def reset_wire(self, value):
+        """sets the value of the wire to reset the FPGA controller for the ADC
+            value = 1 is reset
+            value = 0 releases reset
+            uses the Opal Kelly WireIn (the trigger can't hold the reset)
+        """
+        if value == 1:
+            self.fpga.set_wire_bit(self.endpoints['WIRE_RESET'].address,
+                                   self.endpoints['WIRE_RESET'].bit_index_low)
+        if value == 0:
+            self.fpga.clear_wire_bit(self.endpoints['WIRE_RESET'].address,
+                                     self.endpoints['WIRE_RESET'].bit_index_low)
 
     def power_down_fpga(self):
         """power down the FPGA controller through wirein"""
         # TODO: add functionality (wirein bit) to the FPGA
         #       this would reduce FPGA power consumption
-        pass
+        self.reset_wire(0)
 
     def set_enables(self, value=0b0000, global_enables=True):
         # will always set the EN0 specific to this channel (LSB in values)
@@ -2137,56 +2168,38 @@ class AD7961:
         print('Enables setting value = 0x{:0x} with mask = = 0x{:0x}'.format(value, mask))
         self.fpga.set_wire(self.endpoints['ENABLE'].address, value, mask=mask)
 
-    def convert_data(self, buf):
-        bits = 16  # for AD7961 bits=18 for AD7960
-        d = np.frombuffer(buf, dtype=np.uint8).astype(np.uint32)
-        if bits == 16:
-            d2 = d[0::4] + (d[1::4] << 8)
-        elif bits == 18:
-            # TODO: check 18-bit data conversion
-            d2 = (d[3::4] << 8) + d[1::4] + ((d[0::4] << 16) & 0x03)
-        d_twos = twos_comp(d2, bits)
-        return d_twos
-
-    def setup(self):
-        # reset PLL
-        self.reset_pll()
-        # reset FIFO
-        self.reset_fifo()
+    def setup(self, reset_pll=False):
+        """
+        0) put ADC controller into reset
+        1) optionally reset the ADC PLL and wait for lock
+            (only need to reset PLL on first channel)
+        2) power up adc
+        3) release ADC controller reset
+        4) reset fifo
+        5) check and return status (PLL and fifo)
+        """
+        self.reset_wire(1)
+        if reset_pll:
+            # reset PLL
+            self.reset_pll()
+            pll_cnt = 0
+            while not self.get_pll_status():
+                time.sleep(0.01)
+                pll_cnt += 1
+                if pll_cnt > 20:
+                    print('PLL lock timeout')
+                    return -1
         # enable ADC
         self.power_up_adc()
+        # now that PLL is locked and ADC is ready
+        # release the reset of the ADC controller
+        # self.reset_trig()
+        self.reset_wire(0)  # releases the reset
+        # reset FIFO
+        self.reset_fifo()
+        status = self.get_status()
         # TODO: the FIFO is guaranteed to overflow
-
-    # TODO: test composite ADC function that enables, reads, converts and plots
-    # TODO: incorporate/connect QT graphing (UIscript.py)
-    def read(self, convert=True):
-        # s, e = self.fpga.read_pipe_out(self.eps['AD796x_POUT_OFFSET'] + self.chan)
-        s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
-        if convert:
-            data = self.convert_data(s)
-        else:
-            data = s
-        return data
-
-    def stream_mult(self, swps=4, convert=True):
-        cnt = 0
-        st = bytearray(np.asarray(np.ones(0, np.uint8)))
-        self.fpga.xem.UpdateTriggerOuts()
-
-        while cnt < swps:
-            # check the FIFO half-full flag
-            if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALFFULL'].address,
-                                          self.endpoints['FIFO_HALFFULL'].bit_index_low)):
-                s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
-                st += s
-                cnt = cnt + 1
-                print(cnt)
-            self.fpga.xem.UpdateTriggerOuts()
-        if convert:
-            data = self.convert_data(st)
-        else:
-            data = st
-        return data
+        return status
 
 
 def disp_device(dev, reg=True):
