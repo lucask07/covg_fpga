@@ -77,13 +77,13 @@
 `define I2CDAQ_DONE_GEN_BIT 20 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define I2CDC_DONE_GEN_BIT 16 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define ADS8686_FIFO_EMPTY 15 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
-`define ADS8686_FIFO_HALFULL 14 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define ADS8686_FIFO_HALFFULL 14 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define ADS8686_FIFO_FULL 13 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define AD7961_FIFO_EMPTY_GEN_BIT 8 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 6 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 9 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 12 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
-`define AD7961_FIFO_HALFULL_GEN_BIT 5 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define AD7961_FIFO_HALFFULL_GEN_BIT 5 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 5 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 8 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 11 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
