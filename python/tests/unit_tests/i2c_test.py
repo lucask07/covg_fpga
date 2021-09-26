@@ -34,16 +34,44 @@ STOP = 0
 @pytest.fixture(scope='module')
 def i2c_controller():
     global i2c_test_bitfile
-    test_endpoints = {}
     from interfaces.interfaces import FPGA, I2CController, Endpoint
     f = FPGA(bitfile=i2c_test_bitfile)
     assert f.init_device()
-    yield I2CController(fpga=f, endpoints=test_endpoints)
+    Endpoint.update_endpoints_from_defines(
+        ep_defines_path='../../../fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ep_defines.v')
+    yield I2CController(fpga=f, endpoints=Endpoint.endpoints_from_defines)
     # Teardown
     f.xem.Close()
 
 
 # Tests
+def test_multiple_instances():
+    from interfaces.interfaces import FPGA, I2CController, Endpoint
+    f = FPGA()
+    i2c_types = ['I2CDC', 'I2CDAQ']
+    for i2c_type in i2c_types:
+        group1 = [
+            I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type)),
+            I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type)),
+            I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type))
+        ]
+        # Must use endpoints_from_defines directly rather than get_chip_endpoints
+        # so we increment the reference dictionary rather than a copy.
+        Endpoint.increment_endpoints(Endpoint.endpoints_from_defines.get(i2c_type))
+        group2 = [
+            I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type)),
+            I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type)),
+            I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type))
+        ]
+        assert all([x.endpoints == group1[1].endpoints for x in group1])
+        assert all([x.endpoints == group2[1].endpoints for x in group2])
+        assert group1[0].endpoints != group2[0].endpoints
+
+    compare_chips = []
+    for i2c_type in i2c_types:
+        compare_chips.append(I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type)))
+    assert all([x.endpoints != compare_chips[0].endpoints for x in compare_chips])
+
 @pytest.mark.parametrize('dev_addr, reg_addr, data', [
     (0b0000_0000, [0b0000_0000], [0b0000_0000, 0b0000_0000]),
     (0b1111_1111, [0b0000_0000], [0b0101_0101, 0b0101_0101]),
