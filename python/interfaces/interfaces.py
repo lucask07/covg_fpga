@@ -187,7 +187,8 @@ class Endpoint:
                 # format of the others so we skip it
                 continue
 
-            # Address, bit, and bit_widt
+            # Address, bit, and bit_width
+            print(pieces)
             if "8'h" in pieces[2]:
                 # Definition holds an address, take that value
                 address = int(pieces[2][3:], base=16)

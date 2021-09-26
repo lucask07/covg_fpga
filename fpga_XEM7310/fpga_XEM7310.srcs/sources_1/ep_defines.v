@@ -68,7 +68,7 @@
 `define GP_RST_VALID_TRIG_IN 8'h40 // bit_width=32
 `define I2C_TRIG_IN 8'h41 // bit_width=32
 
-`define AD7961_PLL_LOCKED_WIRE_OUT 8'h21
+`define AD7961_PLL_LOCKED_WIRE_OUT 8'h21 // bit_width=1
 `define AD7961_PLL_LOCKED 0 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 `define DAC80508_OUT_GEN_ADDR 8'h22 // bit_width=32
 `define DDR3_INIT_CALIB_COMPLETE 0 // address=0x27 bit_width=1
