@@ -380,7 +380,7 @@ class FPGA:
         """
         buf = bytearray(data_len)
         e = self.xem.ReadFromPipeOut(addr, buf)
-        print('read_pipe_out:', addr, buf)
+        # print('read_pipe_out:', addr, buf)
 
         if (e < 0):
             print('Error code {}'.format(e))
@@ -535,6 +535,7 @@ class FPGA:
         """Read a single bit in a OpalKelly wire in."""
         value = self.read_wire(address)
         return (value & (1 << bit)) >> bit
+
 
 class I2CController:
     """Class for controllers on the FPGA using I2C protocol.
@@ -1431,7 +1432,7 @@ class SPIController:
         self.wb_write(divider)
 
     def set_frequency(self, frequency):
-        """Set the frequency of SCL.
+        """Set the frequency of SPI SCLK.
 
         Set the DIVIDER register of the Wishbone with the corresponding divider
         for the target frequency. Frequency must be given in MHz.
@@ -1441,11 +1442,12 @@ class SPIController:
             round((SPIController.WB_CLK_FREQ) / (frequency * 2)), 1) - 1
         # Make sure divider does not exceed 32 bits
         divider = min(divider, 0xffff_ffff)
+        print('Set frequency. Divider value = {}'.format(divider))
         self.set_divider(divider)
         return divider
 
     def write(self, data, register=0):
-        """Write data on the SCL and SDA lines.
+        """Write data on the SPI lines.
 
         Register should be either 0, 1, 2, or 3.
         """
@@ -1905,7 +1907,8 @@ class ADS8686(SPIController, ADCDATA):
     # Method to set up the chip
     def setup(self):  # TODO -- defaults to modify the SPI setup
         self.configure_master(self.master_config)
-        self.set_frequency(5)
+        # self.set_frequency(5)
+        self.set_divider(8)
         self.select_slave(1)
 
     def set_range(self, vals):
@@ -2095,19 +2098,19 @@ class AD7961(ADCDATA):
 
     def test_pattern(self):
         # enable PRBS test pattern on the LVDS interface
-        self.set_enables(0x0100)
+        self.set_enables(value=0b0100)
 
     def power_up_adc(self, bw='28M'):
         if bw == '28M':
-            self.set_enables(0x1001)
+            self.set_enables(0b1001)
         elif bw == '9M':
-            self.set_enables(0x1101)
+            self.set_enables(0b1101)
         else:
             print('incorrect input sampling bandwidth for {}:Channel{}'.format(self.name,
                                                                         self.chan))
 
     def power_down_all(self):
-        self.set_enables(0b0000)  # TODO: should I return anything here?
+        self.set_enables(0b0000)  # TODO: return anything here?
 
     def reset_pll(self):
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['PLL_RESET'].address,
@@ -2146,8 +2149,10 @@ class AD7961(ADCDATA):
         self.reset_wire(0)
 
     def set_enables(self, value=0b0000, global_enables=True):
-        # will always set the EN0 specific to this channel (LSB in values)
-        # optionally also modify the global enables (all channels)
+        """
+        will always set the EN0 specific to this channel (LSB in values)
+        optionally also modify the global enables (all channels)
+        """
 
         mask = gen_mask(self.endpoints['ENABLE'].bit_index_low)
         if global_enables:
@@ -2156,12 +2161,13 @@ class AD7961(ADCDATA):
                        for x in range(self.endpoints['GLOBAL_ENABLE_LEN'].bit_index_low)]
             # or global mask with the signal channel EN0 mask
             mask = gen_mask(gl_mask) | mask
+
         # setup the values
-        # value = (self.eps['WI02_A_EN0'] + self.chan)
         value_chan = (value & 0b0001) << (self.endpoints['ENABLE'].bit_index_low)
         if global_enables:
             #  globabl enables are the 3 MSBs
-            val_global = (value & 0b1110) << (self.endpoints['GLOBAL_ENABLE'].bit_index_low - 1)  # minus 1 since
+            val_global = (value & 0b1110) << (self.endpoints['GLOBAL_ENABLE'].bit_index_low - 1)
+            # minus 1 since already left shifted by 1
             print('Global value = 0x{:0x}'.format(val_global))
             value = value_chan | val_global
 
