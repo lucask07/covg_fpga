@@ -56,7 +56,7 @@
 `define I2CDAQ_WIRE_OUT_GEN_ADDR 8'h26 // bit_width=8
 `define I2CDAQ_OUT_GEN_BIT 0 // address=I2CDAQ_WIRE_OUT bit_width=8
 
-`define GP_UNCONNECTED_WIRE_IN 8'h00 // bit_width=32
+`define GP_DEBUG_WIRE_IN 8'h00 // bit_width=32
 `define GP_HOST_FPGAB_GPIO_WIRE_IN 8'h01 // bit_width=32
 `define GP_PWR_REG_ADC_EN_WIRE_IN 8'h02 // bit_width=32
 `define DDR3_RESET_READ_WRITE_ENABLE 8'h03 // bit_width=1
@@ -68,8 +68,10 @@
 `define GP_RST_VALID_TRIG_IN 8'h40 // bit_width=32
 `define I2C_TRIG_IN 8'h41 // bit_width=32
 
-`define AD7961_PLL_LOCKED_WIRE_OUT 8'h21
+`define AD7961_PLL_LOCKED_WIRE_OUT 8'h21 // bit_width=1
 `define AD7961_PLL_LOCKED 0 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
+`define AD7961_TIMING_PLL_LOCKED 1 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
+
 `define DAC80508_OUT_GEN_ADDR 8'h22 // bit_width=32
 `define DDR3_INIT_CALIB_COMPLETE 0 // address=0x27 bit_width=1
 `define DDR3_WIRE_OUT 8'h3e // bit_width=32
@@ -124,9 +126,10 @@
 `define DAC80508_WB_CONVERT_GEN_BIT 17 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_FIFO_RESET 18 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD7961_RESET_GEN_BIT 19 // address=GP_RST_VALID_TRIG_IN bit_width=1
-
 `define I2CDC_RESET_GEN_BIT 23 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define I2CDC_START_GEN_BIT 27 // address=GP_RST_VALID_TRIG_IN bit_width=1
+`define AD7961_TIMING_PLL_RESET 31 // address=GP_RST_VALID_TRIG_IN bit_width=1
+
 `define I2CDC_MEMSTART_GEN_BIT 0 // address=I2C_TRIG_IN bit_width=1
 `define I2CDC_MEMWRITE_GEN_BIT 4 // address=I2C_TRIG_IN bit_width=1
 `define I2CDC_MEMREAD_GEN_BIT 8 // address=I2C_TRIG_IN bit_width=1
@@ -138,6 +141,14 @@
 `define I2CDAQ_MEMREAD_GEN_BIT 20 // address=I2C_TRIG_IN bit_width=1
 
 // wire in at 0x00
+`define GP_CSB_DEBUG 0 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_CSB_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SCLK_DEBUG 3 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SCLK_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SDI_DEBUG 6 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SDI_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_ADS_CONVST_DEBUG 9 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_ADS_CONVST_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
 
 // wire in at 0x01
 `define ADS8686_HOST_FPGA_BIT 0 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1

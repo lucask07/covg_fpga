@@ -187,7 +187,8 @@ class Endpoint:
                 # format of the others so we skip it
                 continue
 
-            # Address, bit, and bit_widt
+            # Address, bit, and bit_width
+            print(pieces)
             if "8'h" in pieces[2]:
                 # Definition holds an address, take that value
                 address = int(pieces[2][3:], base=16)
@@ -1342,6 +1343,37 @@ class SPIController:
         self.master_config = master_config
         self.endpoints = endpoints
 
+    @classmethod
+    def create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None):
+        chips = []
+        if master_config is None:
+            # Use class default for master_config
+            for i in range(number_of_chips):
+                chips.append(cls(fpga=fpga, endpoints=endpoints))
+        else:
+            for i in range(number_of_chips):
+                chips.append(cls(fpga=fpga, endpoints=endpoints, master_config=master_config))
+
+        if endpoints is None:
+            # Increment shared endpoints dictionary
+            # TODO: is there a better way to do this?
+            # We need to get the shared endpoints in endpoints_from_defines to
+            # increment and we only have the endpoints given to us in the
+            # argument.
+            shared_full_eps = Endpoint.endpoints_from_defines
+            shared_chip_eps = shared_full_eps[
+                list(shared_full_eps.keys())[
+                    list(shared_full_eps.values()).index(endpoints)
+                    ]
+                ]
+            Endpoint.increment_endpoints(shared_chip_eps)
+        else:
+            # Increment custom dictionary
+            Endpoint.increment_endpoints(endpoints)
+
+        return chips
+
+
     def wb_send_cmd(self, command):
         """Send a command to the Wishbone.
 
@@ -1591,7 +1623,7 @@ class DAC80508(SPIController):
 
     registers = Register.get_chip_registers('DAC80508')
 
-    def __init__(self, fpga, master_config=0x3218, slave_address=0x1, endpoints=None):
+    def __init__(self, fpga, slave_address=0x1, endpoints=None, master_config=0x3218):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DAC80508')
@@ -1734,7 +1766,7 @@ class AD5453(SPIController):
     bits=12,
     vref=2.5*2
 
-    def __init__(self, fpga, master_config=0x3010, endpoints=None):
+    def __init__(self, fpga, endpoints=None, master_config=0x3010):
 
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('AD5453')
@@ -2053,6 +2085,21 @@ class AD7961(ADCDATA):
         #             'TI40_ADC_FIFO_RST': 4,
         #             'WI02_A_EN0': 1,
         #             'WI02_A_EN': 15}
+
+    def create_chips(cls, fpga, number_of_chips, endpoints=None):
+        """Instantiate number_of_chips new chips.
+        
+        We increment the endpoints between each instantiation as well.
+        """
+
+        if endpoints is None:
+            endpoints = Endpoint.endpoints_from_defines.get('AD7961')
+
+        chips = []
+        for i in range(number_of_chips):
+            chips.append(cls(fpga=fpga, endpoints=endpoints))
+            Endpoint.increment_endpoints(endpoints)
+        return chips
 
     def get_status(self):
         """ Get AD796x status:
