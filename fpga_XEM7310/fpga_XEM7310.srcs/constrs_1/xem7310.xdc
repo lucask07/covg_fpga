@@ -97,6 +97,9 @@ set_property DIFF_TERM FALSE [get_ports {sys_clkp}]
 create_clock -name sys_clk -period 5 [get_ports sys_clkp]
 set_clock_groups -asynchronous -group [get_clocks {sys_clk}] -group [get_clocks {mmcm0_clk0 okUH0}]
 
+create_clock -name adc_timing_clk -period 10
+create_clock -name adc_clk -period 5
+
 ############################################################################
 ## User Reset
 ############################################################################

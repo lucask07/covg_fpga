@@ -190,12 +190,23 @@ module top_level_module(
 	//pll generating "Fast" clock for Ad796x.v
 	wire adc_clk;
 	wire adc_pll_locked;
-
+	
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
 	.reset(ep40trig[`AD7961_PLL_RESET]),
 	.clk_out1(adc_clk), //out at 200 MHz
 	.locked(adc_pll_locked)
+	);
+	
+    // Clk wizard for generating timing clock (100 M) for ADC 
+	wire adc_timing_clk;
+    wire adc_timing_pll_locked;
+    	
+	clk_wiz_1 adc_timing(
+		.clk_in1(clk_sys), //in at 200 MHz
+        .reset(ep40trig[`AD7961_TIMING_PLL_RESET]),
+        .clk_out1(adc_timing_clk), //out at 100 MHz
+        .locked(adc_timing_pll_locked)
 	);
 	
 	assign led[1] = ~adc_pll_locked;
@@ -206,7 +217,55 @@ module top_level_module(
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i]);
     assign led[7] = 1'b0;
 
-	 //FrontPanel (HostInterface) wires
+
+/*
+    // DAC80508 (ds for DAC slow)
+    output wire  [(DAC80508_NUM-1):0]ds_sdo,    // DAC85058; daq_v2 build has DAC85058ZC which means SDO is CLRB; will tie to logic high.
+    output wire [(DAC80508_NUM-1):0]ds_sclk,
+    output wire [(DAC80508_NUM-1):0]ds_csb,
+    output wire [(DAC80508_NUM-1):0]ds_sdi,
+
+    //AD5453 (SPI)
+    output wire [(AD5453_NUM-1):0]d_sclk,
+    output wire [(AD5453_NUM-1):0]d_csb,
+    output wire [(AD5453_NUM-1):0]d_sdi,
+
+    //ADS8686
+    output wire ads_csb,
+    output wire ads_sclk,
+    output wire ads_sdi,
+    input  wire ads_sdoa,
+    input  wire ads_sdob, // TODO: not yet connected
+    output wire ads_convst,
+    output wire ads_resetb,
+    input wire ads_busy,  // TODO: not yet connected
+*/
+    // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
+    mux_8to1 (
+	   .datain({4'b0100, d_csb[0], ds_csb[1], ds_csb[0], ads_csb}), // 7:0
+	   .sel(ep00wire[(`GP_CSB_DEBUG_LEN + `GP_CSB_DEBUG - 1) :(`GP_CSB_DEBUG)]),
+	   .dataout(gpio[0])
+	);
+	
+    mux_8to1 (
+       .datain({4'b0100, d_sclk[0], ds_sclk[1], ds_sclk[0], ads_sclk}), // 7:0
+       .sel(ep00wire[(`GP_SCLK_DEBUG_LEN + `GP_SCLK_DEBUG - 1) :(`GP_SCLK_DEBUG)]),
+       .dataout(gpio[1])
+    );
+    
+    mux_8to1 (
+       .datain({4'b0100, d_sdi[0], ds_sdi[1], ds_sdi[0], ads_sdi}), // 7:0
+       .sel(ep00wire[(`GP_SDI_DEBUG_LEN + `GP_SDI_DEBUG - 1) :(`GP_SDI_DEBUG)]),
+       .dataout(gpio[2])
+    );
+
+    mux_8to1 (
+       .datain({4'b0100, ads_busy, ads_convst, ads_sdob, ads_sdoa}), // 7:0
+       .sel(ep00wire[(`GP_ADS_CONVST_DEBUG_LEN + `GP_ADS_CONVST_DEBUG - 1) :(`GP_ADS_CONVST_DEBUG)]),
+       .dataout(gpio[3])
+    );
+
+	//FrontPanel (HostInterface) wires
 	wire okClk;
 	wire [112:0] okHE;
 	wire [64:0] okEH;
@@ -230,14 +289,16 @@ module top_level_module(
 
     /* ---------------- Ok Endpoints ----------------*/
 	//wire to hold the data/commands from the host this will be routed to the wishbone formatter/state machine for the ADS7952
-	okWireIn wi0 (.okHE(okHE), .ep_addr(`GP_UNCONNECTED_WIRE_IN), .ep_dataout(ep00wire));
+	okWireIn wi0 (.okHE(okHE), .ep_addr(`GP_DEBUG_WIRE_IN), .ep_dataout(ep00wire));
 	// Wire in to select what slave the SPI data is routed to
 	okWireIn wi1 (.okHE(okHE), .ep_addr(`GP_HOST_FPGAB_GPIO_WIRE_IN), .ep_dataout(ep01wire));
     wire host_fpgab;
     assign host_fpgab = ep01wire[`ADS8686_HOST_FPGA_BIT];
     assign up = ep01wire[(`GPIO_UP_WIRE_IN+`GPIO_UP_WIRE_IN_LEN - 1):`GPIO_UP_WIRE_IN];
     assign dn = ep01wire[(`GPIO_DOWN_WIRE_IN+`GPIO_DOWN_WIRE_IN_LEN - 1):`GPIO_DOWN_WIRE_IN];
-    assign gpio = ep01wire[(`GPIO_3V3_WIRE_IN+`GPIO_3V3_WIRE_IN_LEN - 1):`GPIO_3V3_WIRE_IN];
+    
+    // use GPIO with the SPI debug mux
+    //assign gpio = ep01wire[(`GPIO_3V3_WIRE_IN+`GPIO_3V3_WIRE_IN_LEN - 1):`GPIO_3V3_WIRE_IN];
     wire [3:0]gp_lvds_se;
     assign gp_lvds_se = ep01wire[(`GPIO_LVDS_WIRE_IN+`GPIO_LVDS_WIRE_IN_LEN - 1):`GPIO_LVDS_WIRE_IN];
 
@@ -305,7 +366,7 @@ module top_level_module(
 
     //wire to hold general status output to host
     // https://stackoverflow.com/questions/18067571/indexing-vectors-and-arrays-with
-    okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(`AD7961_PLL_LOCKED_WIRE_OUT), .ep_datain({28'b0, 3'b101, adc_pll_locked}));
+    okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(`AD7961_PLL_LOCKED_WIRE_OUT), .ep_datain({30'b0, adc_timing_pll_locked, adc_pll_locked}));
 
 	//status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
 	//bit 1 is status signal telling host that AD7961_0 fifo is completely full
@@ -439,7 +500,7 @@ module top_level_module(
             adc_sync_rst[i]);
         
         AD7961 adc7961(
-        .m_clk_i(clk_sys),                // 200 MHz Clock, used for timing (only for 5 MSPS tracking)
+        .m_clk_i(adc_timing_clk),       // 100 MHz Clock, used for timing
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
         .reset_n_i(~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
         .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
