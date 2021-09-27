@@ -4,15 +4,13 @@
 // Company: 
 // Engineer:
 //
-// Create Date:   20:37:51 12/28/2020
-// Design Name:   top_module
-// Module Name:   C:/Users/iande/OneDrive - University of St. Thomas/Research SPI core files/SPI_Master/tb_spi_top.v
-// Project Name:  SPI_Master
-// Target Device:  
+// Create Date:   Aug 2021
+// Design Name:   tb_spi_wrapper  tests spi_controller for the ADS8686 
+// Module Name:   
+// Project Name:  
+// Target Device:  Opal Kelly XEM7310; Virtex; 200 MHz system clock 
 // Tool versions:  
 // Description: 
-//
-// Verilog Test Fixture created by ISE for module: top_module
 //
 // Dependencies:
 // 
