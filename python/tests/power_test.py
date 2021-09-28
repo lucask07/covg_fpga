@@ -43,7 +43,7 @@ from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, TCA955
 eps = Endpoint.endpoints_from_defines
 
 from interfaces.boards import Daq  # TODO: should I instantiate the Daq board or just pieces from it?
-                              # TODO: for now, pieces, eventually the DAQ board
+                                   # TODO: for now, pieces, eventually the DAQ board
 
 
 def get_timestamp():
@@ -120,17 +120,15 @@ dc_pwr.set('out_state', 'ON', configs={'chan': 1})
 
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_nobitfile')
 
+time.sleep(2)
 # Set up FPGA
 f = FPGA(bitfile=os.path.join(covg_fpga_path, 'fpga_XEM7310',
                               'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit'))
 f.init_device()
 time.sleep(2)
+f.send_trig(eps['GP']['SYSTEM_RESET'])  # system reset
 
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_bitfile')
-
-# reset FPGA using trigger in
-# f.xem.ActivateTriggerIn(eps['GP']['SYSTEM_RESET'].address,
-#                         eps['GP']['SYSTEM_RESET'].bit_index_low)
 
 uid = UID_24AA025UID(fpga=f,
                      endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
@@ -274,25 +272,27 @@ io_1.write(0x00FF)  # set all gain pins to zero & all ISEL to have the voltage o
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
 
 # enable one AD7961 and remeasure current
+chan = 3
+num = 2
 if AD7961_EN:
-    setup = ad7961s[0].setup(reset_pll=True)  # resets FIFO and ADC controller
-    ad7961s[0].test_pattern()
+    setup = ad7961s[chan].setup(reset_pll=False)  # resets FIFO and ADC controller
+    ad7961s[chan].test_pattern()
     time.sleep(0.05)
-    ad7961s[0].reset_fifo()
+    ad7961s[chan].reset_fifo()
     time.sleep(0.05)  # FIFO fills in 204 us
     log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
-    data_ad7961_test_pattern = ad7961s[0].stream_mult(swps=4, convert = False)
+    d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
 
-    ad7961s[0].power_up_adc()  # standard sampling
+    ad7961s[chan].power_up_adc()  # standard sampling
     time.sleep(0.05)
-    data_ad7961_data = ad7961s[0].stream_mult()
-    ad7961s[0].get_fifo_status()
+    d2 = ad7961s[chan].stream_mult()
+    ad7961s[chan].get_fifo_status()
 
-with open('test_pattern.npy', 'wb') as f:
-    np.save(f, data_ad7961_test_pattern)
+with open('test_pattern_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
+    np.save(f, d1)
 
-with open('test_data.npy', 'wb') as f:
-    np.save(f, data_ad7961_data)
+with open('test_data_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
+    np.save(f, d2)
 
 # enable ADS868 and remeasure current
 if ADS_EN:
@@ -328,6 +328,8 @@ for dac in [dac0, dac1]:
     print('Configuring Wishbone...')
     spi_ctrl_reg_val = 0x3218  # Sets CHAR_LEN=24, Rx_NEG, ASS, IE
     dac.configure_master_bin(spi_ctrl_reg_val)
+    dac.select_slave(1)
+
 
     dac.set_gain(0x01ff)
     print('Gain changed')
