@@ -99,6 +99,7 @@ set_clock_groups -asynchronous -group [get_clocks {sys_clk}] -group [get_clocks 
 
 create_clock -name adc_timing_clk -period 10
 create_clock -name adc_clk -period 5
+create_clock -name sclk_s - period 5
 
 ############################################################################
 ## User Reset
@@ -164,12 +165,16 @@ set_property IOSTANDARD LVDS_25 [get_ports {gp_lvds_n[3]}]
 ## MC1-19
 set_property PACKAGE_PIN R6 [get_ports {a_d_p[3]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_d_p[3]}]
+set_property DIFF_TERM TRUE [get_ports {a_d_p[3]}]
+
 ## MC1-20
 set_property PACKAGE_PIN V7 [get_ports {gp_lvds_p[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {gp_lvds_p[2]}]
 ## MC1-21
 set_property PACKAGE_PIN T6 [get_ports {a_d_n[3]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_d_n[3]}]
+set_property DIFF_TERM TRUE [get_ports {a_d_n[3]}]
+
 ## MC1-22
 set_property PACKAGE_PIN W7 [get_ports {gp_lvds_n[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {gp_lvds_n[2]}]
@@ -188,27 +193,38 @@ set_property IOSTANDARD LVDS_25 [get_ports {gp_lvds_n[1]}]
 ## MC1-27
 set_property PACKAGE_PIN T5 [get_ports {a_dco_p[3]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_dco_p[3]}]
+set_property DIFF_TERM TRUE [get_ports {a_dco_p[3]}]
+
 ## MC1-28
 set_property PACKAGE_PIN W6 [get_ports {a_cnv_p[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_cnv_p[2]}]
 ## MC1-29
 set_property PACKAGE_PIN U5 [get_ports {a_dco_n[3]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_dco_n[3]}]
+set_property DIFF_TERM TRUE [get_ports {a_dco_n[3]}]
+
 ## MC1-30
 set_property PACKAGE_PIN W5 [get_ports {a_cnv_n[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_cnv_n[2]}]
 ## MC1-31
 set_property PACKAGE_PIN AA5 [get_ports {a_d_p[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_d_p[2]}]
+set_property DIFF_TERM TRUE [get_ports {a_d_p[2]}]
 ## MC1-32
 set_property PACKAGE_PIN R4 [get_ports {a_dco_p[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_dco_p[2]}]
+set_property DIFF_TERM TRUE [get_ports {a_dco_p[2]}]
+
 ## MC1-33
 set_property PACKAGE_PIN AB5 [get_ports {a_d_n[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_d_n[2]}]
+set_property DIFF_TERM TRUE [get_ports {a_d_n[2]}]
+
 ## MC1-34
 set_property PACKAGE_PIN T4 [get_ports {a_dco_n[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_dco_n[2]}]
+set_property DIFF_TERM TRUE [get_ports {a_dco_n[2]}]
+
 ## MC1-35
 #set_property PACKAGE_PIN nan [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
@@ -221,12 +237,16 @@ set_property IOSTANDARD LVDS_25 [get_ports {a_clk_p[2]}]
 ## MC1-38
 set_property PACKAGE_PIN Y4 [get_ports {a_dco_p[0]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_dco_p[0]}]
+set_property DIFF_TERM TRUE [get_ports {a_dco_p[0]}]
+
 ## MC1-39
 set_property PACKAGE_PIN AB6 [get_ports {a_clk_n[2]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_clk_n[2]}]
 ## MC1-40
 set_property PACKAGE_PIN AA4 [get_ports {a_dco_n[0]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_dco_n[0]}]
+set_property DIFF_TERM TRUE [get_ports {a_dco_n[0]}]
+
 ## MC1-41
 set_property PACKAGE_PIN R3 [get_ports {a_cnv_p[0]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_cnv_p[0]}]
@@ -242,12 +262,16 @@ set_property IOSTANDARD LVDS_25 [get_ports {gp_lvds_n[0]}]
 ## MC1-45
 set_property PACKAGE_PIN Y3 [get_ports {a_d_p[0]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_d_p[0]}]
+set_property DIFF_TERM TRUE [get_ports {a_d_p[0]}]
+
 ## MC1-46
 set_property PACKAGE_PIN AA8 [get_ports {a_en0_hv[0]}]
 set_property IOSTANDARD LVCMOS25 [get_ports {a_en0_hv[0]}]
 ## MC1-47
 set_property PACKAGE_PIN AA3 [get_ports {a_d_n[0]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_d_n[0]}]
+set_property DIFF_TERM TRUE [get_ports {a_d_n[0]}]
+
 ## MC1-48
 set_property PACKAGE_PIN AB8 [get_ports {a_en0_hv[1]}]
 set_property IOSTANDARD LVCMOS25 [get_ports {a_en0_hv[1]}]
@@ -284,12 +308,15 @@ set_property IOSTANDARD LVCMOS25 [get_ports {a_en_hv[1]}]
 ## MC1-59
 set_property PACKAGE_PIN T1 [get_ports {a_d_p[1]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_d_p[1]}]
+set_property DIFF_TERM TRUE [get_ports {a_d_p[1]}]
 ## MC1-60
 set_property PACKAGE_PIN AB3 [get_ports {a_en_hv[2]}]
 set_property IOSTANDARD LVCMOS25 [get_ports {a_en_hv[2]}]
 ## MC1-61
 set_property PACKAGE_PIN U1 [get_ports {a_d_n[1]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_d_n[1]}]
+set_property DIFF_TERM TRUE [get_ports {a_d_n[1]}]
+
 ## MC1-62
 #set_property PACKAGE_PIN AB2 [get_ports {}]
 #set_property IOSTANDARD LVCMOS25 [get_ports {}]
@@ -338,12 +365,16 @@ set_property IOSTANDARD LVCMOS33 [get_ports {up[5]}]
 ## MC1-77
 set_property PACKAGE_PIN V4 [get_ports {a_dco_p[1]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_dco_p[1]}]
+set_property DIFF_TERM TRUE [get_ports {a_dco_p[1]}]
+
 ## MC1-78
 #set_property PACKAGE_PIN nan [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]
 ## MC1-79
 set_property PACKAGE_PIN W4 [get_ports {a_dco_n[1]}]
 set_property IOSTANDARD LVDS_25 [get_ports {a_dco_n[1]}]
+set_property DIFF_TERM TRUE [get_ports {a_dco_n[1]}]
+
 ## MC1-80
 #set_property PACKAGE_PIN nan [get_ports {}]
 #set_property IOSTANDARD  [get_ports {}]

@@ -274,7 +274,12 @@ module top_level_module(
 	wire [17*65-1:0] okEHx;
 
 	//Opal Kelly wires and triggers
-	wire [31:0] ep00wire, ep01wire, ep02wire, ep40trig, ep41trig;
+	wire [31:0] ep00wire;
+	wire [31:0] ep01wire;
+	wire [31:0] ep02wire;
+	wire [31:0] ep40trig;
+	wire [31:0] ep41trig;
+	wire [31:0] ep42trig;
 
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
@@ -361,6 +366,9 @@ module top_level_module(
 
     okTriggerIn trigIn41 (.okHE(okHE),
                                     .ep_addr(`I2C_TRIG_IN), .ep_clk(clk_sys), .ep_trigger(ep41trig));
+                                    
+    okTriggerIn trigIn42 (.okHE(okHE),
+                                .ep_addr(`ADC_TIMING_TRIG_IN), .ep_clk(adc_timing_clk), .ep_trigger(ep42trig));
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
 	// okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 
@@ -495,14 +503,14 @@ module top_level_module(
     for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7960_gen
     
         sync_reset ad7961_sync_reset(
-            clk_sys,
+            adc_timing_clk,
             ep01wire[`AD7961_WIRE_RESET_GEN_BIT+i],
             adc_sync_rst[i]);
         
         AD7961 adc7961(
         .m_clk_i(adc_timing_clk),       // 100 MHz Clock, used for timing
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
-        .reset_n_i(~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
+        .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
         .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
         .d_pos_i(a_d_p[i]),                    // Data Ii, Positive Pair
         .d_neg_i(a_d_n[i]),                    // Data In, Negative Pair
@@ -518,8 +526,8 @@ module top_level_module(
         );
 
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports
-          .rst(ep40trig[`AD7961_FIFO_RESET_GEN_BIT + i]),
-          .wr_clk(clk_sys),
+          .rst(ep42trig[`AD7961_FIFO_RESET_GEN_BIT + i]),
+          .wr_clk(adc_timing_clk),
           .rd_clk(okClk),
           .din({adc_val[i]}),         // Bus [15:0] (from ADC)
           .wr_en(write_en_adc_o[i]),// from ADC

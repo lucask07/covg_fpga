@@ -3,23 +3,23 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="tb_ad7961_behav.wdb" id="1">
+      <db_ref path="tb_spi_wrapper_behav.wdb" id="1">
          <top_modules>
             <top_module name="glbl" />
-            <top_module name="tb_ad7961" />
+            <top_module name="tb_spi_wrapper" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="390730000fs"></ZoomStartTime>
-      <ZoomEndTime time="644530001fs"></ZoomEndTime>
-      <Cursor1Time time="510100000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="12521459228fs"></ZoomEndTime>
+      <Cursor1Time time="15000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="101"></NameColumnWidth>
-      <ValueColumnWidth column_width="77"></ValueColumnWidth>
+      <NameColumnWidth column_width="146"></NameColumnWidth>
+      <ValueColumnWidth column_width="90"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="13" />
+   <WVObjectSize size="17" />
    <wave_markers>
       <marker time="548000000" label="" />
       <marker time="6192500000" label="" />
@@ -29,56 +29,72 @@
       <marker time="4831000000" label="" />
       <marker time="415000000" label="" />
    </wave_markers>
-   <wvobject fp_name="/tb_ad7961/sys_clk" type="logic">
-      <obj_property name="ElementShortName">sys_clk</obj_property>
-      <obj_property name="ObjectShortName">sys_clk</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc_clk" type="logic">
-      <obj_property name="ElementShortName">adc_clk</obj_property>
-      <obj_property name="ObjectShortName">adc_clk</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/rst" type="logic">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/reset_n" type="logic">
-      <obj_property name="ElementShortName">reset_n</obj_property>
-      <obj_property name="ObjectShortName">reset_n</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/divider_rst" type="logic">
+      <obj_property name="ElementShortName">divider_rst</obj_property>
+      <obj_property name="ObjectShortName">divider_rst</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/d_p" type="logic">
-      <obj_property name="ElementShortName">d_p</obj_property>
-      <obj_property name="ObjectShortName">d_p</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/wire_in" type="array">
+      <obj_property name="ElementShortName">wire_in[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wire_in[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/d_n" type="logic">
-      <obj_property name="ElementShortName">d_n</obj_property>
-      <obj_property name="ObjectShortName">d_n</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/trigger" type="logic">
+      <obj_property name="ElementShortName">trigger</obj_property>
+      <obj_property name="ObjectShortName">trigger</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/dco_p" type="logic">
-      <obj_property name="ElementShortName">dco_p</obj_property>
-      <obj_property name="ObjectShortName">dco_p</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/miso" type="logic">
+      <obj_property name="ElementShortName">miso</obj_property>
+      <obj_property name="ObjectShortName">miso</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/dco_n" type="logic">
-      <obj_property name="ElementShortName">dco_n</obj_property>
-      <obj_property name="ObjectShortName">dco_n</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/host_fpgab" type="logic">
+      <obj_property name="ElementShortName">host_fpgab</obj_property>
+      <obj_property name="ObjectShortName">host_fpgab</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/cnv_p" type="logic">
-      <obj_property name="ElementShortName">cnv_p</obj_property>
-      <obj_property name="ObjectShortName">cnv_p</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/okClk" type="logic">
+      <obj_property name="ElementShortName">okClk</obj_property>
+      <obj_property name="ObjectShortName">okClk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/cnv_n" type="logic">
-      <obj_property name="ElementShortName">cnv_n</obj_property>
-      <obj_property name="ObjectShortName">cnv_n</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/addr" type="array">
+      <obj_property name="ElementShortName">addr[31:0]</obj_property>
+      <obj_property name="ObjectShortName">addr[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/clk_p" type="logic">
-      <obj_property name="ElementShortName">clk_p</obj_property>
-      <obj_property name="ObjectShortName">clk_p</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/data_in" type="array">
+      <obj_property name="ElementShortName">data_in[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_in[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/clk_n" type="logic">
-      <obj_property name="ElementShortName">clk_n</obj_property>
-      <obj_property name="ObjectShortName">clk_n</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/write_in" type="logic">
+      <obj_property name="ElementShortName">write_in</obj_property>
+      <obj_property name="ObjectShortName">write_in</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/data_rd" type="logic">
-      <obj_property name="ElementShortName">data_rd</obj_property>
-      <obj_property name="ObjectShortName">data_rd</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/wire_out" type="array">
+      <obj_property name="ElementShortName">wire_out[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wire_out[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/data" type="array">
-      <obj_property name="ElementShortName">data[15:0]</obj_property>
-      <obj_property name="ObjectShortName">data[15:0]</obj_property>
+   <wvobject fp_name="/tb_spi_wrapper/data_valid" type="logic">
+      <obj_property name="ElementShortName">data_valid</obj_property>
+      <obj_property name="ObjectShortName">data_valid</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/ss" type="logic">
+      <obj_property name="ElementShortName">ss</obj_property>
+      <obj_property name="ObjectShortName">ss</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/sclk" type="logic">
+      <obj_property name="ElementShortName">sclk</obj_property>
+      <obj_property name="ObjectShortName">sclk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/mosi" type="logic">
+      <obj_property name="ElementShortName">mosi</obj_property>
+      <obj_property name="ObjectShortName">mosi</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_wrapper/convst" type="logic">
+      <obj_property name="ElementShortName">convst</obj_property>
+      <obj_property name="ObjectShortName">convst</obj_property>
    </wvobject>
 </wave_config>
