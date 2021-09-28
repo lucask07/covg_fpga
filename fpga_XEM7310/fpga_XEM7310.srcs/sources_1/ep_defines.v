@@ -141,14 +141,14 @@
 `define I2CDAQ_MEMREAD_GEN_BIT 20 // address=I2C_TRIG_IN bit_width=1
 
 // wire in at 0x00
-`define GP_CSB_DEBUG 0 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_CSB_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_SCLK_DEBUG 3 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_SCLK_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_SDI_DEBUG 6 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_SDI_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_ADS_CONVST_DEBUG 9 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_ADS_CONVST_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_CSB_DEBUG 0 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_CSB_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SCLK_DEBUG 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SCLK_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SDI_DEBUG 6 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SDI_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_ADS_CONVST_DEBUG 9 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_ADS_CONVST_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
 
 // wire in at 0x01
 `define ADS8686_HOST_FPGA_BIT 0 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
