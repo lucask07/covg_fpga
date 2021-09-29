@@ -63,10 +63,7 @@ def test_multiple_instances():
             I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type)),
             I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type))
         ]
-        for i in [group1, group2]:
-            print([group1, group2].index(i))
-            for x in i:
-                print('    ', i.index(x), x.endpoints)
+        
         assert all([x.endpoints == group1[0].endpoints for x in group1])
         assert all([x.endpoints == group2[0].endpoints for x in group2])
         assert group1[0].endpoints != group2[0].endpoints
