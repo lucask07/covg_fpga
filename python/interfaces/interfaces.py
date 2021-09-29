@@ -1349,6 +1349,10 @@ class SPIController:
 
     @classmethod
     def create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None):
+        if type(number_of_chips) is not int or number_of_chips <= 0:
+            print('number_of_chips must be an integer greater than 0')
+            return False
+        
         chips = []
         if master_config is None:
             # Use class default for master_config
@@ -2103,6 +2107,10 @@ class AD7961(ADCDATA):
         
         We increment the endpoints between each instantiation as well.
         """
+
+        if type(number_of_chips) is not int or number_of_chips <= 0:
+            print('number_of_chips must be an integer greater than 0')
+            return False
 
         if endpoints is None:
             endpoints = Endpoint.endpoints_from_defines.get('AD7961')
