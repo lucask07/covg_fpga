@@ -50,8 +50,8 @@ class Register:
             self.address, self.bit_index_high, self.bit_index_low, self.bit_width)
         return str_rep
 
-    @classmethod
-    def get_chip_registers(cls, sheet, workbook_path=None):
+    @staticmethod
+    def get_chip_registers(sheet, workbook_path=None):
         """Return a dictionary of Registers from a page in an Excel spreadsheet."""
 
         if workbook_path == None:
@@ -132,8 +132,8 @@ class Endpoint:
         else:
             return False
 
-    @classmethod
-    def update_endpoints_from_defines(cls, ep_defines_path=None):
+    @staticmethod
+    def update_endpoints_from_defines(ep_defines_path=None):
         """Store and return a dictionary of Endpoints for each chip in ep_defines.v."""
 
         # Find ep_defines.v path
@@ -245,8 +245,8 @@ class Endpoint:
 
         return Endpoint.endpoints_from_defines
 
-    @classmethod
-    def get_chip_endpoints(cls, chip_name):
+    @staticmethod
+    def get_chip_endpoints(chip_name):
         """Return a copy of the dictionary of Endpoints for a specific chip or group."""
 
         if Endpoint.endpoints_from_defines == dict():
@@ -260,8 +260,8 @@ class Endpoint:
         # we copy also get copied, not left as references.
         return copy.deepcopy(Endpoint.endpoints_from_defines.get(chip_name))
 
-    @classmethod
-    def increment_endpoints(cls, endpoints_dict):
+    @staticmethod
+    def increment_endpoints(endpoints_dict):
         """Increment all Endpoints in endpoints_dict.
 
         Use each Endpoint's gen_bit and gen_addr values to determine whether to
@@ -2090,7 +2090,8 @@ class AD7961(ADCDATA):
         #             'WI02_A_EN0': 1,
         #             'WI02_A_EN': 15}
 
-    def create_chips(cls, fpga, number_of_chips, endpoints=None):
+    @staticmethod
+    def create_chips(fpga, number_of_chips, endpoints=None):
         """Instantiate number_of_chips new chips.
         
         We increment the endpoints between each instantiation as well.
@@ -2101,7 +2102,7 @@ class AD7961(ADCDATA):
 
         chips = []
         for i in range(number_of_chips):
-            chips.append(cls(fpga=fpga, endpoints=endpoints))
+            chips.append(AD7961(fpga=fpga, endpoints=endpoints))
             Endpoint.increment_endpoints(endpoints)
         return chips
 
