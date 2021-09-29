@@ -1812,63 +1812,6 @@ class AD5453(SPIController):
     def write(self, data):
         super().write((self.clk_edge_bits << 12) | data)
 
-"""
-class ADS7952(SPIController):
-    registers = Register.get_chip_registers('ADS7952')
-
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS7952'), master_config=0x3010, increment=True):
-        # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
-        super().__init__(fpga=fpga, master_config=master_config,
-                         endpoints=endpoints, increment=increment)
-        self.channel = 0
-
-    def to_voltage(self, a):
-        bits = 12
-        vref = 2.5*2
-        masked = a & 0xfff  # 12 bit ADC
-        v = masked/(2**bits - 1)*vref
-        chan = (a & 0xf000) >> 12
-        return v, chan
-
-    # Method to set the operating mode of the chip. mode=0 -> manual, mode=1 -> Auto 1, mode=2 -> Auto 2
-    def set_mode(self, mode):
-        # [15:12] = 0b0001 Manual
-        # [15:12] = 0b0010 Auto 1
-        # [15:12] = 0b0011 Auto 2
-        # [15:12] = 0b0000 Continue previous mode
-        pass  # TODO: write method
-
-    # Method to set the input range. range_bit=0 -> 0-Vref, or range_bit=1 -> 0-2*Vref
-    def set_input_range(self, range_bit):
-        # range_bit goes in the 16th bit of the Data In
-        pass  # TODO: write method
-
-    # Method to power down the device
-    def power_down(self):
-        # Set bit 5 = 1 to power down after the 16th SCLK falling edge
-        pass  # TODO: write method
-
-    # Method to select the output SDO. output_bit=0 -> current channel address and value, or output_bit=1 -> GPIO pins
-    def set_output(self, output_bit):
-        pass  # TODO: write method
-
-    # Method to configure the GPIO program registers
-    def set_gpio(self, data):
-        pass  # TODO: write method
-
-    # Method to read the desired channel
-    def read_channel(self, channel):
-        pass  # TODO: write method
-
-    # Method to read the channel determined by the channel attribute
-    def read(self):
-        return self.read_channel(self.channel)
-
-    # Method to set up the chip for use
-    def setup(self):
-        pass  # TODO: figure out what needs to be set up, if anything
-"""
-
 
 class ADCDATA():
     def __init__(self):
