@@ -61,7 +61,10 @@ def test_multiple_instances():
     assert group1[0].endpoints != group2[0].endpoints
 
 
-@pytest.mark.parametrize('number_of_chips', [x for x in range(10)])
+@pytest.mark.parametrize('number_of_chips',
+                         [pytest.param('a', marks=pytest.mark.xfail), pytest.param(0, marks=pytest.mark.xfail)] +
+                         [x for x in range(1, 10)]
+                         )
 def test_create_chips(number_of_chips):
     from interfaces.interfaces import FPGA, ADS8686, Endpoint
     f = FPGA()
