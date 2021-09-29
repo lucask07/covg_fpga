@@ -1354,9 +1354,15 @@ class SPIController:
             # Use class default for master_config
             for i in range(number_of_chips):
                 chips.append(cls(fpga=fpga, endpoints=endpoints))
+                # Use deepcopy to keep the endpoints for different instances separate
+                endpoints = copy.deepcopy(chips[-1].endpoints)
+                Endpoint.increment_endpoints(endpoints)
         else:
             for i in range(number_of_chips):
-                chips.append(cls(fpga=fpga, endpoints=endpoints, master_config=master_config))
+                chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(endpoints), master_config=master_config))
+                # Use deepcopy to keep the endpoints for different instances separate
+                endpoints = copy.deepcopy(chips[-1].endpoints)
+                Endpoint.increment_endpoints(endpoints)
 
         if endpoints is None:
             # Increment shared endpoints dictionary
@@ -1367,10 +1373,11 @@ class SPIController:
             shared_full_eps = Endpoint.endpoints_from_defines
             shared_chip_eps = shared_full_eps[
                 list(shared_full_eps.keys())[
-                    list(shared_full_eps.values()).index(endpoints)
+                    list(shared_full_eps.values()).index(chips[0].endpoints)
                     ]
                 ]
-            Endpoint.increment_endpoints(shared_chip_eps)
+            for i in range(number_of_chips):
+                Endpoint.increment_endpoints(shared_chip_eps)
         else:
             # Increment custom dictionary
             Endpoint.increment_endpoints(endpoints)
