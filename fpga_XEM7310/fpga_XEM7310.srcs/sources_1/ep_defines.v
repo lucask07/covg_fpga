@@ -70,7 +70,7 @@
 `define I2C_TRIG_IN 8'h41 // bit_width=32
 `define ADC_TIMING_TRIG_IN 8'h42 // bit_width=32
 
-`define AD7961_PLL_LOCKED_WIRE_OUT 8'h21
+`define AD7961_PLL_LOCKED_WIRE_OUT 8'h21 // bit_width=1
 `define AD7961_PLL_LOCKED 0 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 `define AD7961_TIMING_PLL_LOCKED 1 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 
@@ -146,14 +146,14 @@
 `define AD7961_RESET_GEN_BIT 19 // address=ADC_TIMING_TRIG_IN bit_width=1
 
 // wire in at 0x00
-`define GP_CSB_DEBUG 0 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_CSB_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_SCLK_DEBUG 3 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_SCLK_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_SDI_DEBUG 6 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_SDI_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_ADS_CONVST_DEBUG 9 //address=GP_DEBUG_WIRE_IN bit_width=3
-`define GP_ADS_CONVST_DEBUG_LEN 3 //address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_CSB_DEBUG 0 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_CSB_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SCLK_DEBUG 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SCLK_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SDI_DEBUG 6 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_SDI_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_ADS_CONVST_DEBUG 9 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GP_ADS_CONVST_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
 
 // wire in at 0x01
 `define ADS8686_HOST_FPGA_BIT 0 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
