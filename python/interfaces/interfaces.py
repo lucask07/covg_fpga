@@ -2102,7 +2102,8 @@ class AD7961(ADCDATA):
 
         chips = []
         for i in range(number_of_chips):
-            chips.append(AD7961(fpga=fpga, endpoints=endpoints))
+            # Use deepcopy here to keep the endpoints for different instances separate
+            chips.append(AD7961(fpga=fpga, endpoints=copy.deepcopy(endpoints)))
             Endpoint.increment_endpoints(endpoints)
         return chips
 

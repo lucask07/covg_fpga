@@ -58,3 +58,15 @@ def test_multiple_instances():
     assert all([x.endpoints == group1[0].endpoints for x in group1])
     assert all([x.endpoints == group2[0].endpoints for x in group2])
     assert group1[0].endpoints != group2[0].endpoints
+
+
+@pytest.mark.parametrize('number_of_chips', [x for x in range(10)])
+def test_create_chips(number_of_chips):
+    from interfaces.interfaces import FPGA, AD7961, Endpoint
+    f = FPGA()
+    # Update the endpoints so they get reset when this test runs multiple times
+    Endpoint.update_endpoints_from_defines()
+    chips = AD7961.create_chips(fpga=f, number_of_chips=number_of_chips)
+    # Skip the first element in compare_chips because that is what we will compare against
+    assert all([x.endpoints != chips[0].endpoints for x in chips[1:]])
+    
