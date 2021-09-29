@@ -126,6 +126,12 @@ class Endpoint:
             self.address, self.bit_index_high, self.bit_index_low)
         return str_rep
 
+    def __eq__(self, other):
+        if type(self) is type(other):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
     @classmethod
     def update_endpoints_from_defines(cls, ep_defines_path=None):
         """Store and return a dictionary of Endpoints for each chip in ep_defines.v."""
@@ -188,7 +194,6 @@ class Endpoint:
                 continue
 
             # Address, bit, and bit_width
-            print(pieces)
             if "8'h" in pieces[2]:
                 # Definition holds an address, take that value
                 address = int(pieces[2][3:], base=16)
@@ -233,10 +238,9 @@ class Endpoint:
                     if referenced_group is None:
                         print(f'{group_name}[{endpoint_name}]: Referenced group "{class_name}" not found.')
                         continue
-                    print(f'{group_name}[{endpoint_name}]: Referenced group "{class_name}{ep_name}" not found.') #LJK
                     endpoint.address = referenced_group.get(ep_name).address
                     if endpoint.address is None:
-                        print(f'{group_name}[{endpoint_name}]: Referenced address "{"_".join((class_name, ep_name))}" not found.')
+                        print(f'{group_name}[{endpoint_name}]: Referenced address "{class_name}_{ep_name}" not found.')
                         continue
 
         return Endpoint.endpoints_from_defines
