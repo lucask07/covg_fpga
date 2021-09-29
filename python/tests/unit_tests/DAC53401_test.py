@@ -40,7 +40,7 @@ def dut():
     # f = FPGA(bitfile=top_level_module_bitfile)
     f = FPGA(bitfile=i2c_bitfile)
     assert f.init_device()
-    yield DAC53401(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2C-DC'), addr_pins=0b000)
+    yield DAC53401(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2CDC'), addr_pins=0b000)
     # Teardown
     f.xem.Close()
 
@@ -97,7 +97,7 @@ def test_set_gain(dut, gain):
     dut.set_gain(gain)
 
 
-@pytest.mark.parametrize('gain, expected', [
+@pytest.mark.parametrize('gain', [
     1.5,
     2,
     3,
