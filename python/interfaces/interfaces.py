@@ -1304,6 +1304,8 @@ class SPIController:
 
     Methods
     -------
+    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)
+        Class method. Instantiate a number of new chips.
     wb_send_cmd(command)
         Send a command to the Wishbone.
     wb_set_address(address)
@@ -1349,6 +1351,16 @@ class SPIController:
 
     @classmethod
     def create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None):
+        """Instantiate a number of new chips.
+        
+        The number must be an integer greater than zero. The endpoints between
+        each instance will be incremented. If the endpoints argument is left
+        as None, then we will use copies of the endpoints_from_defines
+        dictionary for the endpoints for each instance, and update that
+        original dictionary when we increment the endpoints. This way, the
+        endpoints there are ready for another instantiation if needed.
+        """
+
         if type(number_of_chips) is not int or number_of_chips <= 0:
             print('number_of_chips must be an integer greater than 0')
             return False
@@ -2079,6 +2091,11 @@ class AD7961(ADCDATA):
     configures FPGA internal resets
     configures chip specific and global enables
     Formats data returned from the wire out
+
+    Methods
+    -------
+    create_chips(fpga, number_of_chips, endpoints=None)
+        Static method. Instantiate a given number of new chips.
     """
 
     # the AD7961 does not have internal registers -- just OK endpoints
@@ -2103,9 +2120,14 @@ class AD7961(ADCDATA):
 
     @staticmethod
     def create_chips(fpga, number_of_chips, endpoints=None):
-        """Instantiate number_of_chips new chips.
+        """Instantiate a given number of new chips.
         
-        We increment the endpoints between each instantiation as well.
+        We increment the endpoints between each instantiation as well. The 
+        number must be greater than 0. If the endpoints argument is left
+        as None, then we will use copies of the endpoints_from_defines
+        dictionary for the endpoints for each instance, and update that
+        original dictionary when we increment the endpoints. This way, the
+        endpoints there are ready for another instantiation if needed.
         """
 
         if type(number_of_chips) is not int or number_of_chips <= 0:
