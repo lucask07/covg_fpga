@@ -187,8 +187,7 @@ class Endpoint:
                 # format of the others so we skip it
                 continue
 
-            # Address, bit, and bit_width
-            print(pieces)
+            # Address, bit, and bit_widt
             if "8'h" in pieces[2]:
                 # Definition holds an address, take that value
                 address = int(pieces[2][3:], base=16)
@@ -387,7 +386,7 @@ class FPGA:
             print('Error code {}'.format(e))
         return buf, e
 
-    def set_wire(self, address, value, mask=0xFFFF):
+    def set_wire(self, address, value, mask=0xFFFFFFFF):
         """Return the error code after setting an OK WireIn value."""
 
         # DEBUG: temporary for logging DAC80508 test
@@ -1343,37 +1342,6 @@ class SPIController:
         self.master_config = master_config
         self.endpoints = endpoints
 
-    @classmethod
-    def create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None):
-        chips = []
-        if master_config is None:
-            # Use class default for master_config
-            for i in range(number_of_chips):
-                chips.append(cls(fpga=fpga, endpoints=endpoints))
-        else:
-            for i in range(number_of_chips):
-                chips.append(cls(fpga=fpga, endpoints=endpoints, master_config=master_config))
-
-        if endpoints is None:
-            # Increment shared endpoints dictionary
-            # TODO: is there a better way to do this?
-            # We need to get the shared endpoints in endpoints_from_defines to
-            # increment and we only have the endpoints given to us in the
-            # argument.
-            shared_full_eps = Endpoint.endpoints_from_defines
-            shared_chip_eps = shared_full_eps[
-                list(shared_full_eps.keys())[
-                    list(shared_full_eps.values()).index(endpoints)
-                    ]
-                ]
-            Endpoint.increment_endpoints(shared_chip_eps)
-        else:
-            # Increment custom dictionary
-            Endpoint.increment_endpoints(endpoints)
-
-        return chips
-
-
     def wb_send_cmd(self, command):
         """Send a command to the Wishbone.
 
@@ -1623,7 +1591,7 @@ class DAC80508(SPIController):
 
     registers = Register.get_chip_registers('DAC80508')
 
-    def __init__(self, fpga, slave_address=0x1, endpoints=None, master_config=0x3218):
+    def __init__(self, fpga, master_config=0x3218, slave_address=0x1, endpoints=None):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DAC80508')
@@ -1766,7 +1734,7 @@ class AD5453(SPIController):
     bits=12,
     vref=2.5*2
 
-    def __init__(self, fpga, endpoints=None, master_config=0x3010):
+    def __init__(self, fpga, master_config=0x3010, endpoints=None):
 
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('AD5453')
@@ -1938,7 +1906,7 @@ class ADS8686(SPIController, ADCDATA):
 
     # Method to set up the chip
     def setup(self):  # TODO -- defaults to modify the SPI setup
-        self.configure_master(self.master_config)
+        self.configure_master_bin(self.master_config)  # configures directly
         # self.set_frequency(5)
         self.set_divider(8)
         self.select_slave(1)
@@ -2086,21 +2054,6 @@ class AD7961(ADCDATA):
         #             'WI02_A_EN0': 1,
         #             'WI02_A_EN': 15}
 
-    def create_chips(cls, fpga, number_of_chips, endpoints=None):
-        """Instantiate number_of_chips new chips.
-        
-        We increment the endpoints between each instantiation as well.
-        """
-
-        if endpoints is None:
-            endpoints = Endpoint.endpoints_from_defines.get('AD7961')
-
-        chips = []
-        for i in range(number_of_chips):
-            chips.append(cls(fpga=fpga, endpoints=endpoints))
-            Endpoint.increment_endpoints(endpoints)
-        return chips
-
     def get_status(self):
         """ Get AD796x status:
         pll lock, FIFO full, half-full, and empty
@@ -2118,6 +2071,11 @@ class AD7961(ADCDATA):
     def get_pll_status(self):
         return self.fpga.read_wire_bit(self.endpoints['PLL_LOCKED'].address,
                                        self.endpoints['PLL_LOCKED'].bit_index_low)
+
+    def get_timing_pll_status(self):
+        return self.fpga.read_wire_bit(self.endpoints['TIMING_PLL_LOCKED'].address,
+                                       self.endpoints['TIMING_PLL_LOCKED'].bit_index_low)
+
 
     def get_fifo_status(self):
         flags = ['FULL', 'HALFFULL', 'EMPTY']
