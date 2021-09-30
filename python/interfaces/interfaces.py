@@ -50,8 +50,8 @@ class Register:
             self.address, self.bit_index_high, self.bit_index_low, self.bit_width)
         return str_rep
 
-    @classmethod
-    def get_chip_registers(cls, sheet, workbook_path=None):
+    @staticmethod
+    def get_chip_registers(sheet, workbook_path=None):
         """Return a dictionary of Registers from a page in an Excel spreadsheet."""
 
         if workbook_path == None:
@@ -126,8 +126,14 @@ class Endpoint:
             self.address, self.bit_index_high, self.bit_index_low)
         return str_rep
 
-    @classmethod
-    def update_endpoints_from_defines(cls, ep_defines_path=None):
+    def __eq__(self, other):
+        if type(self) is type(other):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
+
+    @staticmethod
+    def update_endpoints_from_defines(ep_defines_path=None):
         """Store and return a dictionary of Endpoints for each chip in ep_defines.v."""
 
         # Find ep_defines.v path
@@ -187,7 +193,7 @@ class Endpoint:
                 # format of the others so we skip it
                 continue
 
-            # Address, bit, and bit_widt
+            # Address, bit, and bit_width
             if "8'h" in pieces[2]:
                 # Definition holds an address, take that value
                 address = int(pieces[2][3:], base=16)
@@ -232,16 +238,15 @@ class Endpoint:
                     if referenced_group is None:
                         print(f'{group_name}[{endpoint_name}]: Referenced group "{class_name}" not found.')
                         continue
-                    print(f'{group_name}[{endpoint_name}]: Referenced group "{class_name}{ep_name}" not found.') #LJK
                     endpoint.address = referenced_group.get(ep_name).address
                     if endpoint.address is None:
-                        print(f'{group_name}[{endpoint_name}]: Referenced address "{"_".join((class_name, ep_name))}" not found.')
+                        print(f'{group_name}[{endpoint_name}]: Referenced address "{class_name}_{ep_name}" not found.')
                         continue
 
         return Endpoint.endpoints_from_defines
 
-    @classmethod
-    def get_chip_endpoints(cls, chip_name):
+    @staticmethod
+    def get_chip_endpoints(chip_name):
         """Return a copy of the dictionary of Endpoints for a specific chip or group."""
 
         if Endpoint.endpoints_from_defines == dict():
@@ -255,8 +260,8 @@ class Endpoint:
         # we copy also get copied, not left as references.
         return copy.deepcopy(Endpoint.endpoints_from_defines.get(chip_name))
 
-    @classmethod
-    def increment_endpoints(cls, endpoints_dict):
+    @staticmethod
+    def increment_endpoints(endpoints_dict):
         """Increment all Endpoints in endpoints_dict.
 
         Use each Endpoint's gen_bit and gen_addr values to determine whether to
@@ -1299,6 +1304,8 @@ class SPIController:
 
     Methods
     -------
+    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)
+        Class method. Instantiate a number of new chips.
     wb_send_cmd(command)
         Send a command to the Wishbone.
     wb_set_address(address)
@@ -1341,6 +1348,58 @@ class SPIController:
         self.fpga = fpga
         self.master_config = master_config
         self.endpoints = endpoints
+
+    @classmethod
+    def create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None):
+        """Instantiate a number of new chips.
+
+        The number must be an integer greater than zero. The endpoints between
+        each instance will be incremented. If the endpoints argument is left
+        as None, then we will use copies of the endpoints_from_defines
+        dictionary for the endpoints for each instance, and update that
+        original dictionary when we increment the endpoints. This way, the
+        endpoints there are ready for another instantiation if needed.
+        """
+
+        if type(number_of_chips) is not int or number_of_chips <= 0:
+            print('number_of_chips must be an integer greater than 0')
+            return False
+
+        chips = []
+        if master_config is None:
+            # Use class default for master_config
+            for i in range(number_of_chips):
+                chips.append(cls(fpga=fpga, endpoints=endpoints))
+                # Use deepcopy to keep the endpoints for different instances separate
+                endpoints = copy.deepcopy(chips[-1].endpoints)
+                Endpoint.increment_endpoints(endpoints)
+        else:
+            for i in range(number_of_chips):
+                chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(endpoints), master_config=master_config))
+                # Use deepcopy to keep the endpoints for different instances separate
+                endpoints = copy.deepcopy(chips[-1].endpoints)
+                Endpoint.increment_endpoints(endpoints)
+
+        if endpoints is None:
+            # Increment shared endpoints dictionary
+            # TODO: is there a better way to do this?
+            # We need to get the shared endpoints in endpoints_from_defines to
+            # increment and we only have the endpoints given to us in the
+            # argument.
+            shared_full_eps = Endpoint.endpoints_from_defines
+            shared_chip_eps = shared_full_eps[
+                list(shared_full_eps.keys())[
+                    list(shared_full_eps.values()).index(chips[0].endpoints)
+                    ]
+                ]
+            for i in range(number_of_chips):
+                Endpoint.increment_endpoints(shared_chip_eps)
+        else:
+            # Increment custom dictionary
+            Endpoint.increment_endpoints(endpoints)
+
+        return chips
+
 
     def wb_send_cmd(self, command):
         """Send a command to the Wishbone.
@@ -1753,63 +1812,6 @@ class AD5453(SPIController):
     def write(self, data):
         super().write((self.clk_edge_bits << 12) | data)
 
-"""
-class ADS7952(SPIController):
-    registers = Register.get_chip_registers('ADS7952')
-
-    def __init__(self, fpga, endpoints=Endpoint.get_chip_endpoints('ADS7952'), master_config=0x3010, increment=True):
-        # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
-        super().__init__(fpga=fpga, master_config=master_config,
-                         endpoints=endpoints, increment=increment)
-        self.channel = 0
-
-    def to_voltage(self, a):
-        bits = 12
-        vref = 2.5*2
-        masked = a & 0xfff  # 12 bit ADC
-        v = masked/(2**bits - 1)*vref
-        chan = (a & 0xf000) >> 12
-        return v, chan
-
-    # Method to set the operating mode of the chip. mode=0 -> manual, mode=1 -> Auto 1, mode=2 -> Auto 2
-    def set_mode(self, mode):
-        # [15:12] = 0b0001 Manual
-        # [15:12] = 0b0010 Auto 1
-        # [15:12] = 0b0011 Auto 2
-        # [15:12] = 0b0000 Continue previous mode
-        pass  # TODO: write method
-
-    # Method to set the input range. range_bit=0 -> 0-Vref, or range_bit=1 -> 0-2*Vref
-    def set_input_range(self, range_bit):
-        # range_bit goes in the 16th bit of the Data In
-        pass  # TODO: write method
-
-    # Method to power down the device
-    def power_down(self):
-        # Set bit 5 = 1 to power down after the 16th SCLK falling edge
-        pass  # TODO: write method
-
-    # Method to select the output SDO. output_bit=0 -> current channel address and value, or output_bit=1 -> GPIO pins
-    def set_output(self, output_bit):
-        pass  # TODO: write method
-
-    # Method to configure the GPIO program registers
-    def set_gpio(self, data):
-        pass  # TODO: write method
-
-    # Method to read the desired channel
-    def read_channel(self, channel):
-        pass  # TODO: write method
-
-    # Method to read the channel determined by the channel attribute
-    def read(self):
-        return self.read_channel(self.channel)
-
-    # Method to set up the chip for use
-    def setup(self):
-        pass  # TODO: figure out what needs to be set up, if anything
-"""
-
 
 class ADCDATA():
     def __init__(self):
@@ -2032,6 +2034,11 @@ class AD7961(ADCDATA):
     configures FPGA internal resets
     configures chip specific and global enables
     Formats data returned from the wire out
+
+    Methods
+    -------
+    create_chips(fpga, number_of_chips, endpoints=None)
+        Static method. Instantiate a given number of new chips.
     """
 
     # the AD7961 does not have internal registers -- just OK endpoints
@@ -2053,6 +2060,32 @@ class AD7961(ADCDATA):
         #             'TI40_ADC_FIFO_RST': 4,
         #             'WI02_A_EN0': 1,
         #             'WI02_A_EN': 15}
+
+    @staticmethod
+    def create_chips(fpga, number_of_chips, endpoints=None):
+        """Instantiate a given number of new chips.
+
+        We increment the endpoints between each instantiation as well. The
+        number must be greater than 0. If the endpoints argument is left
+        as None, then we will use copies of the endpoints_from_defines
+        dictionary for the endpoints for each instance, and update that
+        original dictionary when we increment the endpoints. This way, the
+        endpoints there are ready for another instantiation if needed.
+        """
+
+        if type(number_of_chips) is not int or number_of_chips <= 0:
+            print('number_of_chips must be an integer greater than 0')
+            return False
+
+        if endpoints is None:
+            endpoints = Endpoint.endpoints_from_defines.get('AD7961')
+
+        chips = []
+        for i in range(number_of_chips):
+            # Use deepcopy here to keep the endpoints for different instances separate
+            chips.append(AD7961(fpga=fpga, endpoints=copy.deepcopy(endpoints)))
+            Endpoint.increment_endpoints(endpoints)
+        return chips
 
     def get_status(self):
         """ Get AD796x status:
