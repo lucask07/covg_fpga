@@ -70,7 +70,7 @@
 `define I2C_TRIG_IN 8'h41 // bit_width=32
 `define ADC_TIMING_TRIG_IN 8'h42 // bit_width=32
 
-`define AD7961_PLL_LOCKED_WIRE_OUT 8'h21
+`define AD7961_PLL_LOCKED_WIRE_OUT 8'h21 // bit_width=32
 `define AD7961_PLL_LOCKED 0 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 `define AD7961_TIMING_PLL_LOCKED 1 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 
