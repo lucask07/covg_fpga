@@ -63,14 +63,16 @@ def test_multiple_instances():
             I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type)),
             I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type))
         ]
-        assert all([x.endpoints == group1[1].endpoints for x in group1])
-        assert all([x.endpoints == group2[1].endpoints for x in group2])
+        
+        assert all([x.endpoints == group1[0].endpoints for x in group1])
+        assert all([x.endpoints == group2[0].endpoints for x in group2])
         assert group1[0].endpoints != group2[0].endpoints
 
     compare_chips = []
     for i2c_type in i2c_types:
         compare_chips.append(I2CController(fpga=f, endpoints=Endpoint.get_chip_endpoints(i2c_type)))
-    assert all([x.endpoints != compare_chips[0].endpoints for x in compare_chips])
+    # Skip the first element in compare_chips because that is what we will compare against
+    assert all([x.endpoints != compare_chips[0].endpoints for x in compare_chips[1:]])
 
 @pytest.mark.parametrize('dev_addr, reg_addr, data', [
     (0b0000_0000, [0b0000_0000], [0b0000_0000, 0b0000_0000]),
