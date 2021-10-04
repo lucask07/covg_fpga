@@ -18,7 +18,7 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module mux_8to1(
+module mux_8to1_ust(
     input [2:0] sel,
     input [7:0] in,
     output reg out
