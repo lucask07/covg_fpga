@@ -47,11 +47,27 @@ class Clamp:
     def __init__(self, fpga, TCA_addr_pins_0=0b110, TCA_addr_pins_1=0b000, UID_addr_pins=0b000, DAC_addr_pins=0b000):
         # cwd = python/interfaces/
         # i2c_bitfile = python/i2c.bit
-        self.TCA_0 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0)
-        self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1)
-        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins)
-        self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins)
-        self.serial_number = None  # Will get serial code from UID chip in setup()
+        self.TCA_0 = TCA9555(
+            fpga=fpga,
+            addr_pins=TCA_addr_pins_0,
+            endpoints=Endpoint.get_chip_endpoints('I2CDC')
+        )
+        self.TCA_1 = TCA9555(
+            fpga=fpga,
+            addr_pins=TCA_addr_pins_1,
+            endpoints=Endpoint.get_chip_endpoints('I2CDC')
+        )
+        self.UID = UID_24AA025UID(
+            fpga=fpga,
+            addr_pins=UID_addr_pins,
+            endpoints=Endpoint.get_chip_endpoints('I2CDC')
+        )
+        self.DAC = DAC53401(
+            fpga=fpga,
+            addr_pins=DAC_addr_pins,
+            endpoints=Endpoint.get_chip_endpoints('I2CDC')
+        )
+        self.serial_number = None  # Will get serial code from UID chip in init_board()
 
     def init_board(self):
         """Tests and configures the board.
