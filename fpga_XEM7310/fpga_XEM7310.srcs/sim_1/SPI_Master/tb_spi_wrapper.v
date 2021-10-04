@@ -62,8 +62,8 @@ module tb_spi_wrapper;
 	
 	// Generate clock
 	always #2.5 clk = ~clk;//now 200 MHz sys clock
-    always #5.05 okClk = ~okClk;//now 200 MHz sys clock
-
+    always #5.05 okClk = ~okClk; 
+    
 	initial begin
 		// Initialize Inputs
 		clk = 1'b0;
@@ -96,7 +96,7 @@ module tb_spi_wrapper;
       #5;
       trigger = 1'b0;
       #40;
-      wire_in = 32'h40000003;
+      wire_in = 32'h40000008;
       #5
       trigger = 1'b1;
       #5;

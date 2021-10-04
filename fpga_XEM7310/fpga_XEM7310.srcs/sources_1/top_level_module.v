@@ -209,6 +209,16 @@ module top_level_module(
         .locked(adc_timing_pll_locked)
 	);
 
+	wire [(FADC_NUM-1):0] adc_sync_rst;
+    wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
+    wire [(FADC_NUM-1):0]write_en_adc_o;
+    wire [15:0] adc_val[0:(FADC_NUM-1)];
+    wire [(FADC_NUM-1):0] adc_fifo_full;
+    wire [(FADC_NUM-1):0] adc_fifo_halffull;
+    wire [(FADC_NUM-1):0] adc_fifo_empty;
+    wire [(FADC_NUM-1):0] adc_pipe_ep_read;
+    wire [(FADC_NUM-1):0] adc_fifo_reset;
+	
 	assign led[1] = ~adc_pll_locked;
 	assign led[2] = ~adc_fifo_empty[0]; // LEDs light when low
 	assign led[3] = ~adc_fifo_halffull[1];
@@ -217,30 +227,7 @@ module top_level_module(
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i]);
     assign led[7] = 1'b0;
 
-
-/*
-    // DAC80508 (ds for DAC slow)
-    output wire  [(DAC80508_NUM-1):0]ds_sdo,    // DAC85058; daq_v2 build has DAC85058ZC which means SDO is CLRB; will tie to logic high.
-    output wire [(DAC80508_NUM-1):0]ds_sclk,
-    output wire [(DAC80508_NUM-1):0]ds_csb,
-    output wire [(DAC80508_NUM-1):0]ds_sdi,
-
-    //AD5453 (SPI)
-    output wire [(AD5453_NUM-1):0]d_sclk,
-    output wire [(AD5453_NUM-1):0]d_csb,
-    output wire [(AD5453_NUM-1):0]d_sdi,
-
-    //ADS8686
-    output wire ads_csb,
-    output wire ads_sclk,
-    output wire ads_sdi,
-    input  wire ads_sdoa,
-    input  wire ads_sdob, // TODO: not yet connected
-    output wire ads_convst,
-    output wire ads_resetb,
-    input wire ads_busy,  // TODO: not yet connected
-*/
-    // WireIn 0 configures MUX for logic analyzer debug. CSB signals
+    // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
     mux_8to1 (
 	   .datain({4'b0100, d_csb[0], ds_csb[1], ds_csb[0], ads_csb}), // 7:0
 	   .sel(ep00wire[(`GPIO_CSB_DEBUG_LEN + `GPIO_CSB_DEBUG - 1) :(`GPIO_CSB_DEBUG)]),
@@ -302,6 +289,9 @@ module top_level_module(
     assign up = ep01wire[(`GPIO_UP_WIRE_IN+`GPIO_UP_WIRE_IN_LEN - 1):`GPIO_UP_WIRE_IN];
     assign dn = ep01wire[(`GPIO_DOWN_WIRE_IN+`GPIO_DOWN_WIRE_IN_LEN - 1):`GPIO_DOWN_WIRE_IN];
 
+    wire [(DAC80508_NUM-1):0] host_fpgab_dac80508; 
+    assign host_fpgab_dac80508 = ep01wire[(`DAC80508_HOST_FPGA_GEN_BIT_LEN + `DAC80508_HOST_FPGA_GEN_BIT - 1):`DAC80508_HOST_FPGA_GEN_BIT];
+        
     // use GPIO with the SPI debug mux
     //assign gpio = ep01wire[(`GPIO_3V3_WIRE_IN+`GPIO_3V3_WIRE_IN_LEN - 1):`GPIO_3V3_WIRE_IN];
     wire [3:0]gp_lvds_se;
@@ -488,16 +478,6 @@ module top_level_module(
   // ------------ end ADS8686 -----------------------------------
 
 	/* ---------------- AD796x 5 MSPS ADC  ----------------*/
-  wire [(FADC_NUM-1):0] adc_sync_rst;
-  wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
-  wire [(FADC_NUM-1):0]write_en_adc_o;
-  wire [15:0] adc_val[0:(FADC_NUM-1)];
-  wire [(FADC_NUM-1):0] adc_fifo_full;
-  wire [(FADC_NUM-1):0] adc_fifo_halffull;
-  wire [(FADC_NUM-1):0] adc_fifo_empty;
-  wire [(FADC_NUM-1):0] adc_pipe_ep_read;
-  wire [(FADC_NUM-1):0] adc_fifo_reset;
-
 	genvar i;
     generate
     for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7960_gen
@@ -535,7 +515,10 @@ module top_level_module(
           .dout(adc_pipe_ep_datain[i]),     // Bus [31:0] (to OKHost)
           .full(adc_fifo_full[i]),     // status
           .empty(adc_fifo_empty[i]),   // status
-          .prog_full(adc_fifo_halffull[i]));//status
+          .prog_full(adc_fifo_halffull[i]),          
+          .wr_rst_busy(),
+          .rd_rst_busy()          
+          );//status
 
           //pipeOut for data from AD7961
           okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(5+i)*65 +: 65]),
@@ -547,18 +530,40 @@ module top_level_module(
     /*---------------- DAC80508 -------------------*/
     wire [31:0]dac_wirein_data[(DAC80508_NUM-1):0];
     wire [31:0]dac_data_out[(DAC80508_NUM-1):0];
-
+    
     genvar j;
     generate
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen
-        spi_controller dac_0 (
+        spi_controller #(.ADDR(`DAC80508_REGBRIDGE_OFFSET)) uut(
+                           .clk(clk_sys),
+                           .reset(sys_rst),
+                           .divider_reset(ep40trig[`DAC80508_CLK_DIV_RESET_GEN_BIT+j]),  // TODO: need in ep_defines
+                           .dac_val(dac_wirein_data[j]),
+                           .dac_convert_trigger(ep40trig[`DAC80508_WB_CONVERT_GEN_BIT+j]), // trigger wishbone transfers
+                           .host_fpgab(host_fpgab_dac80508[j]), //  if 1 host driven commands; if 0
+                           // OKRegister bridge inputs
+                           .okClk(okClk),
+                           .addr(regAddress),
+                           .data_in(regDataOut),
+                           .write_in(regWrite),
+                           // outputs
+                           .dac_out(dac_data_out[j]), // connect to WireOut
+                           .data_valid(),
+                           .ss(ds_csb[j]),
+                           .sclk(ds_sclk[j]),
+                           .mosi(ds_sdi[j]),
+                           .miso(1'b0),
+                           .convst_out()
+                           );         
+        /*spi_controller dac_0 (
           .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`DAC80508_WB_CONVERT_GEN_BIT+j]), .dac_out(dac_data_out[j]),
-          .ss(ds_csb[j]), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(ds_sdo[j]), .okClk(okClk), .addr(regAddress), .data_in(regDataOut), .write_in(regWrite)
-        );
+          .ss(), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(1'b0), .okClk(okClk), .addr(regAddress), .data_in(regDataOut), .write_in(regWrite)
+        ); */
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DAC80508_WB_IN_GEN_ADDR + j), .ep_dataout(dac_wirein_data[j]));
         // TODO: wireout is not needed (nor supported with the Clear version of the DAC80508)
-        okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(9+j)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR), .ep_datain(dac_data_out[j]));
-
+        okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(9+j)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR + j), .ep_datain(dac_data_out[j]));    
+    assign ds_sdo[j] = 1'b1; // sdo for the DAC80508C is CLRB -- force to logic high
+    
     end
     endgenerate
     /*---------------- END DAC80508 -------------------*/

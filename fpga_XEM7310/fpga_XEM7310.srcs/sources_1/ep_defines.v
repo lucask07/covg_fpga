@@ -65,7 +65,7 @@
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_INDEX 8'h04 // bit_width=32
 
-// trigger in addresses
+// trigger in addresses 
 `define GP_RST_VALID_TRIG_IN 8'h40 // bit_width=32
 `define I2C_TRIG_IN 8'h41 // bit_width=32
 `define ADC_TIMING_TRIG_IN 8'h42 // bit_width=32
@@ -141,7 +141,9 @@
 `define I2CDAQ_MEMWRITE_GEN_BIT 18 // address=I2C_TRIG_IN bit_width=1
 `define I2CDAQ_MEMREAD_GEN_BIT 20 // address=I2C_TRIG_IN bit_width=1
 
-// trigger in at 0x42 -- sync to adc_timing_clk
+`define DAC80508_CLK_DIV_RESET_GEN_BIT 21 // address=I2C_TRIG_IN bit_width=1
+
+// trigger in at 0x42 -- sync to adc_timing_clk 
 `define AD7961_FIFO_RESET_GEN_BIT 4 // address=ADC_TIMING_TRIG_IN bit_width=1
 `define AD7961_RESET_GEN_BIT 19 // address=ADC_TIMING_TRIG_IN bit_width=1
 
@@ -166,6 +168,8 @@
 `define GPIO_LVDS_WIRE_IN 20 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 `define GPIO_LVDS_WIRE_IN_LEN 4 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 `define AD7961_WIRE_RESET_GEN_BIT 24 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define DAC80508_HOST_FPGA_GEN_BIT 25 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define DAC80508_HOST_FPGA_GEN_BIT_LEN 2 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 
 // wirein at 0x02
 `define AD7961_ENABLE_GEN_BIT 1 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
@@ -190,6 +194,7 @@
 `define ADS8686_RESET 25 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
 `define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
+`define DAC80508_REGBRIDGE_OFFSET 8'h05 // bit_width=32
 
 // TODO set this up!
 `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=

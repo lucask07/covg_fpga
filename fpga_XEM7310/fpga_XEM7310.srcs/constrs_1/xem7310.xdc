@@ -99,7 +99,7 @@ set_clock_groups -asynchronous -group [get_clocks {sys_clk}] -group [get_clocks 
 
 create_clock -name adc_timing_clk -period 10
 create_clock -name adc_clk -period 5
-create_clock -name sclk_s - period 5
+create_clock -name sclk_s -period 5
 
 ############################################################################
 ## User Reset
