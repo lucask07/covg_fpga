@@ -308,6 +308,7 @@ def advance_endpoints_bynum(endpoints_dict, num):
 # Class for the FPGA itself. Handles FPGA configuration, setting wire values,
 # and other FPGA specific functions.
 
+
 class FPGA:
     """Class for the Opal Kelly FPGA itself.
 
@@ -327,9 +328,11 @@ class FPGA:
     """
 
     # TODO: change to complete bitfile when Verilog is combined
-    def __init__(self, bitfile=os.path.join('..', '..', 'fpga_test.bit')):
+    def __init__(self, bitfile=os.path.join('..', '..', 'fpga_test.bit'),
+                 debug=False):
 
         self.bitfile = bitfile
+        self.debug = debug
         # self.pll = ok.PLL22150()
         # I don't know why, but uncommenting this makes things fail
         return
@@ -395,7 +398,8 @@ class FPGA:
         """Return the error code after setting an OK WireIn value."""
 
         # DEBUG: temporary for logging DAC80508 test
-        # print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)}')
+        if self.debug:
+            print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
         error_code = self.xem.SetWireInValue(address, value, mask)
         self.xem.UpdateWireIns()
         return error_code
@@ -415,6 +419,8 @@ class FPGA:
         else:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
+        if self.debug:
+            print(f'set_bit(address={hex(ep_bit.address)}, value={hex(mask)}, mask={hex(mask)})')
         self.xem.SetWireInValue(ep_bit.address, mask, mask)  # set
         self.xem.UpdateWireIns()
 
@@ -427,6 +433,8 @@ class FPGA:
         else:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
+        if self.debug:
+            print(f'clear_bit(address={hex(ep_bit.address)}, value={hex(0)}, mask={hex(mask)})')
         self.xem.SetWireInValue(ep_bit.address, 0x0000, mask)  # clear
         self.xem.UpdateWireIns()
 
@@ -465,7 +473,8 @@ class FPGA:
         Expects a single bit, not yet implement for multiple bits and will only
         activate the LSB if the Endpoint containts multiple bits.
         """
-
+        if self.debug:
+            print(f'send_trig(address={hex(ep_bit.address)},bit={ep_bit.bit_index_low})')
         return self.xem.ActivateTriggerIn(ep_bit.address, ep_bit.bit_index_low)
 
     def read_ep(self, ep_bit):
@@ -530,10 +539,16 @@ class FPGA:
 
     def set_wire_bit(self, address, bit):
         """Set a single bit to 1 in a OpalKelly wire in."""
+
+        if self.debug:
+            print(f'set_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)}')
         return self.set_wire(address, value=1 << bit, mask=1 << bit)
 
     def clear_wire_bit(self, address, bit):
         """Clear a single bit to 0 in a OpalKelly wire in."""
+        if self.debug:
+            print(f'clear_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)}')
+
         return self.set_wire(address, value=0, mask=1 << bit)
 
     def read_wire_bit(self, address, bit):
@@ -1413,8 +1428,10 @@ class SPIController:
             self.endpoints['WB_IN'].address, command, 0xffffffff)
         # DEBUG: temporary for logging DAC80508 test
         # print(f'ActivateTriggerIn(address={hex(self.parameters["WB_CONVERT"].address)}, index={hex(self.parameters["WB_CONVERT"].bit_index_high)}')
-        self.fpga.xem.ActivateTriggerIn(
-            self.endpoints['WB_CONVERT'].address, self.endpoints['WB_CONVERT'].bit_index_low)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
+
+        self.fpga.send_trig(self.endpoints['WB_CONVERT'])  # allows for optional debug prints
+        #self.fpga.xem.ActivateTriggerIn(
+        #    self.endpoints['WB_CONVERT'].address, self.endpoints['WB_CONVERT'].bit_index_low)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
 
     def wb_is_acknowledged(self):
         pass
@@ -1604,6 +1621,16 @@ class SPIController:
         self.fpga.xem.ActivateTriggerIn(
             self.endpoints['MASTER_RESET'].address,
             self.endpoints['MASTER_RESET'].bit_index_low)
+
+    def set_host_mode(self):
+        """ Configure SPI controller to be host driven """
+        self.fpga.set_wire_bit(self.endpoints['HOST_FPGA_BIT'].address,
+                               self.endpoints['HOST_FPGA_BIT'].bit_index_low)
+
+    def set_fpga_mode(self):
+        """ Configure SPI controller to be host driven """
+        self.fpga.clear_wire_bit(self.endpoints['HOST_FPGA_BIT'].address,
+                                 self.endpoints['HOST_FPGA_BIT'].bit_index_low)
 
 
 class DAC80508(SPIController):
@@ -1841,7 +1868,6 @@ class ADCDATA():
         """
         return self.convert_twos(self.deswizzle(buf))
 
-
     # TODO: test composite ADC function that enables, reads, converts and plots
     # TODO: incorporate/connect QT graphing (UIscript.py)
     def read(self, twos_comp_conv=True):
@@ -1884,9 +1910,9 @@ class ADS8686(SPIController, ADCDATA):
                15:  0b01,
                376: 0b10}
 
-    def __init__(self, fpga, master_config=0x3610, endpoints=None):
-        # master_config=0x3610 Sets CHAR_LEN=16, ASS (auto SlaveSelect),
-        # IE (interrupt enable), Tx/Rx Negative Edge
+    def __init__(self, fpga, master_config=0x3010, endpoints=None):
+        # master_config=0x3010 Sets CHAR_LEN=16, ASS (auto SlaveSelect),
+        # IE (interrupt enable), Tx/Rx Pos. Edge  TODO: why was this changed??
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('ADS8686')
         super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
@@ -1908,9 +1934,10 @@ class ADS8686(SPIController, ADCDATA):
 
     # Method to set up the chip
     def setup(self):  # TODO -- defaults to modify the SPI setup
+        self.set_host_mode()  # required for the SPI configuration to work
         self.configure_master_bin(self.master_config)  # configures directly
         # self.set_frequency(5)
-        self.set_divider(8)
+        self.set_divider(8)  # about 11 MHz. 200M / (16+1)??
         self.select_slave(1)
 
     def set_range(self, vals):
@@ -1962,7 +1989,7 @@ class ADS8686(SPIController, ADCDATA):
                                           0x8000_0041)  #
 
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x4,
-                                          0x4000_3710)  #
+                                          0x4000_3110)  #
         # reset the clk divider
         self.fpga.send_trig(self.endpoints['CLK_DIV_RESET'])
         self.set_fpga_mode()  # lower the control bit for host vs. FPGA driven
@@ -2003,16 +2030,6 @@ class ADS8686(SPIController, ADCDATA):
 
         # enable the sequencer
         self.write(base_creg | 0x20, 'config')
-
-    def set_host_mode(self):
-        """ Configure SPI controller to be host driven """
-        self.fpga.set_wire_bit(self.endpoints['HOST_FPGA_BIT'].address,
-                               self.endpoints['HOST_FPGA_BIT'].bit_index_low)
-
-    def set_fpga_mode(self):
-        """ Configure SPI controller to be host driven """
-        self.fpga.clear_wire_bit(self.endpoints['HOST_FPGA_BIT'].address,
-                                 self.endpoints['HOST_FPGA_BIT'].bit_index_low)
 
     def hw_reset(self, val=True):
         #  ADS8686 active low hardware reset

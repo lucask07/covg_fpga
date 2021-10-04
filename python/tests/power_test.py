@@ -55,8 +55,9 @@ logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.
 # eps = Endpoint.endpoints_from_defines
 
 ADS_EN = True
-AD7961_EN = True
+AD7961_EN = False
 EN_15V = True
+DAC_80508_EN = False
 
 # set up DC power supply
 # name within the configuration file (config.yaml)
@@ -137,13 +138,17 @@ uid = UID_24AA025UID(fpga=f,
 ads = ADS8686(fpga=f,
               endpoints=Endpoint.get_chip_endpoints('ADS8686'))
 
-ads_cfg = ads.read('config')
-
 dac0 = DAC80508(fpga=f)
 dac1 = DAC80508(fpga=f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('DAC80508'), 1))
 
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
+
+gpio = Daq.GPIO(f)
+gpio.fpga.debug = True
+# configure the SPI debug MUXs
+gpio.spi_debug('ads')
+gpio.ads_misc('convst')
 
 AD7961_CHANS = 4
 ad7961s = []
@@ -165,7 +170,7 @@ for i in range(AD7961_CHANS):
 
 ads.hw_reset(val=True)  # put ADS into hardware reset
 
-# power supply turn on and check current
+# power supply turn on and check current (AD7961 - 1.8 V first, then 5V)
 for name in ['1V8', '5V', '3V3']:
     pwr.supply_on(name)
     log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='turnon_{}'.format(name))
@@ -272,10 +277,10 @@ io_1.write(0x00FF)  # set all gain pins to zero & all ISEL to have the voltage o
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
 
 # enable one AD7961 and remeasure current
-chan = 3
-num = 2
+chan = 0
+num = 1
 if AD7961_EN:
-    setup = ad7961s[chan].setup(reset_pll=False)  # resets FIFO and ADC controller
+    setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
     ad7961s[chan].test_pattern()
     time.sleep(0.05)
     ad7961s[chan].reset_fifo()
@@ -287,12 +292,10 @@ if AD7961_EN:
     time.sleep(0.05)
     d2 = ad7961s[chan].stream_mult()
     ad7961s[chan].get_fifo_status()
-
-with open('test_pattern_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
-    np.save(f, d1)
-
-with open('test_data_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
-    np.save(f, d2)
+    with open('test_pattern_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
+        np.save(f, d1)
+    with open('test_data_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
+        np.save(f, d2)
 
 # enable ADS868 and remeasure current
 if ADS_EN:
@@ -300,8 +303,8 @@ if ADS_EN:
     time.sleep(0.01)
     log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ads_release_reset')
     time.sleep(1)
-    ads.setup()
     ads.set_host_mode()
+    ads.setup()
     cfg = ads.read('config')
     chan_sel = ads.read('chan_sel')
     range_a1 = ads.read('rangeA1')
@@ -312,47 +315,45 @@ if ADS_EN:
     ads.setup_sequencer()
     ads.write_reg_bridge()
     ads.set_fpga_mode()
-    data_ads = ads.stream_mult()
+    data_ads = ads.stream_mult(swps=4, twos_comp_conv=False)
 
     # ads.hw_reset(val=True)  # back to reset
-
 print(current_meas)
 
-# these DAC signals come out before the bipolar amplifier
-for dac in [dac0, dac1]:
-    # dac.reset_master()  # TODO -- I don't think this works?
+if DAC_80508_EN:
+    # these DAC signals come out before the bipolar amplifier
+    for dac in [dac0, dac1]:
+        # dac.reset_master()  # TODO -- I don't think this works?
 
-    print('Setting divider...')
-    dac.set_divider(0x8)  # XEM6310 worked with divider of 4, XEM7310 runs twice as fast so divider of 8.
+        dac.set_host_mode()
+        print('Setting divider...')
+        dac.set_divider(0x8)  # XEM6310 worked with divider of 4, XEM7310 runs twice as fast so divider of 8.
+        print('Configuring Wishbone...')
+        spi_ctrl_reg_val = 0x3218  # Sets CHAR_LEN=24, Rx_NEG, ASS, IE
+        dac.configure_master_bin(spi_ctrl_reg_val)
+        dac.select_slave(1)
 
-    print('Configuring Wishbone...')
-    spi_ctrl_reg_val = 0x3218  # Sets CHAR_LEN=24, Rx_NEG, ASS, IE
-    dac.configure_master_bin(spi_ctrl_reg_val)
-    dac.select_slave(1)
+        dac.set_gain(0x01ff)
+        print('Gain changed')
 
+        # Write 0xff to 0x03 (CONFIG register)
+        dac.set_config_bin(0xff)
+        print('Outputs powered down')
 
-    dac.set_gain(0x01ff)
-    print('Gain changed')
+        # Write 0x00 to 0x03 (CONFIG register)
+        dac.set_config_bin(0x00)
+        print('Outputs powered on')
 
-    # Write 0xff to 0x03 (CONFIG register)
-    dac.set_config_bin(0xff)
-    print('Outputs powered down')
-
-    # Write 0x00 to 0x03 (CONFIG register)
-    dac.set_config_bin(0x00)
-    print('Outputs powered on')
-
-    # Write to all outputs
-    voltage = 0xffff
-    for i in range(8):
-        if dac.write('DAC'+str(i), voltage):
-            message = f'Write {hex(voltage)}={voltage}V SUCCESS'
-            # print(message)
-            logging.info(message)
-        else:
-            message = f'Write {hex(voltage)}={voltage}V FAIL'
-            logging.warning(message)
-
+        # Write to all outputs
+        voltage = 0xffff
+        for i in range(8):
+            if dac.write('DAC'+str(i), voltage):
+                message = f'Write {hex(voltage)}={voltage}V SUCCESS'
+                # print(message)
+                logging.info(message)
+            else:
+                message = f'Write {hex(voltage)}={voltage}V FAIL'
+                logging.warning(message)
 
 # lower all I/O wires
 # pwr.all_off()
