@@ -422,7 +422,7 @@ class Daq:
     """
     class Power:
 
-        DEFAULT_PARAMETERS = dict(
+        DEFAULT_PARAMETERS = dict(  # forces keys to string
             WI02_15V_EN=18,
             WI02_1V8_EN=19,
             WI02_3V3_EN=20,
@@ -440,7 +440,7 @@ class Daq:
 
             self.fpga = fpga
             self.parameters = parameters
-            #self.endpoints = endpoints
+            #self.endpoints = endpoints  # TODO switch Power to endpoints
             self.debug = debug  # TODO: Turning on debug will show more output
 
         def supply_on(self, name):
@@ -508,3 +508,47 @@ class Daq:
                                value, mask)
 
             return True
+
+    class GPIO:
+
+        DEFAULT_PARAMETERS = dict(chips=
+            dict(
+            ads=0,
+            ds0=1,
+            ds1=2,
+            dfast=3),
+            misc_ads=dict(
+            sdoa=0,
+            sdob=1,
+            convst=2,
+            busy=3
+            ))
+
+        def __init__(self, fpga, parameters=DEFAULT_PARAMETERS, endpoints=None, debug=False):
+            if endpoints is None:
+                endpoints = Endpoint.get_chip_endpoints('GPIO')
+
+            self.fpga = fpga
+            self.parameters = parameters
+            self.endpoints = endpoints
+            self.debug = debug  # TODO: Turning on debug will show more output
+
+        def spi_debug(self, chip):
+            if chip not in self.parameters['chips'].keys():
+                print('Incorrect chip name in spi_debug')
+                return -1
+            for spi_signal in ['SCLK', 'CSB', 'SDI']:
+                value = self.parameters['chips'][chip]
+                ep_name = spi_signal + '_DEBUG'
+                self.fpga.set_wire(self.endpoints[ep_name].address,
+                                   value<<self.endpoints[ep_name].bit_index_low,                   mask=(0b111<<self.endpoints[ep_name].bit_index_low))
+
+        def ads_misc(self, pin):
+            if pin not in self.parameters['misc_ads'].keys():
+                print('Incorrect chip name in ads_misc')
+                return -1
+            value = self.parameters['misc_ads'][pin]
+            ep_name = 'ADS_CONVST_DEBUG'
+            return self.fpga.set_wire(self.endpoints[ep_name].address,
+                               value<<self.endpoints[ep_name].bit_index_low,
+                               mask=(0b111<<self.endpoints[ep_name].bit_index_low))

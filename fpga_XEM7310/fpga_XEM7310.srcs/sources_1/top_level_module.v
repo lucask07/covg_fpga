@@ -190,25 +190,25 @@ module top_level_module(
 	//pll generating "Fast" clock for Ad796x.v
 	wire adc_clk;
 	wire adc_pll_locked;
-	
+
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
 	.reset(ep40trig[`AD7961_PLL_RESET]),
 	.clk_out1(adc_clk), //out at 200 MHz
 	.locked(adc_pll_locked)
 	);
-	
-    // Clk wizard for generating timing clock (100 M) for ADC 
+
+    // Clk wizard for generating timing clock (100 M) for ADC
 	wire adc_timing_clk;
     wire adc_timing_pll_locked;
-    	
+
 	clk_wiz_1 adc_timing(
 		.clk_in1(clk_sys), //in at 200 MHz
         .reset(ep40trig[`AD7961_TIMING_PLL_RESET]),
         .clk_out1(adc_timing_clk), //out at 100 MHz
         .locked(adc_timing_pll_locked)
 	);
-	
+
 	assign led[1] = ~adc_pll_locked;
 	assign led[2] = ~adc_fifo_empty[0]; // LEDs light when low
 	assign led[3] = ~adc_fifo_halffull[1];
@@ -240,28 +240,28 @@ module top_level_module(
     output wire ads_resetb,
     input wire ads_busy,  // TODO: not yet connected
 */
-    // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
+    // WireIn 0 configures MUX for logic analyzer debug. CSB signals
     mux_8to1 (
 	   .datain({4'b0100, d_csb[0], ds_csb[1], ds_csb[0], ads_csb}), // 7:0
-	   .sel(ep00wire[(`GP_CSB_DEBUG_LEN + `GP_CSB_DEBUG - 1) :(`GP_CSB_DEBUG)]),
+	   .sel(ep00wire[(`GPIO_CSB_DEBUG_LEN + `GPIO_CSB_DEBUG - 1) :(`GPIO_CSB_DEBUG)]),
 	   .dataout(gpio[0])
 	);
-	
+
     mux_8to1 (
        .datain({4'b0100, d_sclk[0], ds_sclk[1], ds_sclk[0], ads_sclk}), // 7:0
-       .sel(ep00wire[(`GP_SCLK_DEBUG_LEN + `GP_SCLK_DEBUG - 1) :(`GP_SCLK_DEBUG)]),
+       .sel(ep00wire[(`GPIO_SCLK_DEBUG_LEN + `GPIO_SCLK_DEBUG - 1) :(`GPIO_SCLK_DEBUG)]),
        .dataout(gpio[1])
     );
-    
+
     mux_8to1 (
        .datain({4'b0100, d_sdi[0], ds_sdi[1], ds_sdi[0], ads_sdi}), // 7:0
-       .sel(ep00wire[(`GP_SDI_DEBUG_LEN + `GP_SDI_DEBUG - 1) :(`GP_SDI_DEBUG)]),
+       .sel(ep00wire[(`GPIO_SDI_DEBUG_LEN + `GPIO_SDI_DEBUG - 1) :(`GPIO_SDI_DEBUG)]),
        .dataout(gpio[2])
     );
 
     mux_8to1 (
        .datain({4'b0100, ads_busy, ads_convst, ads_sdob, ads_sdoa}), // 7:0
-       .sel(ep00wire[(`GP_ADS_CONVST_DEBUG_LEN + `GP_ADS_CONVST_DEBUG - 1) :(`GP_ADS_CONVST_DEBUG)]),
+       .sel(ep00wire[(`GPIO_ADS_CONVST_DEBUG_LEN + `GPIO_ADS_CONVST_DEBUG - 1) :(`GPIO_ADS_CONVST_DEBUG)]),
        .dataout(gpio[3])
     );
 
@@ -294,14 +294,14 @@ module top_level_module(
 
     /* ---------------- Ok Endpoints ----------------*/
 	//wire to hold the data/commands from the host this will be routed to the wishbone formatter/state machine for the ADS7952
-	okWireIn wi0 (.okHE(okHE), .ep_addr(`GP_DEBUG_WIRE_IN), .ep_dataout(ep00wire));
+	okWireIn wi0 (.okHE(okHE), .ep_addr(`GPIO_DEBUG_WIRE_IN), .ep_dataout(ep00wire));
 	// Wire in to select what slave the SPI data is routed to
 	okWireIn wi1 (.okHE(okHE), .ep_addr(`GP_HOST_FPGAB_GPIO_WIRE_IN), .ep_dataout(ep01wire));
     wire host_fpgab;
     assign host_fpgab = ep01wire[`ADS8686_HOST_FPGA_BIT];
     assign up = ep01wire[(`GPIO_UP_WIRE_IN+`GPIO_UP_WIRE_IN_LEN - 1):`GPIO_UP_WIRE_IN];
     assign dn = ep01wire[(`GPIO_DOWN_WIRE_IN+`GPIO_DOWN_WIRE_IN_LEN - 1):`GPIO_DOWN_WIRE_IN];
-    
+
     // use GPIO with the SPI debug mux
     //assign gpio = ep01wire[(`GPIO_3V3_WIRE_IN+`GPIO_3V3_WIRE_IN_LEN - 1):`GPIO_3V3_WIRE_IN];
     wire [3:0]gp_lvds_se;
@@ -366,7 +366,7 @@ module top_level_module(
 
     okTriggerIn trigIn41 (.okHE(okHE),
                                     .ep_addr(`I2C_TRIG_IN), .ep_clk(clk_sys), .ep_trigger(ep41trig));
-                                    
+
     okTriggerIn trigIn42 (.okHE(okHE),
                                 .ep_addr(`ADC_TIMING_TRIG_IN), .ep_clk(adc_timing_clk), .ep_trigger(ep42trig));
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
@@ -501,12 +501,12 @@ module top_level_module(
 	genvar i;
     generate
     for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7960_gen
-    
+
         sync_reset ad7961_sync_reset(
             adc_timing_clk,
             ep01wire[`AD7961_WIRE_RESET_GEN_BIT+i],
             adc_sync_rst[i]);
-        
+
         AD7961 adc7961(
         .m_clk_i(adc_timing_clk),       // 100 MHz Clock, used for timing
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
