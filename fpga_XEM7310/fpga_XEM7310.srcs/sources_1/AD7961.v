@@ -281,6 +281,7 @@ OBUFDS
 
 // Clock Out Single -> LVDS
 
+/*
 wire fast_clk_s;
 
 ODDR2
@@ -310,11 +311,11 @@ OBUFDS
         .OB(clk_neg_o),             // Diff_n output (connect directly to top-level port)
         .I(fast_clk_s)              // Buffer input
     );
+*/
 
-/*
 OBUFDS 
     #(
-        .IOSTANDARD("LVDS_33"),        // Specify the output I/O standard
+        .IOSTANDARD("LVDS_25"),        // Specify the output I/O standard
         .SLEW("FAST")               // Specify the output slew rate
     ) 
     Clock_Out_OBUFDS 
@@ -323,5 +324,5 @@ OBUFDS
         .OB(clk_neg_o),             // Diff_n output (connect directly to top-level port)
         .I(fast_clk_i & clk_s)      // Buffer input 
     );    
-`*/
+
 endmodule
