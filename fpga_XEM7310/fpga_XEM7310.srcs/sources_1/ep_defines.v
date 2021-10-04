@@ -56,7 +56,7 @@
 `define I2CDAQ_WIRE_OUT_GEN_ADDR 8'h26 // bit_width=8
 `define I2CDAQ_OUT_GEN_BIT 0 // address=I2CDAQ_WIRE_OUT bit_width=8
 
-`define GP_DEBUG_WIRE_IN 8'h00 // bit_width=32
+`define GPIO_DEBUG_WIRE_IN 8'h00 // bit_width=32
 `define GP_HOST_FPGAB_GPIO_WIRE_IN 8'h01 // bit_width=32
 `define GP_PWR_REG_ADC_EN_WIRE_IN 8'h02 // bit_width=32
 `define DDR3_RESET_READ_WRITE_ENABLE 8'h03 // bit_width=1
@@ -148,17 +148,17 @@
 `define AD7961_RESET_GEN_BIT 19 // address=ADC_TIMING_TRIG_IN bit_width=1
 
 // wire in at 0x00
-`define GPIO_CSB_DEBUG 0 // address=GP_DEBUG_WIRE_IN bit_width=3
-`define GPIO_CSB_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
-`define GPIO_SCLK_DEBUG 3 // address=GP_DEBUG_WIRE_IN bit_width=3
-`define GPIO_SCLK_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
-`define GPIO_SDI_DEBUG 6 // address=GP_DEBUG_WIRE_IN bit_width=3
-`define GPIO_SDI_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
-`define GPIO_ADS_CONVST_DEBUG 9 // address=GP_DEBUG_WIRE_IN bit_width=3
-`define GPIO_ADS_CONVST_DEBUG_LEN 3 // address=GP_DEBUG_WIRE_IN bit_width=3
+`define GPIO_CSB_DEBUG 0 // address=GPIO_DEBUG_WIRE_IN bit_width=3
+`define GPIO_CSB_DEBUG_LEN 3 // address=GPIO_DEBUG_WIRE_IN bit_width=3
+`define GPIO_SCLK_DEBUG 3 // address=GPIO_DEBUG_WIRE_IN bit_width=3
+`define GPIO_SCLK_DEBUG_LEN 3 // address=GPIO_DEBUG_WIRE_IN bit_width=3
+`define GPIO_SDI_DEBUG 6 // address=GPIO_DEBUG_WIRE_IN bit_width=3
+`define GPIO_SDI_DEBUG_LEN 3 // address=GPIO_DEBUG_WIRE_IN bit_width=3
+`define GPIO_ADS_CONVST_DEBUG 9 // address=GPIO_DEBUG_WIRE_IN bit_width=3
+`define GPIO_ADS_CONVST_DEBUG_LEN 3 // address=GPIO_DEBUG_WIRE_IN bit_width=3
 
 // wire in at 0x01
-`define ADS8686_HOST_FPGA_BIT 0 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
+`define ADS8686_HOST_FPGA 0 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 `define GPIO_UP_WIRE_IN 1 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 `define GPIO_UP_WIRE_IN_LEN 6 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
 `define GPIO_DOWN_WIRE_IN 7 // address=GP_HOST_FPGAB_GPIO_WIRE_IN bit_width=1
