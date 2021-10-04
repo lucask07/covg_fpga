@@ -85,8 +85,6 @@ set_property src_info {type:XDC file:1 line:90 export:INPUT save:INPUT read:READ
 set_property PACKAGE_PIN W11 [get_ports {sys_clkp}]
 set_property src_info {type:XDC file:1 line:93 export:INPUT save:INPUT read:READ} [current_design]
 set_property PACKAGE_PIN W12 [get_ports {sys_clkn}]
-set_property src_info {type:XDC file:1 line:102 export:INPUT save:INPUT read:READ} [current_design]
-create_clock -name sclk_s - period 5
 set_property src_info {type:XDC file:1 line:107 export:INPUT save:INPUT read:READ} [current_design]
 set_property PACKAGE_PIN Y18 [get_ports {pushreset}]
 set_property src_info {type:XDC file:1 line:154 export:INPUT save:INPUT read:READ} [current_design]
