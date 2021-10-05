@@ -79,7 +79,9 @@ module AD7961
         output wire         clk_pos_o,                  // Clock Out, Positive Pair
         output wire         clk_neg_o,                  // Clock Out, Negative Pair
         output wire         data_rd_rdy_o,              // Signals that new data is available
-        output wire [15:0]  data_o                      // Read Data
+        output wire [15:0]  data_o,                      // Read Data
+        output wire conv, //DEBUG signals 
+        output wire dco   //DEBUG signals 
     );
 
 //------------------------------------------------------------------------------
@@ -267,6 +269,8 @@ IBUFDS
     );
 
 // Conversion Out Single -> LVDS
+assign conv = cnv_s;
+
 OBUFDS 
     #(
         .IOSTANDARD("LVDS_25"),        // Specify the output I/O standard
@@ -312,6 +316,8 @@ OBUFDS
         .I(fast_clk_s)              // Buffer input
     );
 */
+
+assign dco = fast_clk_i & clk_s;
 
 OBUFDS 
     #(
