@@ -160,7 +160,7 @@ module top_level_module(
     inout qw_scl,
     inout qw_sda,
 
-    input wire [1:0]sma,
+    output wire [1:0]sma,
 
     //DDR3
     inout  wire [31:0]  ddr3_dq,
@@ -213,6 +213,7 @@ module top_level_module(
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
     wire [(FADC_NUM-1):0]write_en_adc_o;
     wire [15:0] adc_val[0:(FADC_NUM-1)];
+    
     wire [(FADC_NUM-1):0] adc_fifo_full;
     wire [(FADC_NUM-1):0] adc_fifo_halffull;
     wire [(FADC_NUM-1):0] adc_fifo_empty;
@@ -251,6 +252,13 @@ module top_level_module(
        .sel(ep00wire[(`GPIO_ADS_CONVST_DEBUG_LEN + `GPIO_ADS_CONVST_DEBUG - 1) :(`GPIO_ADS_CONVST_DEBUG)]),
        .dataout(gpio[3])
     );
+
+    //debug AD7961 
+    wire [(FADC_NUM-1):0] conv;
+    wire [(FADC_NUM-1):0] dco;
+    
+    assign sma[0] = dco[0];
+    assign sma[1] = conv[0];
 
 	//FrontPanel (HostInterface) wires
 	wire okClk;
@@ -502,7 +510,9 @@ module top_level_module(
         .clk_pos_o(a_clk_p[i]),                  // Clock Out, Positive Pair
         .clk_neg_o(a_clk_n[i]),                  // Clock Out, Negative Pair
         .data_rd_rdy_o(write_en_adc_o[i]), // Signals that new data is available
-        .data_o(adc_val[i])
+        .data_o(adc_val[i]),
+        .conv(conv[i]),
+        .dco(dco[i])        
         );
 
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports
