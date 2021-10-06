@@ -100,7 +100,12 @@ set_clock_groups -asynchronous -group [get_clocks {sys_clk}] -group [get_clocks 
 # clocks from PLLs or MMCMs are automatically created 
 # create_clock -name adc_timing_clk -period 10
 # create_clock -name adc_clk -period 5
-create_clock -name sclk_s -period 5
+# create_clock -name ad7960_gen[0].adc7961/sclk_s -period 5 -waveform {0.6 3.1} [get_ports {dco_p[0]]}]
+
+create_clock -name ad7960_gen[0].adc7961/sclk_s -period 5 -waveform {0.6 3.1} [get_ports {a_dco_p[0]}]  
+create_clock -name ad7960_gen[1].adc7961/sclk_s -period 5 -waveform {0.6 3.1} [get_ports {a_dco_p[1]}]
+create_clock -name ad7960_gen[2].adc7961/sclk_s -period 5 -waveform {0.6 3.1} [get_ports {a_dco_p[2]}]
+create_clock -name ad7960_gen[3].adc7961/sclk_s -period 5 -waveform {0.6 3.1} [get_ports {a_dco_p[3]}]
 
 ############################################################################
 ## User Reset
