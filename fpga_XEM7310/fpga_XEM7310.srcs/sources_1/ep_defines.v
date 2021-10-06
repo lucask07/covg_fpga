@@ -43,6 +43,7 @@
 
 `define AD7961_PIPE_OUT_GEN_ADDR 8'hA1 // bit_width=32
 `define ADS8686_PIPE_OUT_GEN_ADDR 8'hA5 // bit_width=32
+`define DEBUGFIFO_PIPE_OUT 8'hA7
 `define ADS8686_WB_IN 8'h05 // bit_width=32
 `define DAC80508_WB_IN_GEN_ADDR 8'h06 // bit_width=32
 `define I2CDC_WIRE_IN_GEN_ADDR 8'h08 // bit_width=16
@@ -79,6 +80,11 @@
 `define DDR3_WIRE_OUT 8'h3e // bit_width=32
 
 `define GP_FIFO_FLAG_I2C_DONE_TRIG_OUT 8'h60 // bit_width=32
+
+`define DEBUGFIFO_EMPTY 24 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define DEBUGFIFO_HALFFULL 23 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define DEBUGFIFO_FULL 22 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+
 `define I2CDAQ_DONE_GEN_BIT 20 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define I2CDC_DONE_GEN_BIT 16 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define ADS8686_FIFO_EMPTY 15 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
@@ -146,6 +152,8 @@
 // trigger in at 0x42 -- sync to adc_timing_clk 
 `define AD7961_FIFO_RESET_GEN_BIT 4 // address=ADC_TIMING_TRIG_IN bit_width=1
 `define AD7961_RESET_GEN_BIT 19 // address=ADC_TIMING_TRIG_IN bit_width=1
+`define DEBUGFIFO_CNT_RESET 23 // address=ADC_TIMING_TRIG_IN bit_width=1
+`define DEBUGFIFO_FIFO_RESET 24 // address=ADC_TIMING_TRIG_IN bit_width=1
 
 // wire in at 0x00
 `define GPIO_CSB_DEBUG 0 // address=GPIO_DEBUG_WIRE_IN bit_width=3

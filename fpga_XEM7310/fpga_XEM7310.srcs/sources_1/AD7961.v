@@ -81,7 +81,8 @@ module AD7961
         output wire         data_rd_rdy_o,              // Signals that new data is available
         output wire [15:0]  data_o,                      // Read Data
         output wire conv, //DEBUG signals 
-        output wire dco   //DEBUG signals 
+        output wire dco,   //DEBUG signals 
+        output wire adc_serial_data
     );
 
 //------------------------------------------------------------------------------
@@ -253,6 +254,8 @@ IBUFDS
         .I(d_pos_i),                // Diff_p buffer input (connect directly to top-level port)
         .IB(d_neg_i)                // Diff_n buffer input (connect directly to top-level port)
     );
+
+assign adc_serial_data = sdi_s;
 
 // Serial Clock In LVDS -> Single  
 IBUFDS 

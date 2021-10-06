@@ -256,9 +256,10 @@ module top_level_module(
     //debug AD7961 
     wire [(FADC_NUM-1):0] conv;
     wire [(FADC_NUM-1):0] dco;
+    wire [(FADC_NUM-1):0] adc_serial_data;
     
     assign sma[0] = dco[0];
-    assign sma[1] = conv[0];
+    assign sma[1] = adc_serial_data;
 
 	//FrontPanel (HostInterface) wires
 	wire okClk;
@@ -266,7 +267,7 @@ module top_level_module(
 	wire [64:0] okEH;
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
 	//TODO: better way to keep track of these
-	wire [17*65-1:0] okEHx;
+	wire [18*65-1:0] okEHx;
 
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire;
@@ -281,7 +282,7 @@ module top_level_module(
 	assign sys_rst = (pushreset | ep40trig[`GP_SYSTEM_RESET]); // TODO: GP_SYSTEM_RESET is not found
 
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(17)) wireOR (okEH, okEHx); //TODO
+	okWireOR # (.N(18)) wireOR (okEH, okEHx); //TODO
 
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
@@ -394,8 +395,10 @@ module top_level_module(
 	//TODO: reorganize triggerout
 	wire [(I2C_DCARDS_NUM-1):0] i2c_done;
 	wire [1:0] i2c_aux_done;
+	wire [2:0] debug_fifo_status;
 	okTriggerOut trigOut60 (.okHE(okHE), .okEH(okEHx[ 1*65 +: 65 ]), .ep_addr(`GP_FIFO_FLAG_I2C_DONE_TRIG_OUT), .ep_clk(clk_sys),
-                           .ep_trigger({10'b0,
+                           .ep_trigger({7'b0,
+                                                     debug_fifo_status,        // 3 bits wide: 24-22 empty (MSB), halffull, full
 													 i2c_aux_done,      // 2 bits wide: 21-20
 													 i2c_done,          // 4 bits wide: 19-16
                                                      ads_fifo_empty,    // bit 15
@@ -512,7 +515,8 @@ module top_level_module(
         .data_rd_rdy_o(write_en_adc_o[i]), // Signals that new data is available
         .data_o(adc_val[i]),
         .conv(conv[i]),
-        .dco(dco[i])        
+        .dco(dco[i]),
+        .adc_serial_data(adc_serial_data[i])        
         );
 
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports
@@ -536,6 +540,7 @@ module top_level_module(
                     .ep_datain(adc_pipe_ep_datain[i]));
      end
      endgenerate
+
 
     /*---------------- DAC80508 -------------------*/
     wire [31:0]dac_wirein_data[(DAC80508_NUM-1):0];
@@ -917,5 +922,36 @@ module top_level_module(
 	 //module to create a one second pulse on one of the LEDs (keepAlive test)
 	 one_second_pulse out_pulse(
 	 .clk(clk_sys), .rst(sys_rst), .slow_pulse(led[0])
-	 );
+	 ); 
+ 
+     /*---------------- FIFO debug  -------------------*/
+     reg [15:0] debug_cnt;
+     wire [31:0] fifo_debug_out;
+     wire debug_pipe_ep_read;
+     
+     always @(posedge adc_timing_clk) begin
+         if (ep42trig[`DEBUGFIFO_CNT_RESET] == 1'b1) debug_cnt <= 16'b0;
+         else debug_cnt <= debug_cnt + 1'b1;
+     end
+     
+     fifo_AD796x debug_fifo (//32 bit wide read and 16 bit wide write ports
+       .rst(ep42trig[`DEBUGFIFO_FIFO_RESET]),
+       .wr_clk(adc_timing_clk),
+       .rd_clk(okClk),
+       .din(debug_cnt),         // Bus [15:0] (from ADC)
+       .wr_en(1'b1),// from ADC
+       .rd_en(debug_pipe_ep_read),      // from OKHost
+       .dout(fifo_debug_out),     // Bus [31:0] (to OKHost)
+       .full(debug_fifo_status[`DEBUGFIFO_FULL]),     // status
+       .empty(debug_fifo_status[`DEBUGFIFO_EMPTY]),   // status
+       .prog_full(debug_fifo_status[`DEBUGFIFO_HALFFULL]),          
+       .wr_rst_busy(),
+       .rd_rst_busy()          
+       );//status
+ 
+   //pipeOut for data from debug fifo 
+   okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(17)*65 +: 65]),
+             .ep_addr(`DEBUGFIFO_PIPE_OUT), .ep_read(debug_pipe_ep_read),
+             .ep_datain(fifo_debug_out));
+
 endmodule
