@@ -18,18 +18,23 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module read_fifo_to_spi_cmd(clk, okClk, rst, int_o, empty, adc_dat_i, adr, cmd_stb, cmd_word, rd_en, data_rdy, regDataOut, regWrite, regAddress, regTrigger
+module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
+        input wire clk, 
+        input wire okClk, 
+        input wire rst, 
+        input wire int_o, 
+        input wire empty, 
+        input wire [13:0] adc_dat_i, 
+        output reg [7:0] adr, 
+        output reg cmd_stb, 
+        output reg [33:0] cmd_word, 
+        output reg rd_en, //pulse to mark the points in time where the state machine is grabbing AD796x datan(for simulation purposes)
+        input wire data_rdy, 
+        input wire [15:0] regDataOut, // Register bridge data 
+        input wire regWrite, 
+        input wire [7:0] regAddress, 
+        input wire regTrigger //regTrigger is from host signaling that new divide register value has been written
     );
-	 input wire clk, okClk, rst, int_o, empty, regWrite, regTrigger;//regTrigger is from host signaling that new divide register value has been written
-	 //input wire [15:0] adc_dat_i;
-	 input wire [13:0] adc_dat_i;/**/
-	 input wire data_rdy;
-	 input wire [15:0] regDataOut;
-	 input wire [7:0] regAddress;
-	 output reg [7:0] adr;
-	 output reg [33:0] cmd_word;
-	 output reg cmd_stb;
-	 output reg rd_en; //pulse to mark the points in time where the state machine is grabbing AD796x datan(for simulation purposes)
 	 
 	 //reg [13:0] converted_dat; //reg to hold the converted value to be sent to the AD5453
 	 //wire [15:0] converted_cmd_dat = {2'b0, converted_dat}; //reg to hold the converted value plus command bits for AD5453
@@ -60,7 +65,7 @@ module read_fifo_to_spi_cmd(clk, okClk, rst, int_o, empty, adc_dat_i, adr, cmd_s
      initial ctrlValue = 16'h3010;
      
      always@(posedge okClk)begin
-        if(regWrite && (regAddress == 8'h10))begin
+        if(regWrite && (regAddress == (ADDR)))begin
             ctrlValue <= regDataOut;
         end
         else begin
