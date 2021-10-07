@@ -38,7 +38,8 @@ sys.path.append(interfaces_path)
 from interfaces.interfaces import Endpoint
 eps1 = Endpoint.update_endpoints_from_defines()
 
-from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, TCA9555, disp_device, ADS8686, advance_endpoints_bynum
+from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508
+from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DebugFIFO
 
 eps = Endpoint.endpoints_from_defines
 
@@ -53,11 +54,10 @@ logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.
                     level=logging.INFO)
 
 # eps = Endpoint.endpoints_from_defines
-
 ADS_EN = True
-AD7961_EN = False
+AD7961_EN = True
 EN_15V = True
-DAC_80508_EN = False
+DAC_80508_EN = True
 
 # set up DC power supply
 # name within the configuration file (config.yaml)
@@ -159,6 +159,10 @@ for i in range(AD7961_CHANS):
     ad7961s[i].power_down_all()
     ad7961s[i].reset_wire(1)
 
+fifo_debug = DebugFIFO(f)
+fifo_debug.reset_fifo()
+dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
+
 # TODO wrpt endpoints stuff:
 """
 4) are the multiple SPI controllers setup with endpoints correctly?
@@ -206,6 +210,7 @@ read_test = []
 for i in range(100):
     read_test.append(uid.get_manufacturer_code())
 
+unq_sn = uid.get_serial_number()
 
 # AD7961
 
@@ -275,27 +280,35 @@ io_1.write(0x00FF)  # set all gain pins to zero & all ISEL to have the voltage o
  # TODO: check ordering of the io write; seems correct
 
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
-
+setup = ad7961s[0].setup(reset_pll=True)
+time.sleep(0.05)
 # enable one AD7961 and remeasure current
-chan = 0
-num = 1
+chan = 2
+num = 13
 if AD7961_EN:
-    setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
-    ad7961s[chan].test_pattern()
-    time.sleep(0.05)
-    ad7961s[chan].reset_fifo()
-    time.sleep(0.05)  # FIFO fills in 204 us
-    log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
-    d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
+    for chan in [3]:
+        for num in [13,14]:
+            if chan == 0:
+                setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
+            else:
+                setup = ad7961s[chan].setup(reset_pll=False)  # resets FIFO and ADC controller
+            ad7961s[chan].test_pattern()
+            time.sleep(0.2)
+            ad7961s[chan].reset_fifo()
+            time.sleep(0.2)  # FIFO fills in 204 us
+            log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
+            d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
 
-    ad7961s[chan].power_up_adc()  # standard sampling
-    time.sleep(0.05)
-    d2 = ad7961s[chan].stream_mult()
-    ad7961s[chan].get_fifo_status()
-    with open('test_pattern_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
-        np.save(f, d1)
-    with open('test_data_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
-        np.save(f, d2)
+            ad7961s[chan].power_up_adc()  # standard sampling
+            ad7961s[chan].reset_fifo()
+            time.sleep(0.2)
+            ad7961s[chan].reset_fifo()
+            time.sleep(0.2)
+            d2 = ad7961s[chan].stream_mult(swps=4)
+            with open('test_pattern_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
+                np.save(f, d1)
+            with open('test_data_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
+                np.save(f, d2)
 
 # enable ADS868 and remeasure current
 if ADS_EN:
@@ -324,7 +337,6 @@ if DAC_80508_EN:
     # these DAC signals come out before the bipolar amplifier
     for dac in [dac0, dac1]:
         # dac.reset_master()  # TODO -- I don't think this works?
-
         dac.set_host_mode()
         print('Setting divider...')
         dac.set_divider(0x8)  # XEM6310 worked with divider of 4, XEM7310 runs twice as fast so divider of 8.
