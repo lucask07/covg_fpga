@@ -1624,13 +1624,13 @@ class SPIController:
 
     def set_host_mode(self):
         """ Configure SPI controller to be host driven """
-        self.fpga.set_wire_bit(self.endpoints['HOST_FPGA_BIT'].address,
-                               self.endpoints['HOST_FPGA_BIT'].bit_index_low)
+        self.fpga.set_wire_bit(self.endpoints['HOST_FPGA'].address,
+                               self.endpoints['HOST_FPGA'].bit_index_low)
 
     def set_fpga_mode(self):
         """ Configure SPI controller to be host driven """
-        self.fpga.clear_wire_bit(self.endpoints['HOST_FPGA_BIT'].address,
-                                 self.endpoints['HOST_FPGA_BIT'].bit_index_low)
+        self.fpga.clear_wire_bit(self.endpoints['HOST_FPGA'].address,
+                                 self.endpoints['HOST_FPGA'].bit_index_low)
 
 
 class DAC80508(SPIController):
@@ -1848,14 +1848,14 @@ class ADCDATA():
         d = np.frombuffer(buf, dtype=np.uint8).astype(np.uint32)
         if self.num_bits == 16:
             d1 = d[0::4] + (d[1::4] << 8)  # TODO: check the byte ordering
-            d2 = d[2::4] + (d[3::4] << 8)
+            d2 = d[2::4] + (d[3::4] << 8)  # TODO: is breaking this up necessary?
         elif self.num_bits == 18:
             # TODO: check 18-bit data conversion
             d2 = (d[3::4] << 8) + d[1::4] + ((d[0::4] << 16) & 0x03)
 
         c = np.empty((d1.size + d2.size,), dtype=d1.dtype)
-        c[0::2] = d1
-        c[1::2] = d2
+        c[0::2] = d2  # see Xilinx FIFO guide, memory fills up from left to right
+        c[1::2] = d1
 
         return c
 
@@ -2022,11 +2022,15 @@ class ADS8686(SPIController, ADCDATA):
         #   8 SSREN; 7-4 CHSEL_B; 3-0 CHSEL_A
         backto_first_stack = 0x100  # SSREN is bit 8
 
+        """
         self.write((0xb | (0xb << 4)), 'seq0')   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
         self.write((0x8 | (0x8 << 4)), 'seq1')   # AVDD
         self.write((0x9 | (0x9 << 4)), 'seq2')   # ALDO
         # CH0 and cycle back to seq0
         self.write(((0x0 | 0x0 << 4) | backto_first_stack), 'seq3')
+        """
+        self.write((0xb | (0xb << 4)), 'seq0')   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
+        self.write((0b101 | (0b101 << 4) | backto_first_stack), 'seq1')   # CH5
 
         # enable the sequencer
         self.write(base_creg | 0x20, 'config')
@@ -2261,6 +2265,32 @@ class AD7961(ADCDATA):
         status = self.get_status()
         # TODO: the FIFO is guaranteed to overflow
         return status
+
+
+class DebugFIFO(ADCDATA):
+    def __init__(self, fpga, chan=0, endpoints=None):
+        if endpoints is None:
+            endpoints = Endpoint.get_chip_endpoints('DEBUGFIFO')
+        self.fpga = fpga
+        self.endpoints = endpoints
+        self.chan = chan  # starts at 0
+        self.name = 'AD7961'
+        self.num_bits = 16  # for AD7961 bits=18 for AD7960
+
+    def reset_fifo(self):
+        """resets the FIFO for the ADC data
+            one per channel"""
+        return self.fpga.xem.ActivateTriggerIn(self.endpoints['FIFO_RESET'].address,
+                                               self.endpoints['FIFO_RESET'].bit_index_low)
+
+    def get_fifo_status(self):
+        flags = ['FULL', 'HALFFULL', 'EMPTY']
+        fifo_status = {}
+        self.fpga.xem.UpdateTriggerOuts()
+        for k in flags:
+            fifo_status[k] = self.fpga.xem.IsTriggered(self.endpoints['FIFO_{}'.format(k)].address,
+                                                       self.endpoints['FIFO_{}'.format(k)].bit_index_low)
+        return fifo_status
 
 
 def disp_device(dev, reg=True):
