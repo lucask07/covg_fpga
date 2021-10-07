@@ -258,8 +258,8 @@ module top_level_module(
     wire [(FADC_NUM-1):0] dco;
     wire [(FADC_NUM-1):0] adc_serial_data;
     
-    assign sma[0] = dco[0];
-    assign sma[1] = adc_serial_data;
+    assign sma[0] = dco[1];
+    assign sma[1] = adc_serial_data[1];
 
 	//FrontPanel (HostInterface) wires
 	wire okClk;
@@ -583,17 +583,6 @@ module top_level_module(
     endgenerate
     /*---------------- END DAC80508 -------------------*/
 
-   //General purpose clock divide - currently used as "helper" clocking module for reading form DDR3
-   //TODO: was a clk_en that was assigned to dataready
-   wire dataready;
-   //wire to capture clock enable period multiplier, and the clock enable itself
-    general_clock_divide MIG_DDR_FIFO_RD_EN(
-        .clk(clk_sys),
-        .rst(ddr3_rst),
-        .en_period(en_period),
-        .clk_en(dataready)
-    );
-
     /* --------------- DDR3 ---------------------------*/
      ////////////////////////////*DDR3 INTERFACE INSTANTIATIONS*//////////////////////////////////////////////
      // OK RAMTest Parameters
@@ -616,7 +605,7 @@ module top_level_module(
      wire          app_rd_data_end;
      wire          app_rd_data_valid;
      wire [255:0]  app_wdf_data;
-     wire                       app_wdf_end;
+     wire          app_wdf_end;
      wire [31 :0]  app_wdf_mask;
      wire          app_wdf_rdy;
      wire          app_wdf_wren;
@@ -811,7 +800,6 @@ module top_level_module(
     /* ------------------ END DDR3 ------------------- */
 
     /* ------------------ AD5453 SPI ------------------- */
-
     wire [(AD5453_NUM-1):0] rd_en_fast_dac;
     wire [(AD5453_NUM-1):0] clk_en_fast_dac;
 
@@ -820,12 +808,16 @@ module top_level_module(
     for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
     // instantiate old top-level (but only for the AD5453 SPI)
     spi_fifo_driven spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
-             .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), .data_rdy_0(), .adc_val_0(), //not yet used
+             .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
+             .data_rdy_0(), .adc_val_0(), //not yet used
              // register bridge //TODO: add address increment based on generate k
-             /*.ep_read(regRead),*/ .ep_write(regWrite), .ep_address(regAddress), .ep_dataout_coeff(regDataOut), /*.ep_datain(regDataIn),*/
+             .ep_write(regWrite),           //input wire 
+             .ep_address(regAddress),       //input wire [31:0] 
+             .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
+             /*.ep_datain(regDataIn),*/
              // DDR
-             .en_period(en_period),//in,
-             .clk_en(clk_en_fast_dac[k]),//out
+             .en_period(en_period), //in, [9:0] 
+             .clk_en(clk_en_fast_dac[k]), //out
              .ddr3_rst(ddr3_rst),//in
              .ddr_dat_i(po0_ep_datain[13:0]), //in
              .rd_en_0(rd_en_fast_dac[k]), //out
@@ -942,9 +934,9 @@ module top_level_module(
        .wr_en(1'b1),// from ADC
        .rd_en(debug_pipe_ep_read),      // from OKHost
        .dout(fifo_debug_out),     // Bus [31:0] (to OKHost)
-       .full(debug_fifo_status[`DEBUGFIFO_FULL]),     // status
-       .empty(debug_fifo_status[`DEBUGFIFO_EMPTY]),   // status
-       .prog_full(debug_fifo_status[`DEBUGFIFO_HALFFULL]),          
+       .full(debug_fifo_status[`DEBUGFIFO_FIFO_FULL]),     // status
+       .empty(debug_fifo_status[`DEBUGFIFO_FIFO_EMPTY]),   // status
+       .prog_full(debug_fifo_status[`DEBUGFIFO_FIFO_HALFFULL]),          
        .wr_rst_busy(),
        .rd_rst_busy()          
        );//status

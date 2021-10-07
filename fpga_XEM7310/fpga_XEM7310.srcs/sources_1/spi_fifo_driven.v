@@ -70,10 +70,10 @@ module spi_fifo_driven(
     assign clk_en = dataready;
      
      general_clock_divide MIG_DDR_FIFO_RD_EN(
-         .clk(clk),
-         .rst(ddr3_rst),
-         .en_period(en_period),
-         .clk_en(dataready)
+         .clk(clk),  // input 
+         .rst(ddr3_rst), // input 
+         .en_period(en_period), // input [9:0]
+         .clk_en(dataready)  // output 
          );
 	 
 	 /* ---------------- ADC796x & AD5453 control ----------------*/
@@ -98,7 +98,7 @@ module spi_fifo_driven(
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd data_converter_0(
 	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(ddr_dat_i/*filter_out*/), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
-	 .rd_en(rd_en_0), .data_rdy(dataready/*data_rdy_0*/), .regDataOut(ep_dataout_coeff[15:0]), .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
+	 .rd_en(rd_en_0), .data_rdy(dataready), .regDataOut(ep_dataout_coeff[15:0]), .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
 	 );
 	 
 	 //Real-Time LPF coefficient reader
