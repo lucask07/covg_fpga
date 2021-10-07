@@ -203,6 +203,7 @@
 
 `define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
 `define DAC80508_REGBRIDGE_OFFSET 8'h05 // bit_width=32
+`define AD5453_REGBRIDGE_OFFSET 8'h15 // bit_width=32
 
 // TODO set this up!
 `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=

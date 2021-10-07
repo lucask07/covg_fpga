@@ -570,10 +570,6 @@ module top_level_module(
                            .miso(1'b0),
                            .convst_out()
                            );         
-        /*spi_controller dac_0 (
-          .clk(clk_sys), .reset(sys_rst), .dac_val(dac_wirein_data[j]), .dac_convert_trigger(ep40trig[`DAC80508_WB_CONVERT_GEN_BIT+j]), .dac_out(dac_data_out[j]),
-          .ss(), .sclk(ds_sclk[j]), .mosi(ds_sdi[j]), .miso(1'b0), .okClk(okClk), .addr(regAddress), .data_in(regDataOut), .write_in(regWrite)
-        ); */
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DAC80508_WB_IN_GEN_ADDR + j), .ep_dataout(dac_wirein_data[j]));
         // TODO: wireout is not needed (nor supported with the Clear version of the DAC80508)
         okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(9+j)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR + j), .ep_datain(dac_data_out[j]));    
@@ -595,7 +591,7 @@ module top_level_module(
      localparam CAPABILITY = 16'h0001;
 
      wire          init_calib_complete;
-     reg           rst_sys_ddr;
+     reg           rst_sys_ddr; // reset at startup for a certain number of clock cycles 
 
      wire [29 :0]  app_addr;
      wire [2  :0]  app_cmd;
@@ -643,7 +639,7 @@ module top_level_module(
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
-     .async_rst(ep03wire[2]),
+     .async_rst(ep03wire[`DDR3_RESET]),
      .sync_rst(ddr3_rst)
      );
 
@@ -710,9 +706,9 @@ module top_level_module(
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
          .INDEX              (INDEX),
-         .reset              (ep03wire[2] | rst_ddr_ui),
-         .reads_en           (ep03wire[0]),
-         .writes_en          (ep03wire[1]),
+         .reset              (ddr3_rst | rst_ddr_ui),
+         .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
+         .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
          .calib_done         (init_calib_complete),
 
          .ib_re              (pipe_in_read),
@@ -770,7 +766,7 @@ module top_level_module(
      okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain),   .ep_ready(pipe_out_ready));
 
      fifo_w32_1024_r256_128 okPipeIn_fifo (
-         .rst(ep03wire[2]),
+         .rst(ddr3_rst),
          .wr_clk(okClk),
          .rd_clk(clk_ddr_ui),
          .din(pi0_ep_dataout), // Bus [31 : 0]
@@ -784,7 +780,7 @@ module top_level_module(
          .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0]
 
      fifo_w256_128_r32_1024 okPipeOut_fifo (
-         .rst(ep03wire[2]),
+         .rst(ddr3_rst),
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys/*okClk*/),
          .din(pipe_out_data), // Bus [256 : 0]
@@ -807,7 +803,7 @@ module top_level_module(
     generate
     for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
     // instantiate old top-level (but only for the AD5453 SPI)
-    spi_fifo_driven spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+    spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
              .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
              .data_rdy_0(), .adc_val_0(), //not yet used
              // register bridge //TODO: add address increment based on generate k
@@ -819,7 +815,7 @@ module top_level_module(
              .en_period(en_period), //in, [9:0] 
              .clk_en(clk_en_fast_dac[k]), //out
              .ddr3_rst(ddr3_rst),//in
-             .ddr_dat_i(po0_ep_datain[13:0]), //in
+             .ddr_dat_i(po0_ep_datain[13:0]), //in  TODO: add Mux here
              .rd_en_0(rd_en_fast_dac[k]), //out
              .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT]) //input
              );
