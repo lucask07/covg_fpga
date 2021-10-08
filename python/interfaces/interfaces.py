@@ -1812,7 +1812,7 @@ class DAC80508(SPIController):
         return ack
 
 
-class AD5453(SPIController):
+class AD5453(SPIController):  # TODO: this is SPI but to controller is much different
 
     registers = Register.get_chip_registers('AD5453')
     bits=12,
@@ -1829,15 +1829,35 @@ class AD5453(SPIController):
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
         self.channel = channel
+        self.data_mux = {'DDR': 0,
+                         'host': 1,
+                         'ads8686_chA': 2,
+                         'ad7961_ch0': 3}
 
-    # Method to set the control bits of the signals we write to use the rising edge of the clock rather than the default falling edge
+    # Method to set the control bits of the signals we write to use the rising
+    # edge of the clock rather than the default falling edge
     # To return to the falling edge, the chip requires a power cycle (turn it off and back on)
     def set_clk_rising_edge(self):
+        """
+        not used
+        """
         self.clk_edge_bits = 0b11
 
     # Method to write 14 bits of data with the option to clock data on the rising edge of the clock rather than the default falling edge of the clock.
     def write(self, data):
-        super().write((self.clk_edge_bits << 12) | data)
+        """
+        unconventional SPI -- only works if data mux is set to host
+        """
+        self.fpga.set_wire(self.endpoints['HOST_WIRE_IN'].address, data)
+
+    def data_mux(self, source):
+        """
+        configure the MUX that routes data source to the SPI output
+        """
+        mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
+                              self.endpoints['DATA_SEL'].bit_index_high))
+        data = (self.data_mux[source] << self.endpoints['DATA_SEL'].bit_index_low)
+        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data)
 
     def set_clk_divider(self, value=0xA0):
         """
@@ -1850,10 +1870,14 @@ class AD5453(SPIController):
                            value << self.endpoints['PERIOD_ENABLE'].bit_index_low,
                            mask)
 
-    def set_ctrl_reg(self, value):
+        # resets the SPI state machine
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
+                                        self.endpoints['REG_TRIG'].bit_index_low)
+
+    def set_ctrl_reg(self, value=0x3010):
         """
         Configures the SPI Wishbone control register over the registerBridge
-        HDL default is ctrlValue = 16'h3010
+        HDL default is ctrlValue = 16'h3010 (initialized in the HDL)
         """
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 4*self.channel,
                                     value)
@@ -1917,6 +1941,7 @@ class ADCDATA():
         else:
             data = self.deswizzle(st)
         return data
+
 
 # Class for the ADS8686 ADC chip.
 class ADS8686(SPIController, ADCDATA):
@@ -2092,15 +2117,6 @@ class AD7961(ADCDATA):
         self.name = 'AD7961'
         self.num_bits = 16  # for AD7961 bits=18 for AD7960
 
-        # self.eps = {'AD796x_POUT_OFFSET': 0xA1,
-        #             'ADC_PLL_LOCKED_STATUS_WIRE_OUT': 0x21,
-        #             'GENERAL_RST_VALID_TRIG_IN_ADDR': 0x40,
-        #             'TI40_PLL_RST': 0x03,
-        #             'TI40_ADC_RST': 19,
-        #             'TI40_ADC_FIFO_RST': 4,
-        #             'WI02_A_EN0': 1,
-        #             'WI02_A_EN': 15}
-
     @staticmethod
     def create_chips(fpga, number_of_chips, endpoints=None):
         """Instantiate a given number of new chips.
@@ -2148,7 +2164,6 @@ class AD7961(ADCDATA):
     def get_timing_pll_status(self):
         return self.fpga.read_wire_bit(self.endpoints['TIMING_PLL_LOCKED'].address,
                                        self.endpoints['TIMING_PLL_LOCKED'].bit_index_low)
-
 
     def get_fifo_status(self):
         flags = ['FULL', 'HALFFULL', 'EMPTY']
@@ -2436,25 +2451,29 @@ class DDR3():
             unpacked_g_rbuf[x] = (unpacked_g_rbuf[x]/1000)
         return unpacked_g_rbuf
 
-
     def set_index(self, factor):
+        """
+        Set the index value at which the DDR3 loops back
+        """
         self.fpga.set_wire(self.endpoints['INDEX'].address, factor)
 
-    """ Example usage
+
+    """ Example usage of the DDR
     #Wait for the configuration
     time.sleep(3)
     factor = (int)(sample_size/8)
-    f.xem.SetWireInValue(0x04, factor)
+    f.xem.SetWireInValue(0x04, factor)  # sets the index value -- this is where the DDR3 cycles back
     #f.xem.SetWireInValue(0x04, 0xFF)
     f.xem.UpdateWireIns()
 
     #Sample rate speed, to bits 18:9
-    f.xem.SetWireInValue(0x02, 0x0000A000, 0x0003FF00 )
+    f.xem.SetWireInValue(0x02, 0x0000A000, 0x0003FF00)  # wire-in to set the clock divider freq.
     f.xem.UpdateWireIns()
     write_sin_wave(2)
-    f.xem.WriteRegister(0x80000010, 0x00003410)
+    f.xem.WriteRegister(0x80000010, 0x00003410)  # configure the SPI WB control register
     f.xem.ActivateTriggerIn(0x40, 8)
     """
+
 
 class DebugFIFO(ADCDATA):
     def __init__(self, fpga, chan=0, endpoints=None):

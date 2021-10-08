@@ -38,8 +38,8 @@ sys.path.append(interfaces_path)
 from interfaces.interfaces import Endpoint
 eps1 = Endpoint.update_endpoints_from_defines()
 
-from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508
-from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DebugFIFO
+from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, AD5453
+from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DebugFIFO, DDR3
 
 eps = Endpoint.endpoints_from_defines
 
@@ -54,10 +54,11 @@ logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.
                     level=logging.INFO)
 
 # eps = Endpoint.endpoints_from_defines
-ADS_EN = True
-AD7961_EN = True
+ADS_EN = False
+AD7961_EN = False
 EN_15V = True
-DAC_80508_EN = True
+DAC_80508_EN = False
+DDR_EN = True
 
 # set up DC power supply
 # name within the configuration file (config.yaml)
@@ -84,7 +85,7 @@ def log_dc_pwr(dc_pwr, dc_pwr2, data, desc='none'):
         data['ch{}'.format(ch)]['timestamp'] = np.append(data['ch{}'.format(ch)]['timestamp'], get_timestamp())
         data['ch{}'.format(ch)]['description'].append(desc)
     # second supply
-    for ch in [1,2]:
+    for ch in [1, 2]:
         data['ch{}'.format(ch)]['val'] = np.append(data['ch{}'.format(ch)]['val'],
                                         dc_pwr2.get('meas_i', configs={'chan': ch}))
         data['ch{}'.format(ch)]['timestamp'] = np.append(data['ch{}'.format(ch)]['timestamp'], get_timestamp())
@@ -147,7 +148,7 @@ pwr.all_off()  # disable all power enables
 gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 # configure the SPI debug MUXs
-gpio.spi_debug('ads')
+gpio.spi_debug('dfast0')
 gpio.ads_misc('convst')
 
 AD7961_CHANS = 4
@@ -212,8 +213,16 @@ for i in range(100):
 
 unq_sn = uid.get_serial_number()
 
-# AD7961
+ddr = DDR3(f)
+ddr.write_flat_voltage(0.8)
+ddr_readback_flat = ddr.read()
+ddr_readback_sin = ddr.write_sin_wave(1.1)
 
+fdac = []
+fdac.append(AD5453(f))
+
+
+# AD7961
 # set enable for AD7961 to low-power (11.4 mA from 5 V )
 #  Q: what supplies need to be configured for this enable to work?
 #  A: just 1.8 V (high-side is 2.5 V)
