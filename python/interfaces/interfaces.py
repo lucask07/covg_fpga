@@ -10,9 +10,8 @@ import ok
 import numpy as np
 import pandas as pd
 import os
-import sys
+import struct
 import time
-from collections import namedtuple
 from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list
 import copy
 
@@ -397,7 +396,6 @@ class FPGA:
     def set_wire(self, address, value, mask=0xFFFFFFFF):
         """Return the error code after setting an OK WireIn value."""
 
-        # DEBUG: temporary for logging DAC80508 test
         if self.debug:
             print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
         error_code = self.xem.SetWireInValue(address, value, mask)
@@ -1820,15 +1818,17 @@ class AD5453(SPIController):
     bits=12,
     vref=2.5*2
 
-    def __init__(self, fpga, master_config=0x3010, endpoints=None):
+    def __init__(self, fpga, master_config=0x3010, endpoints=None, channel=0):
 
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('AD5453')
 
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
-        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
+        super().__init__(fpga=fpga, master_config=master_config,
+                         endpoints=endpoints)
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
+        self.channel = channel
 
     # Method to set the control bits of the signals we write to use the rising edge of the clock rather than the default falling edge
     # To return to the falling edge, the chip requires a power cycle (turn it off and back on)
@@ -1838,6 +1838,25 @@ class AD5453(SPIController):
     # Method to write 14 bits of data with the option to clock data on the rising edge of the clock rather than the default falling edge of the clock.
     def write(self, data):
         super().write((self.clk_edge_bits << 12) | data)
+
+    def set_clk_divider(self, value=0xA0):
+        """
+            set clock divider to configure rate of SPI updates
+        """
+        mask = gen_mask(range(self.endpoints['PERIOD_ENABLE'].bit_index_low,
+                              self.endpoints['PERIOD_ENABLE'].bit_index_high))
+
+        self.fpga.set_wire(self.endpoints['PERIOD_ENABLE'].address,
+                           value << self.endpoints['PERIOD_ENABLE'].bit_index_low,
+                           mask)
+
+    def set_ctrl_reg(self, value):
+        """
+        Configures the SPI Wishbone control register over the registerBridge
+        HDL default is ctrlValue = 16'h3010
+        """
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 4*self.channel,
+                                    value)
 
 
 class ADCDATA():
@@ -2266,6 +2285,176 @@ class AD7961(ADCDATA):
         # TODO: the FIFO is guaranteed to overflow
         return status
 
+
+class DDR3():
+    def __init__(self, fpga, endpoints=None):
+        if endpoints is None:
+            endpoints = Endpoint.get_chip_endpoints('DDR3')
+        self.fpga = fpga
+        self.endpoints = endpoints
+        self.parameters = {'BLOCK_SIZE': 16384,
+                           'WRITE_SIZE': (8*1024*1024),
+                           'READ_SIZE': (8*1024*1024),
+                           'g_nMemSize': (8*1024*1024),
+                           'sample_size': 524288  # WRITE_SIZE/16
+                           }
+
+    def make_flat_voltage(self, input_voltage):
+        """
+            given the amplitude, and the time between each step, creates entire period
+            full-scale time is 2*pi
+        """
+        time_axis = np.arange(0, np.pi*2, (1/self.parameters['sample_size']*2*np.pi))
+        amplitude = np.arange(0, np.pi*2, (1/self.parameters['sample_size']*2*np.pi))
+        for x in range(len(amplitude)):
+            amplitude[x] = input_voltage
+        amplitude = amplitude.astype(np.int32)
+        return time_axis, amplitude
+
+    def make_sin_wave(self, amplitude_shift, frequency_shift=16):
+        """
+        creates a sine-wave
+        """
+        time_axis = np.arange(0, np.pi*2,
+                              1/self.parameters['sample_size']*2*np.pi)
+        print('length of time axis after creation ', len(time_axis))
+        amplitude = (amplitude_shift*1000*np.sin(time_axis))
+        y = len(amplitude)
+        for x in range(y):
+            amplitude[x] = amplitude[x]+(10000)  #TODO: why 10000?
+        for x in range(y):
+            amplitude[x] = (int)(amplitude[x]/20000*16384)
+        amplitude = amplitude.astype(np.int32)
+        return time_axis, amplitude
+
+    def write(self, g_buf):
+        """
+            given a buffer, it writes a bytearray to the DDR3
+        """
+        print('Length of buffer at the top of WriteSDRAM: ', len(g_buf))
+        # Reset FIFOs
+        self.reset_fifo()
+        self.clear_read()
+        self.set_write()
+
+        print('Writing to DDR...')
+        time1 = time.time()
+        r = self.fpga.xem.WriteToBlockPipeIn(epAddr=self.endpoints['BLOCK_PIPE_IN'],
+                                             blockSize=self.parameters['BLOCK_SIZE'],
+                                             data=g_buf[0:(len(g_buf))])
+        print('The length of the write is ', r)
+
+        time2 = time.time()
+        time3 = (time2-time1)
+        mbs = (int)(r/1024/1024/time3)
+        print("The speed of the write was ", mbs, " MegaBytes per second")
+
+        # below sets the HDL into read mode
+        self.reset_fifo()
+        self.clear_write()
+        self.set_read()
+
+    def reset_fifo(self):
+        """
+         Resets both FIFOs + DDR Mig
+         TODO: convert to trigger, split resets?
+        """
+        self.fpga.set_wire_bit(self.endpoints['RESET'].address,
+                               self.endpoints['RESET'].bit_index_low)
+        self.fpga.clear_wire_bit(self.endpoints['RESET'].address,
+                                 self.endpoints['RESET'].bit_index_low)
+
+    def set_read(self):
+        self.fpga.set_wire_bit(self.endpoints['READ'].address,
+                               self.endpoints['READ'].bit_index_low)
+
+    def clear_read(self):
+        self.fpga.set_clear_bit(self.endpoints['READ'].address,
+                                self.endpoints['READ'].bit_index_low)
+
+    def set_write(self):
+        self.fpga.set_wire_bit(self.endpoints['WRITE'].address,
+                               self.endpoints['WRITE'].bit_index_low)
+
+    def clear_write(self):
+        self.fpga.clear_wire_bit(self.endpoints['WRITE'].address,
+                                 self.endpoints['WRITE'].bit_index_low)
+
+    def read(self):
+        """
+        #reads to an empty array passed to the function
+        """
+        amplitude = np.zeros((self.parameters['sample_size'],), dtype=int)
+        pass_buf = bytearray(amplitude)
+        # Reset FIFOs
+        self.reset_fifo()
+        self.clear_write()
+        self.set_read()
+
+        print('Reading from DDR...')
+
+        for i in range((int)(self.parameters['g_nMemSize']/self.parameters['WRITE_SIZE'])):
+            r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'],
+                                                   blockSize=self.parameters['BLOCK_SIZE'],
+                                                   data=pass_buf)
+            print('The length of the BlockPipeOut read is: ', r)  # TODO units?
+        return pass_buf
+
+    def unpack(self, buf):
+        """
+        given a buffer, it unpacks into into human readable float values
+        """
+        unpacked_var = []
+        for x in range(self.parameters['sample_size']):
+            unpacked_var.append(struct.unpack('i', buf[(x*4):((x+1)*4)]))
+        return unpacked_var
+
+    def write_sin_wave(self, amplitude):
+        """
+        given an amplitude and a period?, it will write a waveform to the DDR3
+        """
+        time_axis, g_buf_init = self.make_sin_wave(amplitude)
+        print("The length of the array before casting ", len(g_buf_init))
+        pass_buf = bytearray(g_buf_init)
+        self.write(pass_buf)
+
+    def write_flat_voltage(self, input_voltage):
+        """
+        given an amplitude and a period, it will write a flat voltage to the DDR3
+        """
+        time_axis, g_buf_init = self.make_flat_voltage(input_voltage)
+        pass_buf2 = bytearray(g_buf_init)
+        self.write(pass_buf2)
+
+    def print(self):
+        """
+        Reads and prints the contents of the DDR3
+        """
+        g_rbuf = self.read()
+        unpacked_g_rbuf = np.array(self.unpack(g_rbuf)).astype('float64')
+        for x in range(len(unpacked_g_rbuf)):
+            unpacked_g_rbuf[x] = (unpacked_g_rbuf[x]/1000)
+        return unpacked_g_rbuf
+
+
+    def set_index(self, factor):
+        self.fpga.set_wire(self.endpoints['INDEX'].address, factor)
+
+    """ Example usage
+    #Wait for the configuration
+    time.sleep(3)
+    factor = (int)(sample_size/8)
+    f.xem.SetWireInValue(0x04, factor)
+    #f.xem.SetWireInValue(0x04, 0xFF)
+    f.xem.UpdateWireIns()
+
+    #Sample rate speed, to bits 18:9
+    f.xem.SetWireInValue(0x02, 0x0000A000, 0x0003FF00 )
+    f.xem.UpdateWireIns()
+    write_sin_wave(2)
+    f.xem.WriteRegister(0x80000010, 0x00003410)
+    f.xem.ActivateTriggerIn(0x40, 8)
+    """
 
 class DebugFIFO(ADCDATA):
     def __init__(self, fpga, chan=0, endpoints=None):
