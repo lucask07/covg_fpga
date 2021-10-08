@@ -830,7 +830,7 @@ module top_level_module(
         .datain_1(host_spi_data[k][15:0]), 
     	.datain_2(ads_last_read[15:0]),
     	.datain_3(adc_pipe_ep_datain[0][15:0]), // TODO:  poor design since not synchronized  
-        .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + 1 + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +:2]),
+        .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
         .dataout(spi_data[k])
     );
         
