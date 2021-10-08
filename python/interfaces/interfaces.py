@@ -1834,12 +1834,11 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
                          'ads8686_chA': 2,
                          'ad7961_ch0': 3}
 
-    # Method to set the control bits of the signals we write to use the rising
-    # edge of the clock rather than the default falling edge
-    # To return to the falling edge, the chip requires a power cycle (turn it off and back on)
     def set_clk_rising_edge(self):
         """
-        not used
+        Method to set the control bits of the signals we write to use the rising
+        edge of the clock rather than the default falling edge
+        To return to the falling edge, the chip requires a power cycle (turn it off and back on)
         """
         self.clk_edge_bits = 0b11
 
@@ -1847,17 +1846,19 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
     def write(self, data):
         """
         unconventional SPI -- only works if data mux is set to host
+        state machine converts this data to WB signals
         """
         self.fpga.set_wire(self.endpoints['HOST_WIRE_IN'].address, data)
 
-    def data_mux(self, source):
+    def set_data_mux(self, source):
         """
         configure the MUX that routes data source to the SPI output
         """
         mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
                               self.endpoints['DATA_SEL'].bit_index_high))
         data = (self.data_mux[source] << self.endpoints['DATA_SEL'].bit_index_low)
-        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data)
+        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
+                           mask=mask)
 
     def set_clk_divider(self, value=0xA0):
         """
@@ -1878,6 +1879,7 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         """
         Configures the SPI Wishbone control register over the registerBridge
         HDL default is ctrlValue = 16'h3010 (initialized in the HDL)
+        4*channel (rather than 1*channel) allows for expansion
         """
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 4*self.channel,
                                     value)
@@ -2055,7 +2057,7 @@ class ADS8686(SPIController, ADCDATA):
         the A side or the B side is the only one that matters. The first A
         channel will be run with the first B channel. Any remaining unmatched
         channels will be filled with the FIXED_A/B value.
-        
+
         Arguments
         ---------
         chan_list : list
@@ -2115,7 +2117,7 @@ class ADS8686(SPIController, ADCDATA):
             else:
                 a_code = a_chans[i]
                 b_code = b_chans[i]
-            
+
             # Shifts all should have happened by now, so we don't have to move
             # B side here
             codes.append(a_code | b_code)
@@ -2152,7 +2154,7 @@ class ADS8686(SPIController, ADCDATA):
         # """
         # self.write((0xb | (0xb << 4)), 'seq0')   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
         # self.write((0b101 | (0b101 << 4) | backto_first_stack), 'seq1')   # CH5
-        
+
         # Write all but the last code, which is done separately
         for i in range(len(codes) - 1):
             code = codes[i]
@@ -2401,8 +2403,8 @@ class DDR3():
 
     def make_flat_voltage(self, input_voltage):
         """
-            given the amplitude, and the time between each step, creates entire period
-            full-scale time is 2*pi
+        given the amplitude, and the time between each step, creates entire period
+        full-scale time is 2*pi
         """
         time_axis = np.arange(0, np.pi*2, (1/self.parameters['sample_size']*2*np.pi))
         amplitude = np.arange(0, np.pi*2, (1/self.parameters['sample_size']*2*np.pi))

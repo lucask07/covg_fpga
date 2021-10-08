@@ -59,6 +59,7 @@ AD7961_EN = False
 EN_15V = True
 DAC_80508_EN = False
 DDR_EN = True
+FIFO_DEBUG_EN = False
 
 # set up DC power supply
 # name within the configuration file (config.yaml)
@@ -160,9 +161,10 @@ for i in range(AD7961_CHANS):
     ad7961s[i].power_down_all()
     ad7961s[i].reset_wire(1)
 
-fifo_debug = DebugFIFO(f)
-fifo_debug.reset_fifo()
-dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
+if FIFO_DEBUG_EN:
+    fifo_debug = DebugFIFO(f)
+    fifo_debug.reset_fifo()
+    dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
 
 # TODO wrpt endpoints stuff:
 """
@@ -220,7 +222,6 @@ ddr_readback_sin = ddr.write_sin_wave(1.1)
 
 fdac = []
 fdac.append(AD5453(f))
-
 
 # AD7961
 # set enable for AD7961 to low-power (11.4 mA from 5 V )
