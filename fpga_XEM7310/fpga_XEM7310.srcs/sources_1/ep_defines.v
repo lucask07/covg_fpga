@@ -48,7 +48,7 @@
 `define DAC80508_WB_IN_GEN_ADDR 8'h06 // bit_width=32
 `define I2CDC_WIRE_IN_GEN_ADDR 8'h08 // bit_width=16
 `define I2CDC_IN_GEN_BIT 0 // address=I2CDC_WIRE_IN_GEN_ADDR bit_width=16
-`define I2CDAQ_WIRE_IN_GEN_ADDR 8'h10 // bit_width=16
+`define I2CDAQ_WIRE_IN_GEN_ADDR 8'h0A // bit_width=16
 `define I2CDAQ_IN_GEN_BIT 0 // address=I2CDAQ_WIRE_IN bit_width=16
 
 `define ADS8686_OUT 8'h24 // bit_width=32
@@ -64,7 +64,14 @@
 `define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_READ_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+
+`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
+
+// wireIn address for index 
 `define DDR3_INDEX 8'h04 // bit_width=32
+
+// wireIn for host driven data 
+`define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32
 
 // trigger in addresses
 `define GP_RST_VALID_TRIG_IN 8'h40 // bit_width=32
@@ -203,6 +210,7 @@
 
 `define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
 `define DAC80508_REGBRIDGE_OFFSET 8'h05 // bit_width=32
+`define AD5453_REGBRIDGE_OFFSET 8'h15 // bit_width=32
 
 // TODO set this up!
 `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
