@@ -334,7 +334,7 @@ if ADS_EN:
     lpf1 = ads.read('lpf')
     ads.set_lpf(376)
     lpf2 = ads.read('lpf')
-    ads.setup_sequencer()
+    ads.setup_sequencer(chan_list=['FIXED_A', 'FIXED_B', '5A', '5B'])
     ads.write_reg_bridge()
     ads.set_fpga_mode()
     data_ads = ads.stream_mult(swps=4, twos_comp_conv=False)
