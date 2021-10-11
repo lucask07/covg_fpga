@@ -1926,8 +1926,8 @@ class ADCDATA():
         elif self.name == 'ADS8686':
             c = {'A': np.array([]),
                  'B': np.array([])}
-            c['A'] = d2
-            c['B'] = d1
+            c['A'] = d1
+            c['B'] = d2
         return c
 
     def convert_twos(self, d):
