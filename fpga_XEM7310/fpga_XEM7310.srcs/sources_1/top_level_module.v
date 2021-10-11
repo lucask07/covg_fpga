@@ -638,6 +638,24 @@ module top_level_module(
      wire          ddr3_rst;// MIG/DDR3 synchronous reset
      wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out
      wire rd_en_0;
+     
+     //Synchronizer for INDEX for DDR
+     reg [31:0] INDEX_reg_tmp1;
+     reg [31:0] INDEX_reg_tmp2;
+     reg [31:0] INDEX_glitchfree;
+     wire [31:0] INDEX_reg;
+    
+     always@(posedge okClk)begin
+        INDEX_glitchfree <= INDEX;
+     end
+    
+     always@(posedge clk_ddr_ui)begin
+        INDEX_reg_tmp1 <= INDEX_glitchfree;
+        INDEX_reg_tmp2 <= INDEX_reg_tmp1;
+     end
+    
+     assign INDEX_reg = INDEX_reg_tmp2;
+
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
@@ -707,7 +725,7 @@ module top_level_module(
      // OK MIG DDR3 Testbench Instatiation
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
-         .INDEX              (INDEX),
+         .INDEX              (INDEX_reg),
          .reset              (ddr3_rst | rst_ddr_ui),
          .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
          .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
