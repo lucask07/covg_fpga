@@ -73,6 +73,8 @@
 //`define SPI_MAX_CHAR_16
 //`define SPI_MAX_CHAR_8
 
+`define SPI_CHAN_B  //LJK: for including  SDO_B from ADS8686
+
 `ifdef SPI_MAX_CHAR_128
   `define SPI_MAX_CHAR          128  // Can only be set to 128 
   `define SPI_CHAR_LEN_BITS     7

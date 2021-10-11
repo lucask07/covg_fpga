@@ -42,6 +42,7 @@ module spi_controller #(ADDR = 0)(
     output wire sclk,
     output wire mosi,
     input wire miso,
+    input wire miso_b,
     // for ADS8686
     output wire convst_out
     );
@@ -125,6 +126,7 @@ module spi_controller #(ADDR = 0)(
      .wb_adr_i(adr[4:0]), .wb_dat_i(dat_o), .wb_dat_o(dat_i), 
      .wb_sel_i(sel), .wb_we_i(we), .wb_stb_i(stb), 
      .wb_cyc_i(cyc), .wb_ack_o(ack), .wb_err_o(err), .wb_int_o(int_o),
-     .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso) 
-    );
+     .ss_pad_o(ss), .sclk_pad_o(sclk), .mosi_pad_o(mosi), .miso_pad_i(miso),
+     .miso_b_pad_i(miso_b)    
+     );
 endmodule
