@@ -479,3 +479,5 @@ set_property src_info {type:XDC file:1 line:763 export:INPUT save:INPUT read:REA
 set_property PACKAGE_PIN J14 [get_ports {ddr3_ck_p[0]}]
 set_property src_info {type:XDC file:1 line:764 export:INPUT save:INPUT read:READ} [current_design]
 set_property PACKAGE_PIN H14 [get_ports {ddr3_ck_n[0]}]
+set_property src_info {type:XDC file:1 line:768 export:INPUT save:INPUT read:READ} [current_design]
+set_false_path -from [get_clocks -of_objects [get_pins okHI/mmcm0/CLKOUT0]] -to [get_clocks -of_objects [get_pins u_ddr3_256_32/u_ddr3_256_32_mig/u_ddr3_infrastructure/gen_mmcm.mmcm_i/CLKFBOUT]]
