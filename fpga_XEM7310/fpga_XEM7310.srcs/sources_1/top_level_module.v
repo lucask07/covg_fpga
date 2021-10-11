@@ -451,10 +451,11 @@ module top_level_module(
                        .ss(ads_csb),
                        .sclk(ads_sclk),
                        .mosi(ads_sdi),
-                       .miso(ads_sdoa), //TODO: need to connect SDOB
+                       .miso(ads_sdoa), 
+                       .miso_b(ads_sdob),
                        .convst_out(ads_convst)
                        );
-
+                       
    wire [31:0] ads_fifo_data;
    wire ads_pipe_read;
 
@@ -568,6 +569,7 @@ module top_level_module(
                            .sclk(ds_sclk[j]),
                            .mosi(ds_sdi[j]),
                            .miso(1'b0),
+                           .miso_b(1'b0),
                            .convst_out()
                            );         
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DAC80508_WB_IN_GEN_ADDR + j), .ep_dataout(dac_wirein_data[j]));
@@ -835,7 +837,8 @@ module top_level_module(
     );
         
     // instantiate old top-level (but only for the AD5453 SPI)
-    spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+    spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (
+             .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
              .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
              .data_rdy_0(), .adc_val_0(), //not yet used
              // register bridge //TODO: add address increment based on generate k
@@ -851,7 +854,7 @@ module top_level_module(
              //.ddr_dat_i(po0_ep_datain[k*16 +:14]), //in  TODO: add Mux here
              .ddr_dat_i(spi_data[k][13:0]), //in  TODO: add Mux here
              .rd_en_0(rd_en_fast_dac[k]),   //out
-             .regTrigger(ep40trig[`AD5453_REG_TRIG]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+             .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + k]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
              );
     end
     endgenerate
