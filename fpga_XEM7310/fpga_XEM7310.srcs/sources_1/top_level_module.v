@@ -459,11 +459,11 @@ module top_level_module(
    wire [31:0] ads_fifo_data;
    wire ads_pipe_read;
 
-   fifo_AD796x ads8686_fifo ( //32 bit wide read and 16 bit wide write ports
+   fifo_ADS8686 ads8686_fifo ( //32 bit wide read and 16 bit wide write ports
      .rst(ep40trig[`ADS8686_FIFO_RESET]),
      .wr_clk(clk_sys),
      .rd_clk(okClk),
-     .din(ads_data_out),         // Bus [15:0] (from ADC)
+     .din(ads_data_out),         // Bus [31:0] (from ADC)
      .wr_en(ads_data_valid),    // from ADC
      .rd_en(ads_pipe_read),      // from OKHost
      .dout(ads_fifo_data),     // Bus [31:0] (to OKHost)
@@ -638,24 +638,6 @@ module top_level_module(
      wire          ddr3_rst;// MIG/DDR3 synchronous reset
      wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out
      wire rd_en_0;
-     
-     //Synchronizer for INDEX for DDR
-     reg [31:0] INDEX_reg_tmp1;
-     reg [31:0] INDEX_reg_tmp2;
-     reg [31:0] INDEX_glitchfree;
-     wire [31:0] INDEX_reg;
-    
-     always@(posedge okClk)begin
-        INDEX_glitchfree <= INDEX;
-     end
-    
-     always@(posedge clk_ddr_ui)begin
-        INDEX_reg_tmp1 <= INDEX_glitchfree;
-        INDEX_reg_tmp2 <= INDEX_reg_tmp1;
-     end
-    
-     assign INDEX_reg = INDEX_reg_tmp2;
-
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
@@ -725,7 +707,7 @@ module top_level_module(
      // OK MIG DDR3 Testbench Instatiation
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
-         .INDEX              (INDEX_reg),
+         .INDEX              (INDEX),
          .reset              (ddr3_rst | rst_ddr_ui),
          .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
          .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
