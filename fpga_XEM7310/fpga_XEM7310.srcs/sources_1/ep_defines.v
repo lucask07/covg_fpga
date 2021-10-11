@@ -136,7 +136,7 @@
 `define GP_SYSTEM_RESET 1 // address=GP_RST_VALID_TRIG_IN bit_width=1
 // `define TI40_ 2 // not used
 `define AD7961_PLL_RESET 3 // address=GP_RST_VALID_TRIG_IN bit_width=1
-`define AD5453_REG_TRIG 8 // address=GP_RST_VALID_TRIG_IN bit_width=1
+`define AD5453_REG_TRIG_GEN_BIT 8 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_CLK_DIV_RESET 14 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_WB_CONVERT 15 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define DAC80508_WB_CONVERT_GEN_BIT 17 // address=GP_RST_VALID_TRIG_IN bit_width=1

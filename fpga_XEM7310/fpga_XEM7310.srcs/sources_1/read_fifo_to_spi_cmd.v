@@ -62,20 +62,20 @@ module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
 //	 end
 
      reg [15:0] ctrlValue;
+     reg [7:0] divideValue; 
      initial ctrlValue = 16'h3010;
+     initial divideValue = 8'h013; 
      
      always@(posedge okClk)begin
         if(regWrite && (regAddress == (ADDR)))begin
             ctrlValue <= regDataOut;
         end
-        else begin
-            ctrlValue <= ctrlValue;
+        else if (regWrite && (regAddress == (ADDR + 1'b1))) begin
+            divideValue <= regDataOut[7:0];
         end
      end
 	 
-	 
 	 reg newRegVal;
-	 
 	 always@(posedge clk)begin
 	   if(rst || ack)begin
 	       newRegVal = 1'b0;
@@ -195,8 +195,8 @@ module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
 	 always@(posedge clk)begin
 	   if(rst) cmd_word <= 34'b0;
 	   else if(spi_load == 3'b000)begin
-	       //cmd_word <= {26'h1000000, divideValue};
-	       cmd_word <= 34'h100000013;
+	       cmd_word <= {26'h1000000, divideValue};
+	       //cmd_word <= 34'h100000013;
 	       adr <= 8'h14;
 	   end
 	   else if(spi_load == 3'b001)begin
@@ -205,7 +205,7 @@ module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
 	       adr <= 8'h10;
        end
 	   else if(spi_load == 3'b010)begin
-	       cmd_word <= 34'h100000001;
+	       cmd_word <= 34'h100000001; // chip-select register 
 	       adr <= 8'h18;
        end
 	   else if(spi_load == 3'b011)begin
