@@ -49,7 +49,7 @@ module spi_top
   wb_we_i, wb_stb_i, wb_cyc_i, wb_ack_o, wb_err_o, wb_int_o,
 
   // SPI signals
-  ss_pad_o, sclk_pad_o, mosi_pad_o, miso_pad_i
+  ss_pad_o, sclk_pad_o, mosi_pad_o, miso_pad_i, miso_b_pad_i
 );
 
   //parameter Tp = 0;// this used to be Tp = 1
@@ -82,6 +82,8 @@ module spi_top
   output   wire                        sclk_pad_o;       // serial clock
   output   wire                        mosi_pad_o;       // master out slave in
   input    wire                        miso_pad_i;       // master in slave out
+  input    wire                        miso_b_pad_i;       // master in slave out
+
                                                      
   reg                     [32-1:0] wb_dat_o;
   reg                              wb_ack_o;
@@ -109,6 +111,8 @@ module spi_top
   wire                             neg_edge;         // recognize negedge of sclk
   wire                             last_bit;         // marks last character bit
   
+  wire         [`SPI_MAX_CHAR-1:0] rx_chan_b;               // Rx register for channel B -- (LJK ADS8686)
+
   // Address decoder
   assign spi_divider_sel = wb_cyc_i & wb_stb_i & (wb_adr_i[`SPI_OFS_BITS] == `SPI_DEVIDE);
   assign spi_ctrl_sel    = wb_cyc_i & wb_stb_i & (wb_adr_i[`SPI_OFS_BITS] == `SPI_CTRL);
@@ -128,17 +132,21 @@ module spi_top
       `SPI_RX_2:    wb_dat = rx[95:64];
       `SPI_RX_3:    wb_dat = {{128-`SPI_MAX_CHAR{1'b0}}, rx[`SPI_MAX_CHAR-1:96]};
 `else
-`ifdef SPI_MAX_CHAR_64
-      `SPI_RX_0:    wb_dat = rx[31:0];
-      `SPI_RX_1:    wb_dat = {{64-`SPI_MAX_CHAR{1'b0}}, rx[`SPI_MAX_CHAR-1:32]};
-      `SPI_RX_2:    wb_dat = 32'b0;
-      `SPI_RX_3:    wb_dat = 32'b0;
-`else
-      `SPI_RX_0:    wb_dat = {{32-`SPI_MAX_CHAR{1'b0}}, rx[`SPI_MAX_CHAR-1:0]};
-      `SPI_RX_1:    wb_dat = 32'b0;
-      `SPI_RX_2:    wb_dat = 32'b0;
-      `SPI_RX_3:    wb_dat = 32'b0;
-`endif
+    `ifdef SPI_MAX_CHAR_64
+          `SPI_RX_0:    wb_dat = rx[31:0];
+          `SPI_RX_1:    wb_dat = {{64-`SPI_MAX_CHAR{1'b0}}, rx[`SPI_MAX_CHAR-1:32]};
+          `SPI_RX_2:    wb_dat = 32'b0;
+          `SPI_RX_3:    wb_dat = 32'b0;
+    `else
+          `ifdef SPI_CHAN_B
+              `SPI_RX_0:    wb_dat = {rx_chan_b[15:0], rx[15:0]}; // use as special case for including rx_chan_b
+          `else
+              `SPI_RX_0:    wb_dat = {{32-`SPI_MAX_CHAR{1'b0}}, rx[`SPI_MAX_CHAR-1:0]};
+          `endif    
+          `SPI_RX_1:    wb_dat = 32'b0;
+          `SPI_RX_2:    wb_dat = 32'b0;
+          `SPI_RX_3:    wb_dat = 32'b0;
+    `endif
 `endif
       `SPI_CTRL:    wb_dat = {{32-`SPI_CTRL_BIT_NB{1'b0}}, ctrl};
       `SPI_DEVIDE:  wb_dat = {{32-`SPI_DIVIDER_LEN{1'b0}}, divider};
@@ -292,4 +300,12 @@ module spi_top
                    .tip(tip), .last(last_bit), 
                    .p_in(wb_dat_i), .p_out(rx), 
                    .s_clk(sclk_pad_o), .s_in(miso_pad_i), .s_out(mosi_pad_o));
+                   
+    spi_shift shift_chan2 (.clk(wb_clk_i), .rst(wb_rst_i), .len(char_len[`SPI_CHAR_LEN_BITS-1:0]),
+                                    .latch(spi_tx_sel[3:0] & {4{wb_we_i}}), .byte_sel(wb_sel_i), .lsb(lsb), 
+                                    .go(go), .pos_edge(pos_edge), .neg_edge(neg_edge), 
+                                    .rx_negedge(rx_negedge), .tx_negedge(tx_negedge),
+                                    .tip(), .last(), 
+                                    .p_in(wb_dat_i), .p_out(rx_chan_b), 
+                                    .s_clk(sclk_pad_o), .s_in(miso_b_pad_i), .s_out());
 endmodule

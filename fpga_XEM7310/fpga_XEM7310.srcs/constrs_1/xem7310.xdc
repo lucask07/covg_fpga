@@ -764,3 +764,5 @@ set_property PACKAGE_PIN J14 [get_ports {ddr3_ck_p[0]}]
 set_property PACKAGE_PIN H14 [get_ports {ddr3_ck_n[0]}]
 set_property SLEW FAST [get_ports {ddr3_ck*}]
 set_property IOSTANDARD DIFF_SSTL15 [get_ports {ddr3_ck_*}]
+
+set_false_path -from [get_clocks -of_objects [get_pins okHI/mmcm0/CLKOUT0]] -to [get_clocks -of_objects [get_pins u_ddr3_256_32/u_ddr3_256_32_mig/u_ddr3_infrastructure/gen_mmcm.mmcm_i/CLKFBOUT]]

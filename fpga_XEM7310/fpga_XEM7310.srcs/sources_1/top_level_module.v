@@ -451,10 +451,11 @@ module top_level_module(
                        .ss(ads_csb),
                        .sclk(ads_sclk),
                        .mosi(ads_sdi),
-                       .miso(ads_sdoa), //TODO: need to connect SDOB
+                       .miso(ads_sdoa), 
+                       .miso_b(ads_sdob),
                        .convst_out(ads_convst)
                        );
-
+                       
    wire [31:0] ads_fifo_data;
    wire ads_pipe_read;
 
@@ -568,6 +569,7 @@ module top_level_module(
                            .sclk(ds_sclk[j]),
                            .mosi(ds_sdi[j]),
                            .miso(1'b0),
+                           .miso_b(1'b0),
                            .convst_out()
                            );         
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DAC80508_WB_IN_GEN_ADDR + j), .ep_dataout(dac_wirein_data[j]));
@@ -636,6 +638,24 @@ module top_level_module(
      wire          ddr3_rst;// MIG/DDR3 synchronous reset
      wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out
      wire rd_en_0;
+     
+     //Synchronizer for INDEX for DDR
+     reg [31:0] INDEX_reg_tmp1;
+     reg [31:0] INDEX_reg_tmp2;
+     reg [31:0] INDEX_glitchfree;
+     wire [31:0] INDEX_reg;
+    
+     always@(posedge okClk)begin
+        INDEX_glitchfree <= INDEX;
+     end
+    
+     always@(posedge clk_ddr_ui)begin
+        INDEX_reg_tmp1 <= INDEX_glitchfree;
+        INDEX_reg_tmp2 <= INDEX_reg_tmp1;
+     end
+    
+     assign INDEX_reg = INDEX_reg_tmp2;
+
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
@@ -705,7 +725,7 @@ module top_level_module(
      // OK MIG DDR3 Testbench Instatiation
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
-         .INDEX              (INDEX),
+         .INDEX              (INDEX_reg),
          .reset              (ddr3_rst | rst_ddr_ui),
          .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
          .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
@@ -835,7 +855,8 @@ module top_level_module(
     );
         
     // instantiate old top-level (but only for the AD5453 SPI)
-    spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (.clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+    spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (
+             .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
              .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
              .data_rdy_0(), .adc_val_0(), //not yet used
              // register bridge //TODO: add address increment based on generate k
@@ -851,7 +872,7 @@ module top_level_module(
              //.ddr_dat_i(po0_ep_datain[k*16 +:14]), //in  TODO: add Mux here
              .ddr_dat_i(spi_data[k][13:0]), //in  TODO: add Mux here
              .rd_en_0(rd_en_fast_dac[k]),   //out
-             .regTrigger(ep40trig[`AD5453_REG_TRIG]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+             .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + k]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
              );
     end
     endgenerate
