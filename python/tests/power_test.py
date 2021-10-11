@@ -7,13 +7,8 @@ Lucas Koerner, koer2434@stthomas.edu
 Abe Stroschein, ajstroschein@stthomas.edu
 
 TODO:
-1) move 7 V to CH3
-2) add +/-16.5V to CH1 and CH2
-3) meas current of each -- current function
-4) add ADS8686 for Simple SPI reads
-5) add UID
-6) switch back to name of IO expander -- change register sheet
-7) setup AD7961 to continuously stream (one channel)
+1) DAQ board initialization
+2) separate instrumentation code
 
 """
 import logging
@@ -36,7 +31,6 @@ for i in range(15):
 sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Endpoint
-eps1 = Endpoint.update_endpoints_from_defines()
 
 from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, AD5453
 from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DebugFIFO, DDR3
@@ -50,11 +44,12 @@ from interfaces.boards import Daq  # TODO: should I instantiate the Daq board or
 def get_timestamp():
     return int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
 
-logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.log'), filemode='w',
+logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.log'),
+                    filemode='w',
                     level=logging.INFO)
 
 # eps = Endpoint.endpoints_from_defines
-ADS_EN = False
+ADS_EN = True
 AD7961_EN = False
 EN_15V = True
 DAC_80508_EN = False
@@ -141,7 +136,8 @@ ads = ADS8686(fpga=f,
               endpoints=Endpoint.get_chip_endpoints('ADS8686'))
 
 dac0 = DAC80508(fpga=f)
-dac1 = DAC80508(fpga=f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('DAC80508'), 1))
+dac1 = DAC80508(fpga=f,
+                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('DAC80508'), 1))
 
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
@@ -149,7 +145,8 @@ pwr.all_off()  # disable all power enables
 gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 # configure the SPI debug MUXs
-gpio.spi_debug('dfast0')
+# gpio.spi_debug('dfast0')
+gpio.spi_debug('ads')
 gpio.ads_misc('convst')
 
 AD7961_CHANS = 4
@@ -159,21 +156,12 @@ for i in range(AD7961_CHANS):
 
 for i in range(AD7961_CHANS):
     ad7961s[i].power_down_all()
-    ad7961s[i].reset_wire(1)
+    ad7961s[i].reset_wire(1)  # FPGA reset wire, resets FPGA controller
 
 if FIFO_DEBUG_EN:
     fifo_debug = DebugFIFO(f)
     fifo_debug.reset_fifo()
     dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
-
-# TODO wrpt endpoints stuff:
-"""
-4) are the multiple SPI controllers setup with endpoints correctly?
-5) when is endpoints intended to be read?
-"""
-
-#  TODO: wirein and wireout bit indices are not at 0
-#  TODO: input the name of the excel worksheet
 
 ads.hw_reset(val=True)  # put ADS into hardware reset
 
@@ -192,8 +180,23 @@ if EN_15V:
     log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='turnon_15n15V')
 
 time.sleep(0.01)
-#  pwr.all_off()
 print(current_meas)
+
+ddr = DDR3(f)
+ddr.set_index(int(ddr.parameters['sample_size']/8))
+flat_buf = ddr.write_flat_voltage(600)  # input is digital code
+ddr_readback_flat = ddr.read()
+sin_buf = ddr.write_sin_wave(1.1)  # input is voltage
+ddr_readback_sin = ddr.read()
+
+fdac = []
+for i in range(6):
+    fdac.append(AD5453(f,
+                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
+                channel=i))
+    fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+    fdac[i].set_data_mux('host')
+    fdac[i].write(0x2000)
 
 # UID
 read = uid.get_manufacturer_code()
@@ -209,31 +212,16 @@ if read != default:
           f'(read) {read} != (default) {default}')
 
 # check to see if i2c is consistent
+i2c_repeats = 100
 read_test = []
-for i in range(100):
+for i in range(i2c_repeats):
     read_test.append(uid.get_manufacturer_code())
+    if read != default:
+        print(f'UID MANUFACTURER_CODE FAILED\n    '
+              f'(read) {read} != (default) {default}')
 
 unq_sn = uid.get_serial_number()
-
-ddr = DDR3(f)
-ddr.write_flat_voltage(0.8)
-ddr_readback_flat = ddr.read()
-ddr_readback_sin = ddr.write_sin_wave(1.1)
-
-fdac = []
-fdac.append(AD5453(f))
-
-# AD7961
-# set enable for AD7961 to low-power (11.4 mA from 5 V )
-#  Q: what supplies need to be configured for this enable to work?
-#  A: just 1.8 V (high-side is 2.5 V)
-
-# disable the AD7961 FPGA block for reading (clk and conv output)
-#  Q: is this possible?
-#  A: possible, but not setup in the FPGA now. Reset is controlled by a trigger-in
-
-# set reset for the ADS8686 (draws 55 mA when static)
-#  Q: what is the default output setting in Xilinx?
+print(f'Unique SN: {hex(unq_sn)}')
 
 # TODO: error in schematic note
 #       should be "high-Z or high will enable"
@@ -246,10 +234,6 @@ for bit_pos in range(eps['GP']['CURRENT_PUMP_ENABLE'].bit_index_low,
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ipump_disable')
 
 # check amps for 14-bit DAC
-
-# check diff term for LVDS inputs?
-# -- what was it for the XEM6310? - in constraints
-# diff term is specified as true in the IBUFDS instantiation (so OK)
 
 # add up current for LVDS
 #  Q: current per pin
@@ -287,17 +271,18 @@ io_1.configure_pins([0x00, 0x00])  # set all pins to outputs
 # ISEL = 1 gives voltage outputs
 # ISEL = 0 routes Howland Ipump out
 io_1.write(0x00FF)  # set all gain pins to zero & all ISEL to have the voltage output
- # TODO: check ordering of the io write; seems correct
+# TODO: check ordering of the io write; seems correct
 
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
 setup = ad7961s[0].setup(reset_pll=True)
 time.sleep(0.05)
-# enable one AD7961 and remeasure current
+
+# AD7961 tests; test pattern and data saved to file
 chan = 2
 num = 13
 if AD7961_EN:
-    for chan in [3]:
-        for num in [13,14]:
+    for chan in [2,3]:
+        for num in [23,24]:
             if chan == 0:
                 setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
             else:
@@ -376,10 +361,3 @@ if DAC_80508_EN:
             else:
                 message = f'Write {hex(voltage)}={voltage}V FAIL'
                 logging.warning(message)
-
-# lower all I/O wires
-# pwr.all_off()
-
-# probe these signals with a multimeter:
-# 1) VCM_OUT from the AD7961
-# 2) EN to the AD7961

@@ -1884,6 +1884,27 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 4*self.channel,
                                     value)
 
+        # resets the SPI state machine -- needed since these registers are only
+        #   programmed at startup of the state machine
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
+                                        self.endpoints['REG_TRIG'].bit_index_low)
+
+    def set_divide_reg(self, value=0x13):
+        """
+        Configures the SPI Wishbone clock divider register over the registerBridge
+        HDL default is ctrlValue = 8'h13 (initialized in the HDL)
+        4*channel (rather than 1*channel) allows for expansion
+        """
+        sys_clk = 200  # MHz
+        print('SCLK predicted frequency {:.2f} [MHz]'.format(sys_clk/(value+1)))
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 1 + 4*self.channel,
+                                    value)
+
+        # resets the SPI state machine -- needed since these registers are only
+        #   programmed at startup of the state machine
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
+                                        self.endpoints['REG_TRIG'].bit_index_low)
+
 
 class ADCDATA():
     def __init__(self):
@@ -1893,15 +1914,20 @@ class ADCDATA():
         d = np.frombuffer(buf, dtype=np.uint8).astype(np.uint32)
         if self.num_bits == 16:
             d1 = d[0::4] + (d[1::4] << 8)  # TODO: check the byte ordering
-            d2 = d[2::4] + (d[3::4] << 8)  # TODO: is breaking this up necessary?
+            d2 = d[2::4] + (d[3::4] << 8)  # TODO: is breaking this up necessary? looks like it
         elif self.num_bits == 18:
             # TODO: check 18-bit data conversion
             d2 = (d[3::4] << 8) + d[1::4] + ((d[0::4] << 16) & 0x03)
 
-        c = np.empty((d1.size + d2.size,), dtype=d1.dtype)
-        c[0::2] = d2  # see Xilinx FIFO guide, memory fills up from left to right
-        c[1::2] = d1
-
+        if self.name == 'AD7961':
+            c = np.empty((d1.size + d2.size,), dtype=d1.dtype)
+            c[0::2] = d2  # see Xilinx FIFO guide, memory fills up from left to right
+            c[1::2] = d1
+        elif self.name == 'ADS8686':
+            c = {'A': np.array([]),
+                 'B': np.array([])}
+            c['A'] = d2
+            c['B'] = d1
         return c
 
     def convert_twos(self, d):
@@ -1964,6 +1990,7 @@ class ADS8686(SPIController, ADCDATA):
         super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
         self.ranges = [5]*16  # voltage ranges of all 16 channels
         self.num_bits = 16
+        self.name = 'ADS8686'
 
     def write(self, msg, reg_name):
         reg = self.registers[reg_name].address << 9
@@ -2405,6 +2432,7 @@ class DDR3():
         """
         given the amplitude, and the time between each step, creates entire period
         full-scale time is 2*pi
+        The "voltage" is actually the digital value written to DDR
         """
         time_axis = np.arange(0, np.pi*2, (1/self.parameters['sample_size']*2*np.pi))
         amplitude = np.arange(0, np.pi*2, (1/self.parameters['sample_size']*2*np.pi))
@@ -2431,7 +2459,7 @@ class DDR3():
 
     def write(self, g_buf):
         """
-            given a buffer, it writes a bytearray to the DDR3
+        given a buffer, it writes a bytearray to the DDR3
         """
         print('Length of buffer at the top of WriteSDRAM: ', len(g_buf))
         # Reset FIFOs
@@ -2441,7 +2469,7 @@ class DDR3():
 
         print('Writing to DDR...')
         time1 = time.time()
-        r = self.fpga.xem.WriteToBlockPipeIn(epAddr=self.endpoints['BLOCK_PIPE_IN'],
+        r = self.fpga.xem.WriteToBlockPipeIn(epAddr=self.endpoints['BLOCK_PIPE_IN'].address,
                                              blockSize=self.parameters['BLOCK_SIZE'],
                                              data=g_buf[0:(len(g_buf))])
         print('The length of the write is ', r)
@@ -2455,6 +2483,7 @@ class DDR3():
         self.reset_fifo()
         self.clear_write()
         self.set_read()
+        return g_buf
 
     def reset_fifo(self):
         """
@@ -2467,20 +2496,20 @@ class DDR3():
                                  self.endpoints['RESET'].bit_index_low)
 
     def set_read(self):
-        self.fpga.set_wire_bit(self.endpoints['READ'].address,
-                               self.endpoints['READ'].bit_index_low)
+        self.fpga.set_wire_bit(self.endpoints['READ_ENABLE'].address,
+                               self.endpoints['READ_ENABLE'].bit_index_low)
 
     def clear_read(self):
-        self.fpga.set_clear_bit(self.endpoints['READ'].address,
-                                self.endpoints['READ'].bit_index_low)
+        self.fpga.clear_wire_bit(self.endpoints['READ_ENABLE'].address,
+                                 self.endpoints['READ_ENABLE'].bit_index_low)
 
     def set_write(self):
-        self.fpga.set_wire_bit(self.endpoints['WRITE'].address,
-                               self.endpoints['WRITE'].bit_index_low)
+        self.fpga.set_wire_bit(self.endpoints['WRITE_ENABLE'].address,
+                               self.endpoints['WRITE_ENABLE'].bit_index_low)
 
     def clear_write(self):
-        self.fpga.clear_wire_bit(self.endpoints['WRITE'].address,
-                                 self.endpoints['WRITE'].bit_index_low)
+        self.fpga.clear_wire_bit(self.endpoints['WRITE_ENABLE'].address,
+                                 self.endpoints['WRITE_ENABLE'].bit_index_low)
 
     def read(self):
         """
@@ -2496,7 +2525,7 @@ class DDR3():
         print('Reading from DDR...')
 
         for i in range((int)(self.parameters['g_nMemSize']/self.parameters['WRITE_SIZE'])):
-            r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'],
+            r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'].address,
                                                    blockSize=self.parameters['BLOCK_SIZE'],
                                                    data=pass_buf)
             print('The length of the BlockPipeOut read is: ', r)  # TODO units?
