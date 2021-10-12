@@ -192,7 +192,7 @@
 `define AD7961_ENABLE_GEN_BIT 1 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 `define AD7961_ENABLE_LEN 4 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
-`define AD5453_PERIOD_ENABLE 5 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
+`define AD5453_PERIOD_ENABLE 5 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=10
 `define AD5453_PERIOD_ENABLE_LEN 10 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
 `define AD7961_GLOBAL_ENABLE 15 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
