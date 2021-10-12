@@ -1771,7 +1771,14 @@ class DAC80508(SPIController):
         return config
 
     def set_gain(self, data, mask=0x01ff):
-        """Set the gain value."""
+        """Set the gain value.
+        
+        1 gives a gain of 2 for the output at that bit index (0-7). 0 gives a
+        gain of 1.
+        The 8th bit from the right is the REFDIV-EN: 1 divides the
+        internal reference voltage by 2. 0 leaves the reference voltage
+        unaffected.
+        """
 
         return self.write('GAIN', data, mask)
 
