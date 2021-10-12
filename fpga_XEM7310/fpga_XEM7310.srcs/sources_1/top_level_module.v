@@ -825,38 +825,38 @@ module top_level_module(
     generate
     for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
     
-    okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(host_spi_data[k]));
-    
-    mux_4to1_16wide spi_mux_bus(
-    	.datain_0(po0_ep_datain[k*16 +:16]), // input  wire [15:0] datain. stripe DDR in 16 bit wide groups 
-        .datain_1(host_spi_data[k][15:0]), 
-    	.datain_2(ads_last_read[15:0]),
-    	.datain_3(adc_pipe_ep_datain[0][15:0]), // TODO:  poor design since not synchronized  
-        .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
-        .dataout(spi_data[k])
-    );
+        okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(host_spi_data[k]));
         
-    // instantiate old top-level (but only for the AD5453 SPI)
-    spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (
-             .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
-             .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
-             .data_rdy_0(), .adc_val_0(), //not yet used
-             // register bridge //TODO: add address increment based on generate k
-             .ep_write(regWrite),           //input wire 
-             .ep_address(regAddress),       //input wire [31:0] 
-             .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
-             /*.ep_datain(regDataIn),*/
-             // DDR
-             .en_period(en_period), //in, [9:0] TODO: same period for all spi_fifo_driven instances 
-             .clk_en(clk_en_fast_dac[k]), //out
-             .ddr3_rst(ddr3_rst),//in
-             //.ddr_dat_i(po0_ep_datain[13:0]), //in  TODO: add Mux here
-             //.ddr_dat_i(po0_ep_datain[k*16 +:14]), //in  TODO: add Mux here
-             .ddr_dat_i(spi_data[k][13:0]), //in  TODO: add Mux here
-             .rd_en_0(rd_en_fast_dac[k]),   //out
-             .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + k]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
-             );
-    end
+        mux_4to1_16wide spi_mux_bus(
+            .datain_0(po0_ep_datain[k*16 +:16]), // input  wire [15:0] datain. stripe DDR in 16 bit wide groups 
+            .datain_1(host_spi_data[k][15:0]), 
+            .datain_2(ads_last_read[15:0]),
+            .datain_3(adc_pipe_ep_datain[0][15:0]), // TODO:  poor design since not synchronized  
+            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
+            .dataout(spi_data[k])
+        );
+            
+        // instantiate old top-level (but only for the AD5453 SPI)
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (
+                 .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+                 .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
+                 .data_rdy_0(), .adc_val_0(), //not yet used
+                 // register bridge //TODO: add address increment based on generate k
+                 .ep_write(regWrite),           //input wire 
+                 .ep_address(regAddress),       //input wire [31:0] 
+                 .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
+                 /*.ep_datain(regDataIn),*/
+                 // DDR
+                 .en_period(en_period), //in, [9:0] TODO: same period for all spi_fifo_driven instances 
+                 .clk_en(clk_en_fast_dac[k]), //out
+                 .ddr3_rst(ddr3_rst),//in
+                 //.ddr_dat_i(po0_ep_datain[13:0]), //in  TODO: add Mux here
+                 //.ddr_dat_i(po0_ep_datain[k*16 +:14]), //in  TODO: add Mux here
+                 .ddr_dat_i(spi_data[k][13:0]), //in  TODO: add Mux here
+                 .rd_en_0(rd_en_fast_dac[k]),   //out
+                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + k]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+                 );
+        end
     endgenerate
 
     assign rd_en_0 = rd_en_fast_dac[0]; // DDR driven by DAC0 

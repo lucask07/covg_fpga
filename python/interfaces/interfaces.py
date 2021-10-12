@@ -1926,8 +1926,8 @@ class ADCDATA():
         elif self.name == 'ADS8686':
             c = {'A': np.array([]),
                  'B': np.array([])}
-            c['A'] = d2
-            c['B'] = d1
+            c['A'] = d1
+            c['B'] = d2
         return c
 
     def convert_twos(self, d):
@@ -2077,78 +2077,51 @@ class ADS8686(SPIController, ADCDATA):
         else:
             self.write(ADS8686.lpf_khz[lpf], 'lpf')  # 376 khZ
 
-    def setup_sequencer(self, chan_list=['FIXED_A', '0A'], voltage_range=5, lpf=376):
+    def setup_sequencer(self, chan_list=[('FIXED', 'FIXED'), ('0', 'FIXED')], voltage_range=5, lpf=376):
         """Start the sequencer looping through the given channels.
-
-        Since A and B channels can be read at the same time, the order within
-        the A side or the B side is the only one that matters. The first A
-        channel will be run with the first B channel. Any remaining unmatched
-        channels will be filled with the FIXED_A/B value.
-
+        
         Arguments
         ---------
         chan_list : list
-            Ordered list of channels to loop through. Options below.
-                [0A-7A]
-                [0B-7B]
-                AVDD_A
-                AVDD_B
-                ALDO_A
-                ALDO_B
-                FIXED_A (0xAAAA)
-                FIXED_B (0x5555)
+            Ordered list of channel pairs (A, B) to loop through. Options below.
+                [0-7]
+                AVDD
+                ALDO
+                FIXED (0xAAAA, 0x5555)
         voltage_range : int
             Voltage range of the channels, positive and negative.
         lpf : int
             Low pass frequency in kHz.
         """
 
-        # Need underscore included for string parsing
         named_chans = {
-            'AVDD_': 0b1000,
-            'ALDO_': 0b1001,
-            'FIXED_': 0b1011,
+            'AVDD': 0b1000,
+            'ALDO': 0b1001,
+            'FIXED': 0b1011,
+            '0': 0,
+            '1': 1,
+            '2': 2,
+            '3': 3,
+            '4': 4,
+            '5': 5,
+            '6': 6,
+            '7': 7,
         }
 
-        a_chans = []
-        b_chans = []
-        for chan in chan_list:
-            chan_name = chan[:-1].upper()
-            side = chan[-1].upper()
-
-            # Determine if AVDD, ALDO, or FIXED
-            code = named_chans.get(chan_name)
-            if code is None:
-                # Assume we have 0A-7A or 0B-7B
-                if chan_name.isdigit():
-                    code = int(chan_name)
-                else:
-                    print(f'ERROR: {chan} name not recognized')
-                    break
-
-            # Determine A or B side
-            if side == 'A':
-                a_chans.append(code)
-            elif side == 'B':
-                b_chans.append(code << 4) # B side bits are the 4 bits above A side bits
-            else:
-                print(f'ERROR: {chan} A/B side undefined')
-
-        # Assemble A and B pairs into individual codes
         codes = []
-        for i in range(max(len(a_chans), len(b_chans))):
-            if i >= len(a_chans):
-                a_code = named_chans['FIXED_']
-            elif i >= len(b_chans):
-                b_code = named_chans['FIXED_'] << 4 # B side shifted 4 bits left
-            else:
-                a_code = a_chans[i]
-                b_code = b_chans[i]
-
-            # Shifts all should have happened by now, so we don't have to move
-            # B side here
-            codes.append(a_code | b_code)
-
+        for chan in chan_list:
+            code = 0
+            for i in range(len(chan)):
+                code_piece = named_chans.get(chan[i])
+                if code_piece is None:
+                    print(f'ERROR: name not recognized: {chan}')
+                    code = named_chans.get('FIXED') + (named_chans.get('FIXED') << 4)
+                    break
+                else:
+                    # B side shifted 4 bits left, A side at 0
+                    code += code_piece << (4 * i)
+            codes.append(code)
+            
         # Room for 32 codes, any more after that are not included
         if len(codes) > 32:
             print(f'WARNING: too many channels. Using first 32/{len(codes)} channels')
@@ -2171,17 +2144,7 @@ class ADS8686(SPIController, ADCDATA):
         # sequence0: fixed values and then continue
         #   8 SSREN; 7-4 CHSEL_B; 3-0 CHSEL_A
         backto_first_stack = 0x100  # SSREN is bit 8
-
-        # """
-        # self.write((0xb | (0xb << 4)), 'seq0')   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
-        # self.write((0x8 | (0x8 << 4)), 'seq1')   # AVDD
-        # self.write((0x9 | (0x9 << 4)), 'seq2')   # ALDO
-        # # CH0 and cycle back to seq0
-        # self.write(((0x0 | 0x0 << 4) | backto_first_stack), 'seq3')
-        # """
-        # self.write((0xb | (0xb << 4)), 'seq0')   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
-        # self.write((0b101 | (0b101 << 4) | backto_first_stack), 'seq1')   # CH5
-
+        
         # Write all but the last code, which is done separately
         for i in range(len(codes) - 1):
             code = codes[i]
@@ -2192,6 +2155,8 @@ class ADS8686(SPIController, ADCDATA):
 
         # enable the sequencer
         self.write(base_creg | 0x20, 'config')
+
+        return codes
 
     def hw_reset(self, val=True):
         #  ADS8686 active low hardware reset

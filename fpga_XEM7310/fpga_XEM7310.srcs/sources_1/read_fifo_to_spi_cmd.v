@@ -178,7 +178,7 @@ module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
 				end
 				IDLE_0: begin
 				    if(newRegVal && int_o)begin
-				        nextstate = INIT_3;
+				        nextstate = INIT_0; // go back to programming the CLK divider register and the control register.
 				    end				    
                     else if(int_o & data_rdy)begin
                         nextstate = Convert_1;
