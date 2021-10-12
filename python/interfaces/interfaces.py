@@ -1815,8 +1815,8 @@ class DAC80508(SPIController):
 class AD5453(SPIController):  # TODO: this is SPI but to controller is much different
 
     registers = Register.get_chip_registers('AD5453')
-    bits=12,
-    vref=2.5*2
+    bits = 12,
+    vref = 2.5*2
 
     def __init__(self, fpga, master_config=0x3010, endpoints=None, channel=0):
 
@@ -1889,7 +1889,7 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
-    def set_divide_reg(self, value=0x13):
+    def set_spi_sclk_divide(self, value=0x13):
         """
         Configures the SPI Wishbone clock divider register over the registerBridge
         HDL default is ctrlValue = 8'h13 (initialized in the HDL)
