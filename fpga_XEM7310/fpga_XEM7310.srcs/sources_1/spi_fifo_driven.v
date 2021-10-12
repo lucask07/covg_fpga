@@ -97,8 +97,10 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
-	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(ddr_dat_i/*filter_out*/), .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
-	 .rd_en(rd_en_0), .data_rdy(dataready), .regDataOut(ep_dataout_coeff[15:0]), .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
+	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(ddr_dat_i/*filter_out*/), 
+	 .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
+	 .rd_en(rd_en_0), .data_rdy(dataready), .regDataOut(ep_dataout_coeff[15:0]), 
+	 .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
 	 );
 	 
 	 //Real-Time LPF coefficient reader
