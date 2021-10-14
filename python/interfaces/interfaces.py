@@ -1862,7 +1862,8 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
 
     def set_clk_divider(self, value=0xA0):
         """
-            set clock divider to configure rate of SPI updates
+        set clock divider to configure rate of SPI updates
+        Tupdate = Tclk * value
         """
         mask = gen_mask(range(self.endpoints['PERIOD_ENABLE'].bit_index_low,
                               self.endpoints['PERIOD_ENABLE'].bit_index_high))
@@ -1892,16 +1893,16 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
     def set_spi_sclk_divide(self, value=0x13):
         """
         Configures the SPI Wishbone clock divider register over the registerBridge
-        HDL default is ctrlValue = 8'h13 (initialized in the HDL)
+        HDL default is 8'h13 (initialized in the HDL)
         4*channel (rather than 1*channel) allows for expansion
         """
-        sys_clk = 200  # MHz
+        sys_clk = 200  # in MHz
         print('SCLK predicted frequency {:.2f} [MHz]'.format(sys_clk/(value+1)))
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 1 + 4*self.channel,
                                     value)
 
-        # resets the SPI state machine -- needed since these registers are only
-        #   programmed at startup of the state machine
+        # resets the SPI state machine -- needed since these WishBone
+        #   registers are only programmed at startup of the state machine
         self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
@@ -1921,13 +1922,13 @@ class ADCDATA():
 
         if self.name == 'AD7961':
             c = np.empty((d1.size + d2.size,), dtype=d1.dtype)
-            c[0::2] = d2  # see Xilinx FIFO guide, memory fills up from left to right
+            c[0::2] = d2  # see Xilinx FIFO guide PG057 pg 115, memory fills up from left to right (MSB to LSB)
             c[1::2] = d1
         elif self.name == 'ADS8686':
             c = {'A': np.array([]),
                  'B': np.array([])}
-            c['A'] = d1
-            c['B'] = d2
+            c['A'] = d2
+            c['B'] = d1
         return c
 
     def convert_twos(self, d):
@@ -2077,51 +2078,78 @@ class ADS8686(SPIController, ADCDATA):
         else:
             self.write(ADS8686.lpf_khz[lpf], 'lpf')  # 376 khZ
 
-    def setup_sequencer(self, chan_list=[('FIXED', 'FIXED'), ('0', 'FIXED')], voltage_range=5, lpf=376):
+    def setup_sequencer(self, chan_list=['FIXED_A', '0A'], voltage_range=5, lpf=376):
         """Start the sequencer looping through the given channels.
-        
+
+        Since A and B channels can be read at the same time, the order within
+        the A side or the B side is the only one that matters. The first A
+        channel will be run with the first B channel. Any remaining unmatched
+        channels will be filled with the FIXED_A/B value.
+
         Arguments
         ---------
         chan_list : list
-            Ordered list of channel pairs (A, B) to loop through. Options below.
-                [0-7]
-                AVDD
-                ALDO
-                FIXED (0xAAAA, 0x5555)
+            Ordered list of channels to loop through. Options below.
+                [0A-7A]
+                [0B-7B]
+                AVDD_A
+                AVDD_B
+                ALDO_A
+                ALDO_B
+                FIXED_A (0xAAAA)
+                FIXED_B (0x5555)
         voltage_range : int
             Voltage range of the channels, positive and negative.
         lpf : int
             Low pass frequency in kHz.
         """
 
+        # Need underscore included for string parsing
         named_chans = {
-            'AVDD': 0b1000,
-            'ALDO': 0b1001,
-            'FIXED': 0b1011,
-            '0': 0,
-            '1': 1,
-            '2': 2,
-            '3': 3,
-            '4': 4,
-            '5': 5,
-            '6': 6,
-            '7': 7,
+            'AVDD_': 0b1000,
+            'ALDO_': 0b1001,
+            'FIXED_': 0b1011,
         }
 
-        codes = []
+        a_chans = []
+        b_chans = []
         for chan in chan_list:
-            code = 0
-            for i in range(len(chan)):
-                code_piece = named_chans.get(chan[i])
-                if code_piece is None:
-                    print(f'ERROR: name not recognized: {chan}')
-                    code = named_chans.get('FIXED') + (named_chans.get('FIXED') << 4)
-                    break
+            chan_name = chan[:-1].upper()
+            side = chan[-1].upper()
+
+            # Determine if AVDD, ALDO, or FIXED
+            code = named_chans.get(chan_name)
+            if code is None:
+                # Assume we have 0A-7A or 0B-7B
+                if chan_name.isdigit():
+                    code = int(chan_name)
                 else:
-                    # B side shifted 4 bits left, A side at 0
-                    code += code_piece << (4 * i)
-            codes.append(code)
-            
+                    print(f'ERROR: {chan} name not recognized')
+                    break
+
+            # Determine A or B side
+            if side == 'A':
+                a_chans.append(code)
+            elif side == 'B':
+                b_chans.append(code << 4) # B side bits are the 4 bits above A side bits
+            else:
+                print(f'ERROR: {chan} A/B side undefined')
+
+        # Assemble A and B pairs into individual codes
+        codes = []
+        for i in range(max(len(a_chans), len(b_chans))):
+            if i >= len(a_chans):
+                a_code = named_chans['FIXED_']
+            elif i >= len(b_chans):
+                b_code = named_chans['FIXED_'] << 4 # B side shifted 4 bits left
+            else:
+                a_code = a_chans[i]
+                b_code = b_chans[i]
+
+            # Shifts all should have happened by now, so we don't have to move
+            # B side here
+            codes.append(a_code | b_code)
+
         # Room for 32 codes, any more after that are not included
         if len(codes) > 32:
             print(f'WARNING: too many channels. Using first 32/{len(codes)} channels')
@@ -2144,7 +2172,17 @@ class ADS8686(SPIController, ADCDATA):
         # sequence0: fixed values and then continue
         #   8 SSREN; 7-4 CHSEL_B; 3-0 CHSEL_A
         backto_first_stack = 0x100  # SSREN is bit 8
-        
+
+        # """
+        # self.write((0xb | (0xb << 4)), 'seq0')   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
+        # self.write((0x8 | (0x8 << 4)), 'seq1')   # AVDD
+        # self.write((0x9 | (0x9 << 4)), 'seq2')   # ALDO
+        # # CH0 and cycle back to seq0
+        # self.write(((0x0 | 0x0 << 4) | backto_first_stack), 'seq3')
+        # """
+        # self.write((0xb | (0xb << 4)), 'seq0')   # fixed pattern 0xaaaa on CHA; 0x5555 on CHB
+        # self.write((0b101 | (0b101 << 4) | backto_first_stack), 'seq1')   # CH5
+
         # Write all but the last code, which is done separately
         for i in range(len(codes) - 1):
             code = codes[i]
@@ -2155,8 +2193,6 @@ class ADS8686(SPIController, ADCDATA):
 
         # enable the sequencer
         self.write(base_creg | 0x20, 'config')
-
-        return codes
 
     def hw_reset(self, val=True):
         #  ADS8686 active low hardware reset
@@ -2381,17 +2417,37 @@ class AD7961(ADCDATA):
 
 
 class DDR3():
+    """ DDR is striped in groups of 16 bits.
+
+        Out of the DDR FIFO
+        Input write is 256 bits wide.
+        Output read bus is 128 bits wide.
+        Supports up to 8 channels at 16 bits each.
+
+        Into the DDR:
+        FIFO Write side 32 bits (PipeIn), Read side is 256 bits
+        Write: W31-W0:     t0: W31-W0 [MSB]; W63-W32, ... W255-W224
+
+        Out of the DDR:
+        FIFO Write: W255 - W0 : t0 W255 - W128, t1: W127 - W0
+        so:
+        channel 0: 128    + 15:128, W15-W0
+        channel 1: 128+16 + 15:144, 16*1 + 15: 16
+    """
+
     def __init__(self, fpga, endpoints=None):
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DDR3')
         self.fpga = fpga
         self.endpoints = endpoints
-        self.parameters = {'BLOCK_SIZE': 16384,
-                           'WRITE_SIZE': (8*1024*1024),
-                           'READ_SIZE': (8*1024*1024),
-                           'g_nMemSize': (8*1024*1024),
-                           'sample_size': 524288  # WRITE_SIZE/16
+        self.parameters = {'BLOCK_SIZE': 16384,  # 1/2 the incoming FIFO depth (size of the BlockPipeIn)
+                           'sample_size': 524288,  # per channel
+                           'channels': 8  # number of channels that the DDR is striped between
                            }
+        self.data_arrays = {}
+        for i in range(self.parameters['channels']):
+            self.data_arrays['chan{}'.format(i)] = np.zeros(self.parameters['sample_size']).astype(np.int16)
+        self.update_rate = 400e-9
 
     def make_flat_voltage(self, input_voltage):
         """
@@ -2399,28 +2455,42 @@ class DDR3():
         full-scale time is 2*pi
         The "voltage" is actually the digital value written to DDR
         """
-        time_axis = np.arange(0, np.pi*2, (1/self.parameters['sample_size']*2*np.pi))
-        amplitude = np.arange(0, np.pi*2, (1/self.parameters['sample_size']*2*np.pi))
-        for x in range(len(amplitude)):
-            amplitude[x] = input_voltage
-        amplitude = amplitude.astype(np.int32)
-        return time_axis, amplitude
+        t = np.arange(0, self.update_rate*self.parameters['sample_size'],
+                      self.update_rate)
+        amplitude = np.ones(len(t))*input_voltage
+        amplitude = amplitude.astype(np.int16)
+        return t, amplitude
 
-    def make_sin_wave(self, amplitude_shift, frequency_shift=16):
+    def make_sin_wave(self, amplitude, frequency, dignum_volt=546):
         """
         creates a sine-wave
+
+        amplitude [in Volts]
+        frequency [in Hz]
+        dignum_volt [default 0x2000/15 V full-scale = 546] will depend on Vref setting
+
         """
-        time_axis = np.arange(0, np.pi*2,
-                              1/self.parameters['sample_size']*2*np.pi)
-        print('length of time axis after creation ', len(time_axis))
-        amplitude = (amplitude_shift*1000*np.sin(time_axis))
-        y = len(amplitude)
-        for x in range(y):
-            amplitude[x] = amplitude[x]+(10000)  #TODO: why 10000?
-        for x in range(y):
-            amplitude[x] = (int)(amplitude[x]/20000*16384)
-        amplitude = amplitude.astype(np.int32)
-        return time_axis, amplitude
+        offset = 0x2000  # for AD5453 in digital numbers
+        if (amplitude/dignum_volt) > offset:
+            print('error amplitude too large')
+            return -1
+        t = np.arange(0, self.update_rate*self.parameters['sample_size'],
+                      self.update_rate)
+        print('length of time axis after creation ', len(t))
+        ddr_seq = (dignum_volt*amplitude)*np.sin(t*frequency*2*np.pi) + offset
+        ddr_seq = ddr_seq.astype(np.int16)
+        return t, ddr_seq
+
+    def write_channels(self):
+        """
+        stripe data from the 8 channels across the DDR
+        """
+        data = np.zeros(int(len(self.data_arrays['chan0'])*self.channels))
+
+        for i in range(self.channels):
+            data[7-i::8] = self.data_arrays['chan{}'.format(i)]
+
+        self.write(bytearray(data))
 
     def write(self, g_buf):
         """
@@ -2436,7 +2506,7 @@ class DDR3():
         time1 = time.time()
         r = self.fpga.xem.WriteToBlockPipeIn(epAddr=self.endpoints['BLOCK_PIPE_IN'].address,
                                              blockSize=self.parameters['BLOCK_SIZE'],
-                                             data=g_buf[0:(len(g_buf))])
+                                             data=g_buf)
         print('The length of the write is ', r)
 
         time2 = time.time()
@@ -2488,12 +2558,14 @@ class DDR3():
         self.set_read()
 
         print('Reading from DDR...')
+        # Block size must be a power of two from 16 to 16384
+        # will automatically perform multiple transfers to complete the full LENGTH
+        # the length must be an integer multiple of 16 for USB3.0
 
-        for i in range((int)(self.parameters['g_nMemSize']/self.parameters['WRITE_SIZE'])):
-            r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'].address,
-                                                   blockSize=self.parameters['BLOCK_SIZE'],
-                                                   data=pass_buf)
-            print('The length of the BlockPipeOut read is: ', r)  # TODO units?
+        r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'].address,
+                                               blockSize=self.parameters['BLOCK_SIZE'],
+                                               data=pass_buf)
+            print('The length [num of bytes] of the BlockPipeOut read is: ', r)
         return pass_buf
 
     def unpack(self, buf):
@@ -2505,11 +2577,12 @@ class DDR3():
             unpacked_var.append(struct.unpack('i', buf[(x*4):((x+1)*4)]))
         return unpacked_var
 
-    def write_sin_wave(self, amplitude):
+    def write_sin_wave(self, amplitude, frequency, dignum_volt=546):
         """
-        given an amplitude and a period?, it will write a waveform to the DDR3
+
         """
-        time_axis, g_buf_init = self.make_sin_wave(amplitude)
+        time_axis, g_buf_init = self.make_sin_wave(amplitude, frequency,
+                                                   dignum_volt)
         print("The length of the array before casting ", len(g_buf_init))
         pass_buf = bytearray(g_buf_init)
         self.write(pass_buf)

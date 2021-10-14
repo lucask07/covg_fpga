@@ -32,7 +32,7 @@ sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Endpoint
 
-from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, AD5453
+from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, AD5453, DAC53401
 from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DebugFIFO, DDR3
 
 eps = Endpoint.endpoints_from_defines
@@ -131,6 +131,9 @@ log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_bitfile')
 uid = UID_24AA025UID(fpga=f,
                      endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                      addr_pins=0b000)
+clamp_dac = DAC53401(fpga=f,
+                     endpoints=Endpoint.get_chip_endpoints('I2CDC'),
+                     addr_pins=0b000)
 
 ads = ADS8686(fpga=f,
               endpoints=Endpoint.get_chip_endpoints('ADS8686'))
@@ -145,8 +148,8 @@ pwr.all_off()  # disable all power enables
 gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 # configure the SPI debug MUXs
-# gpio.spi_debug('dfast0')
-gpio.spi_debug('ads')
+gpio.spi_debug('dfast0')
+# gpio.spi_debug('ads')
 gpio.ads_misc('convst')
 
 AD7961_CHANS = 4
@@ -186,7 +189,7 @@ ddr = DDR3(f)
 ddr.set_index(int(ddr.parameters['sample_size']/8))
 flat_buf = ddr.write_flat_voltage(600)  # input is digital code
 ddr_readback_flat = ddr.read()
-sin_buf = ddr.write_sin_wave(1.1)  # input is voltage
+sin_buf = ddr.write_sin_wave(amplitude=2, frequency=10e3, dignum_volt=546)
 ddr_readback_sin = ddr.read()
 
 fdac = []
@@ -195,8 +198,13 @@ for i in range(6):
                 endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
     fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
-    fdac[i].set_data_mux('host')
+    fdac[i].set_data_mux('DDR')
     fdac[i].write(0x2000)
+    t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_flat_voltage(256 + 256*i)
+
+ddr.write_channels()
+
+fdac[0].set_spi_sclk_divide()
 
 # UID
 read = uid.get_manufacturer_code()
@@ -320,7 +328,7 @@ if ADS_EN:
     lpf1 = ads.read('lpf')
     ads.set_lpf(376)
     lpf2 = ads.read('lpf')
-    codes = ads.setup_sequencer(chan_list=[('FIXED', 'FIXED'), ('0', 'FIXED')])
+    ads.setup_sequencer(chan_list=['FIXED_A', 'FIXED_B', '5A', '5B'])
     ads.write_reg_bridge()
     ads.set_fpga_mode()
     data_ads = ads.stream_mult(swps=4, twos_comp_conv=False)
