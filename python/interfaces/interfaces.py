@@ -1771,7 +1771,14 @@ class DAC80508(SPIController):
         return config
 
     def set_gain(self, data, mask=0x01ff):
-        """Set the gain value."""
+        """Set the gain value.
+        
+        1 gives a gain of 2 for the output at that bit index (0-7). 0 gives a
+        gain of 1.
+        The 8th bit from the right is the REFDIV-EN: 1 divides the
+        internal reference voltage by 2. 0 leaves the reference voltage
+        unaffected.
+        """
 
         return self.write('GAIN', data, mask)
 
@@ -1815,8 +1822,8 @@ class DAC80508(SPIController):
 class AD5453(SPIController):  # TODO: this is SPI but to controller is much different
 
     registers = Register.get_chip_registers('AD5453')
-    bits=12,
-    vref=2.5*2
+    bits = 12,
+    vref = 2.5*2
 
     def __init__(self, fpga, master_config=0x3010, endpoints=None, channel=0):
 
@@ -1889,7 +1896,7 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
-    def set_divide_reg(self, value=0x13):
+    def set_spi_sclk_divide(self, value=0x13):
         """
         Configures the SPI Wishbone clock divider register over the registerBridge
         HDL default is ctrlValue = 8'h13 (initialized in the HDL)
