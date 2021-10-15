@@ -396,8 +396,7 @@ class FPGA:
     def set_wire(self, address, value, mask=0xFFFFFFFF):
         """Return the error code after setting an OK WireIn value."""
 
-        if self.debug:
-            print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
+        # print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
         error_code = self.xem.SetWireInValue(address, value, mask)
         self.xem.UpdateWireIns()
         return error_code
@@ -471,8 +470,8 @@ class FPGA:
         Expects a single bit, not yet implement for multiple bits and will only
         activate the LSB if the Endpoint containts multiple bits.
         """
-        if self.debug:
-            print(f'send_trig(address={hex(ep_bit.address)},bit={ep_bit.bit_index_low})')
+
+        # print(f'send_trig(address={hex(ep_bit.address)},bit={ep_bit.bit_index_low})')
         return self.xem.ActivateTriggerIn(ep_bit.address, ep_bit.bit_index_low)
 
     def read_ep(self, ep_bit):
@@ -1421,7 +1420,7 @@ class SPIController:
         reformat to 34 bits.
         """
 
-        print(f'wb_send_cmd: {hex(self.endpoints["WB_IN"].address)}, {hex(command)}')
+        # print(f'wb_send_cmd: {hex(self.endpoints["WB_IN"].address)}, {hex(command)}')
         self.fpga.set_wire(
             self.endpoints['WB_IN'].address, command, 0xffffffff)
         # DEBUG: temporary for logging DAC80508 test
@@ -1516,7 +1515,7 @@ class SPIController:
             round((SPIController.WB_CLK_FREQ) / (frequency * 2)), 1) - 1
         # Make sure divider does not exceed 32 bits
         divider = min(divider, 0xffff_ffff)
-        print('Set frequency. Divider value = {}'.format(divider))
+        # print('Set frequency. Divider value = {}'.format(divider))
         self.set_divider(divider)
         return divider
 
@@ -1700,13 +1699,13 @@ class DAC80508(SPIController):
         # 23=0 (write), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=D[15:0] (data)
         transmission = DAC80508.WRITE_OPERATION + \
             (reg.address << 16) + new_data
-        print(f'Transmission = {hex(transmission)}')  # DEBUG
+        # print(f'Transmission = {hex(transmission)}')
         ack = super().write(transmission)
-        if ack:
-            print(f'Write {hex(data)} to {register_name}: SUCCESS')
-        else:
-            print(f'Write {hex(data)} to {register_name}: FAIL')
-        return ack
+        # if ack:
+        #     print(f'Write {hex(data)} to {register_name}: SUCCESS')
+        # else:
+        #     print(f'Write {hex(data)} to {register_name}: FAIL')
+        # return ack
 
     def read(self, register_name):
         """Return data from any register on the chip."""
@@ -1791,11 +1790,11 @@ class DAC80508(SPIController):
         """Print the device info and return its ID."""
 
         id = self.read('ID')
-        print(f'ID = {id} = {bin(id)}')
         if not id:  # Check to see if the read worked
             print('ID could not be read')
             return False
         if display:
+            print(f'ID = {id} = {bin(id)}')
             device_id = bin(id >> 2)[2:]  # Only from 2 on to skip the '0b'
             version_id = bin(id & 0b11)[2:]
             resolution = {'000': '16-bit', '001': '14-bit', '010': '12-bit'}
@@ -1811,12 +1810,12 @@ class DAC80508(SPIController):
         """Soft reset the chip."""
 
         ack = self.write('TRIGGER', 0b1010, 0x000f)
-        if self.debug:
-            if ack:
-                print('Reset: SUCCESS')
-            else:
-                print('Reset: FAIL')
-        return ack
+        # if self.debug:
+        #     if ack:
+        #         print('Reset: SUCCESS')
+        #     else:
+        #         print('Reset: FAIL')
+        # return ack
 
 
 class AD5453(SPIController):  # TODO: this is SPI but to controller is much different
@@ -2012,6 +2011,17 @@ class ADS8686(SPIController, ADCDATA):
     # Method to read a desired channel on the chip
     def read_channel(self, channel):
         pass  # TODO: write method
+
+    def read_last(self):
+        """Return the last value read by the ADS8686.
+        
+        This reads a wire_out rather than a pipe_out so we get 1 data point
+        rather than many.
+        """
+
+        data = self.fpga.read_wire(self.endpoints['OUT'].address)
+        buf = int.to_bytes(data, 4, byteorder='little')
+        return self.deswizzle(buf)
 
     # Method to set up the chip
     def setup(self):  # TODO -- defaults to modify the SPI setup
