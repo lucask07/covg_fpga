@@ -202,8 +202,7 @@ for i in range(6):
     fdac[i].write(0x2000)
     t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_flat_voltage(256 + 256*i)
 
-ddr.write_channels()
-
+g_buf = ddr.write_channels()
 fdac[0].set_spi_sclk_divide()
 
 # UID
