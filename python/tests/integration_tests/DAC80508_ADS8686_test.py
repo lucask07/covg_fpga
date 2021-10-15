@@ -19,15 +19,15 @@ import time
 cwd = os.getcwd()
 if 'covg_fpga' in cwd:
     covg_fpga_index = cwd.index('covg_fpga')
-    covg_path = cwd[:covg_fpga_index + len('covg_fpga') + 1]
+    covg_fpga_path = cwd[:covg_fpga_index + len('covg_fpga') + 1]
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_path, 'python')
+interfaces_path = os.path.join(covg_fpga_path, 'python')
 sys.path.append(interfaces_path)
 
-top_level_module_bitfile = os.path.join(
-    interfaces_path, 'top_level_module.bit')
+top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
+                                        'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
 from interfaces.interfaces import FPGA, DAC80508, ADS8686
 from interfaces.boards import Daq
@@ -50,7 +50,7 @@ def fpga():
     """
 
     global top_level_module_bitfile
-    f = FPGA(top_level_module_bitfile)
+    f = FPGA(bitfile=top_level_module_bitfile)
     assert f.init_device()
     # Power on
     pwr = Daq.Power(f)
@@ -73,9 +73,9 @@ def fpga():
 
     yield f
     # Teardown
-    f.xem.Close()
+    # f.xem.Close()
     # Power off
-     # TODO: power off
+    # pwr_off()
 
 
 @pytest.fixture(scope='module')
@@ -85,6 +85,7 @@ def dac(fpga):
     dac.set_divider(0x8)
     dac.configure_master_bin(0x3218)
     dac.select_slave(1)
+    dac.set_config_bin(0x00)
     return dac
 
 
@@ -105,7 +106,7 @@ def ads(fpga):
 # Tests
 
 
-@pytest.mark.parametrize('gain_code expected_gain', [
+@pytest.mark.parametrize('gain_code, expected_gain', [
     ((0 << 5) | (0 << 8), 1),   # Output gain: 1, REFDIV gain: 1,   Total gain: 1
     ((0 << 5) | (1 << 8), 1/2), # Output gain: 1, REFDIV gain: 1/2, Total gain: 1/2
     ((1 << 5) | (0 << 8), 1),   # Output gain: 2, REFDIV gain: 1,   Total gain: 1
@@ -116,17 +117,33 @@ def test_dac_gain(dac, ads, gain_code, expected_gain):
     tolerance = 0.05
     # Set the output on DAC80508
     voltage = 0xffff
-    dac.write('DAC5', voltage)
+    dac.write('DAC4', voltage)
+    print('Waiting...')
+    time.sleep(4)
     expected = voltage * expected_gain
     dac.set_gain(gain_code)
     # Read value with ADS8686
-    read = 0 # TODO: use ADS8686 read with the wire_out so we don't have to 
-             #       deal with old data in the FIFO.
+    read_dict = ads.read_last() # TODO: convert data
+    read = 5.563242784380305 * read_dict['A'][0]
+    print(read_dict)
+    print(hex(int(read)), hex(int(expected)))
     # Compare
-    assert (read - expected)/expected <= tolerance
+    assert abs(read - expected) / expected <= tolerance
 
 
-@pytest.mark.parametrize('voltage', [x for x in range(0xffff + 1)])
+def test_dac_write_0(dac, ads):
+    # Our error calculation doesn't work at 0, this tolerance is a voltage +/- range
+    tolerance_voltage = 0.0001
+    # Set the output on DAC80508
+    dac.set_gain(0x0000)
+    dac.write('DAC5', 0x0000)
+    # Read value with ADS8686
+    read = ads.read_last() # TODO: convert data
+    # Compare
+    assert abs(read) <= tolerance_voltage
+
+
+@pytest.mark.parametrize('voltage', [x + 1 for x in range(0xffff)])
 def test_dac_write(dac, ads, voltage):
     # Looking for values within 5 % of expected
     tolerance = 0.05
@@ -134,7 +151,7 @@ def test_dac_write(dac, ads, voltage):
     dac.set_gain(0x0000)
     dac.write('DAC5', voltage)
     # Read value with ADS8686
-    read = 0  # TODO: use ADS8686 read with the wire_out so we don't have to
-              #       deal with old data in the FIFO.
+    read = ads.read_last() # TODO: convert data
+    print(read, voltage)
     # Compare
-    assert (read - voltage)/voltage <= tolerance
+    assert abs(read - voltage) / voltage <= tolerance

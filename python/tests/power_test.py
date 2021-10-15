@@ -52,7 +52,7 @@ logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.
 ADS_EN = True
 AD7961_EN = False
 EN_15V = True
-DAC_80508_EN = False
+DAC_80508_EN = True
 DDR_EN = True
 FIFO_DEBUG_EN = False
 
