@@ -1772,7 +1772,7 @@ class DAC80508(SPIController):
 
     def set_gain(self, data, mask=0x01ff):
         """Set the gain value.
-        
+
         1 gives a gain of 2 for the output at that bit index (0-7). 0 gives a
         gain of 1.
         The 8th bit from the right is the REFDIV-EN: 1 divides the
@@ -2492,12 +2492,14 @@ class DDR3():
         """
         stripe data from the 8 channels across the DDR
         """
-        data = np.zeros(int(len(self.data_arrays['chan0'])*self.channels))
+        data = np.zeros(int(len(self.data_arrays['chan0'])*self.parameters['channels']))
+        data = data.astype(np.int16)
 
-        for i in range(self.channels):
+        for i in range(self.parameters['channels']):
             data[7-i::8] = self.data_arrays['chan{}'.format(i)]
 
-        self.write(bytearray(data))
+        print('Length of data = {}'.format(len(data)))
+        return self.write(bytearray(data))
 
     def write(self, g_buf):
         """
@@ -2572,7 +2574,7 @@ class DDR3():
         r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'].address,
                                                blockSize=self.parameters['BLOCK_SIZE'],
                                                data=pass_buf)
-            print('The length [num of bytes] of the BlockPipeOut read is: ', r)
+        print('The length [num of bytes] of the BlockPipeOut read is: ', r)
         return pass_buf
 
     def unpack(self, buf):
