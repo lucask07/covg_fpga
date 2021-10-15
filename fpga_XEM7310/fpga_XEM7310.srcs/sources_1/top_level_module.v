@@ -797,7 +797,7 @@ module top_level_module(
          .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
     */
 
-     fifo_w256_128_r32_1024 okPipeOut_fifo (
+     fifo_w256_128_r128_256_1 okPipeOut_fifo_ddr (
          .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys),
