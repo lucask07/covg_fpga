@@ -1866,7 +1866,7 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
                            mask=mask)
 
-    def set_clk_divider(self, value=0xA0):
+    def set_clk_divider(self, value=0x50):
         """
         set clock divider to configure rate of SPI updates
         Tupdate = Tclk * value
@@ -1896,7 +1896,7 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
-    def set_spi_sclk_divide(self, value=0x13):
+    def set_spi_sclk_divide(self, value=0x01):
         """
         Configures the SPI Wishbone clock divider register over the registerBridge
         HDL default is 8'h13 (initialized in the HDL)
@@ -2014,7 +2014,7 @@ class ADS8686(SPIController, ADCDATA):
 
     def read_last(self):
         """Return the last value read by the ADS8686.
-        
+
         This reads a wire_out rather than a pipe_out so we get 1 data point
         rather than many.
         """
@@ -2047,7 +2047,8 @@ class ADS8686(SPIController, ADCDATA):
         for idx, val in enumerate(vals):
             towrite += ADS8686.range[val] << ((idx % 4)*2)
             if idx % 4 == 3:
-                print('Writing 0x{:x} to reg {}'.format(towrite, regs[idx//4]))
+                if self.fpga.debug:
+                    print('Writing 0x{:x} to reg {}'.format(towrite, regs[idx//4]))
                 self.write(towrite, regs[idx//4])
                 towrite = 0
 
@@ -2206,10 +2207,12 @@ class ADS8686(SPIController, ADCDATA):
             self.write(code, 'seq' + str(i))
 
         # Write last code with loop back
-        self.write((codes[-1] | backto_first_stack), 'seq' + str(i + 1))
+        self.write((codes[-1] | backto_first_stack), 'seq' + str(len(codes)-1))
 
         # enable the sequencer
         self.write(base_creg | 0x20, 'config')
+
+        return codes
 
     def hw_reset(self, val=True):
         #  ADS8686 active low hardware reset
@@ -2434,7 +2437,7 @@ class AD7961(ADCDATA):
 
 
 class DDR3():
-    """ DDR is striped in groups of 16 bits.
+    """ DDR is striped in groups of 16 bits to 8 channels  (128 bits)
 
         Out of the DDR FIFO
         Input write is 256 bits wide.
@@ -2464,7 +2467,12 @@ class DDR3():
         self.data_arrays = {}
         for i in range(self.parameters['channels']):
             self.data_arrays['chan{}'.format(i)] = np.zeros(self.parameters['sample_size']).astype(np.int16)
-        self.update_rate = 400e-9
+        self.update_rate = 400e-9  # 2.5 MHz -- requires SCLK ~ 50 MHZ
+        # TODO: with a repeating waveform need to write an integer number of periods
+        #       (force the frequency to be an integer number of sample rates)
+        # TODO: create a make_square wave
+        # TODO: create a ramp wave
+        # TODO: understand index
 
     def make_flat_voltage(self, input_voltage):
         """
@@ -2477,6 +2485,25 @@ class DDR3():
         amplitude = np.ones(len(t))*input_voltage
         amplitude = amplitude.astype(np.int16)
         return t, amplitude
+
+    def freq_to_samples(self, freq):
+        """
+        determine closest frequency so that period is an integer number of
+        samples (possibly so that period * N is integer number of samples)
+        """
+        period = 1/freq
+        samples_per_period = period / self.update_rate
+        if samples_per_period > 128:
+            new_period = int(samples_per_period)*self.update_rate
+            samples_per_period = 1
+        elif samples_per_period >= 8:
+            samples_per_period = 16
+            new_period = int(samples_per_period*samples_per_period)*self.update_rate/samples_per_period
+        else:
+            print('Frequency is too high for the DDR update rate')
+            return -1,-1,-1
+
+        return samples_per_period, num_periods, new_freq
 
     def make_sin_wave(self, amplitude, frequency, dignum_volt=546):
         """
@@ -2506,7 +2533,10 @@ class DDR3():
         data = data.astype(np.int16)
 
         for i in range(self.parameters['channels']):
-            data[7-i::8] = self.data_arrays['chan{}'.format(i)]
+            if i % 2 == 0:  # extra order swap on the 32 bit wide pipe
+                data[(7-i - 1)::8] = self.data_arrays['chan{}'.format(i)]
+            else:
+                data[(7-i + 1)::8] = self.data_arrays['chan{}'.format(i)]
 
         print('Length of data = {}'.format(len(data)))
         return self.write(bytearray(data))
