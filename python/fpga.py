@@ -13,7 +13,7 @@ I2C_WIREOUT_DATA = 0x20
 
 I2C_SHUF_CH0 = 4 # for configuring CH0 (or reading from it all the time)
 I2C_SHUF_CH1 = 5 # for configuring CH1 (or reading from it all the time)
-I2C_SHUF_ON = 3 # for multiple reads  
+I2C_SHUF_ON = 3 # for multiple reads
 
 I2C_TRIGIN_GO = 0
 I2C_TRIGIN_MEM_RESET = 1
@@ -81,6 +81,14 @@ class FPGA():
     def set_wire(self, address, value, mask=0xFFFF):
         self.xem.SetWireInValue(address, value, mask)
         self.xem.UpdateWireIns()
+
+    def set_wire_bit(self, address, bit):
+        return self.xem.set_wire(address, value=1 << bit, mask=1 << bit)
+
+    def clear_wire_bit(self, address, bit):
+        return self.xem.set_wire(address, value=0, mask=1 << bit)
+
+
 
     def reset_device(self):
         self.xem.SetWireInValue(0x10, 0xff, 0x03)
@@ -224,9 +232,9 @@ class FPGA():
                 if PIPE_RESULTS:
                     data_read = np.int(np.ceil(data_length*4/16)*16)
                     buf, e = self.read_pipe_out(0, data_read)
-                    # reset FIFO 
+                    # reset FIFO
                     self.xem.ActivateTriggerIn(I2C_TRIGIN, I2C_TRIGIN_MEM_READ)
-                    return list(buf[0::4])[0:data_length] 
+                    return list(buf[0::4])[0:data_length]
             time.sleep(0.01)
 
         print('Timeout Excpetion in Rx')
@@ -248,8 +256,8 @@ class FPGA():
     # [START] DEV_ADDR(W) REG_ADDR [START] DEV_ADDR(R) VALUE
     # LJK - this command does not execute OK API calls
     def i2c_read8(self, devAddr, regAddr, data_length):
-        
-        if regAddr is None: # for the pressure sensors that only need the slave address and a read bit and then send out 4 bytes. 
+
+        if regAddr is None: # for the pressure sensors that only need the slave address and a read bit and then send out 4 bytes.
             preamble = [devAddr | 0x01]
             self.i2c_configure(1, 0x01, 0x00, preamble)
         else:
@@ -267,7 +275,7 @@ class FPGA():
         '''
         devAddr : 8 bit address (don't set the read bit (LSB) since this is done in this function)
         regAddr:  written to device (this is a list and must be even if length 1)
-        data_length : number of bytes expected to receive 
+        data_length : number of bytes expected to receive
 
         '''
         preamble = [devAddr & 0xfe] + regAddr + [devAddr | 0x01]
@@ -297,7 +305,7 @@ class FPGA():
         if CHAN == 0:
             val = (yes_no << 2) + (1 << I2C_SHUF_CH0)
             mask = 0x0004 + (1<<I2C_SHUF_CH0)
-            
+
         elif CHAN == 1:
             val = (yes_no << 2) + (1 << I2C_SHUF_CH1)
             mask = 0x0004 + (1<<I2C_SHUF_CH1)
@@ -313,22 +321,22 @@ class FPGA():
         self.one_shot(0)
         self.num_repeats(num-1)
         self.xem.UpdateWireIns()
-        return self.i2c_receive_mult(num, devAddr, regAddr, data_length)    
+        return self.i2c_receive_mult(num, devAddr, regAddr, data_length)
 
     def i2c_write_mult(self, num, devAddrs, regAddr, data_length, data):
 
         self.one_shot(0)
-        self.num_repeats(num-1) # for two slave devices num should always be 2 
+        self.num_repeats(num-1) # for two slave devices num should always be 2
         self.xem.UpdateWireIns()
 
-        # HW time write to two different slaves 
+        # HW time write to two different slaves
 
-        for idx, devAddr in enumerate(devAddrs): 
-            preamble = [devAddr & 0xfe, regAddr]            
+        for idx, devAddr in enumerate(devAddrs):
+            preamble = [devAddr & 0xfe, regAddr]
             # signature: i2c_configure(data_length, starts, stops, preamble):
             self.i2c_configure(2, 0x00, 0x00, preamble)
 
-            # copied from i2c.transmit 
+            # copied from i2c.transmit
             self.i2c['m_pBuf'][3] = data_length
             for i in range(data_length):
                 self.i2c['m_pBuf'].append(data[i])
@@ -340,7 +348,7 @@ class FPGA():
             elif idx == 1:
                 self.xem.SetWireInValue(I2C_CONFIG_REG, 0 << (I2C_SHUF_CH0), 1 << (I2C_SHUF_CH0))
                 self.xem.SetWireInValue(I2C_CONFIG_REG, 1 << (I2C_SHUF_CH1), 1 << (I2C_SHUF_CH1))
-           
+
             self.xem.SetWireInValue(I2C_CONFIG_REG, 0 << (I2C_SHUF_ON), 1 << (I2C_SHUF_ON))
             self.xem.UpdateWireIns()
 
@@ -357,21 +365,21 @@ class FPGA():
             self.xem.UpdateWireIns()
         self.xem.SetWireInValue(I2C_CONFIG_REG, 1 << (I2C_SHUF_ON), 1 << (I2C_SHUF_ON))
         self.xem.UpdateWireIns()
-            
+
         # Start I2C transaction
         self.xem.ActivateTriggerIn(I2C_TRIGIN, I2C_TRIGIN_GO)
 
 
     def i2c_receive_mult(self, num, devAddrs, regAddr, data_length):
 
-        for idx, devAddr in enumerate(devAddrs): 
+        for idx, devAddr in enumerate(devAddrs):
             preamble = [devAddr & 0xfe, regAddr, devAddr | 0x01]
-            
+
             # signature: i2c_configure(data_length, starts, stops, preamble):
             self.i2c_configure(3, 0x02, 0x00, preamble)
             self.i2c['m_pBuf'][0] |= 0x80
             self.i2c['m_pBuf'][3] = data_length
-            
+
             # setup the command buffer that we need
             if idx == 0:
                 self.xem.SetWireInValue(I2C_CONFIG_REG, 1 << (I2C_SHUF_CH0), 1 << (I2C_SHUF_CH0))
@@ -379,7 +387,7 @@ class FPGA():
             elif idx == 1:
                 self.xem.SetWireInValue(I2C_CONFIG_REG, 0 << (I2C_SHUF_CH0), 1 << (I2C_SHUF_CH0))
                 self.xem.SetWireInValue(I2C_CONFIG_REG, 1 << (I2C_SHUF_CH1), 1 << (I2C_SHUF_CH1))
-           
+
             self.xem.SetWireInValue(I2C_CONFIG_REG, 0 << (I2C_SHUF_ON), 1 << (I2C_SHUF_ON))
             self.xem.UpdateWireIns()
 
@@ -396,10 +404,10 @@ class FPGA():
             self.xem.UpdateWireIns()
         self.xem.SetWireInValue(I2C_CONFIG_REG, 1 << (I2C_SHUF_ON), 1 << (I2C_SHUF_ON))
         self.xem.UpdateWireIns()
-            
+
         # Start I2C transaction
         self.xem.ActivateTriggerIn(I2C_TRIGIN, I2C_TRIGIN_GO)
-        
+
         if WIRE_RESULTS:
             # Wait for num transaction to finish
             data_arr = []
@@ -409,7 +417,7 @@ class FPGA():
                 for _ in range(int(I2C_MAX_TIMEOUT_MS/5)):
                     self.xem.UpdateTriggerOuts()
                     if self.xem.IsTriggered(I2C_TRIGOUT, (1<<I2C_TRIGOUT_DONE)): # change to 1, LJK
-                        # Reset the memory pointer and then read data 
+                        # Reset the memory pointer and then read data
                         self.xem.ActivateTriggerIn(I2C_TRIGIN, I2C_TRIGIN_MEM_RESET)
                         data = [None]*data_length
                         for i in range(data_length):
@@ -419,23 +427,23 @@ class FPGA():
                         # print('got a read back')
                         self.xem.ActivateTriggerIn(I2C_TRIGIN, I2C_TRIGIN_MEM_RESET)
                         data_arr.append(data)
-                        break 
+                        break
                     time.sleep(0.00001)
             return data_arr
-        
+
         self.xem.UpdateTriggerOuts()
         if PIPE_RESULTS:
             half_fifo_depth = 2048
-            # if num*data_length < 2048 don't need to check the FIFO half-full trigger 
+            # if num*data_length < 2048 don't need to check the FIFO half-full trigger
             if (num*data_length) <= half_fifo_depth:
                 for _ in range(num*100):
                     self.xem.UpdateTriggerOuts()
-                    if self.xem.IsTriggered(I2C_TRIGOUT, (1<<I2C_TRIGOUT_MULT_DONE)): 
+                    if self.xem.IsTriggered(I2C_TRIGOUT, (1<<I2C_TRIGOUT_MULT_DONE)):
                         data_read = np.int(np.ceil(data_length*num*4/16)*16)
                         print('Will read {} bytes from pipes'.format(data_read))
                         buf, e = self.read_pipe_out(0, data_read)
                         print('Length of byte array {}'.format(len(buf)))
-                        # reset FIFO 
+                        # reset FIFO
                         self.xem.ActivateTriggerIn(I2C_TRIGIN, I2C_TRIGIN_MEM_READ)
                         break
                     time.sleep(0.001)
@@ -445,14 +453,14 @@ class FPGA():
                 data_to_read = num*data_length
                 for _ in range(num*100):
                     self.xem.UpdateTriggerOuts()
-                    if self.xem.IsTriggered(I2C_TRIGOUT, (1<<I2C_TRIGOUT_FIFO_HALF)): 
+                    if self.xem.IsTriggered(I2C_TRIGOUT, (1<<I2C_TRIGOUT_FIFO_HALF)):
                         data_read = half_fifo_depth*4
                         print('FIFO half trigger. Data read {}'.format(data_read))
                         buf, e = self.read_pipe_out(0, data_read)
                         buf_t = buf_t + buf
                         data_to_read -= half_fifo_depth
-                        # merge multiple buffers 
-                    if self.xem.IsTriggered(I2C_TRIGOUT, (1<<I2C_TRIGOUT_MULT_DONE)): 
+                        # merge multiple buffers
+                    if self.xem.IsTriggered(I2C_TRIGOUT, (1<<I2C_TRIGOUT_MULT_DONE)):
                         data_read = (data_to_read)*4 # get what's left
                         print('Mult done. Data read {}'.format(data_read))
                         buf, e = self.read_pipe_out(0, data_read)
