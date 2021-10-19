@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Sat Oct  9 17:41:24 2021
-# Process ID: 5392
+# Start of session at: Tue Oct 19 15:39:49 2021
+# Process ID: 972
 # Current directory: C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_ADS8686_synth_1
 # Command line: vivado.exe -log fifo_ADS8686.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source fifo_ADS8686.tcl
 # Log file: C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_ADS8686_synth_1/fifo_ADS8686.vds
@@ -15,9 +15,9 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 9288 
+INFO: Helper process launched with PID 1216 
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:07 . Memory (MB): peak = 410.496 ; gain = 101.930
+Starting RTL Elaboration : Time (s): cpu = 00:00:05 ; elapsed = 00:00:07 . Memory (MB): peak = 410.008 ; gain = 100.484
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-638] synthesizing module 'fifo_ADS8686' [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_ADS8686/synth/fifo_ADS8686.vhd:76]
 	Parameter C_COMMON_CLOCK bound to: 0 - type: integer 
@@ -59,8 +59,8 @@ INFO: [Synth 8-638] synthesizing module 'fifo_ADS8686' [c:/Users/koer2434/Docume
 	Parameter C_PROG_EMPTY_THRESH_ASSERT_VAL bound to: 2 - type: integer 
 	Parameter C_PROG_EMPTY_THRESH_NEGATE_VAL bound to: 3 - type: integer 
 	Parameter C_PROG_EMPTY_TYPE bound to: 0 - type: integer 
-	Parameter C_PROG_FULL_THRESH_ASSERT_VAL bound to: 2045 - type: integer 
-	Parameter C_PROG_FULL_THRESH_NEGATE_VAL bound to: 2044 - type: integer 
+	Parameter C_PROG_FULL_THRESH_ASSERT_VAL bound to: 1024 - type: integer 
+	Parameter C_PROG_FULL_THRESH_NEGATE_VAL bound to: 1023 - type: integer 
 	Parameter C_PROG_FULL_TYPE bound to: 1 - type: integer 
 	Parameter C_RD_DATA_COUNT_WIDTH bound to: 11 - type: integer 
 	Parameter C_RD_DEPTH bound to: 2048 - type: integer 
@@ -337,7 +337,7 @@ WARNING: [Synth 8-3331] design rd_logic has unconnected port PROG_EMPTY_THRESH[2
 WARNING: [Synth 8-3331] design rd_logic has unconnected port PROG_EMPTY_THRESH[1]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:48 ; elapsed = 00:00:50 . Memory (MB): peak = 693.906 ; gain = 385.340
+Finished RTL Elaboration : Time (s): cpu = 00:00:48 ; elapsed = 00:00:51 . Memory (MB): peak = 693.086 ; gain = 383.562
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -350,10 +350,10 @@ Report Check Netlist:
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:48 ; elapsed = 00:00:51 . Memory (MB): peak = 693.906 ; gain = 385.340
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:49 ; elapsed = 00:00:52 . Memory (MB): peak = 693.086 ; gain = 383.562
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:48 ; elapsed = 00:00:51 . Memory (MB): peak = 693.906 ; gain = 385.340
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:49 ; elapsed = 00:00:52 . Memory (MB): peak = 693.086 ; gain = 383.562
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 26 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -393,16 +393,16 @@ Completed Processing XDC Constraints
 INFO: [Project 1-111] Unisim Transformation Summary:
 No Unisim elements were transformed.
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.055 . Memory (MB): peak = 773.027 ; gain = 1.465
+Constraint Validation Runtime : Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.015 . Memory (MB): peak = 774.094 ; gain = 1.523
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:56 ; elapsed = 00:01:00 . Memory (MB): peak = 773.027 ; gain = 464.461
+Finished Constraint Validation : Time (s): cpu = 00:00:57 ; elapsed = 00:01:01 . Memory (MB): peak = 774.094 ; gain = 464.570
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:56 ; elapsed = 00:01:00 . Memory (MB): peak = 773.027 ; gain = 464.461
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:57 ; elapsed = 00:01:01 . Memory (MB): peak = 774.094 ; gain = 464.570
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -416,10 +416,10 @@ Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.
 Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.rf /rstblk/\ngwrdrst.grst.g7serrst.gsckt_wrst.xpm_cdc_sync_rst_inst_wrst . (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.rf /rstblk/\ngwrdrst.grst.g7serrst.gnrst_full.gsckt_bsy_o.xpm_cdc_sync_rst_sckt_bsy_o . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:56 ; elapsed = 00:01:00 . Memory (MB): peak = 773.027 ; gain = 464.461
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:57 ; elapsed = 00:01:01 . Memory (MB): peak = 774.094 ; gain = 464.570
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:57 ; elapsed = 00:01:01 . Memory (MB): peak = 773.027 ; gain = 464.461
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:57 ; elapsed = 00:01:01 . Memory (MB): peak = 774.094 ; gain = 464.570
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -554,6 +554,16 @@ INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv
 INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[0].ram.r/SAFETY_CKT_GEN.RSTA_SHFT_REG_reg[3]' (FD) to 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[1].ram.r/SAFETY_CKT_GEN.RSTA_SHFT_REG_reg[3]'
 INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[0].ram.r/SAFETY_CKT_GEN.RSTB_SHFT_REG_reg[4]' (FD) to 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[1].ram.r/SAFETY_CKT_GEN.RSTB_SHFT_REG_reg[4]'
 INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[0].ram.r/SAFETY_CKT_GEN.RSTA_SHFT_REG_reg[4]' (FD) to 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[1].ram.r/SAFETY_CKT_GEN.RSTA_SHFT_REG_reg[4]'
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[10]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[9]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[8]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[7]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[6]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[5]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[4]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[3]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[2]) is unused and will be removed from module fifo_generator_v13_2_2.
+WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[1]) is unused and will be removed from module fifo_generator_v13_2_2.
 WARNING: [Synth 8-3332] Sequential element (inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.gl0.wr/gwas.gpf.wrpf/gdiff.diff_pntr_pad_reg[0]) is unused and will be removed from module fifo_generator_v13_2_2.
 INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[0].ram.r/SAFETY_CKT_GEN.POR_B_reg' (FD) to 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[1].ram.r/SAFETY_CKT_GEN.POR_B_reg'
 INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[0].ram.r/SAFETY_CKT_GEN.POR_A_reg' (FD) to 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[1].ram.r/SAFETY_CKT_GEN.POR_A_reg'
@@ -562,7 +572,7 @@ INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv
 INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[0].ram.r/SAFETY_CKT_GEN.ENB_NO_REG.ENB_dly_D_reg' (FD) to 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[1].ram.r/SAFETY_CKT_GEN.ENB_NO_REG.ENB_dly_D_reg'
 INFO: [Synth 8-3886] merging instance 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[0].ram.r/SAFETY_CKT_GEN.ENA_NO_REG.ENA_dly_D_reg' (FD) to 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/gntv_or_sync_fifo.mem/gbm.gbmg.gbmga.ngecc.bmg/inst_blk_mem_gen/gnbram.gnativebmg.native_blk_mem_gen/valid.cstr/ramloop[1].ram.r/SAFETY_CKT_GEN.ENA_NO_REG.ENA_dly_D_reg'
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:58 ; elapsed = 00:01:02 . Memory (MB): peak = 773.027 ; gain = 464.461
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:58 ; elapsed = 00:01:02 . Memory (MB): peak = 774.094 ; gain = 464.570
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -574,13 +584,13 @@ Report RTL Partitions:
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:04 ; elapsed = 00:01:09 . Memory (MB): peak = 809.926 ; gain = 501.359
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 813.105 ; gain = 503.582
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 810.371 ; gain = 501.805
+Finished Timing Optimization : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 823.043 ; gain = 513.520
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -592,7 +602,7 @@ Report RTL Partitions:
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 820.645 ; gain = 512.078
+Finished Technology Mapping : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 823.609 ; gain = 514.086
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -616,7 +626,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 820.645 ; gain = 512.078
+Finished IO Insertion : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 823.609 ; gain = 514.086
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -629,7 +639,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 820.645 ; gain = 512.078
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 823.609 ; gain = 514.086
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -641,25 +651,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 820.645 ; gain = 512.078
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 823.609 ; gain = 514.086
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 820.645 ; gain = 512.078
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 823.609 ; gain = 514.086
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 820.645 ; gain = 512.078
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 823.609 ; gain = 514.086
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 820.645 ; gain = 512.078
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 823.609 ; gain = 514.086
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start ROM, RAM, DSP and Shift Register Reporting
@@ -695,11 +705,11 @@ Report Cell Usage:
 |4     |LUT3     |    11|
 |5     |LUT4     |    32|
 |6     |LUT5     |     8|
-|7     |LUT6     |    13|
+|7     |LUT6     |    11|
 |8     |MUXCY    |    24|
 |9     |RAMB36E1 |     2|
 |10    |SRL16E   |     2|
-|11    |FDRE     |   196|
+|11    |FDRE     |   186|
 |12    |FDSE     |     5|
 +------+---------+------+
 
@@ -707,11 +717,11 @@ Report Instance Areas:
 +------+----------------------------------------------------------------------------------------+-----------------------------------------+------+
 |      |Instance                                                                                |Module                                   |Cells |
 +------+----------------------------------------------------------------------------------------+-----------------------------------------+------+
-|1     |top                                                                                     |                                         |   347|
-|2     |  U0                                                                                    |fifo_generator_v13_2_2                   |   347|
-|3     |    inst_fifo_gen                                                                       |fifo_generator_v13_2_2_synth             |   347|
-|4     |      \gconvfifo.rf                                                                     |fifo_generator_top                       |   347|
-|5     |        \grf.rf                                                                         |fifo_generator_ramfifo                   |   347|
+|1     |top                                                                                     |                                         |   335|
+|2     |  U0                                                                                    |fifo_generator_v13_2_2                   |   335|
+|3     |    inst_fifo_gen                                                                       |fifo_generator_v13_2_2_synth             |   335|
+|4     |      \gconvfifo.rf                                                                     |fifo_generator_top                       |   335|
+|5     |        \grf.rf                                                                         |fifo_generator_ramfifo                   |   335|
 |6     |          \gntv_or_sync_fifo.gcx.clkx                                                   |clk_x_pntrs                              |   150|
 |7     |            wr_pntr_cdc_inst                                                            |xpm_cdc_gray__1                          |    64|
 |8     |            rd_pntr_cdc_inst                                                            |xpm_cdc_gray                             |    64|
@@ -720,8 +730,8 @@ Report Instance Areas:
 |11    |              c0                                                                        |compare_1                                |     7|
 |12    |              c1                                                                        |compare_2                                |     6|
 |13    |            rpntr                                                                       |rd_bin_cntr                              |    44|
-|14    |          \gntv_or_sync_fifo.gl0.wr                                                     |wr_logic                                 |    82|
-|15    |            \gwas.gpf.wrpf                                                              |wr_pf_as                                 |    18|
+|14    |          \gntv_or_sync_fifo.gl0.wr                                                     |wr_logic                                 |    70|
+|15    |            \gwas.gpf.wrpf                                                              |wr_pf_as                                 |     6|
 |16    |            \gwas.wsts                                                                  |wr_status_flags_as                       |    16|
 |17    |              c1                                                                        |compare                                  |     7|
 |18    |              c2                                                                        |compare_0                                |     6|
@@ -743,11 +753,11 @@ Report Instance Areas:
 |34    |            \ngwrdrst.grst.g7serrst.gnrst_full.gsckt_bsy_o.xpm_cdc_sync_rst_sckt_bsy_o  |xpm_cdc_sync_rst__parameterized0         |     3|
 +------+----------------------------------------------------------------------------------------+-----------------------------------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:01:05 ; elapsed = 00:01:10 . Memory (MB): peak = 820.645 ; gain = 512.078
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 823.609 ; gain = 514.086
 ---------------------------------------------------------------------------------
-Synthesis finished with 0 errors, 0 critical warnings and 482 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:00:12 ; elapsed = 00:01:03 . Memory (MB): peak = 820.645 ; gain = 432.957
-Synthesis Optimization Complete : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 820.645 ; gain = 512.078
+Synthesis finished with 0 errors, 0 critical warnings and 492 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:11 ; elapsed = 00:01:04 . Memory (MB): peak = 823.609 ; gain = 433.078
+Synthesis Optimization Complete : Time (s): cpu = 00:01:06 ; elapsed = 00:01:11 . Memory (MB): peak = 823.609 ; gain = 514.086
 INFO: [Project 1-571] Translating synthesized netlist
 INFO: [Netlist 29-17] Analyzing 29 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -758,9 +768,9 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   (MUXCY,XORCY) => CARRY4: 8 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-46 Infos, 101 Warnings, 0 Critical Warnings and 0 Errors encountered.
+46 Infos, 111 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:01:07 ; elapsed = 00:01:13 . Memory (MB): peak = 833.695 ; gain = 536.609
+synth_design: Time (s): cpu = 00:01:08 ; elapsed = 00:01:13 . Memory (MB): peak = 838.848 ; gain = 540.844
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_ADS8686_synth_1/fifo_ADS8686.dcp' has been generated.
 INFO: [Coretcl 2-1482] Added synthesis output to IP cache for IP c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_ADS8686/fifo_ADS8686.xci
@@ -768,5 +778,5 @@ INFO: [Coretcl 2-1174] Renamed 33 cell refs.
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_ADS8686_synth_1/fifo_ADS8686.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file fifo_ADS8686_utilization_synth.rpt -pb fifo_ADS8686_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.037 . Memory (MB): peak = 833.695 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Sat Oct  9 17:42:42 2021...
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.042 . Memory (MB): peak = 838.848 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Tue Oct 19 15:41:08 2021...

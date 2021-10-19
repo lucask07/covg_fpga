@@ -1,7 +1,7 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-// Date        : Wed Oct  6 13:21:25 2021
+// Date        : Tue Oct 19 15:39:45 2021
 // Host        : FDC212-01 running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode funcsim
 //               C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x_sim_netlist.v
@@ -308,14 +308,14 @@ module fifo_AD796x
   (* C_PROG_EMPTY_TYPE_WACH = "0" *) 
   (* C_PROG_EMPTY_TYPE_WDCH = "0" *) 
   (* C_PROG_EMPTY_TYPE_WRCH = "0" *) 
-  (* C_PROG_FULL_THRESH_ASSERT_VAL = "4093" *) 
+  (* C_PROG_FULL_THRESH_ASSERT_VAL = "2048" *) 
   (* C_PROG_FULL_THRESH_ASSERT_VAL_AXIS = "1023" *) 
   (* C_PROG_FULL_THRESH_ASSERT_VAL_RACH = "1023" *) 
   (* C_PROG_FULL_THRESH_ASSERT_VAL_RDCH = "1023" *) 
   (* C_PROG_FULL_THRESH_ASSERT_VAL_WACH = "1023" *) 
   (* C_PROG_FULL_THRESH_ASSERT_VAL_WDCH = "1023" *) 
   (* C_PROG_FULL_THRESH_ASSERT_VAL_WRCH = "1023" *) 
-  (* C_PROG_FULL_THRESH_NEGATE_VAL = "4092" *) 
+  (* C_PROG_FULL_THRESH_NEGATE_VAL = "2047" *) 
   (* C_PROG_FULL_TYPE = "1" *) 
   (* C_PROG_FULL_TYPE_AXIS = "0" *) 
   (* C_PROG_FULL_TYPE_RACH = "0" *) 
@@ -3086,8 +3086,8 @@ endmodule
 module fifo_AD796x_clk_x_pntrs
    (S,
     RD_PNTR_WR,
-    \gdiff.diff_pntr_pad_reg[8] ,
     \gdiff.diff_pntr_pad_reg[12] ,
+    \gdiff.diff_pntr_pad_reg[12]_0 ,
     v1_reg,
     WR_PNTR_RD,
     v1_reg_0,
@@ -3099,8 +3099,8 @@ module fifo_AD796x_clk_x_pntrs
     rd_clk);
   output [2:0]S;
   output [10:0]RD_PNTR_WR;
-  output [3:0]\gdiff.diff_pntr_pad_reg[8] ;
   output [3:0]\gdiff.diff_pntr_pad_reg[12] ;
+  output [3:0]\gdiff.diff_pntr_pad_reg[12]_0 ;
   output [0:0]v1_reg;
   output [9:0]WR_PNTR_RD;
   output [0:0]v1_reg_0;
@@ -3118,7 +3118,7 @@ module fifo_AD796x_clk_x_pntrs
   wire [10:0]\gc0.count_d1_reg[10] ;
   wire [0:0]\gc0.count_reg[10] ;
   wire [3:0]\gdiff.diff_pntr_pad_reg[12] ;
-  wire [3:0]\gdiff.diff_pntr_pad_reg[8] ;
+  wire [3:0]\gdiff.diff_pntr_pad_reg[12]_0 ;
   wire [11:0]\gic0.gc0.count_d2_reg[11] ;
   wire [11:0]p_24_out;
   wire rd_clk;
@@ -3143,49 +3143,49 @@ module fifo_AD796x_clk_x_pntrs
     plusOp_carry__0_i_1
        (.I0(RD_PNTR_WR[6]),
         .I1(Q[6]),
-        .O(\gdiff.diff_pntr_pad_reg[8] [3]));
+        .O(\gdiff.diff_pntr_pad_reg[12] [3]));
   LUT2 #(
     .INIT(4'h9)) 
     plusOp_carry__0_i_2
        (.I0(RD_PNTR_WR[5]),
         .I1(Q[5]),
-        .O(\gdiff.diff_pntr_pad_reg[8] [2]));
+        .O(\gdiff.diff_pntr_pad_reg[12] [2]));
   LUT2 #(
     .INIT(4'h9)) 
     plusOp_carry__0_i_3
        (.I0(RD_PNTR_WR[4]),
         .I1(Q[4]),
-        .O(\gdiff.diff_pntr_pad_reg[8] [1]));
+        .O(\gdiff.diff_pntr_pad_reg[12] [1]));
   LUT2 #(
     .INIT(4'h9)) 
     plusOp_carry__0_i_4
        (.I0(RD_PNTR_WR[3]),
         .I1(Q[3]),
-        .O(\gdiff.diff_pntr_pad_reg[8] [0]));
+        .O(\gdiff.diff_pntr_pad_reg[12] [0]));
   LUT2 #(
     .INIT(4'h9)) 
     plusOp_carry__1_i_1
        (.I0(RD_PNTR_WR[10]),
         .I1(Q[10]),
-        .O(\gdiff.diff_pntr_pad_reg[12] [3]));
+        .O(\gdiff.diff_pntr_pad_reg[12]_0 [3]));
   LUT2 #(
     .INIT(4'h9)) 
     plusOp_carry__1_i_2
        (.I0(RD_PNTR_WR[9]),
         .I1(Q[9]),
-        .O(\gdiff.diff_pntr_pad_reg[12] [2]));
+        .O(\gdiff.diff_pntr_pad_reg[12]_0 [2]));
   LUT2 #(
     .INIT(4'h9)) 
     plusOp_carry__1_i_3
        (.I0(RD_PNTR_WR[8]),
         .I1(Q[8]),
-        .O(\gdiff.diff_pntr_pad_reg[12] [1]));
+        .O(\gdiff.diff_pntr_pad_reg[12]_0 [1]));
   LUT2 #(
     .INIT(4'h9)) 
     plusOp_carry__1_i_4
        (.I0(RD_PNTR_WR[7]),
         .I1(Q[7]),
-        .O(\gdiff.diff_pntr_pad_reg[12] [0]));
+        .O(\gdiff.diff_pntr_pad_reg[12]_0 [0]));
   LUT2 #(
     .INIT(4'h9)) 
     plusOp_carry_i_1
@@ -3592,8 +3592,8 @@ module fifo_AD796x_fifo_generator_ramfifo
         .WR_PNTR_RD(p_24_out),
         .\gc0.count_d1_reg[10] (p_0_out),
         .\gc0.count_reg[10] (rd_pntr_plus1),
-        .\gdiff.diff_pntr_pad_reg[12] ({\gntv_or_sync_fifo.gcx.clkx_n_18 ,\gntv_or_sync_fifo.gcx.clkx_n_19 ,\gntv_or_sync_fifo.gcx.clkx_n_20 ,\gntv_or_sync_fifo.gcx.clkx_n_21 }),
-        .\gdiff.diff_pntr_pad_reg[8] ({\gntv_or_sync_fifo.gcx.clkx_n_14 ,\gntv_or_sync_fifo.gcx.clkx_n_15 ,\gntv_or_sync_fifo.gcx.clkx_n_16 ,\gntv_or_sync_fifo.gcx.clkx_n_17 }),
+        .\gdiff.diff_pntr_pad_reg[12] ({\gntv_or_sync_fifo.gcx.clkx_n_14 ,\gntv_or_sync_fifo.gcx.clkx_n_15 ,\gntv_or_sync_fifo.gcx.clkx_n_16 ,\gntv_or_sync_fifo.gcx.clkx_n_17 }),
+        .\gdiff.diff_pntr_pad_reg[12]_0 ({\gntv_or_sync_fifo.gcx.clkx_n_18 ,\gntv_or_sync_fifo.gcx.clkx_n_19 ,\gntv_or_sync_fifo.gcx.clkx_n_20 ,\gntv_or_sync_fifo.gcx.clkx_n_21 }),
         .\gic0.gc0.count_d2_reg[11] (p_13_out),
         .rd_clk(rd_clk),
         .v1_reg(\gras.rsts/c0/v1_reg ),
@@ -3750,9 +3750,9 @@ endmodule
 (* C_PROG_EMPTY_THRESH_ASSERT_VAL_WRCH = "1022" *) (* C_PROG_EMPTY_THRESH_NEGATE_VAL = "3" *) (* C_PROG_EMPTY_TYPE = "0" *) 
 (* C_PROG_EMPTY_TYPE_AXIS = "0" *) (* C_PROG_EMPTY_TYPE_RACH = "0" *) (* C_PROG_EMPTY_TYPE_RDCH = "0" *) 
 (* C_PROG_EMPTY_TYPE_WACH = "0" *) (* C_PROG_EMPTY_TYPE_WDCH = "0" *) (* C_PROG_EMPTY_TYPE_WRCH = "0" *) 
-(* C_PROG_FULL_THRESH_ASSERT_VAL = "4093" *) (* C_PROG_FULL_THRESH_ASSERT_VAL_AXIS = "1023" *) (* C_PROG_FULL_THRESH_ASSERT_VAL_RACH = "1023" *) 
+(* C_PROG_FULL_THRESH_ASSERT_VAL = "2048" *) (* C_PROG_FULL_THRESH_ASSERT_VAL_AXIS = "1023" *) (* C_PROG_FULL_THRESH_ASSERT_VAL_RACH = "1023" *) 
 (* C_PROG_FULL_THRESH_ASSERT_VAL_RDCH = "1023" *) (* C_PROG_FULL_THRESH_ASSERT_VAL_WACH = "1023" *) (* C_PROG_FULL_THRESH_ASSERT_VAL_WDCH = "1023" *) 
-(* C_PROG_FULL_THRESH_ASSERT_VAL_WRCH = "1023" *) (* C_PROG_FULL_THRESH_NEGATE_VAL = "4092" *) (* C_PROG_FULL_TYPE = "1" *) 
+(* C_PROG_FULL_THRESH_ASSERT_VAL_WRCH = "1023" *) (* C_PROG_FULL_THRESH_NEGATE_VAL = "2047" *) (* C_PROG_FULL_TYPE = "1" *) 
 (* C_PROG_FULL_TYPE_AXIS = "0" *) (* C_PROG_FULL_TYPE_RACH = "0" *) (* C_PROG_FULL_TYPE_RDCH = "0" *) 
 (* C_PROG_FULL_TYPE_WACH = "0" *) (* C_PROG_FULL_TYPE_WDCH = "0" *) (* C_PROG_FULL_TYPE_WRCH = "0" *) 
 (* C_RACH_TYPE = "0" *) (* C_RDCH_TYPE = "0" *) (* C_RD_DATA_COUNT_WIDTH = "11" *) 
@@ -6102,22 +6102,22 @@ endmodule
 (* ORIG_REF_NAME = "wr_pf_as" *) 
 module fifo_AD796x_wr_pf_as
    (prog_full,
+    \ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ,
+    wr_clk,
     E,
     Q,
     S,
     \dest_out_bin_ff_reg[6] ,
     \dest_out_bin_ff_reg[10] ,
-    \ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ,
-    wr_clk,
     out);
   output prog_full;
+  input \ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ;
+  input wr_clk;
   input [0:0]E;
   input [10:0]Q;
   input [3:0]S;
   input [3:0]\dest_out_bin_ff_reg[6] ;
   input [3:0]\dest_out_bin_ff_reg[10] ;
-  input \ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ;
-  input wr_clk;
   input out;
 
   wire [0:0]E;
@@ -6125,14 +6125,11 @@ module fifo_AD796x_wr_pf_as
   wire [3:0]S;
   wire [3:0]\dest_out_bin_ff_reg[10] ;
   wire [3:0]\dest_out_bin_ff_reg[6] ;
-  wire [12:1]diff_pntr_pad;
+  wire geqOp;
   wire \gpf1.prog_full_i_i_1_n_0 ;
-  wire \gpf1.prog_full_i_i_2_n_0 ;
-  wire \gpf1.prog_full_i_i_3_n_0 ;
-  wire \gpf1.prog_full_i_i_4_n_0 ;
   wire \ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ;
   wire out;
-  wire [12:1]plusOp;
+  wire [12:12]plusOp;
   wire plusOp_carry__0_n_0;
   wire plusOp_carry__0_n_1;
   wire plusOp_carry__0_n_2;
@@ -6146,137 +6143,26 @@ module fifo_AD796x_wr_pf_as
   wire plusOp_carry_n_3;
   wire prog_full;
   wire wr_clk;
+  wire [3:0]NLW_plusOp_carry_O_UNCONNECTED;
+  wire [3:0]NLW_plusOp_carry__0_O_UNCONNECTED;
   wire [3:3]NLW_plusOp_carry__1_CO_UNCONNECTED;
+  wire [2:0]NLW_plusOp_carry__1_O_UNCONNECTED;
 
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[10] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[10]),
-        .Q(diff_pntr_pad[10]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[11] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[11]),
-        .Q(diff_pntr_pad[11]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
   FDRE #(
     .INIT(1'b0)) 
     \gdiff.diff_pntr_pad_reg[12] 
        (.C(wr_clk),
         .CE(1'b1),
-        .D(plusOp[12]),
-        .Q(diff_pntr_pad[12]),
+        .D(plusOp),
+        .Q(geqOp),
         .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[1] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[1]),
-        .Q(diff_pntr_pad[1]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[2] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[2]),
-        .Q(diff_pntr_pad[2]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[3] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[3]),
-        .Q(diff_pntr_pad[3]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[4] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[4]),
-        .Q(diff_pntr_pad[4]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[5] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[5]),
-        .Q(diff_pntr_pad[5]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[6] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[6]),
-        .Q(diff_pntr_pad[6]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[7] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[7]),
-        .Q(diff_pntr_pad[7]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[8] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[8]),
-        .Q(diff_pntr_pad[8]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  FDRE #(
-    .INIT(1'b0)) 
-    \gdiff.diff_pntr_pad_reg[9] 
-       (.C(wr_clk),
-        .CE(1'b1),
-        .D(plusOp[9]),
-        .Q(diff_pntr_pad[9]),
-        .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
-  LUT5 #(
-    .INIT(32'h8888888B)) 
+  LUT3 #(
+    .INIT(8'hB8)) 
     \gpf1.prog_full_i_i_1 
        (.I0(prog_full),
         .I1(out),
-        .I2(\gpf1.prog_full_i_i_2_n_0 ),
-        .I3(\gpf1.prog_full_i_i_3_n_0 ),
-        .I4(\gpf1.prog_full_i_i_4_n_0 ),
+        .I2(geqOp),
         .O(\gpf1.prog_full_i_i_1_n_0 ));
-  LUT3 #(
-    .INIT(8'h7F)) 
-    \gpf1.prog_full_i_i_2 
-       (.I0(diff_pntr_pad[12]),
-        .I1(diff_pntr_pad[10]),
-        .I2(diff_pntr_pad[11]),
-        .O(\gpf1.prog_full_i_i_2_n_0 ));
-  LUT5 #(
-    .INIT(32'h777FFFFF)) 
-    \gpf1.prog_full_i_i_3 
-       (.I0(diff_pntr_pad[4]),
-        .I1(diff_pntr_pad[5]),
-        .I2(diff_pntr_pad[1]),
-        .I3(diff_pntr_pad[2]),
-        .I4(diff_pntr_pad[3]),
-        .O(\gpf1.prog_full_i_i_3_n_0 ));
-  LUT4 #(
-    .INIT(16'h7FFF)) 
-    \gpf1.prog_full_i_i_4 
-       (.I0(diff_pntr_pad[8]),
-        .I1(diff_pntr_pad[9]),
-        .I2(diff_pntr_pad[6]),
-        .I3(diff_pntr_pad[7]),
-        .O(\gpf1.prog_full_i_i_4_n_0 ));
   FDRE #(
     .INIT(1'b0)) 
     \gpf1.prog_full_i_reg 
@@ -6290,21 +6176,21 @@ module fifo_AD796x_wr_pf_as
         .CO({plusOp_carry_n_0,plusOp_carry_n_1,plusOp_carry_n_2,plusOp_carry_n_3}),
         .CYINIT(E),
         .DI(Q[3:0]),
-        .O(plusOp[4:1]),
+        .O(NLW_plusOp_carry_O_UNCONNECTED[3:0]),
         .S(S));
   CARRY4 plusOp_carry__0
        (.CI(plusOp_carry_n_0),
         .CO({plusOp_carry__0_n_0,plusOp_carry__0_n_1,plusOp_carry__0_n_2,plusOp_carry__0_n_3}),
         .CYINIT(1'b0),
         .DI(Q[7:4]),
-        .O(plusOp[8:5]),
+        .O(NLW_plusOp_carry__0_O_UNCONNECTED[3:0]),
         .S(\dest_out_bin_ff_reg[6] ));
   CARRY4 plusOp_carry__1
        (.CI(plusOp_carry__0_n_0),
         .CO({NLW_plusOp_carry__1_CO_UNCONNECTED[3],plusOp_carry__1_n_1,plusOp_carry__1_n_2,plusOp_carry__1_n_3}),
         .CYINIT(1'b0),
         .DI({1'b0,Q[10:8]}),
-        .O(plusOp[12:9]),
+        .O({plusOp,NLW_plusOp_carry__1_O_UNCONNECTED[2:0]}),
         .S(\dest_out_bin_ff_reg[10] ));
 endmodule
 

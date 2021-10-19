@@ -459,17 +459,17 @@ module top_level_module(
    wire [31:0] ads_fifo_data;
    wire ads_pipe_read;
 
-   fifo_ADS8686 ads8686_fifo ( //32 bit wide read and 16 bit wide write ports
+   fifo_ADS8686 ads8686_fifo ( //32 bit wide read and 32 bit wide write ports, 2048 deep
      .rst(ep40trig[`ADS8686_FIFO_RESET]),
      .wr_clk(clk_sys),
      .rd_clk(okClk),
-     .din(ads_data_out),         // Bus [31:0] (from ADC)
-     .wr_en(ads_data_valid),    // from ADC
-     .rd_en(ads_pipe_read),      // from OKHost
-     .dout(ads_fifo_data),     // Bus [31:0] (to OKHost)
-     .full(ads_fifo_full),     // status
-     .empty(ads_fifo_empty),   // status
-     .prog_full(ads_fifo_halffull));//status
+     .din(ads_data_out),             // Bus [31:0] (from ADC)
+     .wr_en(ads_data_valid),         // from ADC
+     .rd_en(ads_pipe_read),          // from OKHost
+     .dout(ads_fifo_data),           // Bus [31:0] (to OKHost)
+     .full(ads_fifo_full),           // status
+     .empty(ads_fifo_empty),         // status
+     .prog_full(ads_fifo_halffull)); // status (flags at 1024 full) 
 
     //pipeOut to transfer data in bulk from the ADS8686 FIFO
    okPipeOut pipeOutADS86 (.okHE(okHE), .okEH(okEHx[3*65 +: 65]),
@@ -481,7 +481,7 @@ module top_level_module(
         if (sys_rst) begin
              ads_last_read <=32'h0;
         end
-        else if (ads_data_valid) begin  //
+        else if (ads_data_valid) begin 
             ads_last_read <= ads_data_out;
         end
     end
@@ -520,7 +520,7 @@ module top_level_module(
         .adc_serial_data(adc_serial_data[i])        
         );
 
-        fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports
+        fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports; write depth 4096, read depth 2048
           .rst(ep42trig[`AD7961_FIFO_RESET_GEN_BIT + i]),
           .wr_clk(adc_timing_clk),
           .rd_clk(okClk),
@@ -530,7 +530,7 @@ module top_level_module(
           .dout(adc_pipe_ep_datain[i]),     // Bus [31:0] (to OKHost)
           .full(adc_fifo_full[i]),     // status
           .empty(adc_fifo_empty[i]),   // status
-          .prog_full(adc_fifo_halffull[i]),          
+          .prog_full(adc_fifo_halffull[i]),  // half-full flag (2048)        
           .wr_rst_busy(),
           .rd_rst_busy()          
           );//status
