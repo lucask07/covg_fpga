@@ -131,6 +131,7 @@ log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_bitfile')
 uid = UID_24AA025UID(fpga=f,
                      endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                      addr_pins=0b000)
+
 clamp_dac = DAC53401(fpga=f,
                      endpoints=Endpoint.get_chip_endpoints('I2CDC'),
                      addr_pins=0b000)
@@ -148,9 +149,10 @@ pwr.all_off()  # disable all power enables
 gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 # configure the SPI debug MUXs
-gpio.spi_debug('dfast0')
-# gpio.spi_debug('ads')
-gpio.ads_misc('convst')
+# gpio.spi_debug('dfast0')
+gpio.spi_debug('ads')
+# gpio.ads_misc('convst')
+gpio.ads_misc('sdoa')
 
 AD7961_CHANS = 4
 ad7961s = []
@@ -197,13 +199,13 @@ for i in range(6):
     fdac.append(AD5453(f,
                 endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
-    fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
-    fdac[i].set_data_mux('DDR')
+    fdac[0].set_spi_sclk_divide()
+    fdac[i].set_data_mux('ads8686_chA')
     fdac[i].write(0x2000)
     t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_flat_voltage(256 + 256*i)
 
+fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
 g_buf = ddr.write_channels()
-fdac[0].set_spi_sclk_divide()
 
 # UID
 read = uid.get_manufacturer_code()
@@ -263,9 +265,9 @@ log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ipump_disable')
 
 # desired I/O expander:
 # DAC gains and current output select
-io_0 = TCA9555(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'),
+io_0 = TCA9555(fpga=f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                addr_pins=0b000)  # DAC gains 0,1,2,3
-io_1 = TCA9555(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'),
+io_1 = TCA9555(fpga=f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                addr_pins=0b100)  # DAC gains 4,5;
                                                   # ISEL1[3:0]; ISEL2[3:0]
 
@@ -273,8 +275,9 @@ io_0.configure_pins([0x00, 0x00])  # set all pins to outputs (=0)
 io_0.write(0x0000)  # set all pins to zero --
                     # minimizes the DAC gain and should lower current draw
 
-io_1.configure_pins([0x00, 0x00])  # set all pins to outputs
+#TODO: check bit position of pin 13  P1_0, DAC2_G0 (accessible by DMM)
 
+io_1.configure_pins([0x00, 0x00])  # set all pins to outputs
 # ISEL = 1 gives voltage outputs
 # ISEL = 0 routes Howland Ipump out
 io_1.write(0x00FF)  # set all gain pins to zero & all ISEL to have the voltage output
@@ -327,8 +330,9 @@ if ADS_EN:
     lpf1 = ads.read('lpf')
     ads.set_lpf(376)
     lpf2 = ads.read('lpf')
-    ads.setup_sequencer(chan_list=['FIXED_A', 'FIXED_B', '5A', '5B'])
-    ads.write_reg_bridge()
+    #ads.setup_sequencer(chan_list=['FIXED_A', 'FIXED_B', '5A', '5B'])
+    ads.setup_sequencer(chan_list=['5A', 'FIXED_B'])
+    ads.write_reg_bridge(clk_div=200)  # 1 MSPS
     ads.set_fpga_mode()
     data_ads = ads.stream_mult(swps=4, twos_comp_conv=False)
 
