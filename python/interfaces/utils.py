@@ -99,3 +99,37 @@ def int_to_list(integer, num_bytes=None):
                 list_int.append(0)
 
     return list_int[::-1]
+
+
+def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
+    """Convert the binary read data into a float voltage.
+
+    We use the bit-width of the data and the voltage range of the channel
+    to determine the voltage per bit. Then we multiply the binary data by
+    that voltage for the total voltage.
+
+    Arguments
+    ---------
+    data : int or list(int)
+        The method will return the converted version of either.
+    voltage_range : int
+        The total voltage range used when reading or writing the data.
+    use_twos_comp : bool
+        True if the given data is in two's complement form, False otherwise.
+    """
+
+    if type(data) is list:
+        # If the data is given in a list, we can use our int version of
+        # the method on every element in the list.
+        return [to_voltage(data=x, voltage_range=voltage_range) for x in data]
+    elif type(data) is int:
+        # Determine the voltage represented by a single bit
+        bit_voltage = voltage_range / (2 ** num_bits)
+        if use_twos_comp:
+            return twos_comp(val=data, bits=num_bits) * bit_voltage
+        else:
+            return data * bit_voltage
+    else:
+        print(
+            f'ERROR: wrong data type in to_voltage: type(data) = {type(data)}')
+        return None
