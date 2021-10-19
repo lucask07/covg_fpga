@@ -31,6 +31,7 @@ top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
 
 from interfaces.interfaces import FPGA, DAC80508, ADS8686
 from interfaces.boards import Daq
+from interfaces.utils import to_voltage, twos_comp
 
 dc_pwr = open_by_name(name='rigol_pwr1')  # 7V in
 # Shouldn't need +/-16.5V for just ADS8686 and DAC80508
@@ -97,7 +98,8 @@ def ads(fpga):
     ads.setup()
     ads.set_range(5)
     ads.set_lpf(376)
-    ads.setup_sequencer(chan_list=[('5', 'FIXED')])
+    codes = ads.setup_sequencer(chan_list=[('5', 'FIXED')])
+    print(f'Setup Sequencer Codes: {codes}')
     ads.write_reg_bridge()
     ads.set_fpga_mode()
     return ads
@@ -107,26 +109,31 @@ def ads(fpga):
 
 
 @pytest.mark.parametrize('gain_code, expected_gain', [
-    ((0 << 5) | (0 << 8), 1),   # Output gain: 1, REFDIV gain: 1,   Total gain: 1
-    ((0 << 5) | (1 << 8), 1/2), # Output gain: 1, REFDIV gain: 1/2, Total gain: 1/2
-    ((1 << 5) | (0 << 8), 1),   # Output gain: 2, REFDIV gain: 1,   Total gain: 1
-    ((1 << 5) | (1 << 8), 1/2), # Output gain: 2, REFDIV gain: 1/2, Total gain: 1/2
+    ((0 << 4) | (0 << 8), 1),   # Output gain: 1, REFDIV gain: 1,   Total gain: 1
+    ((0 << 4) | (1 << 8), 1/2), # Output gain: 1, REFDIV gain: 1/2, Total gain: 1/2
+    ((1 << 4) | (0 << 8), 2),   # Output gain: 2, REFDIV gain: 1,   Total gain: 2
+    ((1 << 4) | (1 << 8), 1), # Output gain: 2, REFDIV gain: 1/2, Total gain: 1
 ])
 def test_dac_gain(dac, ads, gain_code, expected_gain):
-    # Looking for values within 5 % of expected
+    # Looking for values within 5% (will be much smaller once working) of expected
     tolerance = 0.05
     # Set the output on DAC80508
-    voltage = 0xffff
-    dac.write('DAC4', voltage)
-    print('Waiting...')
-    time.sleep(4)
-    expected = voltage * expected_gain
+    voltage_data = 0xffff
+    # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
+    # adjusted by the gain of the output and whether the internal reference is
+    # divided by 2 or not.
+    expected = to_voltage(data=voltage_data, num_bits=16, voltage_range=2.5 * expected_gain)
+
+    dac.write('DAC4', voltage_data)
     dac.set_gain(gain_code)
+    print('Waiting...')
+    time.sleep(2)
     # Read value with ADS8686
-    read_dict = ads.read_last() # TODO: convert data
-    read = 5.563242784380305 * read_dict['A'][0]
+    read_dict = ads.read_last()
+    read_data = int(read_dict['A'][0])
+    read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=5, use_twos_comp=True)
     print(read_dict)
-    print(hex(int(read)), hex(int(expected)))
+    print(read, expected)
     # Compare
     assert abs(read - expected) / expected <= tolerance
 
@@ -136,22 +143,26 @@ def test_dac_write_0(dac, ads):
     tolerance_voltage = 0.0001
     # Set the output on DAC80508
     dac.set_gain(0x0000)
-    dac.write('DAC5', 0x0000)
+    dac.write('DAC4', 0x0000)
     # Read value with ADS8686
-    read = ads.read_last() # TODO: convert data
+    read_dict = ads.read_last() # TODO: convert data
+    read = read_dict['A'][0]
+    print(read_dict)
     # Compare
     assert abs(read) <= tolerance_voltage
 
 
 @pytest.mark.parametrize('voltage', [x + 1 for x in range(0xffff)])
 def test_dac_write(dac, ads, voltage):
-    # Looking for values within 5 % of expected
+    # Looking for values within 5% (will be much smaller once working) of expected
     tolerance = 0.05
     # Set the output on DAC80508
     dac.set_gain(0x0000)
-    dac.write('DAC5', voltage)
+    dac.write('DAC4', voltage)
     # Read value with ADS8686
-    read = ads.read_last() # TODO: convert data
+    read_dict = ads.read_last() # TODO: convert data
+    read = read_dict['A'][0]
+    print(read_dict)
     print(read, voltage)
     # Compare
     assert abs(read - voltage) / voltage <= tolerance
