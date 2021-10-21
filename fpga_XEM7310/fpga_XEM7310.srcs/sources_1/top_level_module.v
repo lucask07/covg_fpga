@@ -404,7 +404,7 @@ module top_level_module(
                                                      ads_fifo_empty,    // bit 15
 													 ads_fifo_halffull, // bit 14
 													 ads_fifo_full,     // bit 13
-                                                     adc_fifo_empty,    // 4 bits wide: 12-6
+                                                     adc_fifo_empty,    // 4 bits wide: 12-9
 													 adc_fifo_halffull, // 4 bits wide: 8-5
 													 adc_fifo_full,     // 4 bits wide: 4-1
 													 hostinterrupt}));  // bit 0
@@ -530,7 +530,7 @@ module top_level_module(
           .dout(adc_pipe_ep_datain[i]),     // Bus [31:0] (to OKHost)
           .full(adc_fifo_full[i]),     // status
           .empty(adc_fifo_empty[i]),   // status
-          .prog_full(adc_fifo_halffull[i]),  // half-full flag (2048)        
+          .prog_full(adc_fifo_halffull[i]),  // half-full flag (2048 which is based off of the write depth)        
           .wr_rst_busy(),
           .rd_rst_busy()          
           );//status
@@ -831,7 +831,7 @@ module top_level_module(
             .datain_0(po0_ep_datain[k*16 +:16]), // input  wire [15:0] datain. stripe DDR in 16 bit wide groups 
             .datain_1(host_spi_data[k][15:0]), 
             .datain_2(ads_last_read[15:0]),
-            .datain_3(adc_pipe_ep_datain[0][15:0]), // TODO:  poor design since not synchronized  
+            .datain_3(adc_pipe_ep_datain[3][15:0]), // TODO:  poor design since not synchronized. Use CHAN3
             .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
             .dataout(spi_data[k])
         );

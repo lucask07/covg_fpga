@@ -99,7 +99,7 @@
 `define ADS8686_FIFO_EMPTY 15 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define ADS8686_FIFO_HALFFULL 14 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 `define ADS8686_FIFO_FULL 13 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
-`define AD7961_FIFO_EMPTY_GEN_BIT 8 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
+`define AD7961_FIFO_EMPTY_GEN_BIT 9 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 6 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 9 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
 // `define AD7961 12 // address=GP_FIFO_FLAG_I2C_DONE_TRIG_OUT bit_width=1
