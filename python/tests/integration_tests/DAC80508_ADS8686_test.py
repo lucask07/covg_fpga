@@ -111,7 +111,7 @@ def ads(fpga):
 @pytest.mark.parametrize('gain_code, expected_gain', [
     ((0 << 4) | (0 << 8), 1),   # Output gain: 1, REFDIV gain: 1,   Total gain: 1
     ((0 << 4) | (1 << 8), 1/2), # Output gain: 1, REFDIV gain: 1/2, Total gain: 1/2
-    ((1 << 4) | (0 << 8), 2),   # Output gain: 2, REFDIV gain: 1,   Total gain: 2
+    ((1 << 4) | (0 << 8), 2),   # Output gain: 2, REFDIV gain: 1,   Total gain: 2       # TODO: Figure out why the DAC is capping at 3V here
     ((1 << 4) | (1 << 8), 1), # Output gain: 2, REFDIV gain: 1/2, Total gain: 1
 ])
 def test_dac_gain(dac, ads, gain_code, expected_gain):
@@ -126,12 +126,13 @@ def test_dac_gain(dac, ads, gain_code, expected_gain):
 
     dac.write('DAC4', voltage_data)
     dac.set_gain(gain_code)
-    print('Waiting...')
-    time.sleep(2)
     # Read value with ADS8686
     read_dict = ads.read_last()
     read_data = int(read_dict['A'][0])
-    read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=5, use_twos_comp=True)
+    # We double the range used in the to_voltage calculation to account for
+    # both +/- sides of the range.
+    # Ex. set_range(5) == +/-5V which spans a total of 10V
+    read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
     print(read_dict)
     print(read, expected)
     # Compare
