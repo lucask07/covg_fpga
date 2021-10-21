@@ -133,7 +133,11 @@ uid = UID_24AA025UID(fpga=f,
                      addr_pins=0b000)
 
 clamp_dac = DAC53401(fpga=f,
-                     endpoints=Endpoint.get_chip_endpoints('I2CDC'),
+                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDC'),3),
+                     addr_pins=0b000)
+
+clamp_uid = UID_24AA025UID(fpga=f,
+                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDC'),3),
                      addr_pins=0b000)
 
 ads = ADS8686(fpga=f,
@@ -288,11 +292,11 @@ setup = ad7961s[0].setup(reset_pll=True)
 time.sleep(0.05)
 
 # AD7961 tests; test pattern and data saved to file
-chan = 2
-num = 13
+chan = 3
+num = 20
 if AD7961_EN:
-    for chan in [2,3]:
-        for num in [23,24]:
+    for chan in [3]:
+        for num in [20,21,22,23,24,25,26]:
             if chan == 0:
                 setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
             else:
@@ -305,8 +309,6 @@ if AD7961_EN:
             d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
 
             ad7961s[chan].power_up_adc()  # standard sampling
-            ad7961s[chan].reset_fifo()
-            time.sleep(0.2)
             ad7961s[chan].reset_fifo()
             time.sleep(0.2)
             d2 = ad7961s[chan].stream_mult(swps=4)
@@ -331,7 +333,7 @@ if ADS_EN:
     ads.set_lpf(376)
     lpf2 = ads.read('lpf')
     #ads.setup_sequencer(chan_list=['FIXED_A', 'FIXED_B', '5A', '5B'])
-    ads.setup_sequencer(chan_list=['5A', 'FIXED_B'])
+    ads.setup_sequencer(chan_list=[('5', 'FIXED')])
     ads.write_reg_bridge(clk_div=200)  # 1 MSPS
     ads.set_fpga_mode()
     data_ads = ads.stream_mult(swps=4, twos_comp_conv=False)
