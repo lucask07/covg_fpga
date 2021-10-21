@@ -74,9 +74,9 @@ def fpga():
 
     yield f
     # Teardown
-    # f.xem.Close()
+    f.xem.Close()
     # Power off
-    # pwr_off()
+    pwr_off()
 
 
 @pytest.fixture(scope='module')
@@ -141,29 +141,51 @@ def test_dac_gain(dac, ads, gain_code, expected_gain):
 
 def test_dac_write_0(dac, ads):
     # Our error calculation doesn't work at 0, this tolerance is a voltage +/- range
-    tolerance_voltage = 0.0001
-    # Set the output on DAC80508
+    tolerance_difference = 0.0001
+    voltage = 0x0000
+    # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
+    # adjusted by the gain of the output and whether the internal reference is
+    # divided by 2 or not.
+    expected = to_voltage(data=voltage, num_bits=16,
+                          voltage_range=2.5)
+
+    dac.write('DAC4', voltage)
     dac.set_gain(0x0000)
-    dac.write('DAC4', 0x0000)
     # Read value with ADS8686
-    read_dict = ads.read_last() # TODO: convert data
-    read = read_dict['A'][0]
+    read_dict = ads.read_last()
+    read_data = int(read_dict['A'][0])
+    # We double the range used in the to_voltage calculation to account for
+    # both +/- sides of the range.
+    # Ex. set_range(5) == +/-5V which spans a total of 10V
+    read = to_voltage(data=read_data, num_bits=ads.num_bits,
+                      voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
     print(read_dict)
+    print(read, expected)
     # Compare
-    assert abs(read) <= tolerance_voltage
+    assert abs(read - expected) <= tolerance_difference
 
 
 @pytest.mark.parametrize('voltage', [x + 1 for x in range(0xffff)])
 def test_dac_write(dac, ads, voltage):
     # Looking for values within 5% (will be much smaller once working) of expected
     tolerance = 0.05
-    # Set the output on DAC80508
-    dac.set_gain(0x0000)
+    # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
+    # adjusted by the gain of the output and whether the internal reference is
+    # divided by 2 or not.
+    expected = to_voltage(data=voltage, num_bits=16,
+                          voltage_range=2.5)
+
     dac.write('DAC4', voltage)
+    dac.set_gain(0x0000)
     # Read value with ADS8686
-    read_dict = ads.read_last() # TODO: convert data
-    read = read_dict['A'][0]
+    read_dict = ads.read_last()
+    read_data = int(read_dict['A'][0])
+    # We double the range used in the to_voltage calculation to account for
+    # both +/- sides of the range.
+    # Ex. set_range(5) == +/-5V which spans a total of 10V
+    read = to_voltage(data=read_data, num_bits=ads.num_bits,
+                      voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
     print(read_dict)
-    print(read, voltage)
+    print(read, expected)
     # Compare
-    assert abs(read - voltage) / voltage <= tolerance
+    assert abs(read - expected) / expected <= tolerance
