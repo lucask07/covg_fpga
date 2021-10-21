@@ -113,7 +113,7 @@ def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
     data : int or list(int)
         The method will return the converted version of either.
     voltage_range : int
-        The total voltage range used when reading or writing the data.
+        The total voltage range used for the data.
     use_twos_comp : bool
         True if the given data is in two's complement form, False otherwise.
     """
@@ -131,5 +131,57 @@ def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
             return data * bit_voltage
     else:
         print(
-            f'ERROR: wrong data type in to_voltage: type(data) = {type(data)}')
+            f'ERROR: wrong data type in to_voltage: type(data) = {type(data)} Expected int')
+        return None
+
+
+def from_voltage(voltage, num_bits, voltage_range, with_negatives=False):
+    """Convert the float/int voltage into binary data.
+
+    We use the bit-width and voltage range to determine the voltage per bit.
+    Then we divide the voltage by the bit-voltage and round to an integer to
+    find the binary data representation.
+
+    Arguments
+    ---------
+    voltage : int or list(int)
+        The method will return the converted version of either.
+    voltage_range : int
+        The total voltage range used for the voltage.
+    with_negatives : bool
+        True to convert the voltage with full negative at 0x0, zero at half
+        scale, and full positive at full scale, False otherwise.
+    """
+
+    if type(voltage) is list:
+        # If the voltage is given in a list, we can use our int version of
+        # the method on every element in the list.
+        return [from_voltage(voltage=x, voltage_range=voltage_range) for x in voltage]
+    elif type(voltage) is int or type(voltage) is float:
+        # Determine the voltage represented by a single bit
+        if with_negatives:
+            if voltage < -(voltage_range / 2):
+                print(f'WARNING: Voltage {voltage} out of range [{-voltage_range / 2}-{voltage_range / 2}]. Truncating...')
+                data = 0x0
+            elif voltage > (voltage_range / 2):
+                print(f'WARNING: Voltage {voltage} out of range [{-voltage_range / 2}, {voltage_range / 2}]. Truncating...')
+                data = 2 ** num_bits - 1
+            else:
+                bit_voltage = voltage_range / (2 ** num_bits)
+                data = round(voltage / bit_voltage)
+                data = 2 ** (num_bits - 1) - 1 + data
+        elif voltage < 0:
+            print(f'WARNING: negative numbers not included in range [0, {voltage_range}]. Use with_negatives=True. Truncating...')
+            data = 0x0
+        elif voltage > voltage_range:
+            print(f'WARNING: voltage {voltage} outside range [0, {voltage_range}]. Truncating...')
+            data = 2 ** num_bits - 1
+        else:
+            bit_voltage = voltage_range / (2 ** num_bits)
+            data = round(voltage / bit_voltage)
+
+        return data
+    else:
+        print(
+            f'ERROR: wrong voltage type in from_voltage: type(voltage) = {type(voltage)} Expected float or int')
         return None
