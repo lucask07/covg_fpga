@@ -47,10 +47,10 @@ class Clamp:
     def __init__(self, fpga, TCA_addr_pins_0=0b110, TCA_addr_pins_1=0b000, UID_addr_pins=0b000, DAC_addr_pins=0b000):
         # cwd = python/interfaces/
         # i2c_bitfile = python/i2c.bit
-        self.TCA_0 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0)
-        self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1)
-        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins)
-        self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins)
+        self.TCA_0 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
+        self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
+        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
+        self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
         self.serial_number = None  # Will get serial code from UID chip in setup()
 
     def init_board(self):
@@ -420,6 +420,25 @@ class Daq:
     init_board()
 
     """
+
+    def __init__(self, fpga, TCA_addr_pins_0=0b000,
+                             TCA_addr_pins_1=0b100,
+                             UID_addr_pins=0b000,
+                             DAC_addr_pins=0b000
+                             ):
+        self.fpga = fpga
+        self.serial_number = None  # Will get serial code from UID chip in setup()
+        # I2C
+        self.TCA_0 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
+        self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
+        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
+        self.DAC_I2C = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
+        # SPI
+        self.DAC_gp_0, self.DAC_gp_1 = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
+        self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
+        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)
+        self.ADC_0, self.ADC_1, self.ADC_2, self.ADC_3 = AD7961.create_chips(fpga=fpga, number_of_chips=4)
+
     class Power:
 
         DEFAULT_PARAMETERS = dict(  # forces keys to string
