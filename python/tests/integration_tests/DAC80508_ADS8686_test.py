@@ -34,7 +34,7 @@ from interfaces.boards import Daq
 from interfaces.utils import to_voltage, twos_comp
 
 dc_pwr = open_by_name(name='rigol_pwr1')  # 7V in
-# Shouldn't need +/-16.5V for just ADS8686 and DAC80508
+dc_pwr2 = open_by_name(name='rigol_ps2')  # +/-16.5V -> needed for REFDIV going to Op-Amp buffers
 
 def pwr_off():
     for ch in [1, 2, 3]:
@@ -57,11 +57,19 @@ def fpga():
     pwr = Daq.Power(f)
     pwr.all_off()
 
+    # Channel 1 on supply1 for Vin
     dc_pwr.set('i', 0.55, configs={'chan': 1})
     dc_pwr.set('v', 7, configs={'chan': 1})
     dc_pwr.set('ovp', 7.2, configs={'chan': 1})
     dc_pwr.set('ocp', 0.75, configs={'chan': 1})
     dc_pwr.set('out_state', 'ON', configs={'chan': 1})
+
+    # Channel 1 and 2 setup
+    for ch in [1, 2]:
+        dc_pwr2.set('i', 0.39, configs={'chan': ch})
+        dc_pwr2.set('v', 16.5, configs={'chan': ch})
+        dc_pwr2.set('ovp', 16.7, configs={'chan': ch})
+        dc_pwr2.set('ocp', 0.400, configs={'chan': ch})
 
     for name in ['1V8', '5V', '3V3']:
         pwr.supply_on(name)
@@ -76,7 +84,7 @@ def fpga():
     # Teardown
     f.xem.Close()
     # Power off
-    pwr_off()
+    # pwr_off()
 
 
 @pytest.fixture(scope='module')
@@ -177,6 +185,7 @@ def test_dac_write(dac, ads, voltage):
 
     dac.write('DAC4', voltage)
     dac.set_gain(0x0000)
+    # dac.set_gain((1 << 4) | (0 << 8))
     # Read value with ADS8686
     read_dict = ads.read_last()
     read_data = int(read_dict['A'][0])
