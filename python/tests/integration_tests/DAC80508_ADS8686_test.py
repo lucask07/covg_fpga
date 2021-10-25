@@ -39,7 +39,8 @@ dc_pwr2 = open_by_name(name='rigol_ps2')  # +/-16.5V -> needed for REFDIV going 
 def pwr_off():
     for ch in [1, 2, 3]:
         dc_pwr.set('out_state', 'OFF', configs={'chan': ch})
-
+    for ch in [1, 2, 3]:
+        dc_pwr2.set('out_state', 'OFF', configs={'chan': ch})
 
 # Fixtures
 @pytest.fixture(scope='module')
@@ -84,7 +85,7 @@ def fpga():
     # Teardown
     f.xem.Close()
     # Power off
-    # pwr_off()
+    pwr_off()
 
 
 @pytest.fixture(scope='module')
@@ -119,12 +120,12 @@ def ads(fpga):
 @pytest.mark.parametrize('gain_code, expected_gain', [
     ((0 << 4) | (0 << 8), 1),   # Output gain: 1, REFDIV gain: 1,   Total gain: 1
     ((0 << 4) | (1 << 8), 1/2), # Output gain: 1, REFDIV gain: 1/2, Total gain: 1/2
-    ((1 << 4) | (0 << 8), 2),   # Output gain: 2, REFDIV gain: 1,   Total gain: 2       # TODO: Figure out why the DAC is capping at 3V here
+    ((1 << 4) | (0 << 8), 2),   # Output gain: 2, REFDIV gain: 1,   Total gain: 2
     ((1 << 4) | (1 << 8), 1), # Output gain: 2, REFDIV gain: 1/2, Total gain: 1
 ])
 def test_dac_gain(dac, ads, gain_code, expected_gain):
-    # Looking for values within 5% (will be much smaller once working) of expected
-    tolerance = 0.05
+    # Looking for values within 1 LSB of expected
+    tolerance = 2 ** 16 / (2.5 * expected_gain)
     # Set the output on DAC80508
     voltage_data = 0xffff
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
@@ -144,48 +145,21 @@ def test_dac_gain(dac, ads, gain_code, expected_gain):
     print(read_dict)
     print(read, expected)
     # Compare
-    assert abs(read - expected) / expected <= tolerance
+    assert abs(read - expected) <= tolerance
 
 
-def test_dac_write_0(dac, ads):
-    # Our error calculation doesn't work at 0, this tolerance is a voltage +/- range
-    tolerance_difference = 0.0001
-    voltage = 0x0000
-    # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
-    # adjusted by the gain of the output and whether the internal reference is
-    # divided by 2 or not.
-    expected = to_voltage(data=voltage, num_bits=16,
-                          voltage_range=2.5)
-
-    dac.write('DAC4', voltage)
-    dac.set_gain(0x0000)
-    # Read value with ADS8686
-    read_dict = ads.read_last()
-    read_data = int(read_dict['A'][0])
-    # We double the range used in the to_voltage calculation to account for
-    # both +/- sides of the range.
-    # Ex. set_range(5) == +/-5V which spans a total of 10V
-    read = to_voltage(data=read_data, num_bits=ads.num_bits,
-                      voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
-    print(read_dict)
-    print(read, expected)
-    # Compare
-    assert abs(read - expected) <= tolerance_difference
-
-
-@pytest.mark.parametrize('voltage', [x + 1 for x in range(0xffff)])
+@pytest.mark.parametrize('voltage', [x for x in range(0xffff + 1)])
 def test_dac_write(dac, ads, voltage):
-    # Looking for values within 5% (will be much smaller once working) of expected
-    tolerance = 0.05
+    # Looking for values within 1 LSB of expected
+    tolerance = 2 ** 16 / 2.5
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
     # adjusted by the gain of the output and whether the internal reference is
     # divided by 2 or not.
     expected = to_voltage(data=voltage, num_bits=16,
                           voltage_range=2.5)
-
     dac.write('DAC4', voltage)
     dac.set_gain(0x0000)
-    # dac.set_gain((1 << 4) | (0 << 8))
+
     # Read value with ADS8686
     read_dict = ads.read_last()
     read_data = int(read_dict['A'][0])
@@ -197,4 +171,4 @@ def test_dac_write(dac, ads, voltage):
     print(read_dict)
     print(read, expected)
     # Compare
-    assert abs(read - expected) / expected <= tolerance
+    assert abs(read - expected) <= tolerance
