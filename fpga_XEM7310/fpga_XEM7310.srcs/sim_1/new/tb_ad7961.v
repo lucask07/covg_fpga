@@ -34,14 +34,23 @@ reg d_p;
 reg d_n;
 reg dco_p;
 reg dco_n;
+reg dco_p_2;
+reg dco_n_2;
 
 wire cnv_p;
 wire cnv_n;
 wire clk_p;
 wire clk_n;
 
+wire cnv_p_2;
+wire cnv_n_2;
+wire clk_p_2;
+wire clk_n_2;
+
 wire data_rd;
 wire [15:0] data;
+wire data_rd_2;
+wire [15:0] data_2;
 
 AD7961 adc0
     (
@@ -61,6 +70,26 @@ AD7961 adc0
         .data_rd_rdy_o(data_rd),              // Signals that new data is available
         .data_o(data)                      // Read Data
     );
+    
+ AD7961_oneclk adc2
+        (
+            .m_clk_i(),
+            .fast_clk_i(adc_clk),                 // Maximum 300 MHz Clock, used for serial transfer
+            .reset_n_i(reset_n),                  // Reset signal, active low
+            .en_i(),
+            .d_pos_i(d_p),                    // Data In, Positive Pair
+            .d_neg_i(d_n),                    // Data In, Negative Pair
+            .dco_pos_i(dco_p_2),                  // Echoed Clock In, Positive Pair
+            .dco_neg_i(dco_n_2),                  // Echoed Clock In, Negative Pair
+            .en_o(),
+            .cnv_pos_o(cnv_p_2),                  // Convert Out, Positive Pair
+            .cnv_neg_o(cnv_n_2),                  // Convert Out, Negative Pair
+            .clk_pos_o(clk_p_2),                  // Clock Out, Positive Pair
+            .clk_neg_o(clk_n_2),                  // Clock Out, Negative Pair
+            .data_rd_rdy_o(data_rd_2),              // Signals that new data is available
+            .data_o(data_2)                      // Read Data
+        );
+
 
 	// Generate clock
 	initial 
@@ -78,13 +107,15 @@ AD7961 adc0
 	   #1;
 	   dco_p = clk_p;
 	   dco_n = clk_n;
+	   dco_p_2 = clk_p_2;
+	   dco_n_2 = clk_n_2;
    end
 
 	initial begin
 		// Initialize Inputs
 		#5;
 		reset_n = 1'b0;
-		#20;
+		#200;
 		reset_n = 1'b1;
 		d_p = 1'b1;
 		d_n = 1'b0;
