@@ -258,8 +258,8 @@ module top_level_module(
     wire [(FADC_NUM-1):0] dco;
     wire [(FADC_NUM-1):0] adc_serial_data;
     
-    assign sma[0] = dco[1];
-    assign sma[1] = adc_serial_data[1];
+    assign sma[0] = dco[3];
+    assign sma[1] = adc_serial_data[3];
 
 	//FrontPanel (HostInterface) wires
 	wire okClk;
@@ -492,14 +492,14 @@ module top_level_module(
 	/* ---------------- AD796x 5 MSPS ADC  ----------------*/
 	genvar i;
     generate
-    for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7960_gen
+    for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7961_gen
 
         sync_reset ad7961_sync_reset(
             adc_timing_clk,
             ep01wire[`AD7961_WIRE_RESET_GEN_BIT+i],
             adc_sync_rst[i]);
 
-        AD7961 adc7961(
+        AD7961 adc7961 (
         .m_clk_i(adc_timing_clk),       // 100 MHz Clock, used for timing
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
         .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
@@ -522,7 +522,8 @@ module top_level_module(
 
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports; write depth 4096, read depth 2048
           .rst(ep42trig[`AD7961_FIFO_RESET_GEN_BIT + i]),
-          .wr_clk(adc_timing_clk),
+          //.wr_clk(adc_timing_clk),
+          .wr_clk(adc_clk),
           .rd_clk(okClk),
           .din({adc_val[i]}),         // Bus [15:0] (from ADC)
           .wr_en(write_en_adc_o[i]),// from ADC

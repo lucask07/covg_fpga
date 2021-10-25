@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="567800000fs"></ZoomStartTime>
-      <ZoomEndTime time="713600001fs"></ZoomEndTime>
-      <Cursor1Time time="694000000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="1000000001fs"></ZoomEndTime>
+      <Cursor1Time time="1000000000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="146"></NameColumnWidth>
-      <ValueColumnWidth column_width="78"></ValueColumnWidth>
+      <NameColumnWidth column_width="233"></NameColumnWidth>
+      <ValueColumnWidth column_width="175"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="19" />
+   <WVObjectSize size="35" />
    <wave_markers>
       <marker time="548000000" label="" />
       <marker time="6192500000" label="" />
@@ -81,6 +81,10 @@
       <obj_property name="ElementShortName">data[15:0]</obj_property>
       <obj_property name="ObjectShortName">data[15:0]</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_ad7961/reset_n" type="logic">
+      <obj_property name="ElementShortName">reset_n</obj_property>
+      <obj_property name="ObjectShortName">reset_n</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb_ad7961/adc0/fast_clk_i" type="logic">
       <obj_property name="ElementShortName">fast_clk_i</obj_property>
       <obj_property name="ObjectShortName">fast_clk_i</obj_property>
@@ -104,5 +108,65 @@
    <wvobject fp_name="/tb_ad7961/adc0/serial_present_state" type="array">
       <obj_property name="ElementShortName">serial_present_state[2:0]</obj_property>
       <obj_property name="ObjectShortName">serial_present_state[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/cnv_p_2" type="logic">
+      <obj_property name="ElementShortName">cnv_p_2</obj_property>
+      <obj_property name="ObjectShortName">cnv_p_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/cnv_n_2" type="logic">
+      <obj_property name="ElementShortName">cnv_n_2</obj_property>
+      <obj_property name="ObjectShortName">cnv_n_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/clk_p_2" type="logic">
+      <obj_property name="ElementShortName">clk_p_2</obj_property>
+      <obj_property name="ObjectShortName">clk_p_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/clk_n_2" type="logic">
+      <obj_property name="ElementShortName">clk_n_2</obj_property>
+      <obj_property name="ObjectShortName">clk_n_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/data_rd_2" type="logic">
+      <obj_property name="ElementShortName">data_rd_2</obj_property>
+      <obj_property name="ObjectShortName">data_rd_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/data_2" type="array">
+      <obj_property name="ElementShortName">data_2[15:0]</obj_property>
+      <obj_property name="ObjectShortName">data_2[15:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/adc2/adc_tcyc_cnt" type="array">
+      <obj_property name="ElementShortName">adc_tcyc_cnt[5:0]</obj_property>
+      <obj_property name="ObjectShortName">adc_tcyc_cnt[5:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/adc2/serial_present_state" type="array">
+      <obj_property name="ElementShortName">serial_present_state[7:0]</obj_property>
+      <obj_property name="ObjectShortName">serial_present_state[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/adc2/buffer_reset_s" type="logic">
+      <obj_property name="ElementShortName">buffer_reset_s</obj_property>
+      <obj_property name="ObjectShortName">buffer_reset_s</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/adc2/sclk_cnt" type="array">
+      <obj_property name="ElementShortName">sclk_cnt[4:0]</obj_property>
+      <obj_property name="ObjectShortName">sclk_cnt[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/adc2/sclk_echo_cnt" type="array">
+      <obj_property name="ElementShortName">sclk_echo_cnt[4:0]</obj_property>
+      <obj_property name="ObjectShortName">sclk_echo_cnt[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/adc2/clk_s" type="logic">
+      <obj_property name="ElementShortName">clk_s</obj_property>
+      <obj_property name="ObjectShortName">clk_s</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/dco_p_2" type="logic">
+      <obj_property name="ElementShortName">dco_p_2</obj_property>
+      <obj_property name="ObjectShortName">dco_p_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/dco_n_2" type="logic">
+      <obj_property name="ElementShortName">dco_n_2</obj_property>
+      <obj_property name="ObjectShortName">dco_n_2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_ad7961/adc2/sclk_s" type="logic">
+      <obj_property name="ElementShortName">sclk_s</obj_property>
+      <obj_property name="ObjectShortName">sclk_s</obj_property>
    </wvobject>
 </wave_config>
