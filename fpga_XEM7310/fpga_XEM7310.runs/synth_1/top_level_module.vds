@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Thu Oct 21 10:21:50 2021
-# Process ID: 4940
+# Start of session at: Mon Oct 25 12:37:18 2021
+# Process ID: 9848
 # Current directory: C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
 # Command line: vivado.exe -log top_level_module.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_level_module.tcl
 # Log file: C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
@@ -15,7 +15,7 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 10292 
+INFO: Helper process launched with PID 12176 
 WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okCoreHarness.v:15361]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:87]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:88]
@@ -41,7 +41,7 @@ WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:117]
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:118]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:06 . Memory (MB): peak = 457.121 ; gain = 111.645
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 456.660 ; gain = 110.590
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:92]
 	Parameter BLOCK_SIZE bound to: 128 - type: integer 
@@ -72,8 +72,8 @@ INFO: [Synth 8-6157] synthesizing module 'IBUFDS' [C:/Xilinx/Vivado/2018.2/scrip
 	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
 INFO: [Synth 8-6155] done synthesizing module 'IBUFDS' (3#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19488]
 INFO: [Synth 8-6155] done synthesizing module 'AD7961' (4#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/AD7961.v:66]
-INFO: [Synth 8-6157] synthesizing module 'fifo_AD796x' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4940-FDC212-01/realtime/fifo_AD796x_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'fifo_AD796x' (5#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4940-FDC212-01/realtime/fifo_AD796x_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'fifo_AD796x' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9848-FDC212-01/realtime/fifo_AD796x_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'fifo_AD796x' (5#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9848-FDC212-01/realtime/fifo_AD796x_stub.v:6]
 INFO: [Synth 8-6157] synthesizing module 'GND' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
 INFO: [Synth 8-6155] done synthesizing module 'GND' (6#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
 INFO: [Synth 8-6157] synthesizing module 'LUT4' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
@@ -174,8 +174,8 @@ INFO: [Synth 8-6157] synthesizing module 'realTimeLPF_readwrite_coeff' [C:/Users
 	Parameter INIT bound to: 5'b10010 
 	Parameter CHECK bound to: 5'b10011 
 INFO: [Synth 8-6155] done synthesizing module 'realTimeLPF_readwrite_coeff' (24#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/realTimeLPF_readwrite_coeff.v:23]
-INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4940-FDC212-01/realtime/blk_mem_gen_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (25#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4940-FDC212-01/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9848-FDC212-01/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (25#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9848-FDC212-01/realtime/blk_mem_gen_0_stub.v:6]
 WARNING: [Synth 8-689] width (32) of port connection 'addrb' does not match port width (4) of module 'blk_mem_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:122]
 INFO: [Synth 8-6157] synthesizing module 'Butterworth' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/Butterworth.v:54]
 INFO: [Synth 8-6155] done synthesizing module 'Butterworth' (26#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/Butterworth.v:54]
@@ -375,10 +375,10 @@ INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/koer
 INFO: [Synth 8-6155] done synthesizing module 'i2cTokenizer' (32#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cTokenizer.v:34]
 INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cController.v:211]
 INFO: [Synth 8-6155] done synthesizing module 'i2cController' (33#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cController.v:54]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:898]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:898]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:898]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:898]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:899]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:899]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:899]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:899]
 INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
 	Parameter CAPACITANCE bound to: DONT_CARE - type: string 
 	Parameter DIFF_TERM bound to: FALSE - type: string 
@@ -386,10 +386,10 @@ INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Xilinx/Vivado/2018.2/scri
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
 INFO: [Synth 8-6155] done synthesizing module 'IBUFGDS' (34#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4940-FDC212-01/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (35#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4940-FDC212-01/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4940-FDC212-01/realtime/clk_wiz_1_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_1' (36#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-4940-FDC212-01/realtime/clk_wiz_1_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9848-FDC212-01/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (35#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9848-FDC212-01/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9848-FDC212-01/realtime/clk_wiz_1_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_1' (36#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-9848-FDC212-01/realtime/clk_wiz_1_stub.v:5]
 INFO: [Synth 8-6157] synthesizing module 'okWireOR' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
 	Parameter N bound to: 18 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'okWireOR' (37#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
@@ -553,8 +553,8 @@ WARNING: [Synth 8-350] instance 'okHI' of module 'okHost' requires 9 connections
 	Parameter CONV_TIME bound to: 112 - type: integer 
 	Parameter ADDR bound to: 1 - type: integer 
 WARNING: [Synth 8-350] instance 'ads8686_fifo' of module 'fifo_ADS8686' requires 12 connections, but only 10 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:462]
-WARNING: [Synth 8-689] width (30) of port connection 'app_addr' does not match port width (29) of module 'ddr3_256_32' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:681]
-WARNING: [Synth 8-350] instance 'u_ddr3_256_32' of module 'ddr3_256_32' requires 38 connections, but only 37 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:662]
+WARNING: [Synth 8-689] width (30) of port connection 'app_addr' does not match port width (29) of module 'ddr3_256_32' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:682]
+WARNING: [Synth 8-350] instance 'u_ddr3_256_32' of module 'ddr3_256_32' requires 38 connections, but only 37 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:663]
 	Parameter FIFO_SIZE bound to: 128 - type: integer 
 	Parameter BURST_UI_WORD_COUNT bound to: 2'b01 
 	Parameter ADDRESS_INCREMENT bound to: 5'b01000 
@@ -602,12 +602,12 @@ INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/D
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:51]
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:60]
 INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:91]
-WARNING: [Synth 8-689] width (128) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:766]
-WARNING: [Synth 8-689] width (10) of port connection 'rd_data_count' does not match port width (8) of module 'fifo_w256_128_r128_256_1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:811]
-WARNING: [Synth 8-350] instance 'okPipeOut_fifo_ddr' of module 'fifo_w256_128_r128_256_1' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:800]
-WARNING: [Synth 8-689] width (16) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:912]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:924]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:940]
+WARNING: [Synth 8-689] width (128) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:767]
+WARNING: [Synth 8-689] width (10) of port connection 'rd_data_count' does not match port width (8) of module 'fifo_w256_128_r128_256_1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:812]
+WARNING: [Synth 8-350] instance 'okPipeOut_fifo_ddr' of module 'fifo_w256_128_r128_256_1' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:801]
+WARNING: [Synth 8-689] width (16) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:913]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:925]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:941]
 	Parameter halfof_divide_by bound to: 31'b0000101111101011110000100000000 
 WARNING: [Synth 8-3848] Net regDataIn in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:417]
 WARNING: [Synth 8-3848] Net hostinterrupt in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:410]
@@ -716,7 +716,7 @@ WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[3]
 WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[2]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:09 . Memory (MB): peak = 553.082 ; gain = 207.605
+Finished RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:07 . Memory (MB): peak = 553.301 ; gain = 207.230
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -770,70 +770,70 @@ WARNING: [Synth 8-3295] tying undriven pin regBridge:ep_datain[3] to constant 0 
 WARNING: [Synth 8-3295] tying undriven pin regBridge:ep_datain[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:419]
 WARNING: [Synth 8-3295] tying undriven pin regBridge:ep_datain[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:419]
 WARNING: [Synth 8-3295] tying undriven pin regBridge:ep_datain[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:419]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[0].adc7961:en_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[0].adc7961:en_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[0].adc7961:en_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[0].adc7961:en_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[1].adc7961:en_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[1].adc7961:en_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[1].adc7961:en_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[1].adc7961:en_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[2].adc7961:en_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[2].adc7961:en_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[2].adc7961:en_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[2].adc7961:en_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[3].adc7961:en_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[3].adc7961:en_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[3].adc7961:en_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin ad7960_gen[3].adc7961:en_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:data_rdy_0 to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[15] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[14] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[13] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[12] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[11] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[10] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[9] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[8] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[7] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[6] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[5] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[4] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:data_rdy_0 to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[15] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[14] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[13] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[12] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[11] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[10] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[9] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[8] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[7] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[6] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[5] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[4] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:data_rdy_0 to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:adc_val_0[15] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:adc_val_0[14] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:adc_val_0[13] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
-WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:adc_val_0[12] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:840]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[0].adc7961:en_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[0].adc7961:en_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[0].adc7961:en_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[0].adc7961:en_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[1].adc7961:en_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[1].adc7961:en_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[1].adc7961:en_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[1].adc7961:en_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[2].adc7961:en_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[2].adc7961:en_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[2].adc7961:en_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[2].adc7961:en_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[3].adc7961:en_i[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[3].adc7961:en_i[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[3].adc7961:en_i[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin ad7961_gen[3].adc7961:en_i[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:502]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:data_rdy_0 to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[15] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[14] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[13] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[12] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[11] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[10] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[9] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[8] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[7] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[6] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[5] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[4] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[0].spi_fifo0:adc_val_0[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:data_rdy_0 to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[15] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[14] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[13] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[12] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[11] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[10] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[9] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[8] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[7] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[6] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[5] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[4] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[3] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[2] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[1] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[1].spi_fifo0:adc_val_0[0] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:data_rdy_0 to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:adc_val_0[15] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:adc_val_0[14] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:adc_val_0[13] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
+WARNING: [Synth 8-3295] tying undriven pin dac_ad5453_gen[2].spi_fifo0:adc_val_0[12] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:841]
 INFO: [Common 17-14] Message 'Synth 8-3295' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:07 ; elapsed = 00:00:09 . Memory (MB): peak = 553.082 ; gain = 207.605
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 553.301 ; gain = 207.230
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:07 ; elapsed = 00:00:09 . Memory (MB): peak = 553.082 ; gain = 207.605
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 553.301 ; gain = 207.230
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 263 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -858,14 +858,14 @@ Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_X
 Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0/blk_mem_gen_0_in_context.xdc] for cell 'dac_ad5453_gen[5].spi_fifo0/realTime_LPF_coeff_BRAM'
 Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'debug_fifo'
 Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'debug_fifo'
-Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7960_gen[0].adc7961_fifo'
-Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7960_gen[0].adc7961_fifo'
-Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7960_gen[1].adc7961_fifo'
-Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7960_gen[1].adc7961_fifo'
-Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7960_gen[2].adc7961_fifo'
-Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7960_gen[2].adc7961_fifo'
-Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7960_gen[3].adc7961_fifo'
-Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7960_gen[3].adc7961_fifo'
+Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7961_gen[0].adc7961_fifo'
+Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7961_gen[0].adc7961_fifo'
+Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7961_gen[1].adc7961_fifo'
+Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7961_gen[1].adc7961_fifo'
+Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7961_gen[2].adc7961_fifo'
+Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7961_gen[2].adc7961_fifo'
+Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7961_gen[3].adc7961_fifo'
+Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_AD796x/fifo_AD796x/fifo_AD796x_in_context.xdc] for cell 'ad7961_gen[3].adc7961_fifo'
 Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/ddr3_256_32/ddr3_256_32/ddr3_256_32_in_context.xdc] for cell 'u_ddr3_256_32'
 Finished Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/ddr3_256_32/ddr3_256_32/ddr3_256_32_in_context.xdc] for cell 'u_ddr3_256_32'
 Parsing XDC File [c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_in_context.xdc] for cell 'okPipeIn_fifo'
@@ -905,11 +905,11 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
   RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.026 . Memory (MB): peak = 948.266 ; gain = 0.000
-WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7960_gen[0].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
-WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7960_gen[1].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
-WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7960_gen[2].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
-WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7960_gen[3].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.026 . Memory (MB): peak = 948.508 ; gain = 0.000
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7961_gen[0].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7961_gen[1].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7961_gen[2].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
+WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7961_gen[3].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ads8686_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'debug_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'okPipeIn_fifo' at clock pin 'wr_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
@@ -921,14 +921,14 @@ WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context s
 WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[4].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[5].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:23 ; elapsed = 00:00:26 . Memory (MB): peak = 948.266 ; gain = 602.789
+Finished Constraint Validation : Time (s): cpu = 00:00:22 ; elapsed = 00:00:23 . Memory (MB): peak = 948.508 ; gain = 602.438
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:23 ; elapsed = 00:00:26 . Memory (MB): peak = 948.266 ; gain = 602.789
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:22 ; elapsed = 00:00:23 . Memory (MB): peak = 948.508 ; gain = 602.438
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -1080,10 +1080,10 @@ Applied set_property DONT_TOUCH = true for \dac_ad5453_gen[2].spi_fifo0 /realTim
 Applied set_property DONT_TOUCH = true for \dac_ad5453_gen[3].spi_fifo0 /realTime_LPF_coeff_BRAM. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for \dac_ad5453_gen[4].spi_fifo0 /realTime_LPF_coeff_BRAM. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for \dac_ad5453_gen[5].spi_fifo0 /realTime_LPF_coeff_BRAM. (constraint file  auto generated constraint, line ).
-Applied set_property DONT_TOUCH = true for \ad7960_gen[0].adc7961_fifo . (constraint file  auto generated constraint, line ).
-Applied set_property DONT_TOUCH = true for \ad7960_gen[1].adc7961_fifo . (constraint file  auto generated constraint, line ).
-Applied set_property DONT_TOUCH = true for \ad7960_gen[2].adc7961_fifo . (constraint file  auto generated constraint, line ).
-Applied set_property DONT_TOUCH = true for \ad7960_gen[3].adc7961_fifo . (constraint file  auto generated constraint, line ).
+Applied set_property DONT_TOUCH = true for \ad7961_gen[0].adc7961_fifo . (constraint file  auto generated constraint, line ).
+Applied set_property DONT_TOUCH = true for \ad7961_gen[1].adc7961_fifo . (constraint file  auto generated constraint, line ).
+Applied set_property DONT_TOUCH = true for \ad7961_gen[2].adc7961_fifo . (constraint file  auto generated constraint, line ).
+Applied set_property DONT_TOUCH = true for \ad7961_gen[3].adc7961_fifo . (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for debug_fifo. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for u_ddr3_256_32. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okPipeIn_fifo. (constraint file  auto generated constraint, line ).
@@ -1092,7 +1092,7 @@ Applied set_property DONT_TOUCH = true for okPipeOut_fifo_ddr. (constraint file 
 Applied set_property DONT_TOUCH = true for ads8686_fifo. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okHI/core0/core0/\a0/cb0 /U0/\inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:23 ; elapsed = 00:00:26 . Memory (MB): peak = 948.266 ; gain = 602.789
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:22 ; elapsed = 00:00:23 . Memory (MB): peak = 948.508 ; gain = 602.438
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-5545] ROM "clk_div" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "data_reg" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
@@ -1278,7 +1278,7 @@ s_preamble_startstopwait |                             1001 | 000000000000000000
       s_payload_stopwait |                             1110 | 00000000000000000000000000100001
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'i2cController'
-INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm1ECEA8CE1C00'
+INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm145B7DC04900'
 ---------------------------------------------------------------------------------------------------
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
@@ -1430,7 +1430,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'read_fifo_to_spi_cmd__parameterized4'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:26 ; elapsed = 00:00:30 . Memory (MB): peak = 948.266 ; gain = 602.789
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:25 ; elapsed = 00:00:26 . Memory (MB): peak = 948.508 ; gain = 602.438
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1940,7 +1940,7 @@ INFO: [Synth 8-3333] propagating constant 0 across sequential element (i_2/\dac_
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (i_2/\dac_ad5453_gen[3].spi_fifo0/data_converter_0 /\cmd_word_reg[33] )
 INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:50 ; elapsed = 00:00:54 . Memory (MB): peak = 948.266 ; gain = 602.789
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:48 ; elapsed = 00:00:50 . Memory (MB): peak = 948.508 ; gain = 602.438
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1966,13 +1966,13 @@ INFO: [Synth 8-5783] Moving clock source from hierarchical pin 'adc_timing/clk_i
 INFO: [Synth 8-5578] Moved timing constraint from pin 'core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst/src_arst' to pin 'core0/core0/a0/l62a5479e7989ce7f4d5507c695cc69cf_reg/Q'
 INFO: [Synth 8-5819] Moved 7 constraints on hierarchical pins to their respective driving/loading pins
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:58 ; elapsed = 00:01:03 . Memory (MB): peak = 948.266 ; gain = 602.789
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:56 ; elapsed = 00:00:58 . Memory (MB): peak = 948.508 ; gain = 602.438
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:01:01 ; elapsed = 00:01:07 . Memory (MB): peak = 991.648 ; gain = 646.172
+Finished Timing Optimization : Time (s): cpu = 00:00:59 ; elapsed = 00:01:02 . Memory (MB): peak = 989.488 ; gain = 643.418
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1990,7 +1990,7 @@ Report RTL Partitions:
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:01:08 ; elapsed = 00:01:13 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Finished Technology Mapping : Time (s): cpu = 00:01:05 ; elapsed = 00:01:08 . Memory (MB): peak = 1020.945 ; gain = 674.875
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -2014,7 +2014,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:01:09 ; elapsed = 00:01:15 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Finished IO Insertion : Time (s): cpu = 00:01:06 ; elapsed = 00:01:09 . Memory (MB): peak = 1020.945 ; gain = 674.875
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -2027,7 +2027,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:01:09 ; elapsed = 00:01:15 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:06 ; elapsed = 00:01:09 . Memory (MB): peak = 1020.945 ; gain = 674.875
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -2039,25 +2039,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:10 ; elapsed = 00:01:16 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:07 ; elapsed = 00:01:10 . Memory (MB): peak = 1020.945 ; gain = 674.875
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:01:10 ; elapsed = 00:01:16 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:07 ; elapsed = 00:01:10 . Memory (MB): peak = 1020.945 ; gain = 674.875
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:01:11 ; elapsed = 00:01:16 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:08 ; elapsed = 00:01:10 . Memory (MB): peak = 1020.945 ; gain = 674.875
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:01:11 ; elapsed = 00:01:16 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:08 ; elapsed = 00:01:10 . Memory (MB): peak = 1020.945 ; gain = 674.875
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -2129,11 +2129,11 @@ Report Cell Usage:
 |46    |OBUFDS                   |    12|
 +------+-------------------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:01:11 ; elapsed = 00:01:16 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:08 ; elapsed = 00:01:10 . Memory (MB): peak = 1020.945 ; gain = 674.875
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 2527 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:00:51 ; elapsed = 00:01:02 . Memory (MB): peak = 1023.562 ; gain = 282.902
-Synthesis Optimization Complete : Time (s): cpu = 00:01:11 ; elapsed = 00:01:16 . Memory (MB): peak = 1023.562 ; gain = 678.086
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:48 ; elapsed = 00:00:58 . Memory (MB): peak = 1020.945 ; gain = 279.668
+Synthesis Optimization Complete : Time (s): cpu = 00:01:08 ; elapsed = 00:01:11 . Memory (MB): peak = 1020.945 ; gain = 674.875
 INFO: [Project 1-571] Translating synthesized netlist
 INFO: [Netlist 29-17] Analyzing 602 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -2153,9 +2153,9 @@ INFO: [Project 1-111] Unisim Transformation Summary:
 INFO: [Common 17-83] Releasing license: Synthesis
 669 Infos, 486 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:01:15 ; elapsed = 00:01:22 . Memory (MB): peak = 1023.562 ; gain = 678.086
+synth_design: Time (s): cpu = 00:01:12 ; elapsed = 00:01:15 . Memory (MB): peak = 1020.945 ; gain = 674.875
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.143 . Memory (MB): peak = 1023.562 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Thu Oct 21 10:23:35 2021...
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.139 . Memory (MB): peak = 1020.945 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Mon Oct 25 12:38:43 2021...
