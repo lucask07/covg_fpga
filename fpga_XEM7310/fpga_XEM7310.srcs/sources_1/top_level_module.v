@@ -213,13 +213,13 @@ module top_level_module(
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
     wire [(FADC_NUM-1):0]write_en_adc_o;
     wire [15:0] adc_val[0:(FADC_NUM-1)];
-
+    
     wire [(FADC_NUM-1):0] adc_fifo_full;
     wire [(FADC_NUM-1):0] adc_fifo_halffull;
     wire [(FADC_NUM-1):0] adc_fifo_empty;
     wire [(FADC_NUM-1):0] adc_pipe_ep_read;
     wire [(FADC_NUM-1):0] adc_fifo_reset;
-
+	
 	assign led[1] = ~adc_pll_locked;
 	assign led[2] = ~adc_fifo_empty[0]; // LEDs light when low
 	assign led[3] = ~adc_fifo_halffull[1];
@@ -228,7 +228,7 @@ module top_level_module(
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i]);
     assign led[7] = 1'b0;
 
-    // WireIn 0 configures MUX for logic analyzer debug. CSB signals
+    // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
     mux_8to1 (
 	   .datain({d_csb[4:0], ds_csb[1], ds_csb[0], ads_csb}), // 7:0
 	   .sel(ep00wire[(`GPIO_CSB_DEBUG_LEN + `GPIO_CSB_DEBUG - 1) :(`GPIO_CSB_DEBUG)]),
@@ -253,11 +253,11 @@ module top_level_module(
        .dataout(gpio[3])
     );
 
-    //debug AD7961
+    //debug AD7961 
     wire [(FADC_NUM-1):0] conv;
     wire [(FADC_NUM-1):0] dco;
     wire [(FADC_NUM-1):0] adc_serial_data;
-
+    
     assign sma[0] = dco[3];
     assign sma[1] = adc_serial_data[3];
 
@@ -298,9 +298,9 @@ module top_level_module(
     assign up = ep01wire[(`GPIO_UP_WIRE_IN+`GPIO_UP_WIRE_IN_LEN - 1):`GPIO_UP_WIRE_IN];
     assign dn = ep01wire[(`GPIO_DOWN_WIRE_IN+`GPIO_DOWN_WIRE_IN_LEN - 1):`GPIO_DOWN_WIRE_IN];
 
-    wire [(DAC80508_NUM-1):0] host_fpgab_dac80508;
+    wire [(DAC80508_NUM-1):0] host_fpgab_dac80508; 
     assign host_fpgab_dac80508 = ep01wire[(`DAC80508_HOST_FPGA_GEN_BIT_LEN + `DAC80508_HOST_FPGA_GEN_BIT - 1):`DAC80508_HOST_FPGA_GEN_BIT];
-
+        
     // use GPIO with the SPI debug mux
     //assign gpio = ep01wire[(`GPIO_3V3_WIRE_IN+`GPIO_3V3_WIRE_IN_LEN - 1):`GPIO_3V3_WIRE_IN];
     wire [3:0]gp_lvds_se;
@@ -451,11 +451,11 @@ module top_level_module(
                        .ss(ads_csb),
                        .sclk(ads_sclk),
                        .mosi(ads_sdi),
-                       .miso(ads_sdoa),
+                       .miso(ads_sdoa), 
                        .miso_b(ads_sdob),
                        .convst_out(ads_convst)
                        );
-
+                       
    wire [31:0] ads_fifo_data;
    wire ads_pipe_read;
 
@@ -469,7 +469,7 @@ module top_level_module(
      .dout(ads_fifo_data),           // Bus [31:0] (to OKHost)
      .full(ads_fifo_full),           // status
      .empty(ads_fifo_empty),         // status
-     .prog_full(ads_fifo_halffull)); // status (flags at 1024 full)
+     .prog_full(ads_fifo_halffull)); // status (flags at 1024 full) 
 
     //pipeOut to transfer data in bulk from the ADS8686 FIFO
    okPipeOut pipeOutADS86 (.okHE(okHE), .okEH(okEHx[3*65 +: 65]),
@@ -481,7 +481,7 @@ module top_level_module(
         if (sys_rst) begin
              ads_last_read <=32'h0;
         end
-        else if (ads_data_valid) begin
+        else if (ads_data_valid) begin 
             ads_last_read <= ads_data_out;
         end
     end
@@ -517,7 +517,7 @@ module top_level_module(
         .data_o(adc_val[i]),
         .conv(conv[i]),
         .dco(dco[i]),
-        .adc_serial_data(adc_serial_data[i])
+        .adc_serial_data(adc_serial_data[i])        
         );
 
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports; write depth 4096, read depth 2048
@@ -531,9 +531,9 @@ module top_level_module(
           .dout(adc_pipe_ep_datain[i]),     // Bus [31:0] (to OKHost)
           .full(adc_fifo_full[i]),     // status
           .empty(adc_fifo_empty[i]),   // status
-          .prog_full(adc_fifo_halffull[i]),  // half-full flag (2048 which is based off of the write depth)
+          .prog_full(adc_fifo_halffull[i]),  // half-full flag (2048 which is based off of the write depth)        
           .wr_rst_busy(),
-          .rd_rst_busy()
+          .rd_rst_busy()          
           );//status
 
           //pipeOut for data from AD7961
@@ -547,7 +547,7 @@ module top_level_module(
     /*---------------- DAC80508 -------------------*/
     wire [31:0]dac_wirein_data[(DAC80508_NUM-1):0];
     wire [31:0]dac_data_out[(DAC80508_NUM-1):0];
-
+    
     genvar j;
     generate
     for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen
@@ -572,12 +572,12 @@ module top_level_module(
                            .miso(1'b0),
                            .miso_b(1'b0),
                            .convst_out()
-                           );
+                           );         
         okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DAC80508_WB_IN_GEN_ADDR + j), .ep_dataout(dac_wirein_data[j]));
         // TODO: wireout is not needed (nor supported with the Clear version of the DAC80508)
-        okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(9+j)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR + j), .ep_datain(dac_data_out[j]));
+        okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(9+j)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR + j), .ep_datain(dac_data_out[j]));    
     assign ds_sdo[j] = 1'b1; // sdo for the DAC80508C is CLRB -- force to logic high
-
+    
     end
     endgenerate
     /*---------------- END DAC80508 -------------------*/
@@ -594,7 +594,7 @@ module top_level_module(
      localparam CAPABILITY = 16'h0001;
 
      wire          init_calib_complete;
-     reg           rst_sys_ddr; // reset at startup for a certain number of clock cycles
+     reg           rst_sys_ddr; // reset at startup for a certain number of clock cycles 
 
      wire [29 :0]  app_addr;
      wire [2  :0]  app_cmd;
@@ -782,7 +782,7 @@ module top_level_module(
          .rd_data_count(pipe_in_rd_count), // Bus [6 : 0]
          .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0]
 
-    /* -- FIFO that served 1 DAC --
+    /* -- FIFO that served 1 DAC -- 
      fifo_w256_128_r32_1024 okPipeOut_fifo (
          .rst(ep03wire[`DDR3_RESET]),
          .wr_clk(clk_ddr_ui),
@@ -799,7 +799,7 @@ module top_level_module(
     */
 
      fifo_w256_128_r128_256_1 okPipeOut_fifo_ddr (
-         .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset
+         .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys),
          .din(pipe_out_data), // Bus [255 : 0]
@@ -818,37 +818,37 @@ module top_level_module(
     /* ------------------ AD5453 SPI ------------------- */
     wire [(AD5453_NUM-1):0] rd_en_fast_dac;
     wire [(AD5453_NUM-1):0] clk_en_fast_dac;
-
+    
     wire [15:0] spi_data[0:(AD5453_NUM-1)];
     wire [31:0] host_spi_data[0:(AD5453_NUM-1)];
 
     genvar k;
     generate
     for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
-
+    
         okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(host_spi_data[k]));
-
+        
         mux_4to1_16wide spi_mux_bus(
-            .datain_0(po0_ep_datain[k*16 +:16]), // input  wire [15:0] datain. stripe DDR in 16 bit wide groups
-            .datain_1(host_spi_data[k][15:0]),
+            .datain_0(po0_ep_datain[k*16 +:16]), // input  wire [15:0] datain. stripe DDR in 16 bit wide groups 
+            .datain_1(host_spi_data[k][15:0]), 
             .datain_2(ads_last_read[15:0]),
-            .datain_3(adc_pipe_ep_datain[3][15:0]), // TODO:  poor design since not synchronized. Use CHAN3
+            .datain_3(adc_val[3][15:0]), // TODO:  poor design since not synchronized. Use CHAN3
             .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
             .dataout(spi_data[k])
         );
-
+            
         // instantiate old top-level (but only for the AD5453 SPI)
         spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
-                 .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]),
+                 .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
                  .data_rdy_0(), .adc_val_0(), //not yet used
                  // register bridge //TODO: add address increment based on generate k
-                 .ep_write(regWrite),           //input wire
-                 .ep_address(regAddress),       //input wire [31:0]
+                 .ep_write(regWrite),           //input wire 
+                 .ep_address(regAddress),       //input wire [31:0] 
                  .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
                  /*.ep_datain(regDataIn),*/
                  // DDR
-                 .en_period(en_period), //in, [9:0] TODO: same period for all spi_fifo_driven instances
+                 .en_period(en_period), //in, [9:0] TODO: same period for all spi_fifo_driven instances 
                  .clk_en(clk_en_fast_dac[k]), //out
                  .ddr3_rst(ddr3_rst),//in
                  //.ddr_dat_i(po0_ep_datain[13:0]), //in  TODO: add Mux here
@@ -860,8 +860,8 @@ module top_level_module(
         end
     endgenerate
 
-    assign rd_en_0 = rd_en_fast_dac[0]; // DDR driven by DAC0
-    assign clk_en = clk_en_fast_dac[0]; // DDR driven by DAC0
+    assign rd_en_0 = rd_en_fast_dac[0]; // DDR driven by DAC0 
+    assign clk_en = clk_en_fast_dac[0]; // DDR driven by DAC0 
 
     /* ----------------- END AD5453 ------------------------------------ */
 
@@ -878,7 +878,7 @@ module top_level_module(
 
     generate
         for (i = 0; i < (I2C_DCARDS_NUM / 4); i = i + 1) begin
-            okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ (15 + i)*65 +: 65 ]), .ep_addr(`I2CDC_WIRE_OUT_GEN_ADDR + i),
+            okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ (15 + i)*65 +: 65 ]), .ep_addr(`I2CDC_WIRE_OUT + i),
                             .ep_datain({i2c_memdout[i + 3], i2c_memdout[i + 2], i2c_memdout[i + 1], i2c_memdout[i + 0]}));
         end
     endgenerate
@@ -948,18 +948,18 @@ module top_level_module(
 	 //module to create a one second pulse on one of the LEDs (keepAlive test)
 	 one_second_pulse out_pulse(
 	 .clk(clk_sys), .rst(sys_rst), .slow_pulse(led[0])
-	 );
-
+	 ); 
+ 
      /*---------------- FIFO debug  -------------------*/
      reg [15:0] debug_cnt;
      wire [31:0] fifo_debug_out;
      wire debug_pipe_ep_read;
-
+     
      always @(posedge adc_timing_clk) begin
          if (ep42trig[`DEBUGFIFO_CNT_RESET] == 1'b1) debug_cnt <= 16'b0;
          else debug_cnt <= debug_cnt + 1'b1;
      end
-
+     
      fifo_AD796x debug_fifo (//32 bit wide read and 16 bit wide write ports
        .rst(ep42trig[`DEBUGFIFO_FIFO_RESET]),
        .wr_clk(adc_timing_clk),
@@ -970,12 +970,12 @@ module top_level_module(
        .dout(fifo_debug_out),     // Bus [31:0] (to OKHost)
        .full(debug_fifo_status[0]),     // status
        .empty(debug_fifo_status[2]),   // status
-       .prog_full(debug_fifo_status[1]),
+       .prog_full(debug_fifo_status[1]),          
        .wr_rst_busy(),
-       .rd_rst_busy()
+       .rd_rst_busy()          
        );//status
-
-   //pipeOut for data from debug fifo
+ 
+   //pipeOut for data from debug fifo 
    okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(17)*65 +: 65]),
              .ep_addr(`DEBUGFIFO_PIPE_OUT), .ep_read(debug_pipe_ep_read),
              .ep_datain(fifo_debug_out));
