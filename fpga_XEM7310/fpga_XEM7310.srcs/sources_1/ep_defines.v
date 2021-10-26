@@ -52,7 +52,7 @@
 `define I2CDAQ_IN_GEN_BIT 0 // address=I2CDAQ_WIRE_IN bit_width=16
 
 `define ADS8686_OUT 8'h24 // bit_width=32
-`define I2CDC_WIRE_OUT 8'h25 // bit_width=8
+`define I2CDC_WIRE_OUT_GEN_ADDR 8'h25 // bit_width=8
 `define I2CDC_OUT_GEN_BIT 0 // address=I2CDC_WIRE_OUT bit_width=8
 `define I2CDAQ_WIRE_OUT_GEN_ADDR 8'h26 // bit_width=8
 `define I2CDAQ_OUT_GEN_BIT 0 // address=I2CDAQ_WIRE_OUT bit_width=8
@@ -69,10 +69,10 @@
 `define AD5453_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
 
 
-// wireIn address for index 
+// wireIn address for index
 `define DDR3_INDEX 8'h04 // bit_width=32
 
-// wireIn for host driven data 
+// wireIn for host driven data
 `define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32
 
 // trigger in addresses
