@@ -171,7 +171,7 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
     expected = to_voltage(data=voltage_data, num_bits=16, voltage_range=2.5 * expected_gain)
 
     dac.write('DAC4', voltage_data)
-    dac.set_gain(gain=gain, outputs=[4], divide_reference=divide_reference)
+    dac.set_gain(gain=gain, outputs=4, divide_reference=divide_reference)
     # Read value with ADS8686
     read_dict = ads.read_last()
     read_data = int(read_dict['A'][0])
@@ -222,7 +222,8 @@ def test_dac_write_voltage(dac, ads, voltage):
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
     # adjusted by the gain of the output and whether the internal reference is
     # divided by 2 or not.
-    gain_info = dac.write_voltage(voltage=voltage, outputs=[4], auto_gain=True)
+    # dac.set_gain(gain=1, divide_reference=False)
+    gain_info = dac.write_voltage(voltage=voltage, outputs=4, auto_gain=True)
     print(gain_info)
 
     # Read value with ADS8686
