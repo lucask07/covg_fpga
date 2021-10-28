@@ -176,9 +176,11 @@ def from_voltage(voltage, num_bits, voltage_range, with_negatives=False):
         elif voltage > voltage_range:
             print(f'WARNING: voltage {voltage} outside range [0, {voltage_range}]. Truncating...')
             data = 2 ** num_bits - 1
+        elif voltage == voltage_range:
+            data = 0xffff
         else:
             bit_voltage = voltage_range / (2 ** num_bits)
-            data = round(voltage / bit_voltage)
+            data = int(voltage // bit_voltage)
 
         return data
     else:

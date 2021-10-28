@@ -1738,7 +1738,7 @@ class DAC80508(SPIController):
                 voltage /= 2  # Halve voltage so we can write as if output unaffected
             else:
                 print(f'ERROR: cannot write voltage {voltage}V, max 5V')
-            self.set_gain(gain=1, outputs=outputs, divide_reference=False)
+            self.set_gain(gain=gain, outputs=outputs, divide_reference=divide_reference)
             gain_info = {'gain': gain, 'divide_reference': divide_reference}
         else:
             gain_info = {}
