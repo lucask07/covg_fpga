@@ -12,7 +12,7 @@ import pandas as pd
 import os
 import struct
 import time
-from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list
+from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list, from_voltage, to_voltage
 import copy
 
 class Register:
@@ -1707,6 +1707,51 @@ class DAC80508(SPIController):
         #     print(f'Write {hex(data)} to {register_name}: FAIL')
         # return ack
 
+    def write_voltage(self, voltage, outputs=[0, 1, 2, 3, 4, 5, 6, 7], auto_gain=False):
+        """Write the voltage to the outputs of the DAC.
+        
+        Arguments
+        ---------
+        voltage : int or float
+            The decimal voltage to write. This will be rounded to a
+            representable binary value.
+        ouptuts : int or list(int)
+            The output or list of outputs to write the voltage to.
+        auto_gain : bool
+            True to automatically set the gain for the
+            outputs, False otherwise.
+        """
+        
+        if auto_gain:
+            if voltage <= 1.25:
+                gain = 1
+                divide_reference = True
+                voltage *= 2 # Double voltage so we can write as if output unaffected
+            elif voltage <= 2.5:
+                # *2 and /2 is recommended instead of *1 and /1
+                gain = 2
+                divide_reference = True
+                # Don't need to change the voltage here because it is in our expected range
+            elif voltage <= 5:
+                gain = 2
+                divide_reference = False
+                voltage /= 2  # Halve voltage so we can write as if output unaffected
+            else:
+                print(f'ERROR: cannot write voltage {voltage}V, max 5V')
+            self.set_gain(gain=gain, outputs=outputs, divide_reference=divide_reference)
+            gain_info = {'gain': gain, 'divide_reference': divide_reference}
+        else:
+            gain_info = {}
+
+        voltage_bin = from_voltage(voltage=voltage, num_bits=16, voltage_range=2.5, with_negatives=False)
+        if type(outputs) is list:
+            for output in outputs:
+                self.write('DAC' + str(output), voltage_bin)
+        elif type(outputs) is int:
+            self.write('DAC' + str(outputs), voltage_bin)
+
+        return gain_info
+
     def read(self, register_name):
         """Return data from any register on the chip."""
 
@@ -1769,8 +1814,8 @@ class DAC80508(SPIController):
                 print(f"{key}: {bool(config & DAC80508.registers.get(key).bit_index_low)}")
         return config
 
-    def set_gain(self, data, mask=0x01ff):
-        """Set the gain value.
+    def set_gain_bin(self, data, mask=0x01ff):
+        """Set the gain register with a binary value.
 
         1 gives a gain of 2 for the output at that bit index (0-7). 0 gives a
         gain of 1.
@@ -1780,6 +1825,32 @@ class DAC80508(SPIController):
         """
 
         return self.write('GAIN', data, mask)
+
+    def set_gain(self, gain, outputs=[0, 1, 2, 3, 4, 5, 6, 7], divide_reference=False):
+        """Set the gain and reference divider.
+        
+        Arguments
+        ---------
+        gain : int
+            The gain for the outputs. 1 or 2.
+        ouptuts : int or list(int)
+            The output or list of outputs to set the gain for.
+        divide_reference : bool
+            True to divide the reference voltage by 2, False to leave the it
+            unaffected.
+        """
+
+        # The reference divider bit is the 8th bit from the LSB in the gain
+        # register. Output gain 0 is 0 bits in, output gain 1 1 bit in, etc.
+        if gain != 1 and gain != 2:
+            print(f'ERROR: gain value must be 1 or 2. Got {gain}')
+        gain_bin = divide_reference << 8
+        if type(outputs) is list:
+            for output in outputs:
+                gain_bin |= (gain - 1) << output
+        elif type(outputs) is int:
+            gain_bin |= (gain - 1) << outputs
+        self.set_gain_bin(data=gain_bin)
 
     def get_gain(self):
         """Get the gain value."""
