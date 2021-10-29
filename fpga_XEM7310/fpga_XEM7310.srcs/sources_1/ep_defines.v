@@ -69,10 +69,10 @@
 `define AD5453_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
 
 
-// wireIn address for index
+// wireIn address for index 
 `define DDR3_INDEX 8'h04 // bit_width=32
 
-// wireIn for host driven data
+// wireIn for host driven data 
 `define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32
 
 // trigger in addresses
