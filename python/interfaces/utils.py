@@ -7,10 +7,11 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import numpy as np
+import datetime
 
 def rev_lookup(dd, val):
     key = next(key for key, value in dd.items() if value == val)
-    return key 
+    return key
 
 def bin(s):
     return str(s) if s<=1 else bin(s>>1) + str(s&1)
@@ -25,7 +26,7 @@ def gen_mask(bit_pos):
         bit_pos = [bit_pos]
 
     mask = sum([(1 << b) for b in bit_pos])
-    return mask 
+    return mask
 
 def twos_comp(val, bits):
     """compute the 2's complement of int value val
@@ -48,7 +49,7 @@ def twos_comp(val, bits):
 
 def reverse_bits(number, bit_width=8):
     """Return an integer with the reversed bits of the input number."""
-    
+
     reversed_number = 0
     for i in range(bit_width):
         reversed_number <<= 1
@@ -71,7 +72,7 @@ def count_bytes(num):
 
 def int_to_list(integer, num_bytes=None):
     """Convert an integer into a list of integers 1 byte long.
-    
+
     The MSB will be at index 0 in the list.
     """
 
@@ -185,3 +186,7 @@ def from_voltage(voltage, num_bits, voltage_range, with_negatives=False):
         print(
             f'ERROR: wrong voltage type in from_voltage: type(voltage) = {type(voltage)} Expected float or int')
         return None
+
+
+def get_timestamp():
+    return int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
