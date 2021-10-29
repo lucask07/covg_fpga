@@ -878,7 +878,7 @@ module top_level_module(
 
     generate
         for (i = 0; i < (I2C_DCARDS_NUM / 4); i = i + 1) begin
-            okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ (15 + i)*65 +: 65 ]), .ep_addr(`I2CDC_WIRE_OUT + i),
+            okWireOut wo_i2c_dc (.okHE(okHE), .okEH(okEHx[ (15 + i)*65 +: 65 ]), .ep_addr(`I2CDC_WIRE_OUT_GEN_ADDR + i),
                             .ep_datain({i2c_memdout[i + 3], i2c_memdout[i + 2], i2c_memdout[i + 1], i2c_memdout[i + 0]}));
         end
     endgenerate
