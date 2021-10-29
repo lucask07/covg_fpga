@@ -17,7 +17,6 @@ import os
 import time
 import datetime
 import numpy as np
-from instrbuilder.instrument_opening import open_by_name
 import atexit
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -31,9 +30,10 @@ for i in range(15):
 sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Endpoint
-
 from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, AD5453, DAC53401
 from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DebugFIFO, DDR3
+from interfaces.utils import get_timestamp
+from instruments.power_supply import open_rigol_supply, pwr_off, config_supply, log_dc_pwr, init_current_meas_dict
 
 eps = Endpoint.endpoints_from_defines
 
@@ -41,82 +41,29 @@ from interfaces.boards import Daq  # TODO: should I instantiate the Daq board or
                                    # TODO: for now, pieces, eventually the DAQ board
 
 
-def get_timestamp():
-    return int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
-
 logging.basicConfig(filename=os.path.join(interfaces_path, 'tests', 'power_test.log'),
                     filemode='w',
                     level=logging.INFO)
 
 # eps = Endpoint.endpoints_from_defines
 ADS_EN = True
-AD7961_EN = False
 EN_15V = True
 DAC_80508_EN = True
 DDR_EN = True
 FIFO_DEBUG_EN = False
 
-# set up DC power supply
-# name within the configuration file (config.yaml)
-dc_pwr = open_by_name(name='rigol_pwr1')  # 7V in
-dc_pwr2 = open_by_name(name='rigol_ps2')  # +/-16.5V
-
-current_meas = {}
-for ch in range(1, 4):
-    # create dictionary for each channel
-    current_meas['ch{}'.format(ch)] = {}
-    for n in ['val', 'timestamp']:
-        current_meas['ch{}'.format(ch)][n] = np.array([])
-    # create a list
-    current_meas['ch{}'.format(ch)]['description'] = []
-
-
-def log_dc_pwr(dc_pwr, dc_pwr2, data, desc='none'):
-    """ measure current from CH1 and  CH1,CH2 of two PWR supplies channels and
-        update into dictionary with timestamp (ms)
-    """
-    for ch in [1]:
-        data['ch{}'.format(ch)]['val'] = np.append(data['ch{}'.format(ch)]['val'],
-                                        dc_pwr.get('meas_i', configs={'chan': ch}))
-        data['ch{}'.format(ch)]['timestamp'] = np.append(data['ch{}'.format(ch)]['timestamp'], get_timestamp())
-        data['ch{}'.format(ch)]['description'].append(desc)
-    # second supply
-    for ch in [1, 2]:
-        data['ch{}'.format(ch)]['val'] = np.append(data['ch{}'.format(ch)]['val'],
-                                        dc_pwr2.get('meas_i', configs={'chan': ch}))
-        data['ch{}'.format(ch)]['timestamp'] = np.append(data['ch{}'.format(ch)]['timestamp'], get_timestamp())
-        data['ch{}'.format(ch)]['description'].append(desc)
-
-
-def pwr_off():
-    for ch in [1, 2, 3]:
-        dc_pwr.set('out_state', 'OFF', configs={'chan': ch})
-    for ch in [1, 2, 3]:
-        dc_pwr2.set('out_state', 'OFF', configs={'chan': ch})
-
-
-atexit.register(pwr_off)
-
-# pwr off all channels
-pwr_off()
-
-# Channel 1 and 2 setup
-for ch in [1, 2]:
-    dc_pwr2.set('i', 0.39, configs={'chan': ch})
-    dc_pwr2.set('v', 16.5, configs={'chan': ch})
-    dc_pwr2.set('ovp', 16.7, configs={'chan': ch})
-    dc_pwr2.set('ocp', 0.400, configs={'chan': ch})
-
-# Channel 1 on supply1 for Vin
-dc_pwr.set('i', 0.55, configs={'chan': 1})
-dc_pwr.set('v', 7, configs={'chan': 1})
-dc_pwr.set('ovp', 7.2, configs={'chan': 1})
-dc_pwr.set('ocp', 0.75, configs={'chan': 1})
-
+# -------- power supplies -----------
+dc_pwr, dc_pwr2 = open_rigol_supply()
+atexit.register(pwr_off, [dc_pwr, dc_pwr2])
+config_supply(dc_pwr, dc_pwr2)
 # turn on the 7V in, but keep +/-16.6 down
 dc_pwr.set('out_state', 'ON', configs={'chan': 1})
-
-log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_nobitfile')
+# turn on the +/-16.5 V input
+for ch in [1, 2]:
+    dc_pwr2.set('out_state', 'ON', configs={'chan': ch})
+current_meas = init_current_meas_dict()
+######################################
+time.sleep(2)
 
 time.sleep(2)
 # Set up FPGA
@@ -126,8 +73,10 @@ f.init_device()
 time.sleep(2)
 f.send_trig(eps['GP']['SYSTEM_RESET'])  # system reset
 
-log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_bitfile')
+# log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='startup_bitfile')
 
+
+########## GET Chip Instances ###################
 uid = UID_24AA025UID(fpga=f,
                      endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                      addr_pins=0b000)
@@ -147,32 +96,10 @@ dac0 = DAC80508(fpga=f)
 dac1 = DAC80508(fpga=f,
                 endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('DAC80508'), 1))
 
+
+
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
-
-gpio = Daq.GPIO(f)
-gpio.fpga.debug = True
-# configure the SPI debug MUXs
-# gpio.spi_debug('dfast0')
-gpio.spi_debug('ads')
-# gpio.ads_misc('convst')
-gpio.ads_misc('sdoa')
-
-AD7961_CHANS = 4
-ad7961s = []
-for i in range(AD7961_CHANS):
-    ad7961s.append(AD7961(f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD7961'),i)))
-
-for i in range(AD7961_CHANS):
-    ad7961s[i].power_down_all()
-    ad7961s[i].reset_wire(1)  # FPGA reset wire, resets FPGA controller
-
-if FIFO_DEBUG_EN:
-    fifo_debug = DebugFIFO(f)
-    fifo_debug.reset_fifo()
-    dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
-
-ads.hw_reset(val=True)  # put ADS into hardware reset
 
 # power supply turn on and check current (AD7961 - 1.8 V first, then 5V)
 for name in ['1V8', '5V', '3V3']:
@@ -190,6 +117,26 @@ if EN_15V:
 
 time.sleep(0.01)
 print(current_meas)
+
+gpio = Daq.GPIO(f)
+gpio.fpga.debug = True
+# configure the SPI debug MUXs
+# gpio.spi_debug('dfast0')
+gpio.spi_debug('ads')
+# gpio.ads_misc('convst')
+gpio.ads_misc('sdoa')
+
+
+#for i in range(AD7961_CHANS):
+#    ad7961s[i].power_down_all()
+#    ad7961s[i].reset_wire(1)  # FPGA reset wire, resets FPGA controller
+
+if FIFO_DEBUG_EN:
+    fifo_debug = DebugFIFO(f)
+    fifo_debug.reset_fifo()
+    dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
+
+ads.hw_reset(val=True)  # put ADS into hardware reset
 
 ddr = DDR3(f)
 ddr.set_index(int(ddr.parameters['sample_size']/8))
@@ -246,27 +193,6 @@ for bit_pos in range(eps['GP']['CURRENT_PUMP_ENABLE'].bit_index_low,
 
 log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ipump_disable')
 
-# check amps for 14-bit DAC
-
-# add up current for LVDS
-#  Q: current per pin
-#  A: ~4mA
-
-# need a supply power up procedure/order and a prediction of the current of PWR only
-# Q: what was supply draw alone?
-# A: 34 mA with all supplies enabled; 5 mA with none enabled
-
-# need calculator based on input voltage -- more current required at lower voltages --> DONE
-
-# check DAC80508:
-# Q: does it have CLR pin?
-# A: yes, the manf# is ZC - zero and clear
-# TODO: change FPGA output pins (tie high? since CLRB) --> DONE
-
-# setup QW I2C bus for I/O expanders
-# Note: the VREF gain for the high-speed DACs defaults to x4.88 if the I/O
-#       expanders are not configured. So no concern of damage if we don't configure these
-
 # desired I/O expander:
 # DAC gains and current output select
 io_0 = TCA9555(fpga=f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
@@ -291,32 +217,6 @@ log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='io_expanders_0')
 setup = ad7961s[0].setup(reset_pll=True)
 time.sleep(0.05)
 
-# AD7961 tests; test pattern and data saved to file
-chan = 3
-num = 20
-if AD7961_EN:
-    for chan in [3]:
-        for num in [20,21,22,23,24,25,26]:
-            if chan == 0:
-                setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
-            else:
-                setup = ad7961s[chan].setup(reset_pll=False)  # resets FIFO and ADC controller
-            ad7961s[chan].test_pattern()
-            time.sleep(0.2)
-            ad7961s[chan].reset_fifo()
-            time.sleep(0.2)  # FIFO fills in 204 us
-            log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='enable_ad7961')
-            d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
-
-            ad7961s[chan].power_up_adc()  # standard sampling
-            ad7961s[chan].reset_fifo()
-            time.sleep(0.2)
-            d2 = ad7961s[chan].stream_mult(swps=4)
-            with open('test_pattern_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
-                np.save(f, d1)
-            with open('test_data_chan{}_num{}.npy'.format(chan, num), 'wb') as f:
-                np.save(f, d2)
-
 # enable ADS868 and remeasure current
 if ADS_EN:
     ads.hw_reset(val=False)  # release reset
@@ -340,6 +240,17 @@ if ADS_EN:
 
     # ads.hw_reset(val=True)  # back to reset
 print(current_meas)
+
+slew_rate = 16
+clamp_dac.config_rate(slew_rate)
+
+# Write voltage
+voltage = 0b1111111111
+clamp_dac.write_voltage(voltage)
+print(f'Voltage = {voltage}')
+
+# Power on, wait
+clamp_dac.power_up()
 
 if DAC_80508_EN:
     # these DAC signals come out before the bipolar amplifier

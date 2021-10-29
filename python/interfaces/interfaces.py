@@ -2034,12 +2034,12 @@ class ADS8686(SPIController, ADCDATA):
 
     def set_range(self, vals):
         """Set the voltage range of all channels.
-        
+
         If vals is a single value then all channels are given that value.
         If vals is a list of length 16 then each channel gets a separate range
         vals must be 10, 5, or 2.5. These represent +/-10, +/-5, and +/-2.5 V.
         """
-        
+
         if not isinstance(vals, list):
             vals = [vals]*16
         if len(vals) != 16:
