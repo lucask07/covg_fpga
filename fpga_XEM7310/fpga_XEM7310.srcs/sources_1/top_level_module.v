@@ -814,6 +814,9 @@ module top_level_module(
      okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_WIRE_OUT), .ep_datain(po0_ep_datain/*CAPABILITY*/));
      okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_IN), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
      //PipeOuts
+     //     EP_READ    Output    Active-high read signal.  Data must be provided in the cycle following as assertion of this signal.
+     //     EP_BLOCKSTROBE    Output    Active-high block strobe.  This is asserted for one cycle just before a block of data is read.
+     //     EP_READY    Input    Active-high ready signal.  Logic should assert this signal when it is prepared to transmit a full block of data.     
      okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT_FG), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain[31:0]),   .ep_ready(pipe_out_ready));
      okBTPipeOut    po2  (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT), .ep_read(po2_ep_read),   .ep_blockstrobe(), .ep_datain(po2_ep_datain[31:0]),   .ep_ready(pipe_out2_ready));
 
@@ -838,13 +841,29 @@ module top_level_module(
          if (write_en_adc_o[0] == 1'b1)
          adc_ddr_debug_cnt <= adc_ddr_debug_cnt + 1'b1;
      end
+     
+     reg[7:0] five_msps_adc_pulse;
+     reg adc_emulator_valid;
+     always @(posedge clk_sys) begin
+        if (five_msps_adc_pulse == 8'b0) begin
+            five_msps_adc_pulse <= 8'd39;
+            adc_emulator_valid <= 1'b1;
+        end
+        else begin
+            five_msps_adc_pulse <= five_msps_adc_pulse - 8'b1;
+            adc_emulator_valid <= 1'b0;
+        end
+    end
 
      fifo_w64_512_r256_128_1 adc_ddr_fifo (  //ADC data 
          .rst(ddr3_rst),
-         .wr_clk(adc_timing_clk),
+         //.wr_clk(adc_timing_clk),
+         .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
-         .din(adc_ddr_debug_cnt), // Bus [63 : 0]
-         .wr_en(write_en_adc_o[0]),
+         //.din(adc_ddr_debug_cnt), // Bus [63 : 0]
+         .din(po0_ep_datain[63:0]),
+         //.wr_en(write_en_adc_o[0]),
+         .wr_en(adc_emulator_valid),
          .rd_en(pipe_in2_read),
          .dout(pipe_in2_data), // Bus [255 : 0] - to DDR 
          .full(pipe_in2_full),
@@ -862,7 +881,7 @@ module top_level_module(
          .din(pipe_out_data), // Bus [255 : 0] -- from DDR 
          .wr_en(pipe_out_write),
          .rd_en(rd_en_0 & ep03wire[`DDR3_READ_ENABLE]),
-         .dout(po0_ep_datain), // Bus [31 : 0]
+         .dout(po0_ep_datain), // Bus [127 : 0]
          .full(pipe_out_full),
          .empty(pipe_out_empty),
          .valid(), //output 
