@@ -260,8 +260,6 @@ module top_level_module(
     
     // assign sma[0] = dco[3];
     // assign sma[1] = adc_serial_data[3];
-    assign sma[0] = pipe_in2_read;
-    assign sma[1] = adc_serial_data[3];
 	
 	//FrontPanel (HostInterface) wires
 	wire okClk;
@@ -297,7 +295,8 @@ module top_level_module(
 	okWireIn wi1 (.okHE(okHE), .ep_addr(`GP_HOST_FPGAB_GPIO_WIRE_IN), .ep_dataout(ep01wire));
     wire host_fpgab;
     assign host_fpgab = ep01wire[`ADS8686_HOST_FPGA];
-    assign up = ep01wire[(`GPIO_UP_WIRE_IN+`GPIO_UP_WIRE_IN_LEN - 1):`GPIO_UP_WIRE_IN];
+    
+    //assign up = ep01wire[(`GPIO_UP_WIRE_IN+`GPIO_UP_WIRE_IN_LEN - 1):`GPIO_UP_WIRE_IN];       
     assign dn = ep01wire[(`GPIO_DOWN_WIRE_IN+`GPIO_DOWN_WIRE_IN_LEN - 1):`GPIO_DOWN_WIRE_IN];
 
     wire [(DAC80508_NUM-1):0] host_fpgab_dac80508; 
@@ -805,6 +804,16 @@ module top_level_module(
              pipe_out2_ready <= 1'b0;
          end
      end
+     
+     assign up[0] = pipe_in_ready;
+     assign up[1] = pipe_out_ready;
+     assign up[2] = pipe_out2_ready;
+     assign up[3] = po0_ep_read;
+     assign up[4] = po2_ep_read;
+     assign up[5] = adc_emulator_valid;
+     
+     assign sma[0] = pipe_in2_read;
+     assign sma[1] = pipe_out2_write;
 
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
      okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
