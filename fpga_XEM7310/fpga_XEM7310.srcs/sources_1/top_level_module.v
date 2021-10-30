@@ -258,16 +258,18 @@ module top_level_module(
     wire [(FADC_NUM-1):0] dco;
     wire [(FADC_NUM-1):0] adc_serial_data;
     
-    assign sma[0] = dco[3];
+    // assign sma[0] = dco[3];
+    // assign sma[1] = adc_serial_data[3];
+    assign sma[0] = pipe_in2_read;
     assign sma[1] = adc_serial_data[3];
-
+	
 	//FrontPanel (HostInterface) wires
 	wire okClk;
 	wire [112:0] okHE;
 	wire [64:0] okEH;
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
 	//TODO: better way to keep track of these
-	wire [18*65-1:0] okEHx;
+	wire [19*65-1:0] okEHx;
 
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire;
@@ -631,14 +633,38 @@ module top_level_module(
      wire         pipe_out_empty;
      reg          pipe_out_ready;
 
+     wire         pipe_in2_read;
+     wire [255:0] pipe_in2_data;
+     wire [6:0]   pipe_in2_rd_count;
+     wire [9:0]   pipe_in2_wr_count;
+     wire         pipe_in2_valid;
+     wire         pipe_in2_full;
+     wire         pipe_in2_empty;
+     reg          pipe_in2_ready;
+
+     wire         pipe_out2_write;
+     wire [255:0] pipe_out2_data;
+     wire [9:0]   pipe_out2_rd_count;
+     wire [6:0]   pipe_out2_wr_count;
+     wire         pipe_out2_full;
+     wire         pipe_out2_empty;
+     reg          pipe_out2_ready;
+
+
      // Pipe Fifos
      wire         pi0_ep_write;
      wire         po0_ep_read;
      wire [31:0]  pi0_ep_dataout;
      wire [31:0] INDEX;
+     wire [31:0] INDEX2;
+     
      wire          ddr3_rst;// MIG/DDR3 synchronous reset
-     wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out
-     wire rd_en_0;
+     wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out to DACs 
+     
+     wire         po2_ep_read;
+     wire [31:0]  po2_ep_datain;// MIG/DDR3 ADC FIFO data out
+
+     wire rd_en_0; // DAC data read enable from DAC channel 0 
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
@@ -709,6 +735,8 @@ module top_level_module(
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
          .INDEX              (INDEX),
+         .INDEX2              (INDEX2),
+
          .reset              (ddr3_rst | rst_ddr_ui),
          .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
          .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
@@ -724,6 +752,17 @@ module top_level_module(
          .ob_data            (pipe_out_data),
          .ob_count           (pipe_out_wr_count),
          .ob_full            (pipe_out_full),
+         
+         .ib2_re              (pipe_in2_read),
+         .ib2_data            (pipe_in2_data),
+         .ib2_count           (pipe_in2_rd_count),
+         .ib2_valid           (pipe_in2_valid),
+         .ib2_empty           (pipe_in2_empty),
+
+         .ob2_we              (pipe_out2_write),
+         .ob2_data            (pipe_out2_data),
+         .ob2_count           (pipe_out2_wr_count),
+         .ob2_full            (pipe_out2_full),
 
          .app_rdy            (app_rdy),
          .app_en             (app_en),
@@ -744,8 +783,7 @@ module top_level_module(
      //Block Throttle
      always @(posedge okClk) begin
          // Check for enough space in input FIFO to pipe in another block
-         // The count is compared against a reduced size to account for delays in
-         // FIFO count updates.
+         // The count is compared against a reduced size to account for delays in FIFO count updates.
          if(pipe_in_wr_count <= (FIFO_SIZE-BUFFER_HEADROOM-BLOCK_SIZE) ) begin
              pipe_in_ready <= 1'b1;
          end
@@ -759,59 +797,91 @@ module top_level_module(
          else begin
              pipe_out_ready <= 1'b0;
          end
+        // Check for enough space in ADC output FIFO to pipe out another block
+         if(pipe_out2_rd_count >= BLOCK_SIZE) begin
+             pipe_out2_ready <= 1'b1;
+         end
+         else begin
+             pipe_out2_ready <= 1'b0;
+         end
      end
 
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
      okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
+     okWireIn       wi05 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX2), .ep_dataout(INDEX2));
+
      okWireOut      wo02 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(`DDR3_INIT_CALIB_COMPLETE), .ep_datain({31'h00, init_calib_complete}));
      okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_WIRE_OUT), .ep_datain(po0_ep_datain/*CAPABILITY*/));
      okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_IN), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
-     okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain[31:0]),   .ep_ready(pipe_out_ready));
+     //PipeOuts
+     okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT_FG), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain[31:0]),   .ep_ready(pipe_out_ready));
+     okBTPipeOut    po2  (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT), .ep_read(po2_ep_read),   .ep_blockstrobe(), .ep_datain(po2_ep_datain[31:0]),   .ep_ready(pipe_out2_ready));
 
-     fifo_w32_1024_r256_128 okPipeIn_fifo (
+     fifo_w32_1024_r256_128 okPipeIn_fifo (  // Function generator data from the host via pi0 
          .rst(ddr3_rst),
          .wr_clk(okClk),
          .rd_clk(clk_ddr_ui),
          .din(pi0_ep_dataout), // Bus [31 : 0]
          .wr_en(pi0_ep_write),
          .rd_en(pipe_in_read),
-         .dout(pipe_in_data), // Bus [255 : 0]
+         .dout(pipe_in_data), // Bus [255 : 0] -- to DDR 
          .full(pipe_in_full),
          .empty(pipe_in_empty),
          .valid(pipe_in_valid),
-         .rd_data_count(pipe_in_rd_count), // Bus [6 : 0]
-         .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0]
+         .rd_data_count(pipe_in_rd_count), // Bus [6 : 0]  //128 available for reading (by DDR)
+         .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0] //1024 available for writing 
 
-    /* -- FIFO that served 1 DAC -- 
-     fifo_w256_128_r32_1024 okPipeOut_fifo (
-         .rst(ep03wire[`DDR3_RESET]),
-         .wr_clk(clk_ddr_ui),
-         .rd_clk(clk_sys),
-         .din(pipe_out_data), // Bus [255 : 0]
-         .wr_en(pipe_out_write),
-         .rd_en(rd_en_0 & ep03wire[`DDR3_READ_ENABLE]),
-         .dout(po0_ep_datain), // Bus [31 : 0]
-         .full(pipe_out_full),
-         .empty(pipe_out_empty),
-         .valid(),
-         .rd_data_count(pipe_out_rd_count), // Bus [9 : 0]
-         .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
-    */
+     /*---------------- ADC DDR data debug  -------------------*/
+     reg [63:0] adc_ddr_debug_cnt = 64'b0;
+     
+     always @(posedge adc_clk) begin
+         if (write_en_adc_o[0] == 1'b1)
+         adc_ddr_debug_cnt <= adc_ddr_debug_cnt + 1'b1;
+     end
+
+     fifo_w64_512_r256_128_1 adc_ddr_fifo (  //ADC data 
+         .rst(ddr3_rst),
+         .wr_clk(adc_timing_clk),
+         .rd_clk(clk_ddr_ui),
+         .din(adc_ddr_debug_cnt), // Bus [63 : 0]
+         .wr_en(write_en_adc_o[0]),
+         .rd_en(pipe_in2_read),
+         .dout(pipe_in2_data), // Bus [255 : 0] - to DDR 
+         .full(pipe_in2_full),
+         .empty(pipe_in2_empty),
+         .valid(pipe_in2_valid),  //output 
+         .rd_data_count(pipe_in2_rd_count), // Bus [6 : 0]  //128 available for reading (by DDR)
+         .wr_data_count(pipe_in2_wr_count)); // Bus [9 : 0] //1024 available for writing 
+
+    // DDR: read from DDR and 1) output data to DACs and 2) output data to host through BTPipeOut
 
      fifo_w256_128_r128_256_1 okPipeOut_fifo_ddr (
          .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys),
-         .din(pipe_out_data), // Bus [255 : 0]
+         .din(pipe_out_data), // Bus [255 : 0] -- from DDR 
          .wr_en(pipe_out_write),
          .rd_en(rd_en_0 & ep03wire[`DDR3_READ_ENABLE]),
          .dout(po0_ep_datain), // Bus [31 : 0]
          .full(pipe_out_full),
          .empty(pipe_out_empty),
-         .valid(),
+         .valid(), //output 
          .rd_data_count(pipe_out_rd_count), // Bus [9 : 0]
          .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
 
+     fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (
+         .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
+         .wr_clk(clk_ddr_ui),
+         .rd_clk(clk_sys),
+         .din(pipe_out2_data), // Bus [255 : 0] -- from DDR 
+         .wr_en(pipe_out2_write),
+         .rd_en(po2_ep_read),
+         .dout(po2_ep_datain), // Bus [31 : 0]
+         .full(pipe_out2_full),
+         .empty(pipe_out2_empty),
+         .valid(),  //output
+         .rd_data_count(pipe_out2_rd_count), // Bus [9 : 0]
+         .wr_data_count(pipe_out2_wr_count)); // Bus [6 : 0]
 
     /* ------------------ END DDR3 ------------------- */
 
@@ -976,7 +1046,7 @@ module top_level_module(
        );//status
  
    //pipeOut for data from debug fifo 
-   okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(17)*65 +: 65]),
+   okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[17*65 +: 65]),
              .ep_addr(`DEBUGFIFO_PIPE_OUT), .ep_read(debug_pipe_ep_read),
              .ep_datain(fifo_debug_out));
 

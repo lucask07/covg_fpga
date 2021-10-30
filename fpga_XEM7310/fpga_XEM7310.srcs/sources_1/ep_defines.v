@@ -71,6 +71,8 @@
 
 // wireIn address for index 
 `define DDR3_INDEX 8'h04 // bit_width=32
+`define DDR3_INDEX2 8'h0C // bit_width=32
+
 
 // wireIn for host driven data 
 `define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32
@@ -115,6 +117,7 @@
 
 `define DDR3_BLOCK_PIPE_IN 8'h80 // bit_width=32
 `define DDR3_BLOCK_PIPE_OUT 8'ha6 // bit_width=32
+`define DDR3_BLOCK_PIPE_OUT_FG 8'ha8 // bit_width=32
 //`define DS_TRIG_OFFSET 32'h08 // bit 8
 
 //ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
