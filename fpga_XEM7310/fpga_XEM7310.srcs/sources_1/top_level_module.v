@@ -789,7 +789,7 @@ module top_level_module(
          else begin
              pipe_in_ready <= 1'b0;
          end
-         // Check for enough space in output FIFO to pipe out another block
+         // Check for enough data in output FIFO to pipe out another block
          if(pipe_out_rd_count >= BLOCK_SIZE) begin
              pipe_out_ready <= 1'b1;
          end
@@ -851,7 +851,7 @@ module top_level_module(
          adc_ddr_debug_cnt <= adc_ddr_debug_cnt + 1'b1;
      end
      
-     reg[7:0] five_msps_adc_pulse;
+     reg[7:0] five_msps_adc_pulse = 8'd0;
      reg adc_emulator_valid;
      always @(posedge clk_sys) begin
         if (five_msps_adc_pulse == 8'b0) begin
@@ -900,7 +900,7 @@ module top_level_module(
      fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (
          .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
-         .rd_clk(clk_sys),
+         .rd_clk(okClk),
          .din(pipe_out2_data), // Bus [255 : 0] -- from DDR 
          .wr_en(pipe_out2_write),
          .rd_en(po2_ep_read),
