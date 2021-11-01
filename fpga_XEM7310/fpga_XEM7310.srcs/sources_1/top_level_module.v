@@ -282,7 +282,7 @@ module top_level_module(
 	assign sys_rst = (pushreset | ep40trig[`GP_SYSTEM_RESET]); // TODO: GP_SYSTEM_RESET is not found
 
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(18)) wireOR (okEH, okEHx); //TODO
+	okWireOR # (.N(19)) wireOR (okEH, okEHx); //TODO
 
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
@@ -586,7 +586,7 @@ module top_level_module(
     /* --------------- DDR3 ---------------------------*/
      ////////////////////////////*DDR3 INTERFACE INSTANTIATIONS*//////////////////////////////////////////////
      // OK RAMTest Parameters
-     localparam BLOCK_SIZE = 128; // 512 bytes / 4 bytes per word,
+     localparam BLOCK_SIZE = 512; // 512 bytes / 4 bytes per word. LJK update from 128 to 512. 
      localparam FIFO_SIZE = 1023; // note that Xilinx does not allow use of the full 1024 words
      localparam BUFFER_HEADROOM = 20; // headroom for the FIFO count to account for latency
 
