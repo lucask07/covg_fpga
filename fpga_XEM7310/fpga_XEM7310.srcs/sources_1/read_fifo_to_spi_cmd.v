@@ -362,7 +362,7 @@ module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
                         cmd_stb = 1'b0;
                         //ack = 1'b0;
                     end
-					else begin
+					else begin  //TODO: the if and else are identical
 						rd_en = 1'b0;
 						//adr = 8'h0;
 						spi_load = 3'b011;

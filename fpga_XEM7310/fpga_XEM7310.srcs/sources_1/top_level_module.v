@@ -503,7 +503,8 @@ module top_level_module(
         AD7961 adc7961 (
         .m_clk_i(adc_timing_clk),       // 100 MHz Clock, used for timing
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
-        .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
+        //.reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
+        .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | ep42trig[`AD7961_RESET_GLOBAL] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
         .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
         .d_pos_i(a_d_p[i]),                    // Data Ii, Positive Pair
         .d_neg_i(a_d_n[i]),                    // Data In, Negative Pair
@@ -663,8 +664,6 @@ module top_level_module(
      wire         po2_ep_read;
      wire [31:0]  po2_ep_datain;// MIG/DDR3 ADC FIFO data out
 
-     wire rd_en_0; // DAC data read enable from DAC channel 0 
-
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
      .async_rst(ep03wire[`DDR3_RESET]),
@@ -805,12 +804,13 @@ module top_level_module(
          end
      end
      
+     // DDR debug signals
      assign up[0] = pipe_in_ready;
      assign up[1] = pipe_out_ready;
      assign up[2] = pipe_out2_ready;
      assign up[3] = po0_ep_read;
      assign up[4] = po2_ep_read;
-     assign up[5] = adc_emulator_valid;
+     assign up[5] = ad5453_clk_en;
      
      assign sma[0] = pipe_in2_read;
      assign sma[1] = pipe_out2_write;
@@ -844,12 +844,6 @@ module top_level_module(
          .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0] //1024 available for writing 
 
      /*---------------- ADC DDR data debug  -------------------*/
-     reg [63:0] adc_ddr_debug_cnt = 64'b0;
-     
-     always @(posedge adc_clk) begin
-         if (write_en_adc_o[0] == 1'b1)
-         adc_ddr_debug_cnt <= adc_ddr_debug_cnt + 1'b1;
-     end
      
      reg[7:0] five_msps_adc_pulse = 8'd0;
      reg adc_emulator_valid;
@@ -864,7 +858,7 @@ module top_level_module(
         end
     end
 
-     fifo_w64_512_r256_128_1 adc_ddr_fifo (  //ADC data 
+     fifo_w64_512_r256_128_1 adc_ddr_fifo (  //ADC data input, output to DDR
          .rst(ddr3_rst),
          //.wr_clk(adc_timing_clk),
          .wr_clk(clk_sys),
@@ -872,7 +866,7 @@ module top_level_module(
          //.din(adc_ddr_debug_cnt), // Bus [63 : 0]
          .din(po0_ep_datain[63:0]),
          //.wr_en(write_en_adc_o[0]),
-         .wr_en(adc_emulator_valid),
+         .wr_en(ad5453_clk_en & ep03wire[`DDR3_READ_ENABLE]),
          .rd_en(pipe_in2_read),
          .dout(pipe_in2_data), // Bus [255 : 0] - to DDR 
          .full(pipe_in2_full),
@@ -883,13 +877,13 @@ module top_level_module(
 
     // DDR: read from DDR and 1) output data to DACs and 2) output data to host through BTPipeOut
 
-     fifo_w256_128_r128_256_1 okPipeOut_fifo_ddr (
+     fifo_w256_128_r128_256_1 okPipeOut_fifo_ddr ( //Data in from DDR -> Output to DACs 
          .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys),
          .din(pipe_out_data), // Bus [255 : 0] -- from DDR 
          .wr_en(pipe_out_write),
-         .rd_en(rd_en_0 & ep03wire[`DDR3_READ_ENABLE]),
+         .rd_en(ad5453_clk_en & ep03wire[`DDR3_READ_ENABLE]),
          .dout(po0_ep_datain), // Bus [127 : 0]
          .full(pipe_out_full),
          .empty(pipe_out_empty),
@@ -897,7 +891,7 @@ module top_level_module(
          .rd_data_count(pipe_out_rd_count), // Bus [9 : 0]
          .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
 
-     fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (
+     fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (  // Output ADC data from DDR -> input data of ADCs to PipeOut
          .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(okClk),
@@ -919,6 +913,13 @@ module top_level_module(
     
     wire [15:0] spi_data[0:(AD5453_NUM-1)];
     wire [31:0] host_spi_data[0:(AD5453_NUM-1)];
+    wire ad5453_clk_en; 
+
+    mux_8to1 spi_mux_clock(
+            .datain({3'b0, write_en_adc_o[1], write_en_adc_o[0], adc_emulator_valid, rd_en_fast_dac[0], clk_en_fast_dac[0]}), //input [7:0]
+            .sel(ep03wire[(`AD5453_CLK_SEL + `AD5453_CLK_SEL_LEN):(`AD5453_CLK_SEL)]),    // input [2:0] 
+            .dataout(ad5453_clk_en) //output (1 bit)    
+        );
 
     genvar k;
     generate
@@ -934,33 +935,27 @@ module top_level_module(
             .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
             .dataout(spi_data[k])
         );
-            
-        // instantiate old top-level (but only for the AD5453 SPI)
+        
+        // FIFO driven SPI
         spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
                  .data_rdy_0(), .adc_val_0(), //not yet used
-                 // register bridge //TODO: add address increment based on generate k
                  .ep_write(regWrite),           //input wire 
                  .ep_address(regAddress),       //input wire [31:0] 
                  .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
                  /*.ep_datain(regDataIn),*/
                  // DDR
                  .en_period(en_period), //in, [9:0] TODO: same period for all spi_fifo_driven instances 
-                 .clk_en(clk_en_fast_dac[k]), //out
-                 .ddr3_rst(ddr3_rst),//in
-                 //.ddr_dat_i(po0_ep_datain[13:0]), //in  TODO: add Mux here
-                 //.ddr_dat_i(po0_ep_datain[k*16 +:14]), //in  TODO: add Mux here
+                 .clk_en_out(clk_en_fast_dac[k]), //out: from the programmable divider 
+                 .clk_en_in(ad5453_clk_en), // from a MUX -- could be the same as clk_en_out
+                 .ddr3_rst(ddr3_rst), //in
                  .ddr_dat_i(spi_data[k][13:0]), //in  TODO: add Mux here
-                 .rd_en_0(rd_en_fast_dac[k]),   //out
+                 .rd_en_0(rd_en_fast_dac[k]),   //out: for simulation from the state machine
                  .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + k]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
                  );
         end
     endgenerate
-
-    assign rd_en_0 = rd_en_fast_dac[0]; // DDR driven by DAC0 
-    assign clk_en = clk_en_fast_dac[0]; // DDR driven by DAC0 
-
     /* ----------------- END AD5453 ------------------------------------ */
 
     /*---------------- I2C -------------------*/

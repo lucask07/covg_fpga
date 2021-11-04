@@ -37,7 +37,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire [31:0] ep_dataout_coeff,
      //output wire [31:0] ep_datain,
      input wire [9:0] en_period,
-     output wire clk_en,
+     output wire clk_en_out,
+     input wire clk_en_in,
      input wire ddr3_rst, // resets clock enable generator  
      input wire [13:0] ddr_dat_i,
      output wire rd_en_0,
@@ -64,17 +65,14 @@ module spi_fifo_driven #(parameter ADDR = 0) (
       //wire empty;
       wire writeFifo;//this signal and the one below are used to generate the write enable signal for the FIFO
       reg wr_en;//
-	 
-	 //General purpose clock divide – currently used as "helper" clocking module for reading form DDR3
-    wire dataready;
-    assign clk_en = dataready;
-     
+    
+     //General purpose clock divide - currently used as "helper" clocking module for reading form DDR3
      general_clock_divide MIG_DDR_FIFO_RD_EN(
          .clk(clk),  // input 
          .rst(ddr3_rst), // input 
          .en_period(en_period), // input [9:0]
-         .clk_en(dataready)  // output 
-         );
+         .clk_en(clk_en_out)  // output 
+     );
 	 
 	 /* ---------------- ADC796x & AD5453 control ----------------*/
 	 
@@ -99,7 +97,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
 	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(ddr_dat_i/*filter_out*/), 
 	 .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
-	 .rd_en(rd_en_0), .data_rdy(dataready), .regDataOut(ep_dataout_coeff[15:0]), 
+	 .rd_en(rd_en_0), .data_rdy(clk_en_in), .regDataOut(ep_dataout_coeff[15:0]), 
 	 .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
 	 );
 	 
