@@ -9,7 +9,7 @@
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
-// Description: 
+// Description: Pulse (high-going, single clock width) at a frequency of clk_f / en_period 
 // 
 // Dependencies: 
 // 

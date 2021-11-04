@@ -65,14 +65,14 @@
 `define DDR3_READ_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
-`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
+`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2 
 `define AD5453_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
-
+`define AD5453_CLK_SEL 21 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
+`define AD5453_CLK_SEL_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
 
 // wireIn address for index 
 `define DDR3_INDEX 8'h04 // bit_width=32
 `define DDR3_INDEX2 8'h0C // bit_width=32
-
 
 // wireIn for host driven data 
 `define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32
@@ -166,6 +166,7 @@
 `define AD7961_RESET_GEN_BIT 19 // address=ADC_TIMING_TRIG_IN bit_width=1
 `define DEBUGFIFO_CNT_RESET 23 // address=ADC_TIMING_TRIG_IN bit_width=1
 `define DEBUGFIFO_FIFO_RESET 24 // address=ADC_TIMING_TRIG_IN bit_width=1
+`define AD7961_RESET_GLOBAL 25 // address=ADC_TIMING_TRIG_IN bit_width=1
 
 // wire in at 0x00
 `define GPIO_CSB_DEBUG 0 // address=GPIO_DEBUG_WIRE_IN bit_width=3
