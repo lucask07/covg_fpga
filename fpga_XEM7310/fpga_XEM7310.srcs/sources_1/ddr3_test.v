@@ -33,7 +33,9 @@ module ddr3_test
     (* KEEP = "TRUE" *)output reg  [255:0]  ob2_data,
     (* KEEP = "TRUE" *)input  wire [6:0]    ob2_count,
     (* KEEP = "TRUE" *)input  wire          ob2_full,
-	
+    // count of data in buffer2 
+	(* KEEP = "TRUE" *)output reg  [15:0]  adc_data_count,
+
 	// MIG interface -- doesn't change if extra buffers are added 
 	(* KEEP = "TRUE" *)input  wire          app_rdy,
 	(* KEEP = "TRUE" *)output reg           app_en,
@@ -111,6 +113,7 @@ always @(posedge clk) begin
 		app_addr          <= 28'b0; //TODO: why 28 bits wide rather than 30. Change to 30'b0? 
 		app_wdf_wren      <= 1'b0;
 		app_wdf_end       <= 1'b0;
+		adc_data_count    <= 16'b0;
 	end else begin
 		app_en            <= 1'b0;
 		app_wdf_wren      <= 1'b0;
@@ -208,6 +211,7 @@ always @(posedge clk) begin
 
 			s_write2_3: begin
 				app_wdf_wren <= 1'b1;
+                adc_data_count <= adc_data_count + 16'b1;
 				if (burst_count == 3'd0) begin
 					app_wdf_end <= 1'b1;
 				end
@@ -295,6 +299,7 @@ always @(posedge clk) begin
                 if (app_rd_data_valid == 1'b1) begin
                     ob2_data <= app_rd_data;
                     ob2_we <= 1'b1;
+                    adc_data_count <= adc_data_count - 16'b1;
                     if (burst_count == 3'd0) begin
                         state <= s_idle;
                     end else begin

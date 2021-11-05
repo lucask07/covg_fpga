@@ -41,6 +41,8 @@
 // Parameters holding a bit should have the bit written in decimal without the size specification
 // Comments that are not "// address=" or "// bit_width=" should go on a separate line from the parameter definition
 
+// see https://docs.opalkelly.com/fpsdk/frontpanel-hdl/ for address ranges 
+
 `define AD7961_PIPE_OUT_GEN_ADDR 8'hA1 // bit_width=32
 `define ADS8686_PIPE_OUT_GEN_ADDR 8'hA5 // bit_width=32
 `define DEBUGFIFO_PIPE_OUT 8'hA7 // bit_width=32
@@ -87,7 +89,20 @@
 `define AD7961_TIMING_PLL_LOCKED 1 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 
 `define DAC80508_OUT_GEN_ADDR 8'h22 // bit_width=32
-`define DDR3_INIT_CALIB_COMPLETE 0 // address=0x27 bit_width=1
+
+// wire in status signals for the DDR
+`define DDR3_INIT_CALIB_COMPLETE 8'h20 // bit_width=32
+`define DDR3_INIT_COMPLETE 0 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN1_FULL 1 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN1_EMPTY 2 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN2_FULL 3 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN2_EMPTY 4 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT1_FULL 5 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT1_EMPTY 6 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT2_FULL 7 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT2_EMPTY 8 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_ADC_DATA_COUNT 9 // address=DDR3_INIT_CALIB_COMPLETE bit_width=16
+
 `define DDR3_WIRE_OUT 8'h3e // bit_width=32
 
 `define GP_FIFO_FLAG_I2C_DONE_TRIG_OUT 8'h60 // bit_width=32
