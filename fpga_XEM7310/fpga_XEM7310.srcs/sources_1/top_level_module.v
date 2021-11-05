@@ -663,6 +663,7 @@ module top_level_module(
      
      wire         po2_ep_read;
      wire [31:0]  po2_ep_datain;// MIG/DDR3 ADC FIFO data out
+     wire [15:0] adc_data_cnt; // count of ADC words in DDR
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
@@ -761,6 +762,8 @@ module top_level_module(
          .ob2_data            (pipe_out2_data),
          .ob2_count           (pipe_out2_wr_count),
          .ob2_full            (pipe_out2_full),
+         
+         .adc_data_count        (adc_data_cnt),
 
          .app_rdy            (app_rdy),
          .app_en             (app_en),
@@ -818,9 +821,21 @@ module top_level_module(
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
      okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
      okWireIn       wi05 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX2), .ep_dataout(INDEX2));
-
-     okWireOut      wo02 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(`DDR3_INIT_CALIB_COMPLETE), .ep_datain({31'h00, init_calib_complete}));
-     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_WIRE_OUT), .ep_datain(po0_ep_datain/*CAPABILITY*/));
+     
+     wire [31:0] ep20wire;
+     okWireOut      wo20 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(`DDR3_INIT_CALIB_COMPLETE), .ep_datain(ep20wire));
+     assign ep20wire[`DDR3_INIT_COMPLETE] = init_calib_complete;
+     assign ep20wire[`DDR3_IN1_FULL] = pipe_in_full;
+     assign ep20wire[`DDR3_IN1_EMPTY] = pipe_in_empty;
+     assign ep20wire[`DDR3_IN2_FULL] = pipe_in2_full;
+     assign ep20wire[`DDR3_IN2_EMPTY] = pipe_in2_empty;
+     assign ep20wire[`DDR3_OUT1_FULL] = pipe_out_full;
+     assign ep20wire[`DDR3_OUT1_EMPTY] = pipe_out_empty;
+     assign ep20wire[`DDR3_OUT2_FULL] = pipe_out2_full;
+     assign ep20wire[`DDR3_OUT2_EMPTY] = pipe_out2_empty;
+     assign ep20wire[`DDR3_ADC_DATA_COUNT] = adc_data_cnt;
+     
+     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_WIRE_OUT), .ep_datain(po0_ep_datain));
      okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_IN), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
      //PipeOuts
      //     EP_READ    Output    Active-high read signal.  Data must be provided in the cycle following as assertion of this signal.
