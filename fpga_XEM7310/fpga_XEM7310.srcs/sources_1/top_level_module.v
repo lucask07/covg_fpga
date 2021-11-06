@@ -808,10 +808,10 @@ module top_level_module(
      end
      
      // DDR debug signals
-     assign up[0] = pipe_in_ready;
-     assign up[1] = pipe_out_ready;
+     assign up[0] = pipe_out2_full; //pipe_in_ready;
+     assign up[1] = pipe_out2_empty; // pipe_out_ready;
      assign up[2] = pipe_out2_ready;
-     assign up[3] = po0_ep_read;
+     assign up[3] = pipe_in2_full; // po0_ep_read;
      assign up[4] = po2_ep_read;
      assign up[5] = ad5453_clk_en;
      
