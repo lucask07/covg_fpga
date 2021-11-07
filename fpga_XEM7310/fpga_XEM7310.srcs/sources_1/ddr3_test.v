@@ -282,7 +282,7 @@ always @(posedge clk) begin
 
             s_read2_1: begin
                 if (app_rdy == 1'b1) begin
-                    if(cmd_byte_addr_rd >= INDEX2*ADDRESS_INCREMENT)begin // read has a circular buffer; write does not 
+                    if(cmd_byte_addr_rd2 >= INDEX2*ADDRESS_INCREMENT)begin // read has a circular buffer; write does not 
                         cmd_byte_addr_rd2 <= (INDEX + 1'b1)*ADDRESS_INCREMENT;
                     end
                     else begin

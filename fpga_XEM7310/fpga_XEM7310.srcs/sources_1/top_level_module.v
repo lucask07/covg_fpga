@@ -811,11 +811,11 @@ module top_level_module(
      assign up[0] = pipe_out2_full; //pipe_in_ready;
      assign up[1] = pipe_out2_empty; // pipe_out_ready;
      assign up[2] = pipe_out2_ready;
-     assign up[3] = pipe_in2_full; // po0_ep_read;
+     assign up[3] = clk_ddr_ui; //pipe_in2_full; // po0_ep_read;
      assign up[4] = po2_ep_read;
      assign up[5] = ad5453_clk_en;
      
-     assign sma[0] = pipe_in2_read;
+     assign sma[0] = pipe_out2_data[63-16]; // pipe_in2_read;
      assign sma[1] = pipe_out2_write;
 
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
@@ -862,7 +862,7 @@ module top_level_module(
      
      reg[7:0] five_msps_adc_pulse = 8'd0;
      reg adc_emulator_valid;
-     always @(posedge clk_sys) begin
+     always @(posedge clk_ddr_ui) begin
         if (five_msps_adc_pulse == 8'b0) begin
             five_msps_adc_pulse <= 8'd39;
             adc_emulator_valid <= 1'b1;
