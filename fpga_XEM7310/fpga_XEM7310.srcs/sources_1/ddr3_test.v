@@ -10,6 +10,7 @@ module ddr3_test
 	(* KEEP = "TRUE" *)input  wire          reset,
 	(* KEEP = "TRUE" *)input  wire          writes_en,
 	(* KEEP = "TRUE" *)input  wire          reads_en,
+	(* KEEP = "TRUE" *)input  wire          fg_reads_en,
 	(* KEEP = "TRUE" *)input  wire          calib_done,
 	//DDR Input Buffer (ib_)  // DAC function generator data -- not timing sensitive 
 	(* KEEP = "TRUE" *)output reg           ib_re,
@@ -68,12 +69,14 @@ localparam ADDRESS_INCREMENT   = 5'd8; // UI Address is a word address. BL8 Burs
 
 (* KEEP = "TRUE" *)reg         write_mode;
 (* KEEP = "TRUE" *)reg         read_mode;
+(* KEEP = "TRUE" *)reg         fg_read_back_mode;
 (* KEEP = "TRUE" *)reg         reset_d;
 
 assign app_wdf_mask = 16'h0000;
 
 always @(posedge clk) write_mode <= writes_en;
 always @(posedge clk) read_mode <= reads_en;
+always @(posedge clk) fg_read_back_mode <= fg_reads_en;
 always @(posedge clk) reset_d <= reset;
 
 
@@ -133,7 +136,7 @@ always @(posedge clk) begin
 					state <= s_write_0;
 					// Check to ensure that the output buffer has enough space for a burst
 				end 
-				else if (calib_done==1 && read_mode==1 && (ob_count < (HALF_FIFO_SIZE) ) ) begin  // changed to ensure not always serviced 
+				else if (calib_done==1 && ((read_mode==1 && (ob_count < (HALF_FIFO_SIZE)) ) | (fg_read_back_mode == 1 && (ob_count < (FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) )) ) begin  // changed to ensure not always serviced 
 					app_addr <= cmd_byte_addr_rd;
 					state <= s_read_0;
 				end
