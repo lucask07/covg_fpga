@@ -739,6 +739,7 @@ module top_level_module(
          .reset              (ddr3_rst | rst_ddr_ui),
          .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
          .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
+         .fg_reads_en        (ep03wire[`DDR3_FG_READ_ENABLE]),
          .calib_done         (init_calib_complete),
 
          .ib_re              (pipe_in_read),
@@ -781,7 +782,7 @@ module top_level_module(
          .app_wdf_mask       (app_wdf_mask)
          );
 
-     //Block Throttle
+     //Block Throttle OK interfaces: check for enough space or enough data
      always @(posedge okClk) begin
          // Check for enough space in input FIFO to pipe in another block
          // The count is compared against a reduced size to account for delays in FIFO count updates.
@@ -792,14 +793,14 @@ module top_level_module(
              pipe_in_ready <= 1'b0;
          end
          // Check for enough data in output FIFO to pipe out another block
-         if(pipe_out_rd_count >= BLOCK_SIZE) begin
+         if(pipe_out_rd_count >= BLOCK_SIZE) begin  // size is in 4 bytes so block size is 512*4 = 2048 bytes 
              pipe_out_ready <= 1'b1;
          end
          else begin
              pipe_out_ready <= 1'b0;
          end
         // Check for enough space in ADC output FIFO to pipe out another block
-         if(pipe_out2_rd_count >= BLOCK_SIZE) begin
+         if(pipe_out2_rd_count >= BLOCK_SIZE) begin // size is in 4 bytes so block size is 512*4 = 2048 bytes 
              pipe_out2_ready <= 1'b1;
          end
          else begin
@@ -810,13 +811,13 @@ module top_level_module(
      // DDR debug signals
      assign up[0] = pipe_out2_full; //pipe_in_ready;
      assign up[1] = pipe_out2_empty; // pipe_out_ready;
-     assign up[2] = pipe_out2_ready;
-     assign up[3] = clk_ddr_ui; //pipe_in2_full; // po0_ep_read;
-     assign up[4] = po2_ep_read;
-     assign up[5] = ad5453_clk_en;
+     assign up[2] = pipe_in2_full;
+     assign up[3] = pipe_in2_empty; //pipe_in2_full; // po0_ep_read;
+     assign up[4] = pipe_in2_read;
+     assign up[5] = pipe_out2_write;
      
-     assign sma[0] = pipe_out2_data[63-16]; // pipe_in2_read;
-     assign sma[1] = pipe_out2_write;
+     assign sma[0] = adc_data_cnt > 8; // pipe_in2_read;
+     assign sma[1] = adc_data_cnt < 2;
 
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
      okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
