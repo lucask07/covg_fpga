@@ -141,7 +141,7 @@ always @(posedge clk) begin
                     app_addr <= cmd_byte_addr_wr2;
                     state <= s_write2_0;
                 end
-                else if (calib_done==1 && read_mode==1 && (ob2_count<(FIFO_SIZE-2-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
+                else if (calib_done==1 && read_mode==1 && (ob2_count<(FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
                     app_addr <= cmd_byte_addr_rd2;
                     state <= s_read2_0;
                 end
