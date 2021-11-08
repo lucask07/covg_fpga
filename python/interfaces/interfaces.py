@@ -359,6 +359,7 @@ class FPGA:
               (self.device_info.deviceMajorVersion, self.device_info.deviceMinorVersion))
         print("   Serial Number: %s" % self.device_info.serialNumber)
         print("       Device ID: %s" % self.device_info.deviceID)
+        print("       USB speed: %s [3 = superspeed]" % self.device_info.usbSpeed)
 
         self.xem.LoadDefaultPLLConfiguration()
 
@@ -1709,7 +1710,7 @@ class DAC80508(SPIController):
 
     def write_voltage(self, voltage, outputs=[0, 1, 2, 3, 4, 5, 6, 7], auto_gain=False):
         """Write the voltage to the outputs of the DAC.
-        
+
         Arguments
         ---------
         voltage : int or float
@@ -1721,7 +1722,7 @@ class DAC80508(SPIController):
             True to automatically set the gain for the
             outputs, False otherwise.
         """
-        
+
         if auto_gain:
             if voltage <= 1.25:
                 gain = 1
@@ -1828,7 +1829,7 @@ class DAC80508(SPIController):
 
     def set_gain(self, gain, outputs=[0, 1, 2, 3, 4, 5, 6, 7], divide_reference=False):
         """Set the gain and reference divider.
-        
+
         Arguments
         ---------
         gain : int
@@ -1910,6 +1911,11 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
                          'host': 1,
                          'ads8686_chA': 2,
                          'ad7961_ch0': 3}
+        self.clkenable_mux = {'spi_clk_en': 0,
+                              'spi_rd_en': 1,  # not recommended
+                              'adc_emulator': 2,
+                              'write_en_adc_0': 3,
+                              'write_en_adc_1': 4}
 
     def set_clk_rising_edge(self):
         """
@@ -1931,11 +1937,22 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         """
         configure the MUX that routes data source to the SPI output
         """
+        mask = gen_mask(range(self.endpoints['CLK_SEL'].bit_index_low,
+                              self.endpoints['CLK_SEL'].bit_index_high))
+        data = (self.data_mux[source] << self.endpoints['CLK_SEL'].bit_index_low)
+        self.fpga.set_wire(self.endpoints['CLK_SEL'].address, data,
+                           mask=mask)
+
+    def set_clkenable_mux(self, source):
+        """
+        configure the MUX that routes the clock enable to the SPI controller
+        """
         mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
                               self.endpoints['DATA_SEL'].bit_index_high))
-        data = (self.data_mux[source] << self.endpoints['DATA_SEL'].bit_index_low)
+        data = (self.clkenable_mux[source] << self.endpoints['DATA_SEL'].bit_index_low)
         self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
                            mask=mask)
+
 
     def set_clk_divider(self, value=0x50):
         """
@@ -2491,9 +2508,9 @@ class DDR3():
             endpoints = Endpoint.get_chip_endpoints('DDR3')
         self.fpga = fpga
         self.endpoints = endpoints
-        self.parameters = {'BLOCK_SIZE': 16384,  # 1/2 the incoming FIFO depth (size of the BlockPipeIn)
-                           'sample_size': 524288,  # per channel
-                           'channels': 8  # number of channels that the DDR is striped between
+        self.parameters = {'BLOCK_SIZE': 512*4,  # 1/2 the incoming FIFO depth in bytes (size of the BlockPipeIn)
+                           'sample_size': 65536,  # per channel
+                           'channels': 8  # number of channels that the DDR is striped between (for DACs)
                            }
         self.data_arrays = {}
         for i in range(self.parameters['channels']):
@@ -2502,7 +2519,7 @@ class DDR3():
         # TODO: with a repeating waveform need to write an integer number of periods
         #       (force the frequency to be an integer number of sample rates)
         # TODO: create a make_square wave
-        # TODO: create a ramp wave
+        # TODO: create a make_ramp wave
         # TODO: understand index
 
     def make_flat_voltage(self, input_voltage):
@@ -2534,7 +2551,7 @@ class DDR3():
             print('Frequency is too high for the DDR update rate')
             return -1,-1,-1
 
-        return samples_per_period, num_periods, new_freq
+        return samples_per_period
 
     def make_sin_wave(self, amplitude, frequency, dignum_volt=546):
         """
@@ -2555,6 +2572,18 @@ class DDR3():
         ddr_seq = (dignum_volt*amplitude)*np.sin(t*frequency*2*np.pi) + offset
         ddr_seq = ddr_seq.astype(np.int16)
         return t, ddr_seq
+
+    def make_ramp(self, start, stop, step):
+        """
+        create a ramp signal to write to the DDR
+        """
+        ramp_seq = np.arange(start, stop, step)
+        num_tiles = self.parameters['sample_size']//len(ramp_seq)
+        extras = self.parameters['sample_size'] % len(ramp_seq)
+        ddr_seq = np.tile(ramp_seq, num_tiles)
+        ddr_seq = np.hstack((ddr_seq, ramp_seq[0:extras]))
+        ddr_seq = ddr_seq.astype(np.int16)
+        return ddr_seq
 
     def write_channels(self):
         """
@@ -2610,6 +2639,38 @@ class DDR3():
         self.fpga.clear_wire_bit(self.endpoints['RESET'].address,
                                  self.endpoints['RESET'].bit_index_low)
 
+    def fifo_status(self):
+        """
+         Check the empty and full status of the DDR interfacing FIFOs
+        """
+        wire_status = self.fpga.read_wire(self.endpoints['INIT_CALIB_COMPLETE'].address)
+        fifo_status = {}
+        for fe in ['EMPTY', 'FULL']:
+            for num in [1, 2]:
+                for inout in ['IN', 'OUT']:
+                    ep_name = '{}{}_{}'.format(inout, num, fe)
+                    bit_pos = self.endpoints[ep_name].bit_index_low
+                    val = test_bit(wire_status, bit_pos)
+                    fifo_status[ep_name] = val
+                    print('{} = {}'.format(ep_name, val))
+
+        ep_name = 'ADC_DATA_COUNT'
+        cnt_bit_low = self.endpoints[ep_name].bit_index_low
+        cnt_bit_width = self.endpoints[ep_name].bit_width
+        cnt_msk = gen_mask(np.arange(cnt_bit_low, cnt_bit_width))
+        fifo_status[ep_name] = (wire_status & cnt_msk) >> cnt_bit_low
+        print('{} = {}'.format(ep_name, val))
+
+        # self.print_fifo_status(fifo_status)
+        return fifo_status
+
+    def print_fifo_status(self, fifo_status):
+        """
+        Print the FIFO status dictionary
+        """
+        for k in fifo_status:
+            print('{} = {}'.format(k, fifo_status[k]))
+
     def set_read(self):
         self.fpga.set_wire_bit(self.endpoints['READ_ENABLE'].address,
                                self.endpoints['READ_ENABLE'].bit_index_low)
@@ -2626,12 +2687,54 @@ class DDR3():
         self.fpga.clear_wire_bit(self.endpoints['WRITE_ENABLE'].address,
                                  self.endpoints['WRITE_ENABLE'].bit_index_low)
 
-    def read(self):
+    def read_adc(self, sample_size=None, source='ADC'):
         """
         #reads to an empty array passed to the function
         """
-        amplitude = np.zeros((self.parameters['sample_size'],), dtype=int)
-        pass_buf = bytearray(amplitude)
+        if sample_size is None:
+            #pass_buf = bytearray(self.parameters['sample_size'])
+            amplitude = np.zeros((self.parameters['sample_size'],), dtype=int)
+            pass_buf = bytearray(amplitude)
+        else:
+            pass_buf = bytearray(sample_size)
+
+        # Block size must be a power of two from 16 to 16384
+        # will automatically perform multiple transfers to complete the full LENGTH
+        # the length must be an integer multiple of 16 for USB3.0
+        # and the length must be an Integer multiple of Block Size
+
+        # epAddr	The address of the source Pipe Out.
+        # [in]	length	The length of the transfer (in bytes).
+        # [in]	blockSize	Block size (in bytes).
+        # [in]	data	A pointer to the transfer data buffer.
+
+        if source == 'ADC':
+            r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'].address,
+                                                blockSize=self.parameters['BLOCK_SIZE'],
+                                                data=pass_buf)
+        elif source == 'FG':
+            r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT_FG'].address,
+                                                   blockSize=self.parameters['BLOCK_SIZE'],
+                                                   data=pass_buf)
+
+        else:
+            print('incorrect source in read_adc')
+            return -11, -11
+
+        print('The length [num of bytes] of the BlockPipeOut read is: ', r)
+        return pass_buf, r
+
+    def read(self, sample_size=None):
+        """
+        # FPGA is not configured for this to work
+        # reads to an empty array passed to the function
+        """
+        if sample_size is None:
+            amplitude = np.zeros((self.parameters['sample_size'],), dtype=int)
+            pass_buf = bytearray(amplitude)
+        else:
+            pass_buf = bytearray(sample_size)
+
         # Reset FIFOs
         self.reset_fifo()
         self.clear_write()
@@ -2642,7 +2745,12 @@ class DDR3():
         # will automatically perform multiple transfers to complete the full LENGTH
         # the length must be an integer multiple of 16 for USB3.0
 
-        r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'].address,
+        # epAddr	The address of the source Pipe Out.
+        # [in]	length	The length of the transfer (in bytes).
+        # [in]	blockSize	Block size (in bytes).
+        # [in]	data	A pointer to the transfer data buffer.
+
+        r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT_FG'].address,
                                                blockSize=self.parameters['BLOCK_SIZE'],
                                                data=pass_buf)
         print('The length [num of bytes] of the BlockPipeOut read is: ', r)
@@ -2685,11 +2793,13 @@ class DDR3():
             unpacked_g_rbuf[x] = (unpacked_g_rbuf[x]/1000)
         return unpacked_g_rbuf
 
-    def set_index(self, factor):
+    def set_index(self, factor, factor2=None):
         """
         Set the index value at which the DDR3 loops back
         """
         self.fpga.set_wire(self.endpoints['INDEX'].address, factor)
+        if factor2 is not None:
+            self.fpga.set_wire(self.endpoints['INDEX2'].address, factor)
 
 
     """ Example usage of the DDR
