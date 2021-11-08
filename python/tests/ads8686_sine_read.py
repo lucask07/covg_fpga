@@ -46,28 +46,29 @@ ads.set_fpga_mode()
 
 
 # Initial Graph
-fig, axes = plt.subplots(row_plots, col_plots)
-for i in range(row_plots):
-    for j in range(col_plots):
-        data = [to_voltage(data=int(x), num_bits=16, voltage_range=10, use_twos_comp=True) for x in ads.stream_mult(twos_comp_conv=False)['A']]
-        ax = axes[i, j]
-        ax.set_xlabel('Time')
-        ax.set_ylabel('Voltage')
-        ax.plot(data)
-plt.show()
+# fig, axes = plt.subplots(row_plots, col_plots)
+# for i in range(row_plots):
+#     for j in range(col_plots):
+#         data = [to_voltage(data=int(x), num_bits=16, voltage_range=10, use_twos_comp=True) for x in ads.stream_mult(twos_comp_conv=False)['A']]
+#         ax = axes[i, j]
+#         ax.set_xlabel('Time')
+#         ax.set_ylabel('Voltage')
+#         ax.plot(data)
+# plt.show()
 
 
 # Continuous Graph
 plt.ion()
 fig, ax = plt.subplots()
-ax.plot(data)
+# ax.plot(data)
 ax.set_xlabel('Time')
 ax.set_ylabel('Voltage')
 while True:
     for i in range(2):
         data = [to_voltage(data=int(x), num_bits=16, voltage_range=10, use_twos_comp=True) for x in ads.stream_mult(twos_comp_conv=False)['A']]
         x = [i*len(data) + j for j in range(len(data))]
-        ax.plot(x, data, color='blue')
+        ax.plot(x, data, color='blue', scalex=True, scaley=False)
+        ax.set_ylim(bottom=-5, top=5, auto=False)
     plt.draw()
     plt.pause(0.01)
     plt.cla()
