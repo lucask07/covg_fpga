@@ -19,20 +19,21 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import FPGA, DAC53401
+from interfaces.interfaces import FPGA, DAC53401, Endpoint
 import logging
 
 logging.basicConfig(filename='DAC53401_test.log',
                     encoding='utf-8', level=logging.INFO)
 
 # Initialize FPGA
-bitfile = os.path.join(interfaces_path, 'i2c.bit')
-f = FPGA(bitfile=bitfile)
+top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
+                                        'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
+f = FPGA(bitfile=top_level_module_bitfile)
 f.init_device()
 f.set_wire(0x00, value=0xff00, mask=0xff00)
 
 # Instantiate the DAC53401 controller.
-i2c_dac = DAC53401(fpga=f, addr_pins=0b000)
+i2c_dac = DAC53401(fpga=f, addr_pins=0b000, endpoints=Endpoint.get_chip_endpoints('I2CDC'))
 logging.info(f'Address Pins = {i2c_dac.addr_pins}')
 print(f'Address Pins = {i2c_dac.addr_pins}')
 
@@ -102,6 +103,6 @@ print('Sleeping...')
 sleep(3)
 
 # Stop function generation
-i2c_dac.stop_func()
-logging.info('Stopped function generation')
-print('Stopped function generation')
+# i2c_dac.stop_func()
+# logging.info('Stopped function generation')
+# print('Stopped function generation')
