@@ -3,23 +3,23 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="tb_ad7961_behav.wdb" id="1">
+      <db_ref path="tb_dual_port_ddr_behav.wdb" id="1">
          <top_modules>
             <top_module name="glbl" />
-            <top_module name="tb_ad7961" />
+            <top_module name="tb_dual_port_ddr" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
       <ZoomEndTime time="1000000001fs"></ZoomEndTime>
-      <Cursor1Time time="1000000000fs"></Cursor1Time>
+      <Cursor1Time time="808300000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="233"></NameColumnWidth>
-      <ValueColumnWidth column_width="175"></ValueColumnWidth>
+      <ValueColumnWidth column_width="167"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="35" />
+   <WVObjectSize size="19" />
    <wave_markers>
       <marker time="548000000" label="" />
       <marker time="6192500000" label="" />
@@ -29,144 +29,81 @@
       <marker time="4831000000" label="" />
       <marker time="375160000" label="" />
    </wave_markers>
-   <wvobject fp_name="/tb_ad7961/sys_clk" type="logic">
-      <obj_property name="ElementShortName">sys_clk</obj_property>
-      <obj_property name="ObjectShortName">sys_clk</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/clk_sys" type="logic">
+      <obj_property name="ElementShortName">clk_sys</obj_property>
+      <obj_property name="ObjectShortName">clk_sys</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc_clk" type="logic">
-      <obj_property name="ElementShortName">adc_clk</obj_property>
-      <obj_property name="ObjectShortName">adc_clk</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/clk_ddr_ui" type="logic">
+      <obj_property name="ElementShortName">clk_ddr_ui</obj_property>
+      <obj_property name="ObjectShortName">clk_ddr_ui</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/reset_n" type="logic">
-      <obj_property name="ElementShortName">reset_n</obj_property>
-      <obj_property name="ObjectShortName">reset_n</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr_reset" type="logic">
+      <obj_property name="ElementShortName">ddr_reset</obj_property>
+      <obj_property name="ObjectShortName">ddr_reset</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/d_p" type="logic">
-      <obj_property name="ElementShortName">d_p</obj_property>
-      <obj_property name="ObjectShortName">d_p</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_data" type="logic">
+      <obj_property name="ElementShortName">pipe_in2_data</obj_property>
+      <obj_property name="ObjectShortName">pipe_in2_data</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/d_n" type="logic">
-      <obj_property name="ElementShortName">d_n</obj_property>
-      <obj_property name="ObjectShortName">d_n</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_rd_count" type="array">
+      <obj_property name="ElementShortName">pipe_in2_rd_count[6:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_in2_rd_count[6:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/dco_p" type="logic">
-      <obj_property name="ElementShortName">dco_p</obj_property>
-      <obj_property name="ObjectShortName">dco_p</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_wr_count" type="array">
+      <obj_property name="ElementShortName">pipe_in2_wr_count[8:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_in2_wr_count[8:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/dco_n" type="logic">
-      <obj_property name="ElementShortName">dco_n</obj_property>
-      <obj_property name="ObjectShortName">dco_n</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_valid" type="logic">
+      <obj_property name="ElementShortName">pipe_in2_valid</obj_property>
+      <obj_property name="ObjectShortName">pipe_in2_valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/cnv_p" type="logic">
-      <obj_property name="ElementShortName">cnv_p</obj_property>
-      <obj_property name="ObjectShortName">cnv_p</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_full" type="logic">
+      <obj_property name="ElementShortName">pipe_in2_full</obj_property>
+      <obj_property name="ObjectShortName">pipe_in2_full</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/cnv_n" type="logic">
-      <obj_property name="ElementShortName">cnv_n</obj_property>
-      <obj_property name="ObjectShortName">cnv_n</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_empty" type="logic">
+      <obj_property name="ElementShortName">pipe_in2_empty</obj_property>
+      <obj_property name="ObjectShortName">pipe_in2_empty</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/clk_p" type="logic">
-      <obj_property name="ElementShortName">clk_p</obj_property>
-      <obj_property name="ObjectShortName">clk_p</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/po0_ep_datain" type="array">
+      <obj_property name="ElementShortName">po0_ep_datain[127:0]</obj_property>
+      <obj_property name="ObjectShortName">po0_ep_datain[127:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/clk_n" type="logic">
-      <obj_property name="ElementShortName">clk_n</obj_property>
-      <obj_property name="ObjectShortName">clk_n</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/five_msps_adc_pulse" type="array">
+      <obj_property name="ElementShortName">five_msps_adc_pulse[7:0]</obj_property>
+      <obj_property name="ObjectShortName">five_msps_adc_pulse[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/data_rd" type="logic">
-      <obj_property name="ElementShortName">data_rd</obj_property>
-      <obj_property name="ObjectShortName">data_rd</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/adc_emulator_valid" type="logic">
+      <obj_property name="ElementShortName">adc_emulator_valid</obj_property>
+      <obj_property name="ObjectShortName">adc_emulator_valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/data" type="array">
-      <obj_property name="ElementShortName">data[15:0]</obj_property>
-      <obj_property name="ObjectShortName">data[15:0]</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/dac_ddr_data" type="array">
+      <obj_property name="ElementShortName">dac_ddr_data[255:0]</obj_property>
+      <obj_property name="ObjectShortName">dac_ddr_data[255:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/reset_n" type="logic">
-      <obj_property name="ElementShortName">reset_n</obj_property>
-      <obj_property name="ObjectShortName">reset_n</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/ad5453_clk_en" type="logic">
+      <obj_property name="ElementShortName">ad5453_clk_en</obj_property>
+      <obj_property name="ObjectShortName">ad5453_clk_en</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc0/fast_clk_i" type="logic">
-      <obj_property name="ElementShortName">fast_clk_i</obj_property>
-      <obj_property name="ObjectShortName">fast_clk_i</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_out_full" type="logic">
+      <obj_property name="ElementShortName">pipe_out_full</obj_property>
+      <obj_property name="ObjectShortName">pipe_out_full</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc0/clk_s" type="logic">
-      <obj_property name="ElementShortName">clk_s</obj_property>
-      <obj_property name="ObjectShortName">clk_s</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_out_empty" type="logic">
+      <obj_property name="ElementShortName">pipe_out_empty</obj_property>
+      <obj_property name="ObjectShortName">pipe_out_empty</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc0/sclk_s" type="logic">
-      <obj_property name="ElementShortName">sclk_s</obj_property>
-      <obj_property name="ObjectShortName">sclk_s</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/dac_data_valid" type="logic">
+      <obj_property name="ElementShortName">dac_data_valid</obj_property>
+      <obj_property name="ObjectShortName">dac_data_valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc0/buffer_reset_s" type="logic">
-      <obj_property name="ElementShortName">buffer_reset_s</obj_property>
-      <obj_property name="ObjectShortName">buffer_reset_s</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_out_rd_count" type="array">
+      <obj_property name="ElementShortName">pipe_out_rd_count[9:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_out_rd_count[9:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc0/sclk_cnt" type="array">
-      <obj_property name="ElementShortName">sclk_cnt[4:0]</obj_property>
-      <obj_property name="ObjectShortName">sclk_cnt[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc0/serial_present_state" type="array">
-      <obj_property name="ElementShortName">serial_present_state[2:0]</obj_property>
-      <obj_property name="ObjectShortName">serial_present_state[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/cnv_p_2" type="logic">
-      <obj_property name="ElementShortName">cnv_p_2</obj_property>
-      <obj_property name="ObjectShortName">cnv_p_2</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/cnv_n_2" type="logic">
-      <obj_property name="ElementShortName">cnv_n_2</obj_property>
-      <obj_property name="ObjectShortName">cnv_n_2</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/clk_p_2" type="logic">
-      <obj_property name="ElementShortName">clk_p_2</obj_property>
-      <obj_property name="ObjectShortName">clk_p_2</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/clk_n_2" type="logic">
-      <obj_property name="ElementShortName">clk_n_2</obj_property>
-      <obj_property name="ObjectShortName">clk_n_2</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/data_rd_2" type="logic">
-      <obj_property name="ElementShortName">data_rd_2</obj_property>
-      <obj_property name="ObjectShortName">data_rd_2</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/data_2" type="array">
-      <obj_property name="ElementShortName">data_2[15:0]</obj_property>
-      <obj_property name="ObjectShortName">data_2[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc2/adc_tcyc_cnt" type="array">
-      <obj_property name="ElementShortName">adc_tcyc_cnt[5:0]</obj_property>
-      <obj_property name="ObjectShortName">adc_tcyc_cnt[5:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc2/serial_present_state" type="array">
-      <obj_property name="ElementShortName">serial_present_state[7:0]</obj_property>
-      <obj_property name="ObjectShortName">serial_present_state[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc2/buffer_reset_s" type="logic">
-      <obj_property name="ElementShortName">buffer_reset_s</obj_property>
-      <obj_property name="ObjectShortName">buffer_reset_s</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc2/sclk_cnt" type="array">
-      <obj_property name="ElementShortName">sclk_cnt[4:0]</obj_property>
-      <obj_property name="ObjectShortName">sclk_cnt[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc2/sclk_echo_cnt" type="array">
-      <obj_property name="ElementShortName">sclk_echo_cnt[4:0]</obj_property>
-      <obj_property name="ObjectShortName">sclk_echo_cnt[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc2/clk_s" type="logic">
-      <obj_property name="ElementShortName">clk_s</obj_property>
-      <obj_property name="ObjectShortName">clk_s</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/dco_p_2" type="logic">
-      <obj_property name="ElementShortName">dco_p_2</obj_property>
-      <obj_property name="ObjectShortName">dco_p_2</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/dco_n_2" type="logic">
-      <obj_property name="ElementShortName">dco_n_2</obj_property>
-      <obj_property name="ObjectShortName">dco_n_2</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_ad7961/adc2/sclk_s" type="logic">
-      <obj_property name="ElementShortName">sclk_s</obj_property>
-      <obj_property name="ObjectShortName">sclk_s</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_out_wr_count" type="array">
+      <obj_property name="ElementShortName">pipe_out_wr_count[6:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_out_wr_count[6:0]</obj_property>
    </wvobject>
 </wave_config>
