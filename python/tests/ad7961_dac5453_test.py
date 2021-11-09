@@ -81,7 +81,7 @@ AD7961_CHANS = 4
 ad7961s = AD7961.create_chips(fpga=f, number_of_chips=AD7961_CHANS)
 
 # --------  Run ADC tests  --------
-for chan in [0, 3]:
+for chan in [0, 1]:
     for num in [1, 2, 3]:
         if chan == 0:
             setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
@@ -126,6 +126,7 @@ for i in range(6):
                 channel=i))
     fdac[i].set_spi_sclk_divide()
     fdac[i].set_data_mux('ad7961_ch0')
+    fdac[i].write_filter_coeffs()
     # fdac[i].write(0x2000)
 
 fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
