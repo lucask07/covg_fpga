@@ -97,7 +97,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
-	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(ddr_dat_i/*filter_out*/), 
+	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*ddr_dat_i*/filter_out_modified), 
 	 .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0), .data_rdy(dataready), .regDataOut(ep_dataout_coeff[15:0]), 
 	 .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
@@ -113,12 +113,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 realTimeLPF_readwrite_coeff coeff_rd_0(
 	 .clk(clk), .rst(rst), .wr_en(write_enable), .wr_done(write_done), .wr_adr(write_address),
-	 .coeff_out(coeffs_in), .ep_write(ep_write & (!ep_address[31])), .read_enable(read_coeff), .rd_adr(read_address),
+	 .coeff_out(coeffs_in), .ep_write(ep_write & ((ep_address>(ADDR + 8'h03)) & (ep_address<(ADDR + 8'h13)))), .read_enable(read_coeff), .rd_adr(read_address),
 	 .bram_in(coeff_bram_in)
 	 );
 	 
 	 blk_mem_gen_0 realTime_LPF_coeff_BRAM(
-	 .addra(ep_address[3:0]), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_write & (!ep_address[31])), .wea(4'b1111),
+	 .addra(ep_address[3:0] - (4'h4+ADDR)), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_write & ((ep_address>(ADDR + 8'h03)) & (ep_address<(ADDR + 8'h13)))), .wea(4'b1111),
 	 .addrb({27'b0, read_address}), .clkb(clk), .doutb(coeff_bram_in), .enb(read_coeff)
 	 );
 	 
