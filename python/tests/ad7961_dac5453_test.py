@@ -19,7 +19,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import AD7961, FPGA, Endpoint, disp_device
+from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum
 from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
@@ -30,8 +30,6 @@ data_dir = '/Users/koer2434/Google Drive/UST/research/covg/fpga_and_measurements
                                                                                                                    today.day)
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
-
-test_channel = 0
 
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply()
@@ -72,21 +70,23 @@ for name in ['1V8', '5V', '3V3']:
     pwr.supply_on(name)
     time.sleep(0.05)
 
+gpio = Daq.GPIO(f)
+gpio.fpga.debug = True
+# configure the SPI debug MUXs
+gpio.spi_debug('dfast0')
+gpio.ads_misc('sdoa')  # do not care for this experiment
+
 # --------  ADC instances  --------
 AD7961_CHANS = 4
 ad7961s = AD7961.create_chips(fpga=f, number_of_chips=AD7961_CHANS)
 
 # --------  Run ADC tests  --------
-for chan in [0, test_channel]:
+for chan in [0, 3]:
     for num in [1, 2, 3]:
         if chan == 0:
             setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
         else:
             setup = ad7961s[chan].setup(reset_pll=False)  # resets FIFO and ADC controller
-        ad7961s[chan].test_pattern()
-        time.sleep(0.2)
-        ad7961s[chan].reset_fifo()
-        time.sleep(0.2)  # FIFO fills in 204 us
 
         d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
         ad7961s[chan].power_up_adc()  # standard sampling
@@ -94,9 +94,6 @@ for chan in [0, test_channel]:
         ad7961s[chan].reset_fifo()
 
         d2 = ad7961s[chan].stream_mult(swps=4)
-        with open(os.path.join(data_dir,
-                               'test_pattern_chan{}_num{}.npy'.format(chan, num)), 'wb') as file1:
-            np.save(file1, d1)
         with open(os.path.join(data_dir,
                                'test_data_chan{}_num{}.npy'.format(chan, num)), 'wb') as file1:
             np.save(file1, d2)
@@ -121,3 +118,14 @@ def save_array(d, chan, test_name='test', number=1):
                            'wb') as file1:
 
         np.save(file1, d)
+
+fdac = []
+for i in range(6):
+    fdac.append(AD5453(f,
+                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
+                channel=i))
+    fdac[i].set_spi_sclk_divide()
+    fdac[i].set_data_mux('ad7961_ch0')
+    # fdac[i].write(0x2000)
+
+fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
