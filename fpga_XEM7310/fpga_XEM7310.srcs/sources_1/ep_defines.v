@@ -66,7 +66,7 @@
 `define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_READ_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-`define DDR3_FG_READ_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define DDR3_FG_READ_ENABLE 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
 `define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2 
 `define AD5453_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
