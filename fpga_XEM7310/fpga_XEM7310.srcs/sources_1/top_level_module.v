@@ -793,7 +793,7 @@ module top_level_module(
              pipe_in_ready <= 1'b0;
          end
          // Check for enough data in FIFO to pipe out another block -- this is to DACs -- reading from pipeOut is not optimized
-         if(pipe_out_rd_count >= 128) begin  // size is in 4 bytes so block size is 512*4 = 2048 bytes 
+         if(pipe_out_rd_count >= 512) begin  // size is in 4 bytes so block size is 512*4 = 2048 bytes 
              pipe_out_ready <= 1'b1;
          end
          else begin
@@ -845,7 +845,7 @@ module top_level_module(
      okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT_FG), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain[31:0]),   .ep_ready(pipe_out_ready));
      okBTPipeOut    po2  (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT), .ep_read(po2_ep_read),   .ep_blockstrobe(), .ep_datain(po2_ep_datain[31:0]),   .ep_ready(pipe_out2_ready));
 
-     fifo_w32_1024_r256_128 okPipeIn_fifo (  // Function generator data from the host via pi0 
+     fifo_w32_1024_r256_128 fg_pipein_fifo (  // Function generator data from the host via pi0 
          .rst(ddr3_rst),
          .wr_clk(okClk),
          .rd_clk(clk_ddr_ui),
@@ -877,12 +877,9 @@ module top_level_module(
     wire dac_data_valid; 
      fifo_w64_512_r256_128_1 adc_to_ddr_fifo (  //ADC data input, output to DDR
          .rst(ddr3_rst),
-         //.wr_clk(adc_timing_clk),
          .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
-         //.din(adc_ddr_debug_cnt), // Bus [63 : 0]
          .din(po0_ep_datain[63:0]),
-         //.wr_en(write_en_adc_o[0]),
          .wr_en(dac_data_valid & ep03wire[`DDR3_READ_ENABLE]),
          .rd_en(pipe_in2_read),
          .dout(pipe_in2_data), // Bus [255 : 0] - to DDR 
@@ -895,7 +892,7 @@ module top_level_module(
     // DDR: read from DDR and 1) output data to DACs and 2) output data to host through BTPipeOut
 
      fifo_w256_128_r128_256_1 ddr_to_dac_fifo_ddr ( //Data in from DDR -> Output to DACs 
-         .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
+         .rst(ddr3_rst), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys),
          .din(pipe_out_data), // Bus [255 : 0] -- from DDR 
@@ -909,7 +906,7 @@ module top_level_module(
          .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
 
      fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (  // Output ADC data from DDR -> input data of ADCs to PipeOut
-         .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
+         .rst(ddr3_rst), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(okClk),
          .din(pipe_out2_data), // Bus [255 : 0] -- from DDR 
