@@ -809,15 +809,15 @@ module top_level_module(
      end
      
      // DDR debug signals
-     assign up[0] = pipe_out2_full; //pipe_in_ready;
-     assign up[1] = pipe_out2_empty; // pipe_out_ready;
+     assign up[0] = pipe_out2_write; // pipe_out2_full; //pipe_in_ready;
+     assign up[1] = pipe_out2_data[0]; // pipe_out2_empty; // pipe_out_ready;
      assign up[2] = pipe_in2_full;
      assign up[3] = pipe_in2_empty; //pipe_in2_full; // po0_ep_read;
      assign up[4] = pipe_in2_read;
      assign up[5] = pipe_out2_write;
      
-     assign sma[0] = adc_data_cnt > 8; // pipe_in2_read;
-     assign sma[1] = adc_data_cnt < 2;
+     assign sma[0] = pipe_in2_valid; //adc_data_cnt > 8; // pipe_in2_read;
+     assign sma[1] = pipe_in2_data[0]; //adc_data_cnt < 2;
 
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
      okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
