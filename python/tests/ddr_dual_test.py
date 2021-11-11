@@ -71,16 +71,21 @@ for i in range(6):
 
     # sin_buf = ddr.write_sin_wave(amplitude=2, frequency=10e3, dignum_volt=546)
 
-    t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_flat_voltage(256 + 256*i)
+    #t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_flat_voltage(256 + 256*i)
     # t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_sin_wave(amplitude=1+i*0.25,
     #                                                           frequency=10e3,
     #                                                           dignum_volt=546)
-    # ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 16*i,
-    #                                                     stop=2**16-1,
-    #                                                     step=1)
+    ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 16*i,
+                                                        stop=2**16-1,
+                                                        step=1)
+for i in [6, 7]:
+    ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 16*i,
+                                                        stop=2**16-1,
+                                                        step=1)
+
 fdac[0].set_clkenable_mux('spi_clk_en')  # shared between all DACs (only need to set one channel)
 g_buf = ddr.write_channels()
-ddr.parameters['BLOCK_SIZE'] = 512
+# ddr.parameters['BLOCK_SIZE'] = 512
 ddr.clear_write()
 ddr.set_read()
 
