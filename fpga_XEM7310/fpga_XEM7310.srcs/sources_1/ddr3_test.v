@@ -133,19 +133,23 @@ always @(posedge clk) begin
 				// Check to ensure that the input buffer has enough data for a burst
 				if (calib_done==1 && write_mode==1 && (ib_count >= BURST_UI_WORD_COUNT)) begin // if the in-bound FIFO has enough data 
 					app_addr <= cmd_byte_addr_wr;
+					app_cmd <= 3'b000;  // change LJK 2021/11/11
 					state <= s_write_0;
 					// Check to ensure that the output buffer has enough space for a burst
 				end 
-				else if (calib_done==1 && ((read_mode==1 && (ob_count < (HALF_FIFO_SIZE)) ) | (fg_read_back_mode == 1 && (ob_count < (FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) )) ) begin  // changed to ensure not always serviced 
+				else if (calib_done==1 && ((read_mode==1 && (ob_count < (HALF_FIFO_SIZE)) ) || (fg_read_back_mode == 1 && (ob_count < (FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) )) ) begin  // changed to ensure not always serviced 
 					app_addr <= cmd_byte_addr_rd;
+					app_cmd <= 3'b001; // change LJK 2021/11/11
 					state <= s_read_0;
 				end
                 else if (calib_done==1 && read_mode==1 && (ib2_count >= HALF_FIFO_SIZE)  ) begin  // changed to ensure not always serviced 
                     app_addr <= cmd_byte_addr_wr2;
+                    app_cmd <= 3'b000;  // change LJK 2021/11/11
                     state <= s_write2_0;
                 end
                 else if (calib_done==1 && read_mode==1 && (ob2_count<(FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
                     app_addr <= cmd_byte_addr_rd2;
+                    app_cmd <= 3'b001; // change LJK 2021/11/11
                     state <= s_read2_0;
                 end
 			end
@@ -162,20 +166,26 @@ always @(posedge clk) begin
 				end
 			end
 
+            /*
+            app_wdf_rdy: This output indicates that the write data FIFO is ready to receive data. Write data is accepted
+            when both app_wdf_rdy and app_wdf_wren are asserted.
+            */
 			s_write_2: begin
-				if (app_wdf_rdy == 1'b1) begin
+    			//app_cmd <= 3'b000; // change LJK 2021/11/11
+				if (app_wdf_rdy == 1'b1) begin  //app_wdf_rdy: ready for data, OK to assert app_wdf_wren
 					state <= s_write_3;
 				end
 			end
-
+            /* app_en: This input strobes in a request. You must apply the desired values to app_addr[],
+            app_cmd[2:0], and app_hi_pri, and then assert app_en to submit the request to the UI. */
 			s_write_3: begin
 				app_wdf_wren <= 1'b1;
 				if (burst_count == 3'd0) begin
 					app_wdf_end <= 1'b1;
 				end
 				if ( (app_wdf_rdy == 1'b1) & (burst_count == 3'd0) ) begin
-					app_en    <= 1'b1;
-					app_cmd <= 3'b000;
+					app_en    <= 1'b1;  // strobe for address and cmd 
+					// app_cmd <= 3'b000;  // write cmd is 000   --- LJK change 2021/11/11
 					state <= s_write_4;
 				end else if (app_wdf_rdy == 1'b1) begin
 					burst_count <= burst_count - 1'b1;
@@ -183,13 +193,13 @@ always @(posedge clk) begin
 				end
 			end
 
-			s_write_4: begin
+			s_write_4: begin  // confirm handshake back for cmd and addr strobe
 				if (app_rdy == 1'b1) begin
 					cmd_byte_addr_wr <= cmd_byte_addr_wr + ADDRESS_INCREMENT;
 					state <= s_idle;
 				end else begin
 					app_en    <= 1'b1;
-					app_cmd <= 3'b000;
+					// app_cmd <= 3'b000; // change LJK 2021/11/11
 				end
 			end
 
@@ -207,6 +217,7 @@ always @(posedge clk) begin
 			end
 
 			s_write2_2: begin
+    			app_cmd <= 3'b000;
 				if (app_wdf_rdy == 1'b1) begin
 					state <= s_write2_3;
 				end
@@ -220,7 +231,7 @@ always @(posedge clk) begin
 				end
 				if ( (app_wdf_rdy == 1'b1) & (burst_count == 3'd0) ) begin
 					app_en    <= 1'b1;
-					app_cmd <= 3'b000;
+					//app_cmd <= 3'b000;  // --- LJK change 2021/11/11
 					state <= s_write2_4;
 				end else if (app_wdf_rdy == 1'b1) begin
 					burst_count <= burst_count - 1'b1;
@@ -239,14 +250,14 @@ always @(posedge clk) begin
 					state <= s_idle;
 				end else begin
 					app_en    <= 1'b1;
-					app_cmd <= 3'b000;
+					// app_cmd <= 3'b000; // change LJK 2021/11/11
 				end
 			end
             // --------------------------
 
 			s_read_0: begin
 				app_en    <= 1'b1;
-				app_cmd <= 3'b001;
+				// app_cmd <= 3'b001; // change LJK 2021/11/11
 				state <= s_read_1;
 			end
 
@@ -261,7 +272,7 @@ always @(posedge clk) begin
 					state <= s_read_2;
 				end else begin
 					app_en    <= 1'b1;
-					app_cmd <= 3'b001;
+					// app_cmd <= 3'b001; // change LJK 2021/11/11
 				end
 			end
 
@@ -279,7 +290,7 @@ always @(posedge clk) begin
             // ----------------------------------------
 			s_read2_0: begin
                 app_en    <= 1'b1;
-                app_cmd <= 3'b001;
+                //app_cmd <= 3'b001; // LJK -- change 2021/11/11
                 state <= s_read2_1;
             end
 
@@ -294,7 +305,7 @@ always @(posedge clk) begin
                     state <= s_read2_2;
                 end else begin
                     app_en    <= 1'b1;
-                    app_cmd <= 3'b001;
+                    // app_cmd <= 3'b001; // change LJK 2021/11/11
                 end
             end
 

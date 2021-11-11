@@ -880,7 +880,7 @@ module top_level_module(
          .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
          .din(po0_ep_datain[63:0]),
-         .wr_en(dac_data_valid & ep03wire[`DDR3_READ_ENABLE]),
+         .wr_en(dac_data_valid & ep03wire[`DDR3_READ_ENABLE]), //
          .rd_en(pipe_in2_read),
          .dout(pipe_in2_data), // Bus [255 : 0] - to DDR 
          .full(pipe_in2_full),
