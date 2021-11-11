@@ -2508,7 +2508,7 @@ class DDR3():
             endpoints = Endpoint.get_chip_endpoints('DDR3')
         self.fpga = fpga
         self.endpoints = endpoints
-        self.parameters = {'BLOCK_SIZE': 512*4,  # 1/2 the incoming FIFO depth in bytes (size of the BlockPipeIn)
+        self.parameters = {'BLOCK_SIZE': 2048,  # 1/2 the incoming FIFO depth in bytes (size of the BlockPipeIn)
                            'sample_size': 65536,  # per channel
                            'channels': 8  # number of channels that the DDR is striped between (for DACs)
                            }
