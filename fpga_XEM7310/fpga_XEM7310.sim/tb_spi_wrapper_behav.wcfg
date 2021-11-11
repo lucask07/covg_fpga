@@ -12,22 +12,22 @@
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="1000000001fs"></ZoomEndTime>
-      <Cursor1Time time="808300000fs"></Cursor1Time>
+      <ZoomEndTime time="1000000000000fs"></ZoomEndTime>
+      <Cursor1Time time="448584203000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="233"></NameColumnWidth>
-      <ValueColumnWidth column_width="167"></ValueColumnWidth>
+      <ValueColumnWidth column_width="139"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="19" />
+   <WVObjectSize size="44" />
    <wave_markers>
       <marker time="548000000" label="" />
-      <marker time="6192500000" label="" />
       <marker time="532970000" label="" />
       <marker time="732843000" label="" />
       <marker time="3015000000" label="" />
       <marker time="4831000000" label="" />
       <marker time="375160000" label="" />
+      <marker time="6192500000" label="" />
    </wave_markers>
    <wvobject fp_name="/tb_dual_port_ddr/clk_sys" type="logic">
       <obj_property name="ElementShortName">clk_sys</obj_property>
@@ -41,9 +41,29 @@
       <obj_property name="ElementShortName">ddr_reset</obj_property>
       <obj_property name="ObjectShortName">ddr_reset</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_data" type="logic">
-      <obj_property name="ElementShortName">pipe_in2_data</obj_property>
-      <obj_property name="ObjectShortName">pipe_in2_data</obj_property>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in_rd_count" type="array">
+      <obj_property name="ElementShortName">pipe_in_rd_count[6:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_in_rd_count[6:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in_wr_count" type="array">
+      <obj_property name="ElementShortName">pipe_in_wr_count[9:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_in_wr_count[9:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/pi0_ep_write" type="logic">
+      <obj_property name="ElementShortName">pi0_ep_write</obj_property>
+      <obj_property name="ObjectShortName">pi0_ep_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in_read" type="logic">
+      <obj_property name="ElementShortName">pipe_in_read</obj_property>
+      <obj_property name="ObjectShortName">pipe_in_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_read" type="logic">
+      <obj_property name="ElementShortName">pipe_in2_read</obj_property>
+      <obj_property name="ObjectShortName">pipe_in2_read</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_data" type="array">
+      <obj_property name="ElementShortName">pipe_in2_data[255:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_in2_data[255:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_rd_count" type="array">
       <obj_property name="ElementShortName">pipe_in2_rd_count[6:0]</obj_property>
@@ -68,6 +88,7 @@
    <wvobject fp_name="/tb_dual_port_ddr/po0_ep_datain" type="array">
       <obj_property name="ElementShortName">po0_ep_datain[127:0]</obj_property>
       <obj_property name="ObjectShortName">po0_ep_datain[127:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_dual_port_ddr/five_msps_adc_pulse" type="array">
       <obj_property name="ElementShortName">five_msps_adc_pulse[7:0]</obj_property>
@@ -77,11 +98,6 @@
       <obj_property name="ElementShortName">adc_emulator_valid</obj_property>
       <obj_property name="ObjectShortName">adc_emulator_valid</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/dac_ddr_data" type="array">
-      <obj_property name="ElementShortName">dac_ddr_data[255:0]</obj_property>
-      <obj_property name="ObjectShortName">dac_ddr_data[255:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb_dual_port_ddr/ad5453_clk_en" type="logic">
       <obj_property name="ElementShortName">ad5453_clk_en</obj_property>
       <obj_property name="ObjectShortName">ad5453_clk_en</obj_property>
@@ -90,20 +106,108 @@
       <obj_property name="ElementShortName">pipe_out_full</obj_property>
       <obj_property name="ObjectShortName">pipe_out_full</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/po2_ep_read" type="logic">
+      <obj_property name="ElementShortName">po2_ep_read</obj_property>
+      <obj_property name="ObjectShortName">po2_ep_read</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb_dual_port_ddr/pipe_out_empty" type="logic">
       <obj_property name="ElementShortName">pipe_out_empty</obj_property>
       <obj_property name="ObjectShortName">pipe_out_empty</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/pipe_out2_write" type="logic">
+      <obj_property name="ElementShortName">pipe_out2_write</obj_property>
+      <obj_property name="ObjectShortName">pipe_out2_write</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_dual_port_ddr/dac_data_valid" type="logic">
       <obj_property name="ElementShortName">dac_data_valid</obj_property>
       <obj_property name="ObjectShortName">dac_data_valid</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_dual_port_ddr/pipe_out_rd_count" type="array">
-      <obj_property name="ElementShortName">pipe_out_rd_count[9:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_out_rd_count[9:0]</obj_property>
+      <obj_property name="ElementShortName">pipe_out_rd_count[7:0]</obj_property>
+      <obj_property name="ObjectShortName">pipe_out_rd_count[7:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_dual_port_ddr/pipe_out_wr_count" type="array">
       <obj_property name="ElementShortName">pipe_out_wr_count[6:0]</obj_property>
       <obj_property name="ObjectShortName">pipe_out_wr_count[6:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/app_cmd" type="array">
+      <obj_property name="ElementShortName">app_cmd[2:0]</obj_property>
+      <obj_property name="ObjectShortName">app_cmd[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/app_addr" type="array">
+      <obj_property name="ElementShortName">app_addr[29:0]</obj_property>
+      <obj_property name="ObjectShortName">app_addr[29:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/app_en" type="logic">
+      <obj_property name="ElementShortName">app_en</obj_property>
+      <obj_property name="ObjectShortName">app_en</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/app_rdy" type="logic">
+      <obj_property name="ElementShortName">app_rdy</obj_property>
+      <obj_property name="ObjectShortName">app_rdy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/app_wdf_rdy" type="logic">
+      <obj_property name="ElementShortName">app_wdf_rdy</obj_property>
+      <obj_property name="ObjectShortName">app_wdf_rdy</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/app_wdf_wren" type="logic">
+      <obj_property name="ElementShortName">app_wdf_wren</obj_property>
+      <obj_property name="ObjectShortName">app_wdf_wren</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ep_read_enable" type="logic">
+      <obj_property name="ElementShortName">ep_read_enable</obj_property>
+      <obj_property name="ObjectShortName">ep_read_enable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ep_write_enable" type="logic">
+      <obj_property name="ElementShortName">ep_write_enable</obj_property>
+      <obj_property name="ObjectShortName">ep_write_enable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/app_rd_data" type="array">
+      <obj_property name="ElementShortName">app_rd_data[255:0]</obj_property>
+      <obj_property name="ObjectShortName">app_rd_data[255:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/app_wdf_data" type="array">
+      <obj_property name="ElementShortName">app_wdf_data[255:0]</obj_property>
+      <obj_property name="ObjectShortName">app_wdf_data[255:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/cmd_byte_addr_wr" type="array">
+      <obj_property name="ElementShortName">cmd_byte_addr_wr[29:0]</obj_property>
+      <obj_property name="ObjectShortName">cmd_byte_addr_wr[29:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/cmd_byte_addr_rd" type="array">
+      <obj_property name="ElementShortName">cmd_byte_addr_rd[29:0]</obj_property>
+      <obj_property name="ObjectShortName">cmd_byte_addr_rd[29:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/cmd_byte_addr_wr2" type="array">
+      <obj_property name="ElementShortName">cmd_byte_addr_wr2[29:0]</obj_property>
+      <obj_property name="ObjectShortName">cmd_byte_addr_wr2[29:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/cmd_byte_addr_rd2" type="array">
+      <obj_property name="ElementShortName">cmd_byte_addr_rd2[29:0]</obj_property>
+      <obj_property name="ObjectShortName">cmd_byte_addr_rd2[29:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/state" type="array">
+      <obj_property name="ElementShortName">state[31:0]</obj_property>
+      <obj_property name="ObjectShortName">state[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/ob_count" type="array">
+      <obj_property name="ElementShortName">ob_count[6:0]</obj_property>
+      <obj_property name="ObjectShortName">ob_count[6:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/ob2_count" type="array">
+      <obj_property name="ElementShortName">ob2_count[6:0]</obj_property>
+      <obj_property name="ObjectShortName">ob2_count[6:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/ib2_count" type="array">
+      <obj_property name="ElementShortName">ib2_count[6:0]</obj_property>
+      <obj_property name="ObjectShortName">ib2_count[6:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/ib_count" type="array">
+      <obj_property name="ElementShortName">ib_count[6:0]</obj_property>
+      <obj_property name="ObjectShortName">ib_count[6:0]</obj_property>
    </wvobject>
 </wave_config>
