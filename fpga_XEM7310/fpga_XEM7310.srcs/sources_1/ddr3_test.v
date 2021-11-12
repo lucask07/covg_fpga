@@ -54,6 +54,11 @@ module ddr3_test
 	(* KEEP = "TRUE" *)output wire [31:0]   app_wdf_mask
 	);
 
+localparam FIXED_INDEX = 30'h40000;
+localparam FIXED_INDEX2 = 30'h80000;
+localparam FIXED_INDEX2_START = 30'h40008;
+
+
 localparam FIFO_SIZE           = 128;  // this is the size of the 256 wide side. 1024*32 and 256*128=32678 
 localparam HALF_FIFO_SIZE      = 64;  
 
@@ -109,8 +114,8 @@ always @(posedge clk) begin
 		burst_count       <= 2'b00;
 		cmd_byte_addr_wr  <= 0;
 		cmd_byte_addr_rd  <= 0;
-        cmd_byte_addr_wr2  <= (INDEX + 1'b1)*ADDRESS_INCREMENT;
-        cmd_byte_addr_rd2  <= (INDEX + 1'b1)*ADDRESS_INCREMENT;
+        cmd_byte_addr_wr2  <= FIXED_INDEX2_START;
+        cmd_byte_addr_rd2  <= FIXED_INDEX2_START;
 		app_en            <= 1'b0;
 		app_cmd           <= 3'b0;
 		app_addr          <= 28'b0; //TODO: why 28 bits wide rather than 30. Change to 30'b0? 
@@ -241,8 +246,8 @@ always @(posedge clk) begin
 
 			s_write2_4: begin
 				if (app_rdy == 1'b1) begin
-				    if(cmd_byte_addr_wr2 >= 30'h80000) begin // write2 needs a circular buffer 
-                        cmd_byte_addr_wr2 <= 30'h40008;
+				    if(cmd_byte_addr_wr2 >= FIXED_INDEX2) begin // write2 needs a circular buffer 
+                        cmd_byte_addr_wr2 <= FIXED_INDEX2_START;
                     end
                     else begin
                         cmd_byte_addr_wr2 <= cmd_byte_addr_wr2 + ADDRESS_INCREMENT;
@@ -263,7 +268,7 @@ always @(posedge clk) begin
 
 			s_read_1: begin
 				if (app_rdy == 1'b1) begin
-				    if(cmd_byte_addr_rd >= 30'h40000) begin // read has a circular buffer; write does not 
+				    if(cmd_byte_addr_rd >= FIXED_INDEX) begin // read has a circular buffer; write does not 
 				        cmd_byte_addr_rd <= 0;
 				    end
 				    else begin
@@ -296,8 +301,8 @@ always @(posedge clk) begin
 
             s_read2_1: begin
                 if (app_rdy == 1'b1) begin
-                    if(cmd_byte_addr_rd2 >= 30'h80000) begin // read has a circular buffer; write does not 
-                        cmd_byte_addr_rd2 <= 30'h40008;
+                    if(cmd_byte_addr_rd2 >= FIXED_INDEX2) begin // read has a circular buffer; write does not 
+                        cmd_byte_addr_rd2 <= FIXED_INDEX2_START;
                     end
                     else begin
                         cmd_byte_addr_rd2 <= cmd_byte_addr_rd2 + ADDRESS_INCREMENT;
