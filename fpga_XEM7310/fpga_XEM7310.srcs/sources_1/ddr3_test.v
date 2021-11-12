@@ -135,23 +135,26 @@ always @(posedge clk) begin
 			s_idle: begin  // only 1 clock cycle (at 200 MHz) of overhead in going back to the idle state 
 				burst_count <= BURST_UI_WORD_COUNT-1;
 				// Only start writing when initialization done
-				// Check to ensure that the input buffer has enough data for a burst
+				// Check to ensure that the input buffer has enough data for a burst : 32w_1024 x 256w_128
 				if (calib_done==1 && write_mode==1 && (ib_count >= BURST_UI_WORD_COUNT)) begin // if the in-bound FIFO has enough data 
 					app_addr <= cmd_byte_addr_wr;
 					app_cmd <= 3'b000;  // change LJK 2021/11/11
 					state <= s_write_0;
 					// Check to ensure that the output buffer has enough space for a burst
 				end 
+				// 256w_128 (DDR write) x 128w_256 (read) 
 				else if (calib_done==1 && ((read_mode==1 && (ob_count < (HALF_FIFO_SIZE)) )) ) begin  // changed to ensure not always serviced 
 					app_addr <= cmd_byte_addr_rd;
 					app_cmd <= 3'b001; // change LJK 2021/11/11
 					state <= s_read_0;
 				end
+				// w64_512_x r256_128 (to DDR)
                 else if (calib_done==1 && read_mode==1 && (ib2_count >= HALF_FIFO_SIZE)  ) begin  // changed to ensure not always serviced 
                     app_addr <= cmd_byte_addr_wr2;
                     app_cmd <= 3'b000;  // change LJK 2021/11/11
                     state <= s_write2_0;
                 end
+                // w256_128 (from DDR)  r32_1024 (to OpalKelly)
                 else if (calib_done==1 && fg_read_back_mode==1 && (ob2_count<(FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
                     app_addr <= cmd_byte_addr_rd2;
                     app_cmd <= 3'b001; // change LJK 2021/11/11

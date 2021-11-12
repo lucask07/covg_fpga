@@ -793,7 +793,7 @@ module top_level_module(
              pipe_in_ready <= 1'b0;
          end
          // Check for enough data in FIFO to pipe out another block -- this is to DACs -- reading from pipeOut is not optimized
-         if(pipe_out_rd_count >= 512) begin  // size is in 4 bytes so block size is 512*4 = 2048 bytes 
+         if(pipe_out_rd_count >= BLOCK_SIZE) begin  // size is in 4 bytes so block size is 512*4 = 2048 bytes 
              pipe_out_ready <= 1'b1;
          end
          else begin

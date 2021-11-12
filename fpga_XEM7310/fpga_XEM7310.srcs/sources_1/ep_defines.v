@@ -63,12 +63,12 @@
 `define GP_HOST_FPGAB_GPIO_WIRE_IN 8'h01 // bit_width=32
 `define GP_PWR_REG_ADC_EN_WIRE_IN 8'h02 // bit_width=32
 `define DDR3_RESET_READ_WRITE_ENABLE 8'h03 // bit_width=1
-`define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+
 `define DDR3_READ_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-`define DDR3_FG_READ_ENABLE 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-
-`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2 
+`define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define DDR3_FG_READ_ENABLE 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define AD5453_DATA_SEL_GEN_BIT 4 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2 
 `define AD5453_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
 `define AD5453_CLK_SEL 21 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
 `define AD5453_CLK_SEL_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
