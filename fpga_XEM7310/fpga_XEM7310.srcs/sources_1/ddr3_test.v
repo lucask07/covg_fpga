@@ -76,7 +76,7 @@ assign app_wdf_mask = 16'h0000;
 
 always @(posedge clk) write_mode <= writes_en;
 always @(posedge clk) read_mode <= reads_en;
-always @(posedge clk) fg_read_back_mode <= fg_reads_en;
+always @(posedge clk) fg_read_back_mode <= fg_reads_en; // use for ADC read-back 
 always @(posedge clk) reset_d <= reset;
 
 
@@ -137,7 +137,7 @@ always @(posedge clk) begin
 					state <= s_write_0;
 					// Check to ensure that the output buffer has enough space for a burst
 				end 
-				else if (calib_done==1 && ((read_mode==1 && (ob_count < (HALF_FIFO_SIZE)) ) || (fg_read_back_mode == 1 && (ob_count < (FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) )) ) begin  // changed to ensure not always serviced 
+				else if (calib_done==1 && ((read_mode==1 && (ob_count < (HALF_FIFO_SIZE)) )) ) begin  // changed to ensure not always serviced 
 					app_addr <= cmd_byte_addr_rd;
 					app_cmd <= 3'b001; // change LJK 2021/11/11
 					state <= s_read_0;
@@ -147,7 +147,7 @@ always @(posedge clk) begin
                     app_cmd <= 3'b000;  // change LJK 2021/11/11
                     state <= s_write2_0;
                 end
-                else if (calib_done==1 && read_mode==1 && (ob2_count<(FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
+                else if (calib_done==1 && fg_read_back_mode==1 && (ob2_count<(FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
                     app_addr <= cmd_byte_addr_rd2;
                     app_cmd <= 3'b001; // change LJK 2021/11/11
                     state <= s_read2_0;
@@ -241,8 +241,8 @@ always @(posedge clk) begin
 
 			s_write2_4: begin
 				if (app_rdy == 1'b1) begin
-				    if(cmd_byte_addr_wr2 >= INDEX2*ADDRESS_INCREMENT) begin // write2 needs a circular buffer 
-                        cmd_byte_addr_wr2 <= (INDEX + 1'b1)*ADDRESS_INCREMENT;
+				    if(cmd_byte_addr_wr2 >= 30'h80000) begin // write2 needs a circular buffer 
+                        cmd_byte_addr_wr2 <= 30'h40008;
                     end
                     else begin
                         cmd_byte_addr_wr2 <= cmd_byte_addr_wr2 + ADDRESS_INCREMENT;
@@ -263,7 +263,7 @@ always @(posedge clk) begin
 
 			s_read_1: begin
 				if (app_rdy == 1'b1) begin
-				    if(cmd_byte_addr_rd >= INDEX*ADDRESS_INCREMENT)begin // read has a circular buffer; write does not 
+				    if(cmd_byte_addr_rd >= 30'h40000) begin // read has a circular buffer; write does not 
 				        cmd_byte_addr_rd <= 0;
 				    end
 				    else begin
@@ -296,8 +296,8 @@ always @(posedge clk) begin
 
             s_read2_1: begin
                 if (app_rdy == 1'b1) begin
-                    if(cmd_byte_addr_rd2 >= INDEX2*ADDRESS_INCREMENT)begin // read has a circular buffer; write does not 
-                        cmd_byte_addr_rd2 <= (INDEX + 1'b1)*ADDRESS_INCREMENT;
+                    if(cmd_byte_addr_rd2 >= 30'h80000) begin // read has a circular buffer; write does not 
+                        cmd_byte_addr_rd2 <= 30'h40008;
                     end
                     else begin
                         cmd_byte_addr_rd2 <= cmd_byte_addr_rd2 + ADDRESS_INCREMENT;
@@ -322,7 +322,6 @@ always @(posedge clk) begin
                 end
             end
             // ----------------------------------------		
-			
 		endcase
 	end
 end
