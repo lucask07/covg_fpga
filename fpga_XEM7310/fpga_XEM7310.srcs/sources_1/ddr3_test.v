@@ -54,10 +54,9 @@ module ddr3_test
 	(* KEEP = "TRUE" *)output wire [31:0]   app_wdf_mask
 	);
 
-localparam FIXED_INDEX = 30'h40000;
-localparam FIXED_INDEX2 = 30'h80000;
-localparam FIXED_INDEX2_START = 30'h40008;
-
+localparam FIXED_INDEX = 30'h7_ff_ff_f8;
+localparam FIXED_INDEX2 = 30'hf_ff_ff_f8;
+localparam FIXED_INDEX2_START = 30'h8000000;
 
 localparam FIFO_SIZE           = 128;  // this is the size of the 256 wide side. 1024*32 and 256*128=32678 
 localparam HALF_FIFO_SIZE      = 64;  
@@ -118,7 +117,7 @@ always @(posedge clk) begin
         cmd_byte_addr_rd2  <= FIXED_INDEX2_START;
 		app_en            <= 1'b0;
 		app_cmd           <= 3'b0;
-		app_addr          <= 28'b0; //TODO: why 28 bits wide rather than 30. Change to 30'b0? 
+		app_addr          <= 30'b0; 
 		app_wdf_wren      <= 1'b0;
 		app_wdf_end       <= 1'b0;
 		adc_data_count    <= 16'b0;
