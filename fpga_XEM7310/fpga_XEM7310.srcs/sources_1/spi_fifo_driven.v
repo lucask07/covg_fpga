@@ -95,6 +95,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 wire err_0;
 	 wire int_o_0;
 	 
+	 wire [13:0] filter_out_modified;
+	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
 	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*ddr_dat_i*/filter_out_modified), 
@@ -136,7 +138,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          .filter_out(filter_out)
          );
          
-     wire [13:0] filter_out_modified;
+     //wire [13:0] filter_out_modified;
      
      LPF_data_modify_fixpt u_dat_mod(
      .din(filter_out), .dout(filter_out_modified)
