@@ -53,8 +53,15 @@ ddr.reset_fifo()
 # the index is the DDR address that the circular buffer stops at.
 #
 port1_index = int(ddr.parameters['sample_size']*16/32) # *num_chan*2bytes/chan/32bytes_per_ddr*8address_increment
+
+port1_index = 0x7_ff_ff_f8
+
 ddr.set_index(port1_index,
               int(port1_index*2))
+
+ddr.parameters['sample_size'] = int( (port1_index + 8)/2)
+# new test INDEX is fixed at 0x40000 (262144) and 0x80000
+
 
 fdac = []
 for i in range(6):
@@ -75,21 +82,40 @@ for i in range(6):
     # t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_sin_wave(amplitude=1+i*0.25,
     #                                                           frequency=10e3,
     #                                                           dignum_volt=546)
-    ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 16*i,
+ddr.reset_fifo()
+for i in range(6):
+    ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 64*i,
                                                         stop=2**16-1,
                                                         step=1)
 for i in [6, 7]:
-    ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 16*i,
+    ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 64*i,
                                                         stop=2**16-1,
                                                         step=1)
+
+# flat_len = 183
+# for i in [0]:
+#     for t in np.arange(64):
+#         ddr.data_arrays['chan{}'.format(i)][0 + flat_len*t:flat_len + flat_len*t] = np.uint16(240*(t+1)*np.ones(flat_len))
+
+
+ddr.reset_fifo()
+ddr.clear_fg_read()
+
 
 fdac[0].set_clkenable_mux('spi_clk_en')  # shared between all DACs (only need to set one channel)
 g_buf = ddr.write_channels()
 # ddr.parameters['BLOCK_SIZE'] = 512
+
 ddr.clear_write()
 ddr.set_read()
+time.sleep(0.5)
 
-t, bytes_read = ddr.read_adc(ddr.parameters['sample_size']*32)  # bits 0:63 of the DDR, first 4 channels of the FDAC
+#ddr.clear_read()
+ddr.set_fg_read()
+
+t, bytes_read = ddr.read_adc(ddr.parameters['BLOCK_SIZE']*128*128)  # bits 0:63 of the DDR, first 4 channels of the FDAC
+
+# t, bytes_read = ddr.read(8192)  # bits 0:63 of the DDR, first 4 channels of the FDAC
 
 d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
 chan_data = {}
