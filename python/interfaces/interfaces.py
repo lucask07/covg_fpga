@@ -1924,6 +1924,8 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
                              12: 0xab762783,
                              13: 0x287ecada,
                              7: 0x7fffffff}
+        self.filter_offset = 4
+        self.filter_len = np.max(list(self.filter_coeff.keys())) - np.min(list(self.filter_coeff.keys()))
 
     def set_clk_rising_edge(self):
         """
@@ -1999,11 +2001,12 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
 
     def write_filter_coeffs(self):
 
-        for i in np.arange(4, 17):
-            if (i-4) in self.filter_coeff:
-                print('Write filter index {}'.format(i))
+        for i in np.arange(self.filter_offset, 1 + self.filter_offset + self.filter_len):  #TODO is this correct? and how to parameterize?
+            if (i-self.filter_offset) in self.filter_coeff:
                 addr = int(self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
-                val = int(self.filter_coeff[i-4])
+                val = int(self.filter_coeff[i-self.filter_offset])
+                # TODO: ian has first addr of 0x19, second as 0x1a
+                print('Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
                 self.fpga.xem.WriteRegister(addr, val)
 
 
