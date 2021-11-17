@@ -104,7 +104,7 @@
 `define DDR3_OUT2_EMPTY 8 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
 `define DDR3_ADC_DATA_COUNT 9 // address=DDR3_INIT_CALIB_COMPLETE bit_width=16
 
-`define DDR3_WIRE_OUT 8'h3e // bit_width=32
+`define DDR3_ADC_DATA_CNT 8'h3e // bit_width=32
 
 `define GP_FIFO_FLAG_I2C_DONE_TRIG_OUT 8'h60 // bit_width=32
 
