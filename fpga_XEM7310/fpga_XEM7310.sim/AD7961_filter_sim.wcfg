@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_spi_top_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="tb_spi_top" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="7652500000fs"></ZoomStartTime>
+      <ZoomEndTime time="11702500001fs"></ZoomEndTime>
+      <Cursor1Time time="10197500000fs"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="233"></NameColumnWidth>
+      <ValueColumnWidth column_width="171"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="21" />
+   <wave_markers>
+      <marker time="548000000" label="" />
+      <marker time="6192500000" label="" />
+      <marker time="532970000" label="" />
+      <marker time="732843000" label="" />
+      <marker time="3015000000" label="" />
+      <marker time="4831000000" label="" />
+      <marker time="375160000" label="" />
+   </wave_markers>
+   <wvobject fp_name="/tb_spi_top/uut/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/fifoclk" type="logic">
+      <obj_property name="ElementShortName">fifoclk</obj_property>
+      <obj_property name="ObjectShortName">fifoclk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/write_enable" type="logic">
+      <obj_property name="ElementShortName">write_enable</obj_property>
+      <obj_property name="ObjectShortName">write_enable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/write_done" type="logic">
+      <obj_property name="ElementShortName">write_done</obj_property>
+      <obj_property name="ObjectShortName">write_done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/read_coeff" type="logic">
+      <obj_property name="ElementShortName">read_coeff</obj_property>
+      <obj_property name="ObjectShortName">read_coeff</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/write_address" type="array">
+      <obj_property name="ElementShortName">write_address[4:0]</obj_property>
+      <obj_property name="ObjectShortName">write_address[4:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/read_address" type="array">
+      <obj_property name="ElementShortName">read_address[4:0]</obj_property>
+      <obj_property name="ObjectShortName">read_address[4:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/coeff_bram_in" type="array">
+      <obj_property name="ElementShortName">coeff_bram_in[31:0]</obj_property>
+      <obj_property name="ObjectShortName">coeff_bram_in[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/filter_out_modified" type="array">
+      <obj_property name="ElementShortName">filter_out_modified[13:0]</obj_property>
+      <obj_property name="ObjectShortName">filter_out_modified[13:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/filter_out" type="array">
+      <obj_property name="ElementShortName">filter_out[13:0]</obj_property>
+      <obj_property name="ObjectShortName">filter_out[13:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/adc_val_0" type="array">
+      <obj_property name="ElementShortName">adc_val_0[15:0]</obj_property>
+      <obj_property name="ObjectShortName">adc_val_0[15:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/data_rdy_0" type="logic">
+      <obj_property name="ElementShortName">data_rdy_0</obj_property>
+      <obj_property name="ObjectShortName">data_rdy_0</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/ep_write" type="logic">
+      <obj_property name="ElementShortName">ep_write</obj_property>
+      <obj_property name="ObjectShortName">ep_write</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/ep_address" type="array">
+      <obj_property name="ElementShortName">ep_address[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ep_address[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/realTime_LPF_coeff_BRAM/addra" type="array">
+      <obj_property name="ElementShortName">addra[3:0]</obj_property>
+      <obj_property name="ObjectShortName">addra[3:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/realTime_LPF_coeff_BRAM/ena" type="logic">
+      <obj_property name="ElementShortName">ena</obj_property>
+      <obj_property name="ObjectShortName">ena</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/realTime_LPF_coeff_BRAM/dina" type="array">
+      <obj_property name="ElementShortName">dina[31:0]</obj_property>
+      <obj_property name="ObjectShortName">dina[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/realTime_LPF_coeff_BRAM/addrb" type="array">
+      <obj_property name="ElementShortName">addrb[3:0]</obj_property>
+      <obj_property name="ObjectShortName">addrb[3:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/realTime_LPF_coeff_BRAM/enb" type="logic">
+      <obj_property name="ElementShortName">enb</obj_property>
+      <obj_property name="ObjectShortName">enb</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/realTime_LPF_coeff_BRAM/doutb" type="array">
+      <obj_property name="ElementShortName">doutb[31:0]</obj_property>
+      <obj_property name="ObjectShortName">doutb[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_spi_top/uut/ep_dataout_coeff" type="array">
+      <obj_property name="ElementShortName">ep_dataout_coeff[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ep_dataout_coeff[31:0]</obj_property>
+      <obj_property name="Radix">HEXRADIX</obj_property>
+   </wvobject>
+</wave_config>

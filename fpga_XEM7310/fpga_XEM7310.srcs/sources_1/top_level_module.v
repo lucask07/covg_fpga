@@ -950,11 +950,12 @@ module top_level_module(
             .dataout(spi_data[k])
         );
         
-        // FIFO driven SPI
-        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*4))spi_fifo0 (
+        // instantiate old top-level (but only for the AD5453 SPI)
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*19))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
-                 .data_rdy_0(), .adc_val_0(), //not yet used
+                 .data_rdy_0(write_en_adc_o[k]), .adc_val_0(adc_val[1]), //not yet used
+                 // register bridge //TODO: add address increment based on generate k
                  .ep_write(regWrite),           //input wire 
                  .ep_address(regAddress),       //input wire [31:0] 
                  .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
