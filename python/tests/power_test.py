@@ -150,7 +150,7 @@ for i in range(6):
     fdac.append(AD5453(f,
                 endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
-    fdac[0].set_spi_sclk_divide()
+    fdac[i].set_spi_sclk_divide()
     fdac[i].set_data_mux('ads8686_chA')
     fdac[i].write(0x2000)
     t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_flat_voltage(256 + 256*i)

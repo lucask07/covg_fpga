@@ -1911,11 +1911,29 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
                          'host': 1,
                          'ads8686_chA': 2,
                          'ad7961_ch0': 3}
+        
         self.clkenable_mux = {'spi_clk_en': 0,
                               'spi_rd_en': 1,  # not recommended
                               'adc_emulator': 2,
                               'write_en_adc_0': 3,
                               'write_en_adc_1': 4}
+        
+        self.regbridge_advance = 19
+        self.filter_coeff = {0: 0x009e1586,
+                             1: 0x20000000,
+                             2: 0x40000000,
+                             3: 0x20000000,
+                             4: 0xbce3be9a,
+                             5: 0x12f3f6b0,
+                             8: 0x7fffffff,
+                             9: 0x20000000,
+                             10: 0x40000000,
+                             11: 0x20000000,
+                             12: 0xab762783,
+                             13: 0x287ecada,
+                             7: 0x7fffffff}
+        self.filter_offset = 4
+        self.filter_len = np.max(list(self.filter_coeff.keys())) - np.min(list(self.filter_coeff.keys()))
 
     def set_clk_rising_edge(self):
         """
@@ -1976,7 +1994,7 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         HDL default is ctrlValue = 16'h3010 (initialized in the HDL)
         4*channel (rather than 1*channel) allows for expansion
         """
-        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 4*self.channel,
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + self.regbridge_advance*self.channel,
                                     value)
 
         # resets the SPI state machine -- needed since these registers are only
@@ -1992,13 +2010,23 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         """
         sys_clk = 200  # in MHz
         print('SCLK predicted frequency {:.2f} [MHz]'.format(sys_clk/(value+1)))
-        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 1 + 4*self.channel,
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 1 + self.regbridge_advance*self.channel,
                                     value)
 
         # resets the SPI state machine -- needed since these WishBone
         #   registers are only programmed at startup of the state machine
         self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
                                         self.endpoints['REG_TRIG'].bit_index_low)
+
+    def write_filter_coeffs(self):
+
+        for i in np.arange(self.filter_offset, 1 + self.filter_offset + self.filter_len):  #TODO is this correct? and how to parameterize?
+            if (i-self.filter_offset) in self.filter_coeff:
+                addr = int(self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
+                val = int(self.filter_coeff[i-self.filter_offset])
+                # TODO: ian has first addr of 0x19, second as 0x1a
+                print('Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
+                self.fpga.xem.WriteRegister(addr, val)
 
 
 class ADCDATA():
