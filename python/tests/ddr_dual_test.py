@@ -32,6 +32,21 @@ eps = Endpoint.endpoints_from_defines
 from interfaces.boards import Daq  # TODO: should I instantiate the Daq board or just pieces from it?
                                    # TODO: for now, pieces, eventually the DAQ board
 
+
+def check_readback(data_array, adc_data, chan):
+    """
+    data_array: dict of arrays written to DDR (keys are 0,1,2,3,...)
+    adc_data: dict of arrays written to DDR
+    chan: int or list of ints for channels to check
+    """
+    results = {}
+    for c in list(chan):
+        diffs = data_array[c][0:len(adc_data[c])] != adc_data[c]
+        print('Chan {} number of diffs. {}'.format(c,
+                                                   np.sum(diffs)))
+        results[c] = diffs
+    return results
+
 # Set up FPGA
 if 'f' not in locals():  # run script with %run -i to pass workspace variables back in
     f = FPGA(bitfile=os.path.join(covg_fpga_path, 'fpga_XEM7310',
@@ -51,17 +66,12 @@ ddr = DDR3(f)
 ddr.reset_fifo()
 
 # the index is the DDR address that the circular buffer stops at.
-#
-port1_index = int(ddr.parameters['sample_size']*16/32) # *num_chan*2bytes/chan/32bytes_per_ddr*8address_increment
+# need to write all the way up to this stoping point otherwise the SPI output will glitch
 
 port1_index = 0x7_ff_ff_f8
-
 ddr.set_index(port1_index,
               int(port1_index*2))
-
 ddr.parameters['sample_size'] = int( (port1_index + 8)/2)
-# new test INDEX is fixed at 0x40000 (262144) and 0x80000
-
 
 fdac = []
 for i in range(6):
@@ -71,7 +81,6 @@ for i in range(6):
     fdac[0].set_spi_sclk_divide()
     fdac[i].set_data_mux('DDR')
 
-    fdac[i].write(0x2000)  # the wave written for host driven reads
     ddr.reset_fifo()
     time.sleep(0.001)
     fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
@@ -84,14 +93,13 @@ for i in range(6):
     #                                                           dignum_volt=546)
 ddr.reset_fifo()
 for i in range(6):
-    ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 64*i,
+    ddr.data_arrays[i] = ddr.make_ramp(start=0 + 64*i,
                                                         stop=2**16-1,
                                                         step=1)
 for i in [6, 7]:
-    ddr.data_arrays['chan{}'.format(i)] = ddr.make_ramp(start=0 + 64*i,
+    ddr.data_arrays[i] = ddr.make_ramp(start=0 + 64*i,
                                                         stop=2**16-1,
                                                         step=1)
-
 # flat_len = 183
 # for i in [0]:
 #     for t in np.arange(64):
@@ -100,21 +108,17 @@ for i in [6, 7]:
 
 ddr.reset_fifo()
 ddr.clear_fg_read()
-
-
-fdac[0].set_clkenable_mux('spi_clk_en')  # shared between all DACs (only need to set one channel)
 g_buf = ddr.write_channels()
-# ddr.parameters['BLOCK_SIZE'] = 512
 
 ddr.clear_write()
+fdac[0].set_clkenable_mux('spi_clk_en')  # shared between all DACs (only need to set one channel)
 ddr.set_read()
-time.sleep(0.5)
-
+time.sleep(0.5)  # allow the ADC data to accumulate into DDR
 #ddr.clear_read()
 ddr.set_fg_read()
 
+# block size is 2048. So expect 2048*4*128*128 bytes read (128 MB)
 t, bytes_read = ddr.read_adc(ddr.parameters['BLOCK_SIZE']*128*128)  # bits 0:63 of the DDR, first 4 channels of the FDAC
-
 # t, bytes_read = ddr.read(8192)  # bits 0:63 of the DDR, first 4 channels of the FDAC
 
 d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
@@ -122,15 +126,32 @@ chan_data = {}
 for i in range(4):
     chan_data[i] = (d[(0 + i*2)::8] << 0) + (d[(1 + i*2)::8] << 8)
 
-(unique, counts) = np.unique((d[0::2] << 0) + (d[1::2] << 8),
-                             return_counts=True)
-
 for i in range(4):
     plt.plot(chan_data[i], marker='*')
 
+# check readback with write by channel given length
+readback = check_readback(ddr.data_arrays, chan_data, [0, 1, 2, 3])
 
 """
-fifo_debug = DebugFIFO(f)
-fifo_debug.reset_fifo()
-dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
+# Continuous Graph
+plt.ion()
+fig, ax = plt.subplots()
+# ax.plot(data)
+ax.set_xlabel('Time')
+ax.set_ylabel('Voltage')
+while True:
+    for i in range(2):
+        data = [to_voltage(data=int(x), num_bits=16, voltage_range=10, use_twos_comp=True) for x in ads.stream_mult(twos_comp_conv=False)['A']]
+        x = [i*len(data) + j for j in range(len(data))]
+        ax.plot(x, data, color='blue', scalex=True, scaley=False)
+        ax.set_ylim(bottom=-5, top=5, auto=False)
+    plt.draw()
+    plt.pause(0.01)
+    plt.cla()
+"""
+
+"""
+(unique, counts) = np.unique((d[0::2] << 0) + (d[1::2] << 8),
+                             return_counts=True)
+
 """
