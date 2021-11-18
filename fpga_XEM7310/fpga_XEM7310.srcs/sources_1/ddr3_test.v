@@ -35,7 +35,7 @@ module ddr3_test
     (* KEEP = "TRUE" *)input  wire [6:0]    ob2_count,
     (* KEEP = "TRUE" *)input  wire          ob2_full,
     // count of data in buffer2 
-	(* KEEP = "TRUE" *)output reg  [15:0]  adc_data_count,
+	(* KEEP = "TRUE" *)output reg  [31:0]  adc_data_count,
 
 	// MIG interface -- doesn't change if extra buffers are added 
 	(* KEEP = "TRUE" *)input  wire          app_rdy,
