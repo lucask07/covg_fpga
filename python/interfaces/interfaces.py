@@ -141,8 +141,8 @@ class Endpoint:
             # The Registers spreadsheet is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
             for i in range(15):
                 if os.path.basename(ep_defines_path) == 'covg_fpga':
-                        ep_defines_path = os.path.join(ep_defines_path, 'fpga_XEM7310', 'fpga_XEM7310.srcs', 'sources_1', 'ep_defines.v')
-                        break
+                    ep_defines_path = os.path.join(ep_defines_path, 'fpga_XEM7310', 'fpga_XEM7310.srcs', 'sources_1', 'ep_defines.v')
+                    break
                 else:
                     # If we aren't in covg_fpga, move up a folder and check again
                     ep_defines_path = os.path.dirname(ep_defines_path)
@@ -1644,6 +1644,8 @@ class DAC80508(SPIController):
         SPI data prefix for reading from the DAC.
     registers : dict
         Name-Register pairs for the internal registers of the DAC80508.
+    data_mux : dict
+        Matches data source names in the MUX to their select values.
 
     Methods
     -------
@@ -1667,12 +1669,21 @@ class DAC80508(SPIController):
         Print the device info and return its ID.
     reset()
         Soft reset the chip.
+    set_data_mux()
+        Configure the MUX that routes data source to the SPI output
     """
 
     WRITE_OPERATION = 0x000000
     READ_OPERATION = 0x800000
 
     registers = Register.get_chip_registers('DAC80508')
+
+    data_mux = {
+        'DDR': 0,
+        'host': 1,
+        'ads8686_chA': 2,
+        'ad7961_ch0': 3,
+    }
 
     def __init__(self, fpga, master_config=0x3218, slave_address=0x1, endpoints=None):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
@@ -1887,6 +1898,21 @@ class DAC80508(SPIController):
         #     else:
         #         print('Reset: FAIL')
         # return ack
+
+    def set_data_mux(self, source):
+        """Configure the MUX that routes data source to the SPI output
+        
+        Arguments
+        ---------
+        source : str
+            Name of the selected source. Found in self.data_mux
+        """
+
+        mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
+                                self.endpoints['DATA_SEL'].bit_index_high))
+        data = (self.data_mux[source] << self.endpoints['DATA_SEL'].bit_index_low)
+        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
+                            mask=mask)
 
 
 class AD5453(SPIController):  # TODO: this is SPI but to controller is much different
@@ -2186,7 +2212,7 @@ class ADS8686(SPIController, ADCDATA):
         # reset the clk divider
         self.fpga.send_trig(self.endpoints['CLK_DIV_RESET'])
         self.set_fpga_mode()  # lower the control bit for host vs. FPGA driven
-                              # so the FPGA takes control of sending SPI
+        # so the FPGA takes control of sending SPI
 
     def set_lpf(self, lpf):
         if lpf not in ADS8686.lpf_khz.keys():
