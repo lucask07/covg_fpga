@@ -87,7 +87,7 @@ def fpga():
     # Teardown
     f.xem.Close()
     # Power off
-    # pwr_off()
+    pwr_off()
 
 
 @pytest.fixture(scope='module')
