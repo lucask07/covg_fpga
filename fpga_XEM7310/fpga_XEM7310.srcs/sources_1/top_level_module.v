@@ -663,7 +663,7 @@ module top_level_module(
      
      wire         po2_ep_read;
      wire [31:0]  po2_ep_datain;// MIG/DDR3 ADC FIFO data out
-     wire [15:0] adc_data_cnt; // count of ADC words in DDR
+     wire [31:0]  adc_data_cnt; // count of ADC words in DDR
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
@@ -836,7 +836,7 @@ module top_level_module(
      assign ep20wire[`DDR3_OUT2_EMPTY] = pipe_out2_empty;
      assign ep20wire[`DDR3_ADC_DATA_COUNT] = adc_data_cnt;
      
-     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_WIRE_OUT), .ep_datain(po0_ep_datain));
+     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_ADC_DATA_CNT), .ep_datain(adc_data_cnt));
      okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_IN), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
      //PipeOuts
      //     EP_READ    Output    Active-high read signal.  Data must be provided in the cycle following as assertion of this signal.
