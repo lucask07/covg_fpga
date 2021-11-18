@@ -94,12 +94,12 @@ for i in range(6):
 ddr.reset_fifo()
 for i in range(6):
     ddr.data_arrays[i] = ddr.make_ramp(start=0 + 64*i,
-                                                        stop=2**16-1,
-                                                        step=1)
+                                        stop=2**16-1,
+                                        step=1)
 for i in [6, 7]:
     ddr.data_arrays[i] = ddr.make_ramp(start=0 + 64*i,
-                                                        stop=2**16-1,
-                                                        step=1)
+                                        stop=2**16-1,
+                                        step=1)
 # flat_len = 183
 # for i in [0]:
 #     for t in np.arange(64):
@@ -110,6 +110,7 @@ ddr.reset_fifo()
 ddr.clear_fg_read()
 g_buf = ddr.write_channels()
 
+ddr.reset_fifo()
 ddr.clear_write()
 fdac[0].set_clkenable_mux('spi_clk_en')  # shared between all DACs (only need to set one channel)
 ddr.set_read()
@@ -118,13 +119,19 @@ time.sleep(0.5)  # allow the ADC data to accumulate into DDR
 ddr.set_fg_read()
 
 # block size is 2048. So expect 2048*4*128*128 bytes read (128 MB)
-t, bytes_read = ddr.read_adc(ddr.parameters['BLOCK_SIZE']*128*128)  # bits 0:63 of the DDR, first 4 channels of the FDAC
+t, bytes_read = ddr.read_adc(ddr.parameters['BLOCK_SIZE']*128*16)  # bits 0:63 of the DDR, first 4 channels of the FDAC
 # t, bytes_read = ddr.read(8192)  # bits 0:63 of the DDR, first 4 channels of the FDAC
 
 d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
-chan_data = {}
+chan_data_swz = {}  # this data is swizzled
 for i in range(4):
-    chan_data[i] = (d[(0 + i*2)::8] << 0) + (d[(1 + i*2)::8] << 8)
+    chan_data_swz[i] = (d[(0 + i*2)::8] << 0) + (d[(1 + i*2)::8] << 8)
+
+chan_data = {}
+chan_data[0] = chan_data_swz[2]
+chan_data[1] = chan_data_swz[3]
+chan_data[2] = chan_data_swz[0]
+chan_data[3] = chan_data_swz[1]
 
 for i in range(4):
     plt.plot(chan_data[i], marker='*')
