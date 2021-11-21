@@ -545,40 +545,44 @@ module top_level_module(
 
 
     /*---------------- DAC80508 -------------------*/
-    wire [31:0]dac_wirein_data[(DAC80508_NUM-1):0];
-    wire [31:0]dac_data_out[(DAC80508_NUM-1):0];
     
-    genvar j;
+    wire [18:0] ds_spi_data[0:(DAC80508_NUM - 1)];
+    wire [31:0] ds_host_spi_data[0:(DAC80508_NUM - 1)];
+    
+    genvar k;
     generate
-    for (j=0; j<=(DAC80508_NUM-1); j=j+1) begin : dac80508_gen
-        spi_controller #(.ADDR(`DAC80508_REGBRIDGE_OFFSET)) uut(
-                           .clk(clk_sys),
-                           .reset(sys_rst),
-                           .divider_reset(ep40trig[`DAC80508_CLK_DIV_RESET_GEN_BIT+j]),  // TODO: need in ep_defines
-                           .dac_val(dac_wirein_data[j]),
-                           .dac_convert_trigger(ep40trig[`DAC80508_WB_CONVERT_GEN_BIT+j]), // trigger wishbone transfers
-                           .host_fpgab(host_fpgab_dac80508[j]), //  if 1 host driven commands; if 0
-                           // OKRegister bridge inputs
-                           .okClk(okClk),
-                           .addr(regAddress),
-                           .data_in(regDataOut),
-                           .write_in(regWrite),
-                           // outputs
-                           .dac_out(dac_data_out[j]), // connect to WireOut
-                           .data_valid(),
-                           .ss(ds_csb[j]),
-                           .sclk(ds_sclk[j]),
-                           .mosi(ds_sdi[j]),
-                           .miso(1'b0),
-                           .miso_b(1'b0),
-                           .convst_out()
-                           );         
-        okWireIn wi_dac_0 (.okHE(okHE), .ep_addr(`DAC80508_WB_IN_GEN_ADDR + j), .ep_dataout(dac_wirein_data[j]));
-        // TODO: wireout is not needed (nor supported with the Clear version of the DAC80508)
-        okWireOut wo_dac_0 (.okHE(okHE), .okEH(okEHx[(9+j)*65 +: 65 ]), .ep_addr(`DAC80508_OUT_GEN_ADDR + j), .ep_datain(dac_data_out[j]));    
-    assign ds_sdo[j] = 1'b1; // sdo for the DAC80508C is CLRB -- force to logic high
+    for (k=0; k<=(DAC80508_NUM-1); k=k+1) begin : dac80508_gen
     
-    end
+        okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`DAC80508_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(ds_host_spi_data[k]));
+        
+        mux_4to1_16wide spi_mux_bus(
+            .datain_0({1'b1, po0_ep_datain[AD5453_NUM*14 + k*19 +:19]}), // input  wire [15:0] datain. stripe DDR in 16 bit wide groups. Leading 1 to complete OUT channel address on chip
+            .datain_1(ds_host_spi_data[k][18:0]), 
+            .datain_2({3'b000, ads_last_read[15:0]}), // Default to output channel DAC0
+            .datain_3(adc_val[3][15:0]), // TODO:  poor design since not synchronized. Use CHAN3
+            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + k*`DAC80508_DATA_SEL_GEN_BIT_LEN) +: 2]),
+            .dataout(ds_spi_data[k])
+        );
+            
+        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET + k*19), .DATA_WIDTH(20))spi_fifo1 (
+                 .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+                 .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
+                 .data_rdy_0(write_en_adc_o[k]), .adc_val_0(adc_val[1]), //not yet used
+                 // register bridge //TODO: add address increment based on generate k
+                 .ep_write(regWrite),           //input wire 
+                 .ep_address(regAddress),       //input wire [31:0] 
+                 .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
+                 /*.ep_datain(regDataIn),*/
+                 // DDR
+                 .en_period(en_period), //in, [9:0] TODO: same period for all spi_fifo_driven instances 
+                 .clk_en(clk_en_fast_dac[k]), //out
+                 .ddr3_rst(ddr3_rst),//in
+                 // All DAC80508 output channels have the form {0b1, number_output_channel}
+                 .ddr_dat_i(ds_spi_data[k][18:0]), //in  TODO: add Mux here
+                 .rd_en_0(rd_en_fast_dac[k]),   //out
+                 .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+                 );
+        end
     endgenerate
     /*---------------- END DAC80508 -------------------*/
 
@@ -821,15 +825,15 @@ module top_level_module(
     
     wire [15:0] spi_data[0:(AD5453_NUM-1)];
     wire [31:0] host_spi_data[0:(AD5453_NUM-1)];
-
-    genvar k;
+    
+    
     generate
     for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
     
         okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(host_spi_data[k]));
         
         mux_4to1_16wide spi_mux_bus(
-            .datain_0(po0_ep_datain[k*16 +:16]), // input  wire [15:0] datain. stripe DDR in 16 bit wide groups 
+            .datain_0({2'b00, po0_ep_datain[k*14 +:14]}), // input  wire [13:0] datain. stripe DDR in 14 bit wide groups. Leading zeros to write value on chip
             .datain_1(host_spi_data[k][15:0]), 
             .datain_2(ads_last_read[15:0]),
             .datain_3(adc_val[3][15:0]), // TODO:  poor design since not synchronized. Use CHAN3
@@ -838,7 +842,7 @@ module top_level_module(
         );
             
         // instantiate old top-level (but only for the AD5453 SPI)
-        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*19))spi_fifo0 (
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*19), .DATA_WIDTH(16))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
                  .data_rdy_0(write_en_adc_o[k]), .adc_val_0(adc_val[1]), //not yet used

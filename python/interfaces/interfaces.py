@@ -2739,7 +2739,7 @@ class DDR3():
 
     def set_index(self, factor):
         """
-        Set the index value at which the DDR3 loops back
+        Set the byte index value at which the DDR3 loops back
         """
         self.fpga.set_wire(self.endpoints['INDEX'].address, factor)
 
