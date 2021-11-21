@@ -76,6 +76,11 @@ gpio.fpga.debug = True
 gpio.spi_debug('ds0')
 
 # --- Configure for DDR read to DAC80508 ---
+dac.set_host_mode()
+dac.set_divider(0x8)
+dac.configure_master_bin(0x3218)
+dac.select_slave(1)
+dac.set_config_bin(0x00)
 dac.set_data_mux('DDR')
 # Need byte index value
 ddr.set_index(ceil(122/8) - 1)
