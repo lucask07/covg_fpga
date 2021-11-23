@@ -45,7 +45,7 @@
 `define ADS8686_PIPE_OUT_GEN_ADDR 8'hA5 // bit_width=32
 `define DEBUGFIFO_PIPE_OUT 8'hA7 // bit_width=32
 `define ADS8686_WB_IN 8'h05 // bit_width=32
-`define DAC80508_WB_IN_GEN_ADDR 8'h06 // bit_width=32
+`define DAC80508_HOST_WIRE_IN_GEN_ADDR 8'h06 // bit_width=32
 `define I2CDC_WIRE_IN_GEN_ADDR 8'h08 // bit_width=16
 `define I2CDC_IN_GEN_BIT 0 // address=I2CDC_WIRE_IN_GEN_ADDR bit_width=16
 `define I2CDAQ_WIRE_IN_GEN_ADDR 8'h0A // bit_width=16
@@ -67,6 +67,8 @@
 
 `define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
 `define AD5453_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
+`define DAC80508_DATA_SEL_GEN_BIT 15 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
+`define DAC80508_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
 
 
 // wireIn address for index 
@@ -84,7 +86,6 @@
 `define AD7961_PLL_LOCKED 0 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 `define AD7961_TIMING_PLL_LOCKED 1 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 
-`define DAC80508_OUT_GEN_ADDR 8'h22 // bit_width=32
 `define DDR3_INIT_CALIB_COMPLETE 0 // address=0x27 bit_width=1
 `define DDR3_WIRE_OUT 8'h3e // bit_width=32
 
@@ -136,6 +137,7 @@
 `define GP_SYSTEM_RESET 1 // address=GP_RST_VALID_TRIG_IN bit_width=1
 // `define TI40_ 2 // not used
 `define AD7961_PLL_RESET 3 // address=GP_RST_VALID_TRIG_IN bit_width=1
+`define DAC80508_REG_TRIG_GEN_BIT 4 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD5453_REG_TRIG_GEN_BIT 8 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_CLK_DIV_RESET 14 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_WB_CONVERT 15 // address=GP_RST_VALID_TRIG_IN bit_width=1
