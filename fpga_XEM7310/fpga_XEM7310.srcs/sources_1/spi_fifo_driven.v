@@ -119,8 +119,11 @@ module spi_fifo_driven #(parameter ADDR = 0, parameter DATA_WIDTH = 16) (
 	 .bram_in(coeff_bram_in)
 	 );
 	 
+	 wire [31:0] addra_subtract;
+	 assign addra_subtract = ep_address - (32'h4+ADDR);
+	 
 	 blk_mem_gen_0 realTime_LPF_coeff_BRAM(
-	 .addra(ep_address[3:0] - (4'h4+ADDR)), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_write & ((ep_address>(ADDR + 8'h03)) & (ep_address<(ADDR + 8'h13)))), .wea(4'b1111),
+	 .addra(addra_subtract[3:0]), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_write & ((ep_address>(ADDR + 8'h03)) & (ep_address<(ADDR + 8'h13)))), .wea(4'b1111),
 	 .addrb({27'b0, read_address}), .clkb(clk), .doutb(coeff_bram_in), .enb(read_coeff)
 	 );
 	 
