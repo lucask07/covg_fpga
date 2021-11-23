@@ -1924,6 +1924,38 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
                              12: 0xab762783,
                              13: 0x287ecada,
                              7: 0x7fffffff}
+
+        """
+        self.filter_coeff = {0: 10360198,
+         1: 536870912,
+         2: 0,
+         3: 0,
+         4: 0,
+         5: 0,
+         8: 2147483647,
+         9: 536870912,
+         10: 0,
+         11: 0,
+         12: 0,
+         13: 0,
+         7: 2147483647,
+         6: 0}
+        """
+        self.filter_coeff = {0: 0x0000_6f84,
+                             1: 0x20000000,
+                             2: 0x40000000,
+                             3: 0x20000000,
+                             4: 0x8e301ca0,
+                             5: 0x32b7759a,
+                             8: 0x7fffffff,
+                             9: 0x20000000,
+                             10: 0x40000000,
+                             11: 0x20000000,
+                             12: 0x86d2475f,
+                             13: 0x3a2447ec,
+                             7: 0x7fffffff}
+
+
         self.filter_offset = 4
         self.filter_len = np.max(list(self.filter_coeff.keys())) - np.min(list(self.filter_coeff.keys()))
 
