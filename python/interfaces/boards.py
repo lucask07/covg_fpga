@@ -557,6 +557,22 @@ class Daq:
             self.debug = debug  # TODO: Turning on debug will show more output
 
         def spi_debug(self, chip):
+            """Configure the GPIO pins with SPI debug signals.
+            
+            Arguments
+            ---------
+            chip : str
+                Abbreviated name of the chip to debug.
+                ads
+                ds0
+                ds1
+                dfast0
+                dfast1
+                dfast2
+                dfast3
+                dfast4
+            """
+
             if chip not in self.parameters['chips'].keys():
                 print('Incorrect chip name in spi_debug')
                 return -1

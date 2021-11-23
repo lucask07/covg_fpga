@@ -18,13 +18,13 @@
 // Additional Comments: 
 //
 //////////////////////////////////////////////////////////////////////////////////
-module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
+module read_fifo_to_spi_cmd #(parameter ADDR = 0, parameter DATA_WIDTH = 16)(
         input wire clk, 
         input wire okClk, 
         input wire rst, 
         input wire int_o, 
         input wire empty, 
-        input wire [13:0] adc_dat_i, 
+        input wire [DATA_WIDTH:0] adc_dat_i, 
         output reg [7:0] adr, 
         output reg cmd_stb, 
         output reg [33:0] cmd_word, 
@@ -38,7 +38,7 @@ module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
 	 
 	 //reg [13:0] converted_dat; //reg to hold the converted value to be sent to the AD5453
 	 //wire [15:0] converted_cmd_dat = {2'b0, converted_dat}; //reg to hold the converted value plus command bits for AD5453
-	 wire [15:0] converted_cmd_dat = {2'b00, adc_dat_i};/**/
+	 wire [15:0] converted_cmd_dat = {adc_dat_i};/**/
 	 
 	 parameter conversion_offset = 14'h2000; //offset to convert AD796x data before sending to AD5453
 	 
