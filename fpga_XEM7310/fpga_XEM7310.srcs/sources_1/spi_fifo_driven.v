@@ -41,7 +41,9 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire ddr3_rst, // resets clock enable generator  
      input wire [23:0] ddr_dat_i,
      output wire rd_en_0,
-     input wire regTrigger
+     input wire regTrigger,
+     output wire [31:0] coeff_debug_out1,
+     output wire [31:0] coeff_debug_out2
     );
     
       wire cmd_stb;
@@ -138,7 +140,9 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          .write_done(write_done),
          .write_address(write_address),
          .coeffs_in(coeffs_in),
-         .filter_out(filter_out)
+         .filter_out(filter_out),
+         .coeff_debug_out1(coeff_debug_out1),
+         .coeff_debug_out2(coeff_debug_out2)
          );
          
      //wire [13:0] filter_out_modified;

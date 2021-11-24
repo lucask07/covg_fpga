@@ -267,7 +267,7 @@ module top_level_module(
 	wire [64:0] okEH;
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
 	//TODO: better way to keep track of these
-	wire [18*65-1:0] okEHx;
+	wire [20*65-1:0] okEHx;
 
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire;
@@ -282,7 +282,7 @@ module top_level_module(
 	assign sys_rst = (pushreset | ep40trig[`GP_SYSTEM_RESET]); // TODO: GP_SYSTEM_RESET is not found
 
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(18)) wireOR (okEH, okEHx); //TODO
+	okWireOR # (.N(20)) wireOR (okEH, okEHx); //TODO
 
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
@@ -830,6 +830,8 @@ module top_level_module(
     wire [15:0] spi_data[0:(AD5453_NUM-1)];
     wire [31:0] host_spi_data[0:(AD5453_NUM-1)];
     
+    wire [31:0] coeff_debug_out1[0:(AD5453_NUM-1)];
+    wire [31:0] coeff_debug_out2[0:(AD5453_NUM-1)];
     
     generate
     for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
@@ -863,13 +865,19 @@ module top_level_module(
                  //.ddr_dat_i(po0_ep_datain[k*16 +:14]), //in  TODO: add Mux here
                  .ddr_dat_i(spi_data[k][13:0]), //in  TODO: add Mux here
                  .rd_en_0(rd_en_fast_dac[k]),   //out
-                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + k]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + k]), //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+                 .coeff_debug_out1(coeff_debug_out1[k]),
+                 .coeff_debug_out2(coeff_debug_out2[k])
                  );
         end
     endgenerate
 
     assign rd_en_0 = rd_en_fast_dac[0]; // DDR driven by DAC0 
     assign clk_en = clk_en_fast_dac[0]; // DDR driven by DAC0 
+
+     okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG1), .ep_datain(coeff_debug_out1[0]));
+     okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG2), .ep_datain(coeff_debug_out1[1]));
+
 
     /* ----------------- END AD5453 ------------------------------------ */
 
@@ -984,7 +992,7 @@ module top_level_module(
        );//status
  
    //pipeOut for data from debug fifo 
-   okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(17)*65 +: 65]),
+   okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[17*65 +: 65]),
              .ep_addr(`DEBUGFIFO_PIPE_OUT), .ep_read(debug_pipe_ep_read),
              .ep_datain(fifo_debug_out));
 

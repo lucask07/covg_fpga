@@ -61,7 +61,9 @@ module Butterworth
                 write_done,
                 write_address,
                 coeffs_in,
-                filter_out
+                filter_out,
+                coeff_debug_out1,
+                coeff_debug_out2
                 );
 
   input   clk; 
@@ -73,6 +75,8 @@ module Butterworth
   input   [3:0] write_address; //ufix4
   input   signed [31:0] coeffs_in; //sfix32
   output  signed [13:0] filter_out; //sfix14_En8
+  output  [31:0] coeff_debug_out1;
+  output  [31:0] coeff_debug_out2;
 
 ////////////////////////////////////////////////////////////////
 //Module Architecture: Butterworth
@@ -201,6 +205,9 @@ module Butterworth
   wire signed [47:0] mul_temp_2; // sfix48_En45
   wire signed [13:0] output_typeconvert; // sfix14_En8
   reg  signed [13:0] output_register; // sfix14_En8
+
+  assign coeff_debug_out1 = coeff_a3_section1_shadow_reg;
+  assign coeff_debug_out2 = coeff_scale3_shadow_reg;
 
   // Block Statements
   always @ ( posedge clk)
