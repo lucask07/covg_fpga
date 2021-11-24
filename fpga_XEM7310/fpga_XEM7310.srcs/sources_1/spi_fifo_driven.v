@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////`include "timescale.v"
 `include "timescale.v"
 
-module spi_fifo_driven #(parameter ADDR = 0, parameter DATA_WIDTH = 16) (
+module spi_fifo_driven #(parameter ADDR = 0) (
      input wire clk,
 	 input wire fifoclk,
      input wire rst,
@@ -39,7 +39,7 @@ module spi_fifo_driven #(parameter ADDR = 0, parameter DATA_WIDTH = 16) (
      input wire [9:0] en_period,
      output wire clk_en,
      input wire ddr3_rst, // resets clock enable generator  
-     input wire [DATA_WIDTH:0] ddr_dat_i,
+     input wire [23:0] ddr_dat_i,
      output wire rd_en_0,
      input wire regTrigger
     );
@@ -98,7 +98,7 @@ module spi_fifo_driven #(parameter ADDR = 0, parameter DATA_WIDTH = 16) (
 	 wire [13:0] filter_out_modified;
 	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
-	 read_fifo_to_spi_cmd #(.ADDR(ADDR), .DATA_WIDTH(DATA_WIDTH)) data_converter_0(
+	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
 	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*ddr_dat_i*/filter_out_modified), 
 	 .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
 	 .rd_en(rd_en_0), .data_rdy(/*dataready*/data_rdy_0), .regDataOut(ep_dataout_coeff[15:0]), 

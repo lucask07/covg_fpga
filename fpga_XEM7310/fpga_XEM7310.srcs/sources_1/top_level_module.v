@@ -546,7 +546,7 @@ module top_level_module(
 
     /*---------------- DAC80508 -------------------*/
     
-    wire [18:0] ds_spi_data[0:(DAC80508_NUM - 1)];
+    wire [23:0] ds_spi_data[0:(DAC80508_NUM - 1)];
     wire [31:0] ds_host_spi_data[0:(DAC80508_NUM - 1)];
     
     genvar k;
@@ -556,15 +556,19 @@ module top_level_module(
         okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`DAC80508_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(ds_host_spi_data[k]));
         
         mux_4to1_16wide spi_mux_bus(
-            .datain_0({1'b1, po0_ep_datain[AD5453_NUM*14 + k*19 +:19]}), // input  wire [15:0] datain. stripe DDR in 16 bit wide groups. Leading 1 to complete OUT channel address on chip
-            .datain_1(ds_host_spi_data[k][18:0]), 
+            .datain_0({1'b1, po0_ep_datain[k*2*16 + 14 +:2], po0_ep_datain[k*2*16 + 14 +:1], po0_ep_datain[AD5453_NUM*16 + k*16 +:16]}),
+            // Leading 1 to complete OUT channel address on chip,
+            // last 2 bits of an AD5453 16-bit group for addressing,
+            // 15th bit of the next AD5453 group to complete the address,
+            // 16 bits data from DAC80508 group
+            .datain_1(ds_host_spi_data[k][23:0]), // TODO: determine size for this, I believe it should be 24 bits of SPI message that the host must determine because the spi_fifo_driven is expecting 24 bits
             .datain_2({3'b000, ads_last_read[15:0]}), // Default to output channel DAC0
             .datain_3(adc_val[3][15:0]), // TODO:  poor design since not synchronized. Use CHAN3
             .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + k*`DAC80508_DATA_SEL_GEN_BIT_LEN) +: 2]),
             .dataout(ds_spi_data[k])
         );
             
-        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET + k*19), .DATA_WIDTH(20))spi_fifo1 (
+        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET + k*19))spi_fifo1 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
                  .data_rdy_0(write_en_adc_o[k]), .adc_val_0(adc_val[1]), //not yet used
@@ -578,7 +582,7 @@ module top_level_module(
                  .clk_en(clk_en_fast_dac[k]), //out
                  .ddr3_rst(ddr3_rst),//in
                  // All DAC80508 output channels have the form {0b1, number_output_channel}
-                 .ddr_dat_i(ds_spi_data[k][18:0]), //in  TODO: add Mux here
+                 .ddr_dat_i(ds_spi_data[k][23:0]), //in  TODO: add Mux here
                  .rd_en_0(rd_en_fast_dac[k]),   //out
                  .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]) //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
                  );
@@ -833,8 +837,8 @@ module top_level_module(
         okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(host_spi_data[k]));
         
         mux_4to1_16wide spi_mux_bus(
-            .datain_0({2'b00, po0_ep_datain[k*14 +:14]}), // input  wire [13:0] datain. stripe DDR in 14 bit wide groups. Leading zeros to write value on chip
-            .datain_1(host_spi_data[k][15:0]), 
+            .datain_0({10'b0, po0_ep_datain[k*16 +:14]}), // data grouped in 16-bit sections, but AD5453 only takes 14 bits data, the remaining 10 bits of input data fill with zeros
+            .datain_1(host_spi_data[k][23:0]), 
             .datain_2(ads_last_read[15:0]),
             .datain_3(adc_val[3][15:0]), // TODO:  poor design since not synchronized. Use CHAN3
             .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
@@ -842,7 +846,7 @@ module top_level_module(
         );
             
         // instantiate old top-level (but only for the AD5453 SPI)
-        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*19), .DATA_WIDTH(16))spi_fifo0 (
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*19))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
                  .data_rdy_0(write_en_adc_o[k]), .adc_val_0(adc_val[1]), //not yet used
