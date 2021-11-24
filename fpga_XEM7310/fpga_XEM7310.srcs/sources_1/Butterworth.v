@@ -206,8 +206,8 @@ module Butterworth
   wire signed [13:0] output_typeconvert; // sfix14_En8
   reg  signed [13:0] output_register; // sfix14_En8
 
-  assign coeff_debug_out1 = coeff_a3_section1_shadow_reg;
-  assign coeff_debug_out2 = coeff_scale3_shadow_reg;
+  assign coeff_debug_out1 = coeff_scale1_shadow_reg;
+  assign coeff_debug_out2 = coeff_a3_section2_shadow_reg;
 
   // Block Statements
   always @ ( posedge clk)
