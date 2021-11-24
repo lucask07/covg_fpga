@@ -267,7 +267,7 @@ module top_level_module(
 	wire [64:0] okEH;
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
 	//TODO: better way to keep track of these
-	wire [20*65-1:0] okEHx;
+	wire [22*65-1:0] okEHx;
 
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire;
@@ -282,7 +282,7 @@ module top_level_module(
 	assign sys_rst = (pushreset | ep40trig[`GP_SYSTEM_RESET]); // TODO: GP_SYSTEM_RESET is not found
 
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(20)) wireOR (okEH, okEHx); //TODO
+	okWireOR # (.N(22)) wireOR (okEH, okEHx); //TODO
 
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
@@ -875,9 +875,10 @@ module top_level_module(
     assign rd_en_0 = rd_en_fast_dac[0]; // DDR driven by DAC0 
     assign clk_en = clk_en_fast_dac[0]; // DDR driven by DAC0 
 
-     okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG1), .ep_datain(coeff_debug_out1[0]));
-     okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG2), .ep_datain(coeff_debug_out1[1]));
-
+     okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG1_0), .ep_datain(coeff_debug_out1[0]));
+     okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG2_0), .ep_datain(coeff_debug_out2[0]));
+     okWireOut      wo08 (.okHE(okHE), .okEH(okEHx[ 20*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG1_1), .ep_datain(coeff_debug_out1[1]));
+     okWireOut      wo09 (.okHE(okHE), .okEH(okEHx[ 21*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG2_1), .ep_datain(coeff_debug_out2[1]));
 
     /* ----------------- END AD5453 ------------------------------------ */
 
