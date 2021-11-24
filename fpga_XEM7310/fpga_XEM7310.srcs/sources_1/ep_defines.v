@@ -87,7 +87,10 @@
 `define AD7961_TIMING_PLL_LOCKED 1 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
 
 `define DDR3_INIT_CALIB_COMPLETE 0 // address=0x27 bit_width=1
-`define DDR3_WIRE_OUT 8'h3e // bit_width=32
+`define DDR3_WIRE_OUT 8'h29 // bit_width=32
+
+`define AD5453_COEFF_DEBUG1 8'h2a // bit_width=32
+`define AD5453_COEFF_DEBUG2 8'h2b // bit_width=32
 
 `define GP_FIFO_FLAG_I2C_DONE_TRIG_OUT 8'h60 // bit_width=32
 
