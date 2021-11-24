@@ -92,11 +92,12 @@ ddr.set_index(ceil(122/8) - 1)
 fast_dac_voltage = from_voltage(voltage=5, num_bits=14, voltage_range=10, with_negatives=False)
 slow_dac_voltage = from_voltage(voltage=2.5, num_bits=16, voltage_range=2.5, with_negatives=False)
 ddr_write_data = 0
+# For now, we are only going to write to DAC OUT 0 so we don't have to worry about the address bits
 for i in range(num_fast_dacs):
-    ddr_write_data |= fast_dac_voltage << (14 * i)
+    ddr_write_data |= fast_dac_voltage << (16 * i)
 for i in range(num_slow_dacs):
-    ddr_write_data |= ((dac_out_channel << 16) | slow_dac_voltage) << (19 * i)
+    ddr_write_data |= slow_dac_voltage << (16 * i)
 # I am not sure if the to_bytes function will mess up the order of the bits because
 # they to not fit into separate bytes
-ddr_write_buf = ddr_write_data.to_bytes(length=ceil(122 / 8), byteorder='big')
+ddr_write_buf = ddr_write_data.to_bytes(length=16, byteorder='big')
 ddr.write(ddr_write_buf)
