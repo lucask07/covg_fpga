@@ -29,19 +29,16 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 output wire ss_0,
      output wire sclk_0,
      output wire mosi_0,
-     input wire [15:0] adc_val_0,
+     input wire [23:0] data_i,
      /*****Register Bridge and DDR Signals******/
      //input wire ep_read,
      input wire ep_write,
      input wire [31:0] ep_address,
      input wire [31:0] ep_dataout_coeff,
      //output wire [31:0] ep_datain,
-     input wire [9:0] en_period,
-     output wire clk_en,
-     input wire ddr3_rst, // resets clock enable generator  
-     input wire [23:0] ddr_dat_i,
      output wire rd_en_0,
      input wire regTrigger,
+     input wire filter_sel,  // if high SPI data is from the filter. 
      output wire [31:0] coeff_debug_out1,
      output wire [31:0] coeff_debug_out2
     );
@@ -67,17 +64,6 @@ module spi_fifo_driven #(parameter ADDR = 0) (
       wire writeFifo;//this signal and the one below are used to generate the write enable signal for the FIFO
       reg wr_en;//
 	 
-	 //General purpose clock divide – currently used as "helper" clocking module for reading form DDR3
-    wire dataready;
-    assign clk_en = dataready;
-     
-     general_clock_divide MIG_DDR_FIFO_RD_EN(
-         .clk(clk),  // input 
-         .rst(ddr3_rst), // input 
-         .en_period(en_period), // input [9:0]
-         .clk_en(dataready)  // output 
-         );
-	 
 	 /* ---------------- ADC796x & AD5453 control ----------------*/
 	 
 	 //instantiations and wires for AD796x and AD5453 SPI control
@@ -99,11 +85,22 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 wire [13:0] filter_out_modified;
 	 
+	 wire [23:0] spi_data; 
+	 wire data_ready_mux;
+	 assign spi_data = filter_sel ? {11'b0, filter_out_modified} : data_i;
+	 
+	 reg filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable.
+	 always @(posedge clk) begin
+	   filter_data_rdy <= data_rdy_0;
+	 end
+	 
+	 assign data_ready_mux = filter_sel ? filter_data_rdy : data_rdy_0;
+	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
-	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*ddr_dat_i*/filter_out_modified), 
+	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(spi_data), 
 	 .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
-	 .rd_en(rd_en_0), .data_rdy(/*dataready*/data_rdy_0), .regDataOut(ep_dataout_coeff[15:0]), 
+	 .rd_en(rd_en_0), .data_rdy(data_ready_mux), .regDataOut(ep_dataout_coeff[15:0]), 
 	 .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
 	 );
 	 
@@ -135,7 +132,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          .clk(clk),
          .clk_enable(data_rdy_0 | write_enable | write_done),
          .reset(rst),
-         .filter_in(adc_val_0),
+         .filter_in(data_i[15:0]), 
          .write_enable(write_enable),
          .write_done(write_done),
          .write_address(write_address),
@@ -144,9 +141,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          .coeff_debug_out1(coeff_debug_out1),
          .coeff_debug_out2(coeff_debug_out2)
          );
-         
-     //wire [13:0] filter_out_modified;
-     
+              
      LPF_data_modify_fixpt u_dat_mod(
      .din(filter_out), .dout(filter_out_modified)
      );
