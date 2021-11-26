@@ -126,7 +126,8 @@ for i in range(6):
                 channel=i))
     fdac[i].set_spi_sclk_divide()
     fdac[i].set_data_mux('ad7961_ch0')
-    fdac[i].write_filter_coeffs()
+    # fdac[i].write_filter_coeffs()
     # fdac[i].write(0x2000)
+    fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
 
-fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+c1, c2 = fdac[0].read_coeff_debug()
