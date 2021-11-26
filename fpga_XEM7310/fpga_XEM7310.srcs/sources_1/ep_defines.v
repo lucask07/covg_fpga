@@ -61,15 +61,20 @@
 `define GP_HOST_FPGAB_GPIO_WIRE_IN 8'h01 // bit_width=32
 `define GP_PWR_REG_ADC_EN_WIRE_IN 8'h02 // bit_width=32
 `define DDR3_RESET_READ_WRITE_ENABLE 8'h03 // bit_width=1
-`define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_READ_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
-`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
-`define AD5453_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
-`define DAC80508_DATA_SEL_GEN_BIT 15 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
-`define DAC80508_DATA_SEL_GEN_BIT_LEN 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=2
-
+`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+// [5:3], [8:6], [11:9], [14:12], [17:15], [20:18]
+`define AD5453_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+`define DAC80508_DATA_SEL_GEN_BIT 21 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+`define DAC80508_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+//[23:21], [[26:24] 
+`define AD5453_FILTER_SEL_GEN_BIT 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define AD5453_FILTER_SEL_GEN_BIT_LEN 1  // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define DAC80508_FILTER_SEL_GEN_BIT 1  // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define DAC80508_FILTER_SEL_GEN_BIT_LEN 1  // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
 // wireIn address for index 
 `define DDR3_INDEX 8'h04 // bit_width=32
@@ -162,8 +167,9 @@
 `define I2CDAQ_MEMSTART_GEN_BIT 16 // address=I2C_TRIG_IN bit_width=1
 `define I2CDAQ_MEMWRITE_GEN_BIT 18 // address=I2C_TRIG_IN bit_width=1
 `define I2CDAQ_MEMREAD_GEN_BIT 20 // address=I2C_TRIG_IN bit_width=1
-
 `define DAC80508_CLK_DIV_RESET_GEN_BIT 21 // address=I2C_TRIG_IN bit_width=1
+`define DAC80508_HOST_TRIG_GEN_BIT 22 // address=I2C_TRIG_IN bit_width=1
+`define AD5453_HOST_TRIG_GEN_BIT 24 // address=I2C_TRIG_IN bit_width=1
 
 // trigger in at 0x42 -- sync to adc_timing_clk
 `define AD7961_FIFO_RESET_GEN_BIT 4 // address=ADC_TIMING_TRIG_IN bit_width=1
@@ -219,7 +225,7 @@
 
 `define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
 `define DAC80508_REGBRIDGE_OFFSET 8'h05 // bit_width=32
-`define AD5453_REGBRIDGE_OFFSET 8'h15 // bit_width=32
+`define AD5453_REGBRIDGE_OFFSET 8'h2B // bit_width=32
 
 // TODO set this up!
-`define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
+// `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
