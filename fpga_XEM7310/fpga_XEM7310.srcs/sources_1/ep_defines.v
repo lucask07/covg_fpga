@@ -73,14 +73,14 @@
 
 `define FILTER_SEL_WIRE_IN 8'h0d // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1
-`define AD5453_FILTER_SEL_GEN_BIT_LEN 1  // address=FILTER_SEL_WIRE_IN bit_width=1
-`define DAC80508_FILTER_SEL_GEN_BIT 4  // address=FILTER_SEL_WIRE_IN bit_width=1
-`define DAC80508_FILTER_SEL_GEN_BIT_LEN 1  // address=FILTER_SEL_WIRE_IN bit_width=1
+`define AD5453_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
+`define DAC80508_FILTER_SEL_GEN_BIT 4 // address=FILTER_SEL_WIRE_IN bit_width=1
+`define DAC80508_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
 
-// wireIn address for index
+// wireIn address for index 
 `define DDR3_INDEX 8'h04 // bit_width=32
 
-// wireIn for host driven data
+// wireIn for host driven data 
 `define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32
 
 // trigger in addresses
