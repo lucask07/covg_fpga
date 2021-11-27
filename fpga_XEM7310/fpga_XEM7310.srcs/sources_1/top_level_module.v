@@ -581,7 +581,7 @@ module top_level_module(
             .datain_5({write_en_adc_o[1], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[1][15:0]}), // data from AD7961, channel is selected by input wire 
             .datain_6({write_en_adc_o[2], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[2][15:0]}), // data from AD7961, channel is selected by input wire 
             .datain_7({write_en_adc_o[3], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[3][15:0]}), // data from AD7961, channel is selected by input wire 
-            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + k*`DAC80508_DATA_SEL_GEN_BIT_LEN) +: 2]),
+            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + k*`DAC80508_DATA_SEL_GEN_BIT_LEN) +: 3]),
             .dataout({ds_spi_data[k]})
         );
         
@@ -851,7 +851,7 @@ module top_level_module(
             .datain_5({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961
             .datain_6({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961
             .datain_7({write_en_adc_o[3], 15'b0, adc_val[3][15:0]}), // data from AD7961
-            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
+            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 3]),
             .dataout({spi_data[p]})
         );
         
