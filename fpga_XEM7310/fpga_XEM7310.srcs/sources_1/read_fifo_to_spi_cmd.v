@@ -209,7 +209,7 @@ module read_fifo_to_spi_cmd #(parameter ADDR = 0)(
 	       adr <= 8'h18;
        end
 	   else if(spi_load == 3'b011)begin
-	       cmd_word <= {10'h10000, converted_cmd_dat};
+	       cmd_word <= {10'h100, converted_cmd_dat};
 	       adr <= 8'h0;
        end
 	   else if(spi_load == 3'b100)begin
