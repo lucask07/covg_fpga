@@ -558,7 +558,7 @@ class Daq:
 
         def spi_debug(self, chip):
             """Configure the GPIO pins with SPI debug signals.
-            
+
             Arguments
             ---------
             chip : str
@@ -580,7 +580,8 @@ class Daq:
                 value = self.parameters['chips'][chip]
                 ep_name = spi_signal + '_DEBUG'
                 self.fpga.set_wire(self.endpoints[ep_name].address,
-                                   value<<self.endpoints[ep_name].bit_index_low,                   mask=(0b111<<self.endpoints[ep_name].bit_index_low))
+                                   value<<self.endpoints[ep_name].bit_index_low,
+                                   mask=(0b111<<self.endpoints[ep_name].bit_index_low))
 
         def ads_misc(self, pin):
             if pin not in self.parameters['misc_ads'].keys():
