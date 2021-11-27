@@ -835,43 +835,44 @@ module top_level_module(
     wire [31:0] coeff_debug_out1[0:(AD5453_NUM-1)];
     wire [31:0] coeff_debug_out2[0:(AD5453_NUM-1)];
     
+    genvar p;
     generate
-    for (k=0; k<=(AD5453_NUM-1); k=k+1) begin : dac_ad5453_gen
-        okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(host_spi_data[k]));
+    for (p=0; p<=(AD5453_NUM-1); p=p+1) begin : dac_ad5453_gen
+        okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + p), .ep_dataout(host_spi_data[p]));
         
-        assign spi_host_trigger_fast_dac[k] = ep41trig[`AD5453_HOST_TRIG_GEN_BIT + k];
+        assign spi_host_trigger_fast_dac[p] = ep41trig[`AD5453_HOST_TRIG_GEN_BIT + p];
         
         mux8to1_32wide spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit is the data_ready signal 
-            .datain_0({10'b0, po0_ep_datain[k*16 +:14]}),
-            .datain_1({spi_host_trigger_fast_dac[k], 7'b0, host_spi_data[k][23:0]}), 
+            .datain_0({10'b0, po0_ep_datain[p*16 +:14]}),
+            .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
             .datain_3({ads_data_valid, 15'b0, ads_data_out[31:16]}), // 
             .datain_4({write_en_adc_o[0], 15'b0, adc_val[0][15:0]}), // data from AD7961  
             .datain_5({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961
             .datain_6({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961
             .datain_7({write_en_adc_o[3], 15'b0, adc_val[3][15:0]}), // data from AD7961
-            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + k*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
-            .dataout({spi_data[k]})
+            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 2]),
+            .dataout({spi_data[p]})
         );
         
-        assign data_ready_fast_dac[k] = spi_data[k][31];
+        assign data_ready_fast_dac[p] = spi_data[p][31];
             
         // instantiate old top-level (but only for the AD5453 SPI)
-        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + k*19))spi_fifo0 (
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + p*19))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
-                 .ss_0(d_csb[k]), .mosi_0(d_sdi[k]), .sclk_0(d_sclk[k]), 
-                 .data_rdy_0(data_ready_fast_dac[k]), 
-                 .data_i(spi_data[k]),
+                 .ss_0(d_csb[p]), .mosi_0(d_sdi[p]), .sclk_0(d_sclk[p]), 
+                 .data_rdy_0(data_ready_fast_dac[p]), 
+                 .data_i(spi_data[p]),
                  // register bridge 
                  .ep_write(regWrite),           //input wire 
                  .ep_address(regAddress),       //input wire [31:0] 
                  .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
 
-                 .rd_en_0(rd_en_fast_dac[k]),   //out: debug only 
-                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + k]), //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
-                 .filter_sel(ep03wire[(`AD5453_FILTER_SEL_GEN_BIT + k*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1]),
-                 .coeff_debug_out1(coeff_debug_out1[k]),
-                 .coeff_debug_out2(coeff_debug_out2[k])
+                 .rd_en_0(rd_en_fast_dac[p]),   //out: debug only 
+                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + p]), //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+                 .filter_sel(ep03wire[(`AD5453_FILTER_SEL_GEN_BIT + p*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1]),
+                 .coeff_debug_out1(coeff_debug_out1[p]),
+                 .coeff_debug_out2(coeff_debug_out2[p])
                  );
         end
     endgenerate
