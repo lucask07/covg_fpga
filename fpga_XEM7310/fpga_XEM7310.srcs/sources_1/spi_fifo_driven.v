@@ -85,16 +85,23 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 wire [13:0] filter_out_modified;
 	 
-	 wire [23:0] spi_data; 
-	 wire data_ready_mux;
-	 assign spi_data = filter_sel ? {11'b0, filter_out_modified} : data_i;
+	 reg [23:0] spi_data; 
+	 reg data_ready_mux;
+
+     always @(*) begin
+         if (filter_sel == 1'b1) spi_data = {11'b0, filter_out_modified};
+         else spi_data = data_i;
+     end
 	 
 	 reg filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable.
 	 always @(posedge clk) begin
 	   filter_data_rdy <= data_rdy_0;
 	 end
 	 
-	 assign data_ready_mux = filter_sel ? filter_data_rdy : data_rdy_0;
+     always @(*) begin
+         if (filter_sel == 1'b1) data_ready_mux = filter_data_rdy;
+         else data_ready_mux = data_rdy_0;
+     end
 	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
