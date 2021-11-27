@@ -1630,7 +1630,28 @@ class SPIController:
                                  self.endpoints['HOST_FPGA'].bit_index_low)
 
 
-class DAC80508(SPIController):
+class SPIFifoDriven():
+
+    def __init__(self):
+        pass
+
+    def filter_select(self, operation='set'):
+        """
+        set if SPI data comes from the filter (set)
+        or is direct from the spi_fifo_driven data
+        """
+
+        if operation == 'set':
+            self.fpga.set_wire_bit(self.endpoints['FILTER_SEL'].address,
+                                   self.endpoints['FILTER_SEL'].bit_index_low)
+        elif operation == 'clear':
+            self.fpga.clear_wire_bit(self.endpoints['FILTER_SEL'].address,
+                                     self.endpoints['FILTER_SEL'].bit_index_low)
+        else:
+            print(f'Incorrect operation: {operation} for filter select \n')
+
+
+class DAC80508(SPIController, SPIFifoDriven):
     """ Class for SPI DAC chip DAC80508.
 
     Subclass of the SPIController class. Attributes and methods below are
@@ -1682,7 +1703,11 @@ class DAC80508(SPIController):
         'DDR': 0,
         'host': 1,
         'ads8686_chA': 2,
-        'ad7961_ch0': 3,
+        'ads8686_chB': 3,
+        'ad7961_ch0': 4,
+        'ad7961_ch1': 5,
+        'ad7961_ch2': 6,
+        'ad7961_ch3': 7,
     }
 
     def __init__(self, fpga, master_config=0x3218, slave_address=0x1, endpoints=None):
@@ -1691,6 +1716,8 @@ class DAC80508(SPIController):
             endpoints = Endpoint.get_chip_endpoints('DAC80508')
         self.slave_address = slave_address
         super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
+        self.current_data_mux = None
+        self.set_data_mux('host')
 
     # Method to write to any register on the chip.
     def write(self, register_name, data, mask=0xffff):
@@ -1710,8 +1737,23 @@ class DAC80508(SPIController):
         # 23=0 (write), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=D[15:0] (data)
         transmission = DAC80508.WRITE_OPERATION + \
             (reg.address << 16) + new_data
+
+        """
+        unconventional SPI -- only works if data mux is set to host
+        state machine converts this data to WB signals
+        """
+
+        # TODO - want spi_fifo_driven class?
+        if self.current_data_mux != 'host':
+            print('Host write not expected to work since mux is not set to host')
+
+        self.fpga.set_wire(self.endpoints['HOST_WIRE_IN'].address, transmission)
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['HOST_TRIG'].address,
+                                        self.endpoints['HOST_TRIG'].bit_index_low)
+
         # print(f'Transmission = {hex(transmission)}')
-        ack = super().write(transmission)
+        # ack = super().write(transmission)
+
         # if ack:
         #     print(f'Write {hex(data)} to {register_name}: SUCCESS')
         # else:
@@ -1907,6 +1949,8 @@ class DAC80508(SPIController):
         source : str
             Name of the selected source. Found in self.data_mux
         """
+        if source not in self.data_mux.keys():
+            print(f'Set data mux failed, {source} not available')
 
         mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
                                 self.endpoints['DATA_SEL'].bit_index_high))
@@ -1915,11 +1959,22 @@ class DAC80508(SPIController):
                             mask=mask)
 
 
-class AD5453(SPIController):  # TODO: this is SPI but to controller is much different
+class AD5453(SPIController, SPIFifoDriven):  # TODO: this is SPI but to controller is much different
 
     registers = Register.get_chip_registers('AD5453')
     bits = 12,
     vref = 2.5*2
+
+    data_mux = {
+        'DDR': 0,
+        'host': 1,
+        'ads8686_chA': 2,
+        'ads8686_chB': 3,
+        'ad7961_ch0': 4,
+        'ad7961_ch1': 5,
+        'ad7961_ch2': 6,
+        'ad7961_ch3': 7,
+    }
 
     def __init__(self, fpga, master_config=0x3010, endpoints=None, channel=0):
 
@@ -1932,10 +1987,7 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
         self.channel = channel
-        self.data_mux = {'DDR': 0,
-                         'host': 1,
-                         'ads8686_chA': 2,
-                         'ad7961_ch0': 3}
+
         self.regbridge_advance = 19
         self.filter_coeff = {0: 0x009e1586,
                              1: 0x20000000,
@@ -1951,28 +2003,10 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
                              13: 0x287ecada,
                              7: 0x7fffffff}
 
-        """
-        self.filter_coeff = {0: 10360198,
-         1: 536870912,
-         2: 0,
-         3: 0,
-         4: 0,
-         5: 0,
-         8: 2147483647,
-         9: 536870912,
-         10: 0,
-         11: 0,
-         12: 0,
-         13: 0,
-         7: 2147483647,
-         6: 0}
-        """
-        """
-
-        """
-
         self.filter_offset = 4
         self.filter_len = np.max(list(self.filter_coeff.keys())) - np.min(list(self.filter_coeff.keys()))
+        self.current_data_mux = None
+        self.set_data_mux('host')
 
     def set_clk_rising_edge(self):
         """
@@ -1989,16 +2023,22 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
         state machine converts this data to WB signals
         """
         self.fpga.set_wire(self.endpoints['HOST_WIRE_IN'].address, data)
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['HOST_TRIG'].address,
+                                        self.endpoints['HOST_TRIG'].bit_index_low)
 
     def set_data_mux(self, source):
         """
         configure the MUX that routes data source to the SPI output
         """
+        if source not in self.data_mux.keys():
+            print(f'Set data mux failed, {source} not available')
+
         mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
                               self.endpoints['DATA_SEL'].bit_index_high))
         data = (self.data_mux[source] << self.endpoints['DATA_SEL'].bit_index_low)
         self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
                            mask=mask)
+        self.current_data_mux = source
 
     def set_clk_divider(self, value=0x50):
         """
@@ -2080,9 +2120,6 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
 
         debug_coeff1 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG1_{self.channel}'].address)
         debug_coeff2 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG2_{self.channel}'].address)
-
-        #debug_coeff1 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG1'].address)
-        #debug_coeff2 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG2'].address)
 
         print(f'Read {hex(debug_coeff1)}, {hex(debug_coeff2)}')
         return debug_coeff1, debug_coeff2
@@ -2874,32 +2911,6 @@ class DDR3():
     f.xem.WriteRegister(0x80000010, 0x00003410)  # configure the SPI WB control register
     f.xem.ActivateTriggerIn(0x40, 8)
     """
-
-
-class DebugFIFO(ADCDATA):
-    def __init__(self, fpga, chan=0, endpoints=None):
-        if endpoints is None:
-            endpoints = Endpoint.get_chip_endpoints('DEBUGFIFO')
-        self.fpga = fpga
-        self.endpoints = endpoints
-        self.chan = chan  # starts at 0
-        self.name = 'AD7961'
-        self.num_bits = 16  # for AD7961 bits=18 for AD7960
-
-    def reset_fifo(self):
-        """resets the FIFO for the ADC data
-            one per channel"""
-        return self.fpga.xem.ActivateTriggerIn(self.endpoints['FIFO_RESET'].address,
-                                               self.endpoints['FIFO_RESET'].bit_index_low)
-
-    def get_fifo_status(self):
-        flags = ['FULL', 'HALFFULL', 'EMPTY']
-        fifo_status = {}
-        self.fpga.xem.UpdateTriggerOuts()
-        for k in flags:
-            fifo_status[k] = self.fpga.xem.IsTriggered(self.endpoints['FIFO_{}'.format(k)].address,
-                                                       self.endpoints['FIFO_{}'.format(k)].bit_index_low)
-        return fifo_status
 
 
 def disp_device(dev, reg=True):

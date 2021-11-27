@@ -19,7 +19,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum
+from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum, DDR3
 from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
@@ -76,14 +76,19 @@ gpio.fpga.debug = True
 gpio.spi_debug('dfast0')
 gpio.ads_misc('sdoa')  # do not care for this experiment
 
+ddr = DDR3(f)
+ddr.reset_fifo()
+
 fdac = []
 for i in range(6):
     fdac.append(AD5453(f,
                 endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
     fdac[i].set_spi_sclk_divide()
-    fdac[i].set_data_mux('ad7961_ch0')
+    fdac[i].set_data_mux('host')
     fdac[i].write_filter_coeffs()
-    # fdac[i].write(0x2000)
+    fdac[i].filter_select(operation='clear')
 
-fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+fdac[0].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+
+fdac[i].write(0x2000)
