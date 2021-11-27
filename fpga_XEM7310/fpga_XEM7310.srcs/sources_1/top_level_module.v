@@ -560,6 +560,9 @@ module top_level_module(
     wire [(DAC80508_NUM - 1):0] data_ready_ds;
     wire [(DAC80508_NUM - 1):0] spi_host_trigger_ds; 
     
+    wire [31:0] ep_wire_filtsel;
+    okWireIn wi_filt_sel (.okHE(okHE), .ep_addr(`FILTER_SEL_WIRE_IN), .ep_dataout(ep_wire_filtsel));
+    
     genvar k;
     generate
     for (k=0; k<=(DAC80508_NUM-1); k=k+1) begin : dac80508_gen
@@ -601,7 +604,7 @@ module top_level_module(
                  // All DAC80508 output channels have the form {0b1, number_output_channel}
                  .rd_en_0(rd_en_ds[k]),   //out: debug of state machine
                  .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]), //input: state machine to init after SPI clock divider is re-programmed
-                 .filter_sel(ep03wire[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1])
+                 .filter_sel(ep_wire_filtsel[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1])
                  );
         end
     endgenerate
@@ -870,19 +873,26 @@ module top_level_module(
 
                  .rd_en_0(rd_en_fast_dac[p]),   //out: debug only 
                  .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + p]), //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
-                 .filter_sel(ep03wire[(`AD5453_FILTER_SEL_GEN_BIT + p*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1]),
+                 .filter_sel(ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + p*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1]),
                  .coeff_debug_out1(coeff_debug_out1[p]),
                  .coeff_debug_out2(coeff_debug_out2[p])
                  );
         end
     endgenerate
 
-    assign up[5] = data_ready_ds[0];
-    assign up[4] = rd_en_ds[0];
-    assign up[3] = rd_en_0;
-    assign up[2] = rd_en_fast_dac[0];
-    assign up[1] = data_ready_fast_dac[0];
-    assign up[0] = data_ready_fast_dac[1];
+    //assign up[5] = data_ready_ds[0];
+    //assign up[4] = rd_en_ds[0];
+    //assign up[3] = rd_en_0;
+    //assign up[2] = rd_en_fast_dac[0];
+    //assign up[1] = data_ready_fast_dac[0];
+    //assign up[0] = data_ready_fast_dac[1];
+    
+    assign up[5] = ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + 1*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1];
+    assign up[4] = ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + 0*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1];
+    assign up[3] = spi_data[0][2];
+    assign up[2] = spi_data[0][1];
+    assign up[1] = spi_data[0][0];
+    assign up[0] = data_ready_fast_dac[0];
 
      okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG1_0), .ep_datain(coeff_debug_out1[0]));
      okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG2_0), .ep_datain(coeff_debug_out2[0]));
@@ -893,8 +903,8 @@ module top_level_module(
 
     /*---------------- I2C -------------------*/
     /*---------------- daughercard I2C -------------------*/
-    wire [15:0] i2c_memdin[(I2C_DCARDS_NUM-1):0];
-    wire [7:0] i2c_memdout[(I2C_DCARDS_NUM-1):0];
+    wire [15:0] i2c_memdin[0:(I2C_DCARDS_NUM-1)];
+    wire [7:0] i2c_memdout[0:(I2C_DCARDS_NUM-1)];
 
     generate
         for (i = 0; i < (I2C_DCARDS_NUM / 2); i = i + 1) begin : i2c_dc_wire_gen
@@ -931,8 +941,8 @@ module top_level_module(
     endgenerate
     /*---------------- END daughercard I2C -------------------*/
 
-    wire [15:0] i2c_aux_memdin[1:0];
-    wire [7:0] i2c_aux_memdout[1:0];
+    wire [15:0] i2c_aux_memdin[0:1];
+    wire [7:0] i2c_aux_memdout[0:1];
 
     okWireIn wi_i2c_aux (.okHE(okHE), .ep_addr(`I2CDAQ_WIRE_IN_GEN_ADDR), .ep_dataout({i2c_aux_memdin[1], i2c_aux_memdin[0]}));
     okWireOut wo_i2c_aux (.okHE(okHE), .okEH(okEHx[ 16*65 +: 65 ]), .ep_addr(`I2CDAQ_WIRE_OUT_GEN_ADDR),

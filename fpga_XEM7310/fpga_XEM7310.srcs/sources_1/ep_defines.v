@@ -64,17 +64,18 @@
 `define DDR3_READ_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-
 `define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 // [5:3], [8:6], [11:9], [14:12], [17:15], [20:18]
 `define AD5453_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 `define DAC80508_DATA_SEL_GEN_BIT 21 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 `define DAC80508_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
-//[23:21], [[26:24] 
-`define AD5453_FILTER_SEL_GEN_BIT 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-`define AD5453_FILTER_SEL_GEN_BIT_LEN 1  // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-`define DAC80508_FILTER_SEL_GEN_BIT 1  // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-`define DAC80508_FILTER_SEL_GEN_BIT_LEN 1  // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+//[23:21], [26:24] 
+
+`define FILTER_SEL_WIRE_IN 8'h0d // bit_width=32
+`define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1
+`define AD5453_FILTER_SEL_GEN_BIT_LEN 1  // address=FILTER_SEL_WIRE_IN bit_width=1
+`define DAC80508_FILTER_SEL_GEN_BIT 4  // address=FILTER_SEL_WIRE_IN bit_width=1
+`define DAC80508_FILTER_SEL_GEN_BIT_LEN 1  // address=FILTER_SEL_WIRE_IN bit_width=1
 
 // wireIn address for index 
 `define DDR3_INDEX 8'h04 // bit_width=32
@@ -167,8 +168,8 @@
 `define I2CDAQ_MEMSTART_GEN_BIT 16 // address=I2C_TRIG_IN bit_width=1
 `define I2CDAQ_MEMWRITE_GEN_BIT 18 // address=I2C_TRIG_IN bit_width=1
 `define I2CDAQ_MEMREAD_GEN_BIT 20 // address=I2C_TRIG_IN bit_width=1
-`define DAC80508_CLK_DIV_RESET_GEN_BIT 21 // address=I2C_TRIG_IN bit_width=1
-`define DAC80508_HOST_TRIG_GEN_BIT 22 // address=I2C_TRIG_IN bit_width=1
+`define DAC80508_CLK_DIV_RESET_GEN_BIT 22 // address=I2C_TRIG_IN bit_width=1
+`define DAC80508_HOST_TRIG_GEN_BIT 23 // address=I2C_TRIG_IN bit_width=1
 `define AD5453_HOST_TRIG_GEN_BIT 24 // address=I2C_TRIG_IN bit_width=1
 
 // trigger in at 0x42 -- sync to adc_timing_clk
