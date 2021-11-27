@@ -130,7 +130,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
        Butterworth u_Butterworth_0
          (
          .clk(clk),
-         .clk_enable(data_rdy_0 | write_enable | write_done),
+         .clk_enable(data_ready_mux | write_enable | write_done),
          .reset(rst),
          .filter_in(data_i[15:0]), 
          .write_enable(write_enable),
