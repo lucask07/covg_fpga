@@ -1901,7 +1901,7 @@ class DAC80508(SPIController):
 
     def set_data_mux(self, source):
         """Configure the MUX that routes data source to the SPI output
-        
+
         Arguments
         ---------
         source : str
@@ -1950,6 +1950,27 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
                              12: 0xab762783,
                              13: 0x287ecada,
                              7: 0x7fffffff}
+
+        """
+        self.filter_coeff = {0: 10360198,
+         1: 536870912,
+         2: 0,
+         3: 0,
+         4: 0,
+         5: 0,
+         8: 2147483647,
+         9: 536870912,
+         10: 0,
+         11: 0,
+         12: 0,
+         13: 0,
+         7: 2147483647,
+         6: 0}
+        """
+        """
+
+        """
+
         self.filter_offset = 4
         self.filter_len = np.max(list(self.filter_coeff.keys())) - np.min(list(self.filter_coeff.keys()))
 
@@ -2034,6 +2055,100 @@ class AD5453(SPIController):  # TODO: this is SPI but to controller is much diff
                 # TODO: ian has first addr of 0x19, second as 0x1a
                 print('Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
                 self.fpga.xem.WriteRegister(addr, val)
+
+    def write_filter_coeffs_simultaneous(self):
+        # https://opalkelly.com/examples/setting-and-getting-multiple-registers/#tab-python
+        loop_thru = np.arange(self.filter_offset, 1 + self.filter_offset + self.filter_len)
+        regs = ok.okTRegisterEntries((len(loop_thru)))
+
+        for i in loop_thru:  #TODO is this correct? and how to parameterize?
+            if (i-self.filter_offset) in self.filter_coeff:
+                addr = int(self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
+                val = int(self.filter_coeff[i-self.filter_offset])
+                idx = int(i-self.filter_offset)
+                regs[idx].address = addr
+                regs[idx].data = val
+                # TODO: ian has first addr of 0x19, second as 0x1a
+                print('Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
+        self.fpga.xem.WriteRegisters(regs)
+
+    def read_coeff_debug(self):
+        """
+        Read two wire outs for coefficients a3 section1, scale 3
+        debug wires available for filters 0, 1
+        """
+
+        debug_coeff1 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG1_{self.channel}'].address)
+        debug_coeff2 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG2_{self.channel}'].address)
+
+        #debug_coeff1 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG1'].address)
+        #debug_coeff2 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG2'].address)
+
+        print(f'Read {hex(debug_coeff1)}, {hex(debug_coeff2)}')
+        return debug_coeff1, debug_coeff2
+
+    def change_filter_coeff(self, target, value=None):
+        if (target == 'passthru') or (target == 'passthrough'):
+            self.filter_coeff = {0: 0x7fff_ffff,   # changed for about unity gain
+                                 1: 0x20000000,
+                                 2: 0,
+                                 3: 0,
+                                 4: 0,
+                                 5: 0,
+                                 8: 0x7fffffff,
+                                 9: 0x20000000,
+                                 10: 0,
+                                 11: 0,
+                                 12: 0,
+                                 13: 0,
+                                 7: 0x7fffffff,
+                                 6: 0}
+        elif target == '100kHz':
+            self.filter_coeff = {0: 0x0000_6f84,
+                                 1: 0x20000000,
+                                 2: 0x40000000,
+                                 3: 0x20000000,
+                                 4: 0x8e301ca0,
+                                 5: 0x32b7759a,
+                                 8: 0x7fffffff,
+                                 9: 0x20000000,
+                                 10: 0x40000000,
+                                 11: 0x20000000,
+                                 12: 0x86d2475f,
+                                 13: 0x3a2447ec,
+                                 7: 0x7fffffff}
+        elif target == '500kHz':
+            self.filter_coeff = {0: 0x009e1586,
+                                 1: 0x20000000,
+                                 2: 0x40000000,
+                                 3: 0x20000000,
+                                 4: 0xbce3be9a,
+                                 5: 0x12f3f6b0,
+                                 8: 0x7fffffff,
+                                 9: 0x20000000,
+                                 10: 0x40000000,
+                                 11: 0x20000000,
+                                 12: 0xab762783,
+                                 13: 0x287ecada,
+                                 7: 0x7fffffff}
+
+        elif (target == 'all_equal'):
+            if value is None:
+                value = 0
+            self.filter_coeff = {0: value,
+                                 1: value,
+                                 2: value,
+                                 3: value,
+                                 4: value,
+                                 5: value,
+                                 8: value,
+                                 9: value,
+                                 10: value,
+                                 11: value,
+                                 12: value,
+                                 13: value,
+                                 7: value,
+                                 6: value}
 
 
 class ADCDATA():
