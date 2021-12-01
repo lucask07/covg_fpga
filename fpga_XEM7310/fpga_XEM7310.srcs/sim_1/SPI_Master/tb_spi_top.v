@@ -38,6 +38,7 @@ module tb_spi_top;
 	reg [9:0] en_period;
 	reg ddr3_rst;
 	reg regTrigger;
+	wire filter_sel;
 
 	// Outputs
 	wire hostinterrupt;
@@ -75,13 +76,14 @@ module tb_spi_top;
 		//.ep_ready(ep_ready),
 		//.slow_pulse(slow_pulse),
 		.data_rdy_0(data_rdy),
-		.adc_val_0(filter_in),
+		.data_i(filter_in),
 		.ep_write(ep_write),
 		.ep_address(ep_address),
 		.ep_dataout_coeff(ep_dataout_coeff),
-		.en_period(en_period),
-		.ddr3_rst(ddr3_rst),
-		.clk_en(clk_en),
+		.filter_sel(filter_sel),
+		//.en_period(en_period),
+		//.ddr3_rst(ddr3_rst),
+		//.clk_en(clk_en),
 		.regTrigger(regTrigger)
 	);
 	
@@ -110,8 +112,9 @@ module tb_spi_top;
     always@(posedge data_rdy)begin
         if(count > 10'd49)begin
             count = count + 1'b1;
-            filter_in = 16'h7fff;
+            //filter_in = 16'h7fff;
             //filter_in = 16'h4000;
+            filter_in = 16'h2000;
         end
         else begin
             filter_in = 16'h0000;
@@ -152,27 +155,27 @@ module tb_spi_top;
       trigger = 1'b0;
       ep_write = 1'b1;
       ep_address = 32'h00000000 + 8'h19;
-      //ep_dataout_coeff = 32'h009e1586;
-      ep_dataout_coeff = 32'h7fff_ffff;
+      ep_dataout_coeff = 32'h009e1586;
+      //ep_dataout_coeff = 32'h7fff_ffff;
       #10;
       ep_address = 32'h00000001 + 8'h19;
       ep_dataout_coeff = 32'h20000000;
       #10;
       ep_address = 32'h00000002 + 8'h19;
-      //ep_dataout_coeff = 32'h40000000;
-      ep_dataout_coeff = 32'h00000000;
+      ep_dataout_coeff = 32'h40000000;
+      //ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h00000003 + 8'h19;
-      //ep_dataout_coeff = 32'h20000000;
-      ep_dataout_coeff = 32'h00000000;
+      ep_dataout_coeff = 32'h20000000;
+      //ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h00000004 + 8'h19;
-      //ep_dataout_coeff = 32'hbce3be9a;
-      ep_dataout_coeff = 32'h00000000;
+      ep_dataout_coeff = 32'hbce3be9a;
+      //ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h00000005 + 8'h19;
-      //ep_dataout_coeff = 32'h12f3f6b0;
-      ep_dataout_coeff = 32'h00000000;
+      ep_dataout_coeff = 32'h12f3f6b0;
+      //ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h00000008 + 8'h19;
       ep_dataout_coeff = 32'h7fffffff;
@@ -181,20 +184,20 @@ module tb_spi_top;
       ep_dataout_coeff = 32'h20000000;
       #10;
       ep_address = 32'h0000000a + 8'h19;
-      //ep_dataout_coeff = 32'h40000000;
-      ep_dataout_coeff = 32'h00000000;
+      ep_dataout_coeff = 32'h40000000;
+      //ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h0000000b + 8'h19;
-      //ep_dataout_coeff = 32'h20000000;
-      ep_dataout_coeff = 32'h00000000;
+      ep_dataout_coeff = 32'h20000000;
+      //ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h0000000c + 8'h19;
-      //ep_dataout_coeff = 32'hab762783;
-      ep_dataout_coeff = 32'h00000000;
+      ep_dataout_coeff = 32'hab762783;
+      //ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h0000000d + 8'h19;
-      //ep_dataout_coeff = 32'h287ecada;
-      ep_dataout_coeff = 32'h00000000;
+      ep_dataout_coeff = 32'h287ecada;
+      //ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h00000007 + 8'h19;
       ep_dataout_coeff = 32'h7fffffff;
