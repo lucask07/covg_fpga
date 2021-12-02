@@ -89,6 +89,65 @@ for i in range(6):
     fdac[i].write_filter_coeffs()
     fdac[i].filter_select(operation='clear')
 
-fdac[0].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+# fdac[0].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
 
-fdac[i].write(0x2000)
+fdac[0].change_filter_coeff(target='passthrough')
+fdac[0].write_filter_coeffs()
+fdac[0].filter_select(operation='clear')
+
+fdac[1].change_filter_coeff(target='passthrough')
+fdac[1].write_filter_coeffs()
+fdac[1].filter_select(operation='clear')
+
+
+# pass through tests - ramp up from mid-scale go to mid-scale then ramp down
+for ch in [0, 1]:
+    for i in np.arange(0, 0xffff, step=16, dtype=np.int32):
+        fdac[ch].write(int(i))
+
+# filter tests using host driven reads
+for ch in [0, 1]:
+    fdac[ch].filter_select(operation='set')
+    fdac[ch].change_filter_coeff(target='500kHz')
+    # fdac[ch].change_filter_coeff(target='passthrough')
+    fdac[ch].write_filter_coeffs()
+
+for ch in [0, 1]:
+    # positive going square wave
+    # fill with midscale
+    for i in range(200):
+        fdac[ch].write(0)
+    for i in range(200):
+        # positive going step
+        fdac[ch].write(0x4000)
+    for i in range(200):
+        # negative going step
+        fdac[ch].write(0xc000)
+
+# both channels simultaneously with different cutoff freq.
+fdac[0].change_filter_coeff(target='500kHz')
+fdac[0].write_filter_coeffs()
+
+fdac[1].change_filter_coeff(target='100kHz')
+fdac[1].write_filter_coeffs()
+
+
+for k in range(100):
+    for i in range(200):
+        for ch in [0, 1]:
+            # fill with midscale
+            fdac[ch].write(0x1000)
+    for i in range(200):
+        for ch in [0, 1]:
+            # positive going square wave
+            fdac[ch].write(0x1200)
+    for i in range(200):
+        for ch in [0, 1]:
+            # negative going step
+            fdac[ch].write(0x0800)
+
+
+x = 0x1000*np.sin(np.arange(0,1000)/20) + 0x1000
+
+for i in x:
+    fdac[0].write(int(i))
