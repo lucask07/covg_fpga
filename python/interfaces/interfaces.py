@@ -115,7 +115,11 @@ class Endpoint:
     def __init__(self, address, bit_index_low, bit_width, gen_bit, gen_address):
         self.address = address
         self.bit_index_low = bit_index_low
-        self.bit_index_high = bit_index_low + bit_width
+        # Endpoints that are only containing addresses will be generated from ep_defines.v with bit_index_low = None
+        if bit_index_low == None:
+            self.bit_index_high = None
+        else:
+            self.bit_index_high = bit_index_low + bit_width
         self.bit_width = bit_width
         self.gen_bit = gen_bit
         self.gen_address = gen_address
@@ -133,7 +137,10 @@ class Endpoint:
 
     @staticmethod
     def update_endpoints_from_defines(ep_defines_path=None):
-        """Store and return a dictionary of Endpoints for each chip in ep_defines.v."""
+        """Store and return a dictionary of Endpoints for each chip in ep_defines.v.
+        
+        Returns -1 if there is a naming collision in ep_defines.v
+        """
 
         # Find ep_defines.v path
         if ep_defines_path == None:
@@ -196,7 +203,7 @@ class Endpoint:
             if "8'h" in pieces[2]:
                 # Definition holds an address, take that value
                 address = int(pieces[2][3:], base=16)
-                bit = 0
+                bit = None
                 bit_width = int(pieces[4].split('=')[1])
             else:
                 # Definition holds a bit, take address from comment
@@ -242,6 +249,51 @@ class Endpoint:
                         print(f'{group_name}[{endpoint_name}]: Referenced address "{class_name}_{ep_name}" not found.')
                         continue
 
+        # At this point the dictionary should be built
+        # Check for naming collisions (2+ names sharing same address or bit within address)
+        # Collect all top level endpoints
+        top_level_eps = [x for x in Endpoint.endpoints_from_defines.values() if type(x) == Endpoint]
+        # Collect all endpoints in dictionaries
+        lower_level_eps = []
+        for eps in [d.values() for d in Endpoint.endpoints_from_defines.values() if type(d) == dict]:
+            lower_level_eps += list(eps)
+        none_to_neg_1 = {None: -1}
+        # Make tuples of (address, bit) from each list, then concatenate the lists
+        # The none_to_neg_1.get() translates None values of bit_index_low to -1 for sorting later
+        list_eps = [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in top_level_eps] + \
+            [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in lower_level_eps]
+        list_len = len(list_eps)
+        set_len = len(set(list_eps)) # A set removes duplicates
+        if list_len != set_len:
+            # There are duplicates
+            print('Naming collision in ep_defines.v\n Finding collisions...')
+            # Search through to find duplicates
+            sorted_list_eps = list(list_eps) # Copy the list to keep order in the original
+            sorted_list_eps.sort() # Put duplicates next to one another in new list
+            top_level_names = [x for x in Endpoint.endpoints_from_defines.keys() if type(Endpoint.endpoints_from_defines[x]) == Endpoint]
+            lower_level_names = []
+            for sub_dicts in [x for x in Endpoint.endpoints_from_defines.values() if type(x) == dict]:
+                lower_level_names += list(sub_dicts.keys())
+            list_names = top_level_names + lower_level_names
+            
+            collision = False # Keep track of whether there was a collision for return value
+            for ep_index in range(len(sorted_list_eps) - 1):
+                ep = sorted_list_eps[ep_index]
+                next_ep = sorted_list_eps[ep_index + 1]
+                name = list_names[list_eps.index(sorted_list_eps[ep_index])]
+                next_name = list_names[list_eps.index(sorted_list_eps[ep_index])]
+                if (ep == next_ep) and (name != next_name):
+                    # Need different names because otherwise they are from different groups and do not actually conflict
+
+                    # The name part of this uses a list of names created in the same order as the original list_eps (list_names)
+                    # then finds the index of the current endpoint in list_eps and uses that to find the corresponding
+                    # name in list_names
+                    print(f'Collision found at address={ep[0]} bit={ep[1]}: {name} with {next_name}')
+                    collision = True
+            if collision:
+                return -1
+
+        # If the list and set match length, no duplicates
         return Endpoint.endpoints_from_defines
 
     @staticmethod
