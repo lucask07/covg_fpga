@@ -459,7 +459,7 @@ class FPGA:
         self.xem.UpdateWireOuts()
         return self.xem.GetWireOutValue(address)
 
-    def set_bit(self, ep_bit, adc_chan=None):
+    def set_endpoint(self, ep_bit, adc_chan=None):
         """Set all bits in an Endpoint high."""
 
         if adc_chan is None:
@@ -469,11 +469,11 @@ class FPGA:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
         if self.debug:
-            print(f'set_bit(address={hex(ep_bit.address)}, value={hex(mask)}, mask={hex(mask)})')
+            print(f'set_endpoint(address={hex(ep_bit.address)}, value={hex(mask)}, mask={hex(mask)})')
         self.xem.SetWireInValue(ep_bit.address, mask, mask)  # set
         self.xem.UpdateWireIns()
 
-    def clear_bit(self, ep_bit, adc_chan=None):
+    def clear_endpoint(self, ep_bit, adc_chan=None):
         """Set all bits in an Endpoint low."""
 
         if adc_chan is None:
@@ -483,7 +483,7 @@ class FPGA:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
         if self.debug:
-            print(f'clear_bit(address={hex(ep_bit.address)}, value={hex(0)}, mask={hex(mask)})')
+            print(f'clear_endpoint(address={hex(ep_bit.address)}, value={hex(0)}, mask={hex(mask)})')
         self.xem.SetWireInValue(ep_bit.address, 0x0000, mask)  # clear
         self.xem.UpdateWireIns()
 
