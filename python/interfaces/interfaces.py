@@ -1684,8 +1684,76 @@ class SPIController:
 
 class SPIFifoDriven():
 
-    def __init__(self):
-        pass
+    data_mux = {
+        'DDR': 0,
+        'host': 1,
+        'ads8686_chA': 2,
+        'ads8686_chB': 3,
+        'ad7961_ch0': 4,
+        'ad7961_ch1': 5,
+        'ad7961_ch2': 6,
+        'ad7961_ch3': 7,
+    }
+
+    def __init__(self, fpga, endpoints, master_config):
+        self.fpga = fpga
+        self.master_config = master_config
+        self.endpoints = endpoints
+        # Start with host to minimize unintentional commands from other sources on startup
+        self.current_data_mux = ''
+        self.set_data_mux('host')
+
+    @classmethod
+    def create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None):
+        """Instantiate a number of new chips.
+
+        The number must be an integer greater than zero. The endpoints between
+        each instance will be incremented. If the endpoints argument is left
+        as None, then we will use copies of the endpoints_from_defines
+        dictionary for the endpoints for each instance, and update that
+        original dictionary when we increment the endpoints. This way, the
+        endpoints there are ready for another instantiation if needed.
+        """
+
+        if type(number_of_chips) is not int or number_of_chips <= 0:
+            print('number_of_chips must be an integer greater than 0')
+            return False
+
+        chips = []
+        if master_config is None:
+            # Use class default for master_config
+            for i in range(number_of_chips):
+                chips.append(cls(fpga=fpga, endpoints=endpoints))
+                # Use deepcopy to keep the endpoints for different instances separate
+                endpoints = copy.deepcopy(chips[-1].endpoints)
+                Endpoint.increment_endpoints(endpoints)
+        else:
+            for i in range(number_of_chips):
+                chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(
+                    endpoints), master_config=master_config))
+                # Use deepcopy to keep the endpoints for different instances separate
+                endpoints = copy.deepcopy(chips[-1].endpoints)
+                Endpoint.increment_endpoints(endpoints)
+
+        if endpoints is None:
+            # Increment shared endpoints dictionary
+            # TODO: is there a better way to do this?
+            # We need to get the shared endpoints in endpoints_from_defines to
+            # increment and we only have the endpoints given to us in the
+            # argument.
+            shared_full_eps = Endpoint.endpoints_from_defines
+            shared_chip_eps = shared_full_eps[
+                list(shared_full_eps.keys())[
+                    list(shared_full_eps.values()).index(chips[0].endpoints)
+                ]
+            ]
+            for i in range(number_of_chips):
+                Endpoint.increment_endpoints(shared_chip_eps)
+        else:
+            # Increment custom dictionary
+            Endpoint.increment_endpoints(endpoints)
+
+        return chips
 
     def filter_select(self, operation='set'):
         """
@@ -1701,6 +1769,83 @@ class SPIFifoDriven():
                                      self.endpoints['FILTER_SEL'].bit_index_low)
         else:
             print(f'Incorrect operation: {operation} for filter select \n')
+
+    def set_data_mux(self, source):
+        """Configure the MUX that routes data source to the SPI output.
+        
+        Arguments
+        ---------
+        source : str
+            See SPIFifoDriven.data_mux dict for options and conversion.
+        """
+
+        select_val = self.data_mux.get(source)
+        if select_val is None:
+            print(f'Set data mux failed, {source} not available')
+
+        mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
+                              self.endpoints['DATA_SEL'].bit_index_high))
+        data = (self.data_mux[source] <<
+                self.endpoints['DATA_SEL'].bit_index_low)
+        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
+                           mask=mask)
+        self.current_data_mux = source
+
+    def set_clk_divider(self, value):
+        """Set clock divider to configure rate of SPI updates.
+
+        Tupdate = Tclk * value
+        """
+        mask = gen_mask(range(self.endpoints['PERIOD_ENABLE'].bit_index_low,
+                              self.endpoints['PERIOD_ENABLE'].bit_index_high))
+
+        self.fpga.set_wire(self.endpoints['PERIOD_ENABLE'].address,
+                           value << self.endpoints['PERIOD_ENABLE'].bit_index_low,
+                           mask)
+
+        # resets the SPI state machine
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
+                                        self.endpoints['REG_TRIG'].bit_index_low)
+
+    def set_ctrl_reg(self, value):
+        """Configures the SPI Wishbone control register over the registerBridge.
+
+        HDL default is ctrlValue = 16'h3010 (initialized in the HDL)
+        4*channel (rather than 1*channel) allows for expansion
+        """
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + self.regbridge_advance*self.channel,
+                                    value)
+
+        # resets the SPI state machine -- needed since these registers are only
+        #   programmed at startup of the state machine
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
+                                        self.endpoints['REG_TRIG'].bit_index_low)
+
+    def set_spi_sclk_divide(self, value=0x01):
+        """Configures the SPI Wishbone clock divider register over the registerBridge.
+
+        HDL default is 8'h13 (initialized in the HDL)
+        4*channel (rather than 1*channel) allows for expansion
+        """
+        sys_clk = 200  # in MHz
+        print('SCLK predicted frequency {:.2f} [MHz]'.format(
+            sys_clk/(value+1)))
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 1 + self.regbridge_advance*self.channel,
+                                    value)
+
+        # resets the SPI state machine -- needed since these WishBone
+        #   registers are only programmed at startup of the state machine
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
+                                        self.endpoints['REG_TRIG'].bit_index_low)
+
+    def write(self, data):
+        """Host write 24 bits of data ot the chip over SPI."""
+
+        if self.current_data_mux != 'host':
+            self.set_data_mux('host')
+        self.fpga.set_wire(self.endpoints['HOST_WIRE_IN'].address, data)
+        self.fpga.xem.ActivateTriggerIn(self.endpoints['HOST_TRIG'].address,
+                                        self.endpoints['HOST_TRIG'].bit_index_low)
 
 
 class DAC80508(SPIController, SPIFifoDriven):
