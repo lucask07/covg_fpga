@@ -110,15 +110,15 @@ def test_set_wire_mask_with_read_wire(configured_fpga, ep):
     assert configured_fpga.read_wire(ep + 0x20) == 0xffaa
 
 
-def test_set_bit(configured_fpga, ep_bit_half):
+def test_set_endpoint(configured_fpga, ep_bit_half):
     configured_fpga.set_wire(ep_bit_half.address, 0x00000000)
-    configured_fpga.set_bit(ep_bit_half)
+    configured_fpga.set_endpoint(ep_bit_half)
     assert configured_fpga.read_wire(ep_bit_half.address + 0x20) == 0xffff0000
 
 
-def test_clear_bit(configured_fpga, ep_bit_half):
+def test_clear_endpoint(configured_fpga, ep_bit_half):
     configured_fpga.set_wire(ep_bit_half.address, 0xffffffff)
-    configured_fpga.clear_bit(ep_bit_half)
+    configured_fpga.clear_endpoint(ep_bit_half)
     assert configured_fpga.read_wire(ep_bit_half.address + 0x20) == 0x0000ffff
 
 
