@@ -1683,6 +1683,38 @@ class SPIController:
 
 
 class SPIFifoDriven():
+    """Class for SPI controllers on the FPGA driven by a FIFO.
+
+    Attributes
+    ----------
+    data_mux: dict
+        Name to select value dictionary for source data MUX.
+    fpga : FPGA
+        FPGA instance this controller uses to communicate.
+    endpoints : dict
+        Endpoints on the FPGA this controller uses to communicate.
+    master_config : int
+        Value of the CTRL register in the Wishbone.
+    current_data_mux : str
+        Name of the current MUX data source.
+
+    Methods
+    -------
+    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)
+        Class method. Instantiate a number of new chips.
+    filter_select(operation='set')
+        Set whether SPI data comes from filter ('set') or direct ('clear').
+    set_data_mux(source)
+        Configure the MUX that routes data source to the SPI output.
+    set_clk_divider(divide_value)
+        Set clock divider to configure rate of SPI updates.
+    set_ctrl_reg(reg_value)
+        Configures the SPI Wishbone control register over the registerBridge.
+    set_spi_sclk_divide(divide_value)
+        Configures the SPI Wishbone clock divider register over the registerBridge.
+    write(data)
+        Host write 24 bits of data ot the chip over SPI.
+    """
 
     data_mux = {
         'DDR': 0,
@@ -1756,9 +1788,9 @@ class SPIFifoDriven():
         return chips
 
     def filter_select(self, operation='set'):
-        """
-        set if SPI data comes from the filter (set)
-        or is direct from the spi_fifo_driven data
+        """Set whether SPI data comes from filter ('set') or direct ('clear')
+        
+        Direct comes from the spi_fifo_driven data.
         """
 
         if operation == 'set':
@@ -1791,37 +1823,37 @@ class SPIFifoDriven():
                            mask=mask)
         self.current_data_mux = source
 
-    def set_clk_divider(self, value):
+    def set_clk_divider(self, divide_value):
         """Set clock divider to configure rate of SPI updates.
 
-        Tupdate = Tclk * value
+        Tupdate = Tclk * divide_value
         """
         mask = gen_mask(range(self.endpoints['PERIOD_ENABLE'].bit_index_low,
                               self.endpoints['PERIOD_ENABLE'].bit_index_high))
 
         self.fpga.set_wire(self.endpoints['PERIOD_ENABLE'].address,
-                           value << self.endpoints['PERIOD_ENABLE'].bit_index_low,
+                           divide_value << self.endpoints['PERIOD_ENABLE'].bit_index_low,
                            mask)
 
         # resets the SPI state machine
         self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
-    def set_ctrl_reg(self, value):
+    def set_ctrl_reg(self, reg_value):
         """Configures the SPI Wishbone control register over the registerBridge.
 
         HDL default is ctrlValue = 16'h3010 (initialized in the HDL)
         4*channel (rather than 1*channel) allows for expansion
         """
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + self.regbridge_advance*self.channel,
-                                    value)
+                                    reg_value)
 
         # resets the SPI state machine -- needed since these registers are only
         #   programmed at startup of the state machine
         self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
-    def set_spi_sclk_divide(self, value=0x01):
+    def set_spi_sclk_divide(self, divide_value=0x01):
         """Configures the SPI Wishbone clock divider register over the registerBridge.
 
         HDL default is 8'h13 (initialized in the HDL)
@@ -1829,9 +1861,9 @@ class SPIFifoDriven():
         """
         sys_clk = 200  # in MHz
         print('SCLK predicted frequency {:.2f} [MHz]'.format(
-            sys_clk/(value+1)))
+            sys_clk/(divide_value+1)))
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 1 + self.regbridge_advance*self.channel,
-                                    value)
+                                    divide_value)
 
         # resets the SPI state machine -- needed since these WishBone
         #   registers are only programmed at startup of the state machine
