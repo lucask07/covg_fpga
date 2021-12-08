@@ -266,7 +266,7 @@ class Endpoint:
         set_len = len(set(list_eps)) # A set removes duplicates
         if list_len != set_len:
             # There are duplicates
-            print('Naming collision in ep_defines.v\n Finding collisions...')
+            print('Naming collision in ep_defines.v\nFinding collisions...')
             # Search through to find duplicates
             sorted_list_eps = list(list_eps) # Copy the list to keep order in the original
             sorted_list_eps.sort() # Put duplicates next to one another in new list
@@ -292,6 +292,8 @@ class Endpoint:
                     collision = True
             if collision:
                 return -1
+            else:
+                print('No collisions found.')
 
         # If the list and set match length, no duplicates
         return Endpoint.endpoints_from_defines
@@ -326,7 +328,6 @@ class Endpoint:
                 endpoint.bit_index_low += endpoint.bit_width
                 endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
             if endpoint.gen_address:
-                # TODO: also keep track of bit_high, bit_low within the address?
                 endpoint.address += 1
 
 
@@ -345,13 +346,9 @@ def advance_endpoints_bynum(endpoints_dict, num):
     for key in endpoints_dict:
         endpoint = endpoints_dict[key]
         if endpoint.gen_bit:
-            # endpoint.bit = (endpoint.bit + (endpoint.bit_width*num)) % 32
             endpoint.bit_index_low = (endpoint.bit_index_low + (endpoint.bit_width*num)) % 32
             endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
         if endpoint.gen_address:
-            # endpoint.bit = (endpoint.bit + (endpoint.bit_width*num)) % 32
-            endpoint.bit_index_low = (endpoint.bit_index_low + (endpoint.bit_width*num)) % 32
-            endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
             endpoint.address += ((endpoint.bit_width*num)//32)
         endpoints_dict[key] = endpoint
     return endpoints_dict
@@ -1687,14 +1684,16 @@ class SPIFifoDriven():
 
     Attributes
     ----------
-    data_mux: dict
-        Name to select value dictionary for source data MUX.
+    default_data_mux : dict
+        Class attribute. Default data_mux dictionary.
     fpga : FPGA
         FPGA instance this controller uses to communicate.
     endpoints : dict
         Endpoints on the FPGA this controller uses to communicate.
     master_config : int
         Value of the CTRL register in the Wishbone.
+    data_mux: dict
+        Name to select value dictionary for source data MUX.
     current_data_mux : str
         Name of the current MUX data source.
 
@@ -1716,7 +1715,7 @@ class SPIFifoDriven():
         Host write 24 bits of data ot the chip over SPI.
     """
 
-    data_mux = {
+    default_data_mux = {
         'DDR': 0,
         'host': 1,
         'ads8686_chA': 2,
@@ -1727,13 +1726,16 @@ class SPIFifoDriven():
         'ad7961_ch3': 7,
     }
 
-    def __init__(self, fpga, endpoints, master_config):
+    def __init__(self, fpga, endpoints, master_config, data_mux=default_data_mux):
         self.fpga = fpga
-        self.master_config = master_config
         self.endpoints = endpoints
+        self.master_config = master_config
+        self.data_mux = data_mux
         # Start with host to minimize unintentional commands from other sources on startup
-        self.current_data_mux = ''
-        self.set_data_mux('host')
+        self.current_data_mux = None
+        if self.set_data_mux('host') == -1:
+            # 'host' was not in data_mux dict
+            print("WARNING: no 'host' in data_mux dict")
 
     @classmethod
     def create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None):
@@ -1814,6 +1816,7 @@ class SPIFifoDriven():
         select_val = self.data_mux.get(source)
         if select_val is None:
             print(f'Set data mux failed, {source} not available')
+            return -1
 
         mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
                               self.endpoints['DATA_SEL'].bit_index_high))
@@ -2188,31 +2191,19 @@ class DAC80508(SPIController, SPIFifoDriven):
                             mask=mask)
 
 
-class AD5453(SPIController, SPIFifoDriven):  # TODO: this is SPI but to controller is much different
+class AD5453(SPIFifoDriven):
 
-    registers = Register.get_chip_registers('AD5453')
     bits = 12,
     vref = 2.5*2
 
-    data_mux = {
-        'DDR': 0,
-        'host': 1,
-        'ads8686_chA': 2,
-        'ads8686_chB': 3,
-        'ad7961_ch0': 4,
-        'ad7961_ch1': 5,
-        'ad7961_ch2': 6,
-        'ad7961_ch3': 7,
-    }
-
-    def __init__(self, fpga, master_config=0x3010, endpoints=None, channel=0):
+    def __init__(self, fpga, master_config=0x3010, endpoints=None, channel=0, data_mux=SPIFifoDriven.default_data_mux):
 
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('AD5453')
 
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
         super().__init__(fpga=fpga, master_config=master_config,
-                         endpoints=endpoints)
+                         endpoints=endpoints, data_mux=data_mux)
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
         self.channel = channel
@@ -2238,82 +2229,21 @@ class AD5453(SPIController, SPIFifoDriven):  # TODO: this is SPI but to controll
         self.set_data_mux('host')
 
     def set_clk_rising_edge(self):
+        """Set the signals we write to use the rising edge of the clock.
+        
+        Default is falling edge. To return to the falling edge, the chip
+        requires a power cycle (turn it off and back on).
         """
-        Method to set the control bits of the signals we write to use the rising
-        edge of the clock rather than the default falling edge
-        To return to the falling edge, the chip requires a power cycle (turn it off and back on)
-        """
+
         self.clk_edge_bits = 0b11
 
-    # Method to write 14 bits of data with the option to clock data on the rising edge of the clock rather than the default falling edge of the clock.
-    def write(self, data):
+    def set_ctrl_reg(self, reg_value=0x3010):
+        """Configures the SPI Wishbone control register over the registerBridge.
+        
+        reg_value=0x3010 sets CHAR_LEN=16, ASS, IE
         """
-        unconventional SPI -- only works if data mux is set to host
-        state machine converts this data to WB signals
-        """
-        self.fpga.set_wire(self.endpoints['HOST_WIRE_IN'].address, data)
-        self.fpga.xem.ActivateTriggerIn(self.endpoints['HOST_TRIG'].address,
-                                        self.endpoints['HOST_TRIG'].bit_index_low)
 
-    def set_data_mux(self, source):
-        """
-        configure the MUX that routes data source to the SPI output
-        """
-        if source not in self.data_mux.keys():
-            print(f'Set data mux failed, {source} not available')
-
-        mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
-                              self.endpoints['DATA_SEL'].bit_index_high))
-        data = (self.data_mux[source] << self.endpoints['DATA_SEL'].bit_index_low)
-        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
-                           mask=mask)
-        self.current_data_mux = source
-
-    def set_clk_divider(self, value=0x50):
-        """
-        set clock divider to configure rate of SPI updates
-        Tupdate = Tclk * value
-        """
-        mask = gen_mask(range(self.endpoints['PERIOD_ENABLE'].bit_index_low,
-                              self.endpoints['PERIOD_ENABLE'].bit_index_high))
-
-        self.fpga.set_wire(self.endpoints['PERIOD_ENABLE'].address,
-                           value << self.endpoints['PERIOD_ENABLE'].bit_index_low,
-                           mask)
-
-        # resets the SPI state machine
-        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
-                                        self.endpoints['REG_TRIG'].bit_index_low)
-
-    def set_ctrl_reg(self, value=0x3010):
-        """
-        Configures the SPI Wishbone control register over the registerBridge
-        HDL default is ctrlValue = 16'h3010 (initialized in the HDL)
-        4*channel (rather than 1*channel) allows for expansion
-        """
-        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + self.regbridge_advance*self.channel,
-                                    value)
-
-        # resets the SPI state machine -- needed since these registers are only
-        #   programmed at startup of the state machine
-        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
-                                        self.endpoints['REG_TRIG'].bit_index_low)
-
-    def set_spi_sclk_divide(self, value=0x01):
-        """
-        Configures the SPI Wishbone clock divider register over the registerBridge
-        HDL default is 8'h13 (initialized in the HDL)
-        4*channel (rather than 1*channel) allows for expansion
-        """
-        sys_clk = 200  # in MHz
-        print('SCLK predicted frequency {:.2f} [MHz]'.format(sys_clk/(value+1)))
-        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 1 + self.regbridge_advance*self.channel,
-                                    value)
-
-        # resets the SPI state machine -- needed since these WishBone
-        #   registers are only programmed at startup of the state machine
-        self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
-                                        self.endpoints['REG_TRIG'].bit_index_low)
+        super().set_ctrl_reg(reg_value=reg_value)
 
     def write_filter_coeffs(self):
 
