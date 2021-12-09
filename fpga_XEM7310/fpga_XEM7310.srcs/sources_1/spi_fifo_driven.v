@@ -93,7 +93,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          else spi_data = data_i;
      end
 	 
-	 reg filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable.
+	 reg filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable before input to the SPI command generator
 	 always @(posedge clk) begin
 	   filter_data_rdy <= data_rdy_0;
 	 end
@@ -129,7 +129,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 assign addra_subtract = ep_address - (32'h4+ADDR);
 	 
 	 blk_mem_gen_0 realTime_LPF_coeff_BRAM(
-	 .addra(addra_subtract[3:0]), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_write & ((ep_address>(ADDR + 8'h03)) & (ep_address<(ADDR + 8'h13)))), .wea(4'b1111),
+	 .addra(addra_subtract[3:0]), .clka(fifoclk), .dina(ep_dataout_coeff), 
+	 .ena(ep_write & ((ep_address>(ADDR + 8'h03)) & (ep_address<(ADDR + 8'h13)))), .wea(4'b1111),
 	 .addrb({27'b0, read_address}), .clkb(clk), .doutb(coeff_bram_in), .enb(read_coeff)
 	 );
 	 
@@ -137,12 +138,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
        Butterworth u_Butterworth_0
          (
          .clk(clk),
-         .clk_enable(data_ready_mux | write_enable | write_done),
+         .clk_enable(data_rdy_0 | write_enable | write_done),
          .reset(rst),
          .filter_in(data_i[15:0]), 
          .write_enable(write_enable),
          .write_done(write_done),
-         .write_address(write_address),
+         .write_address(write_address[3:0]),
          .coeffs_in(coeffs_in),
          .filter_out(filter_out),
          .coeff_debug_out1(coeff_debug_out1),
@@ -167,7 +168,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
       .wb_adr_i(adr_0[4:0]), .wb_dat_i(dat_o_0), .wb_dat_o(dat_i_0), 
       .wb_sel_i(sel_0), .wb_we_i(we_0), .wb_stb_i(stb_0), 
       .wb_cyc_i(cyc_0), .wb_ack_o(ack_0), .wb_err_o(err_0), .wb_int_o(int_o_0),
-      .ss_pad_o(ss_0), .sclk_pad_o(sclk_0), .mosi_pad_o(mosi_0), .miso_pad_i() 
+      .ss_pad_o(ss_0), .sclk_pad_o(sclk_0), .mosi_pad_o(mosi_0), .miso_pad_i(1'b0), .miso_b_pad_i(1'b0)
     );
-    
+     
 endmodule
