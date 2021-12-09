@@ -413,6 +413,7 @@ module top_level_module(
        wire [31:0] regAddress;
        wire [31:0] regDataOut;
        wire [31:0] regDataIn; // Was reg, gave error in Vivado synthesis
+       assign redDataIn = 32'haaaa;  // TODO: unused
 
        okRegisterBridge regBridge (
            .okHE(okHE),
@@ -544,10 +545,11 @@ module top_level_module(
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
     wire ddr_data_valid; 
-    
+    wire          ddr3_rst;// MIG/DDR3 synchronous reset
+
 	//Clock divide - used to clock reading of data from DDR (nominal 5 MHz)
      general_clock_divide MIG_DDR_FIFO_RD_EN(
-         .clk(clk),  // input 
+         .clk(clk_sys),  // input 
          .rst(ddr3_rst), // input 
          .en_period(en_period), // input [9:0]  //TODO: need way to disable 
          .clk_en(rd_en_0)  // output : ddr read enable
@@ -571,7 +573,7 @@ module top_level_module(
         assign spi_host_trigger_ds[k] = ep41trig[`DAC80508_HOST_TRIG_GEN_BIT + k];
         
         mux8to1_32wide spi_mux_bus( // lower 24 bits are data, most-significant bit is the data_ready signal 
-            .datain_0({ddr_data_valid, 11,'b1, 1'b1, po0_ep_datain[k*2*16 + 14 +:2], po0_ep_datain[(k*2 + 1)*16 + 14 +:1], po0_ep_datain[AD5453_NUM*16 + k*16 +:16]}),
+            .datain_0({ddr_data_valid, 11'b0, 1'b1, po0_ep_datain[ (k*2*16 + 14) +:2], po0_ep_datain[((k*2 + 1)*16 + 14) +:1], po0_ep_datain[(AD5453_NUM*16 + k*16) +:16]}),
             //                            [15:14] for k=0                 [30:30] for k =0        ,              [111:96] for k  = 0
             // Leading 1 to complete OUT channel address on chip (for DAC0 - DAC7 always 1),
             // last 2 bits of an AD5453 16-bit group for addressing,
@@ -584,7 +586,7 @@ module top_level_module(
             .datain_5({write_en_adc_o[1], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[1][15:0]}), // data from AD7961, channel is selected by input wire 
             .datain_6({write_en_adc_o[2], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[2][15:0]}), // data from AD7961, channel is selected by input wire 
             .datain_7({write_en_adc_o[3], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[3][15:0]}), // data from AD7961, channel is selected by input wire 
-            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + k*`DAC80508_DATA_SEL_GEN_BIT_LEN) +: 3]),
+            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + (k*`DAC80508_DATA_SEL_GEN_BIT_LEN)) +: 3]),
             .dataout({ds_spi_data[k]})
         );
         
@@ -606,6 +608,7 @@ module top_level_module(
                  .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]), //input: state machine to init after SPI clock divider is re-programmed
                  .filter_sel(ep_wire_filtsel[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1])
                  );
+        assign ds_sdo[k] = 1'b1; // sdo for the DAC80508C is CLRB -- force to logic high
         end
     endgenerate
     /*---------------- END DAC80508 -------------------*/
@@ -664,7 +667,6 @@ module top_level_module(
      wire         po0_ep_read;
      wire [31:0]  pi0_ep_dataout;
      wire [31:0] INDEX;
-     wire          ddr3_rst;// MIG/DDR3 synchronous reset
      wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
@@ -845,8 +847,8 @@ module top_level_module(
         
         assign spi_host_trigger_fast_dac[p] = ep41trig[`AD5453_HOST_TRIG_GEN_BIT + p];
         
-        mux8to1_32wide spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit is the data_ready signal 
-            .datain_0({10'b0, po0_ep_datain[p*16 +:14]}),
+        mux8to1_32wide spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
             .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
             .datain_3({ads_data_valid, 15'b0, ads_data_out[31:16]}), // 

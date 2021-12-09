@@ -25,11 +25,11 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
 
 today = datetime.datetime.today()
-data_dir = '/Users/koer2434/Google Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}'.format(today.year,
-                                                                                                                   today.month,
-                                                                                                                   today.day)
-if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
+# data_dir = '/Users/koer2434/Google Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}'.format(today.year,
+#                                                                                                                    today.month,
+#                                                                                                                    today.day)
+# if not os.path.exists(data_dir):
+#     os.makedirs(data_dir)
 
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply()
