@@ -59,7 +59,7 @@ module tb_spi_top;
 	integer i;
 	//
 	reg data_rdy = 1'b0;
-	reg [15:0] filter_in;
+	reg [23:0] filter_in; // expand data length
 
 	// Instantiate the Unit Under Test (UUT)
 	spi_fifo_driven #(.ADDR(8'h15)) uut (
@@ -80,7 +80,7 @@ module tb_spi_top;
 		.ep_write(ep_write),
 		.ep_address(ep_address),
 		.ep_dataout_coeff(ep_dataout_coeff),
-		.filter_sel(filter_sel),
+		.filter_sel(1'b1),  //LJK: enable filter select
 		//.en_period(en_period),
 		//.ddr3_rst(ddr3_rst),
 		//.clk_en(clk_en),
@@ -114,10 +114,11 @@ module tb_spi_top;
             count = count + 1'b1;
             //filter_in = 16'h7fff;
             //filter_in = 16'h4000;
-            filter_in = 16'h2000;
+            filter_in = 16'hc000;
         end
         else begin
-            filter_in = 16'h0000;
+            //filter_in = 16'h0000;
+            filter_in = 16'hc000;
             count = count + 1'b1;
         end
     end

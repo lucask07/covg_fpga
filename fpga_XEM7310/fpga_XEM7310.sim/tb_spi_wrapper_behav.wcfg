@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="261830000000fs"></ZoomStartTime>
-      <ZoomEndTime time="271370000001fs"></ZoomEndTime>
-      <Cursor1Time time="266650000000fs"></Cursor1Time>
+      <ZoomStartTime time="0fs"></ZoomStartTime>
+      <ZoomEndTime time="684165232359fs"></ZoomEndTime>
+      <Cursor1Time time="36144578000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="233"></NameColumnWidth>
-      <ValueColumnWidth column_width="167"></ValueColumnWidth>
+      <ValueColumnWidth column_width="163"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="27" />
+   <WVObjectSize size="21" />
    <wave_markers>
       <marker time="548000000" label="" />
       <marker time="6192500000" label="" />
@@ -84,30 +84,6 @@
    <wvobject fp_name="/tb_spi_top/regTrigger" type="logic">
       <obj_property name="ElementShortName">regTrigger</obj_property>
       <obj_property name="ObjectShortName">regTrigger</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/hostinterrupt" type="logic">
-      <obj_property name="ElementShortName">hostinterrupt</obj_property>
-      <obj_property name="ObjectShortName">hostinterrupt</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/dout" type="array">
-      <obj_property name="ElementShortName">dout[31:0]</obj_property>
-      <obj_property name="ObjectShortName">dout[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/lastWrite" type="array">
-      <obj_property name="ElementShortName">lastWrite[31:0]</obj_property>
-      <obj_property name="ObjectShortName">lastWrite[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_ready" type="logic">
-      <obj_property name="ElementShortName">ep_ready</obj_property>
-      <obj_property name="ObjectShortName">ep_ready</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/slow_pulse" type="logic">
-      <obj_property name="ElementShortName">slow_pulse</obj_property>
-      <obj_property name="ObjectShortName">slow_pulse</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/clk_en" type="logic">
-      <obj_property name="ElementShortName">clk_en</obj_property>
-      <obj_property name="ObjectShortName">clk_en</obj_property>
    </wvobject>
    <wvobject fp_name="/tb_spi_top/i" type="array">
       <obj_property name="ElementShortName">i[31:0]</obj_property>
