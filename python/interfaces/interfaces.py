@@ -395,8 +395,8 @@ class FPGA:
 
     def set_wire(self, address, value, mask=0xFFFFFFFF):
         """Return the error code after setting an OK WireIn value."""
-
-        # print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
+        if self.debug:
+            print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
         error_code = self.xem.SetWireInValue(address, value, mask)
         self.xem.UpdateWireIns()
         return error_code
@@ -538,13 +538,13 @@ class FPGA:
         """Set a single bit to 1 in a OpalKelly wire in."""
 
         if self.debug:
-            print(f'set_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)}')
+            print(f'set_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)})')
         return self.set_wire(address, value=1 << bit, mask=1 << bit)
 
     def clear_wire_bit(self, address, bit):
         """Clear a single bit to 0 in a OpalKelly wire in."""
         if self.debug:
-            print(f'clear_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)}')
+            print(f'clear_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)})')
 
         return self.set_wire(address, value=0, mask=1 << bit)
 
@@ -2052,7 +2052,7 @@ class AD5453(SPIController, SPIFifoDriven):  # TODO: this is SPI but to controll
                            value << self.endpoints['PERIOD_ENABLE'].bit_index_low,
                            mask)
 
-        # resets the SPI state machine
+        # resets the SPI state machine. TODO: not necessary
         self.fpga.xem.ActivateTriggerIn(self.endpoints['REG_TRIG'].address,
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
