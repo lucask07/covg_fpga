@@ -93,13 +93,14 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          else spi_data = data_i;
      end
 	 
-	 reg filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable before input to the SPI command generator
+	 reg [15:0] filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable before input to the SPI command generator
 	 always @(posedge clk) begin
-	   filter_data_rdy <= data_rdy_0;
+	   filter_data_rdy[15] <= data_rdy_0;
+	   filter_data_rdy[14:0] <= filter_data_rdy[15:1];
 	 end
 	 
      always @(*) begin
-         if (filter_sel == 1'b1) data_ready_mux = filter_data_rdy;
+         if (filter_sel == 1'b1) data_ready_mux = filter_data_rdy[0];
          else data_ready_mux = data_rdy_0;
      end
 	 
