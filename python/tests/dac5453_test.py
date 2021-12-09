@@ -85,30 +85,33 @@ for i in range(6):
                 endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
     fdac[i].set_spi_sclk_divide()
+    fdac[i].filter_select(operation='clear')
+    fdac[i].write(int(0))
     fdac[i].set_data_mux('host')
     fdac[i].write_filter_coeffs()
-    fdac[i].filter_select(operation='clear')
 
 # fdac[0].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
 
-fdac[0].change_filter_coeff(target='passthrough')
-fdac[0].write_filter_coeffs()
-fdac[0].filter_select(operation='clear')
-
-fdac[1].change_filter_coeff(target='passthrough')
-fdac[1].write_filter_coeffs()
-fdac[1].filter_select(operation='clear')
+# fdac[0].write(int(0))
+# fdac[0].change_filter_coeff(target='passthrough')
+# fdac[0].write_filter_coeffs()
+# fdac[0].filter_select(operation='clear')
+#
+# fdac[1].write(int(0))
+# fdac[1].change_filter_coeff(target='passthrough')
+# fdac[1].write_filter_coeffs()
+# fdac[1].filter_select(operation='clear')
 
 
 # pass through tests - ramp up from mid-scale go to mid-scale then ramp down
-for ch in [0, 1]:
-    for i in np.arange(0, 0xffff, step=16, dtype=np.int32):
-        fdac[ch].write(int(i))
+# for ch in [0, 1]:
+#    for i in np.arange(0, 0xffff, step=16, dtype=np.int32):
+#        fdac[ch].write(int(i))
 
 # filter tests using host driven reads
 for ch in [0, 1]:
     fdac[ch].filter_select(operation='set')
-    fdac[ch].change_filter_coeff(target='500kHz')
+    fdac[ch].change_filter_coeff(target='100kHz')
     # fdac[ch].change_filter_coeff(target='passthrough')
     fdac[ch].write_filter_coeffs()
 
@@ -124,30 +127,18 @@ for ch in [0, 1]:
         # negative going step
         fdac[ch].write(0xc000)
 
-# both channels simultaneously with different cutoff freq.
-fdac[0].change_filter_coeff(target='500kHz')
-fdac[0].write_filter_coeffs()
 
-fdac[1].change_filter_coeff(target='100kHz')
-fdac[1].write_filter_coeffs()
+def host_sine(fs_over_f, total_length, amp, off):
+    print(f'Estimated time = {total_length*1e-3} [s]')  # about 1 ms per host write
+    t = np.arange(0, total_length)
 
-
-for k in range(100):
-    for i in range(200):
-        for ch in [0, 1]:
-            # fill with midscale
-            fdac[ch].write(0x1000)
-    for i in range(200):
-        for ch in [0, 1]:
-            # positive going square wave
-            fdac[ch].write(0x1200)
-    for i in range(200):
-        for ch in [0, 1]:
-            # negative going step
-            fdac[ch].write(0x0800)
+    return amp*np.sin(t*2*np.pi/fs_over_f) + off
 
 
-x = 0x1000*np.sin(np.arange(0,1000)/20) + 0x1000
+x = host_sine(10, 6000, 0x1000, 0x1000)  # with fc = 100 kHz and 2.5 MHz sample rate expect x25 to show filtering
+for i in x:
+    fdac[0].write(int(i))
 
+x = host_sine(100, 6000, 0x1000, 0x1000)  # with fc = 100 kHz and 2.5 MHz sample rate expect x25 to show filtering  
 for i in x:
     fdac[0].write(int(i))
