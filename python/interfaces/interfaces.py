@@ -138,7 +138,7 @@ class Endpoint:
     @staticmethod
     def update_endpoints_from_defines(ep_defines_path=None):
         """Store and return a dictionary of Endpoints for each chip in ep_defines.v.
-        
+
         Returns -1 if there is a naming collision in ep_defines.v
         """
 
@@ -275,7 +275,7 @@ class Endpoint:
             for sub_dicts in [x for x in Endpoint.endpoints_from_defines.values() if type(x) == dict]:
                 lower_level_names += list(sub_dicts.keys())
             list_names = top_level_names + lower_level_names
-            
+
             collision = False # Keep track of whether there was a collision for return value
             for ep_index in range(len(sorted_list_eps) - 1):
                 ep = sorted_list_eps[ep_index]
@@ -444,8 +444,8 @@ class FPGA:
 
     def set_wire(self, address, value, mask=0xFFFFFFFF):
         """Return the error code after setting an OK WireIn value."""
-
-        # print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
+        if self.debug:
+            print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
         error_code = self.xem.SetWireInValue(address, value, mask)
         self.xem.UpdateWireIns()
         return error_code
@@ -587,13 +587,13 @@ class FPGA:
         """Set a single bit to 1 in a OpalKelly wire in."""
 
         if self.debug:
-            print(f'set_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)}')
+            print(f'set_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)})')
         return self.set_wire(address, value=1 << bit, mask=1 << bit)
 
     def clear_wire_bit(self, address, bit):
         """Clear a single bit to 0 in a OpalKelly wire in."""
         if self.debug:
-            print(f'clear_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)}')
+            print(f'clear_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)})')
 
         return self.set_wire(address, value=0, mask=1 << bit)
 
@@ -1791,7 +1791,7 @@ class SPIFifoDriven():
 
     def filter_select(self, operation='set'):
         """Set whether SPI data comes from filter ('set') or direct ('clear')
-        
+
         Direct comes from the spi_fifo_driven data.
         """
 
@@ -1806,7 +1806,7 @@ class SPIFifoDriven():
 
     def set_data_mux(self, source):
         """Configure the MUX that routes data source to the SPI output.
-        
+
         Arguments
         ---------
         source : str
@@ -2230,16 +2230,16 @@ class AD5453(SPIFifoDriven):
 
     def set_clk_rising_edge(self):
         """Set the signals we write to use the rising edge of the clock.
-        
+
         Default is falling edge. To return to the falling edge, the chip
         requires a power cycle (turn it off and back on).
         """
 
         self.clk_edge_bits = 0b11
-
+        
     def set_ctrl_reg(self, reg_value=0x3010):
         """Configures the SPI Wishbone control register over the registerBridge.
-        
+
         reg_value=0x3010 sets CHAR_LEN=16, ASS, IE
         """
 
