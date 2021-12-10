@@ -214,6 +214,10 @@ module top_level_module(
     wire [(FADC_NUM-1):0]write_en_adc_o;
     wire [15:0] adc_val[0:(FADC_NUM-1)];
     
+    reg adc_valid_cnt[0:(FADC_NUM-1)];
+    reg adc_valid_pulse;
+    reg [15:0] adc_val_reg[0:(FADC_NUM-1)];
+    
     wire [(FADC_NUM-1):0] adc_fifo_full;
     wire [(FADC_NUM-1):0] adc_fifo_halffull;
     wire [(FADC_NUM-1):0] adc_fifo_empty;
@@ -258,9 +262,6 @@ module top_level_module(
     wire [(FADC_NUM-1):0] dco;
     wire [(FADC_NUM-1):0] adc_serial_data;
     
-    assign sma[0] = dco[3];
-    assign sma[1] = adc_serial_data[3];
-
 	//FrontPanel (HostInterface) wires
 	wire okClk;
 	wire [112:0] okHE;
@@ -279,7 +280,7 @@ module top_level_module(
 
 	//wire used to OR the triggerIn reset with the pushbutton reset (so that any of the two can reset the FPGA)
 	wire sys_rst;
-	assign sys_rst = (pushreset | ep40trig[`GP_SYSTEM_RESET]); // TODO: GP_SYSTEM_RESET is not found
+	assign sys_rst = (pushreset | ep40trig[`GP_SYSTEM_RESET]); 
 
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
 	okWireOR # (.N(22)) wireOR (okEH, okEHx); //TODO
@@ -489,6 +490,10 @@ module top_level_module(
   // ------------ end ADS8686 -----------------------------------
 
 	/* ---------------- AD796x 5 MSPS ADC  ----------------*/
+    reg adc_valid_cnt[0:(FADC_NUM-1)];
+    reg adc_valid_pulse[0:(FADC_NUM-1)];
+    reg [15:0] adc_val_reg[0:(FADC_NUM-1)];
+	
 	genvar i;
     generate
     for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7961_gen
@@ -539,8 +544,29 @@ module top_level_module(
           okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(5+i)*65 +: 65]),
                     .ep_addr(`AD7961_PIPE_OUT_GEN_ADDR + i), .ep_read(adc_pipe_ep_read[i]),
                     .ep_datain(adc_pipe_ep_datain[i]));
+                    
+         // reduce adc rate by x2 (5 MHz to 2.5 MHz)
+            
+            always @(posedge clk_sys) begin
+                if (sys_rst == 1'b1) adc_valid_cnt[i] <= 1'b0;
+                else if (adc_valid_cnt[i] == 1'b1 & write_en_adc_o[i]) adc_valid_cnt[i] <= 1'b0;
+                else if (adc_valid_cnt[i] == 1'b0 & write_en_adc_o[i]) adc_valid_cnt[i] <= 1'b1;
+            end         
+            
+            always @(posedge clk_sys) begin
+                if ( (adc_valid_cnt[i] == 1'b1) & (write_en_adc_o[i] == 1'b1)) adc_valid_pulse[i] <= 1'b1;
+                else adc_valid_pulse[i] <= 1'b0;
+            end
+            
+            always @(posedge clk_sys) begin // TODO: filter / average 2 samples
+                adc_val_reg[i] <= adc_val[i];
+            end
+            
      end
      endgenerate
+
+    assign sma[0] = write_en_adc_o[1];
+    assign sma[1] = adc_valid_pulse[1];
 
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
@@ -582,10 +608,10 @@ module top_level_module(
             .datain_1({spi_host_trigger_ds[k], 7'b0, ds_host_spi_data[k][23:0]}), // TODO: determine size for this, I believe it should be 24 bits of SPI message that the host must determine because the spi_fifo_driven is expecting 24 bits
             .datain_2({ads_data_valid, 11'b0, 1'b1, ds_host_spi_data[k][2:0], ads_data_out[15:0]}),  // data from ADS8686
             .datain_3({ads_data_valid, 11'b0, 1'b1, ds_host_spi_data[k][2:0], ads_data_out[31:16]}), // Default to output channel DAC0
-            .datain_4({write_en_adc_o[0], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[0][15:0]}), // data from AD7961, channel is selected by input wire 
-            .datain_5({write_en_adc_o[1], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[1][15:0]}), // data from AD7961, channel is selected by input wire 
-            .datain_6({write_en_adc_o[2], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[2][15:0]}), // data from AD7961, channel is selected by input wire 
-            .datain_7({write_en_adc_o[3], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val[3][15:0]}), // data from AD7961, channel is selected by input wire 
+            .datain_4({adc_valid_pulse[0], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[0][15:0]}), // data from AD7961, channel is selected by input wire 
+            .datain_5({adc_valid_pulse[1], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[1][15:0]}), // data from AD7961, channel is selected by input wire 
+            .datain_6({adc_valid_pulse[2], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[2][15:0]}), // data from AD7961, channel is selected by input wire 
+            .datain_7({adc_valid_pulse[3], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[3][15:0]}), // data from AD7961, channel is selected by input wire 
             .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + (k*`DAC80508_DATA_SEL_GEN_BIT_LEN)) +: 3]),
             .dataout({ds_spi_data[k]})
         );
@@ -846,16 +872,16 @@ module top_level_module(
         okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + p), .ep_dataout(host_spi_data[p]));
         
         assign spi_host_trigger_fast_dac[p] = ep41trig[`AD5453_HOST_TRIG_GEN_BIT + p];
-        
+                
         mux8to1_32wide spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
             .datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
             .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
             .datain_3({ads_data_valid, 15'b0, ads_data_out[31:16]}), // 
-            .datain_4({write_en_adc_o[0], 15'b0, adc_val[0][15:0]}), // data from AD7961  
-            .datain_5({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961
-            .datain_6({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961
-            .datain_7({write_en_adc_o[3], 15'b0, adc_val[3][15:0]}), // data from AD7961
+            .datain_4({adc_valid_pulse[0], 15'b0, adc_val_reg[0][15:0]}), // data from AD7961  
+            .datain_5({adc_valid_pulse[1], 15'b0, adc_val_reg[1][15:0]}), // data from AD7961
+            .datain_6({adc_valid_pulse[2], 15'b0, adc_val_reg[2][15:0]}), // data from AD7961
+            .datain_7({adc_valid_pulse[3], 15'b0, adc_val_reg[3][15:0]}), // data from AD7961
             .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 3]),
             .dataout({spi_data[p]})
         );
