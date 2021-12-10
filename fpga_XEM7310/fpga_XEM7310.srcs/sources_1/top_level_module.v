@@ -214,10 +214,6 @@ module top_level_module(
     wire [(FADC_NUM-1):0]write_en_adc_o;
     wire [15:0] adc_val[0:(FADC_NUM-1)];
     
-    reg adc_valid_cnt[0:(FADC_NUM-1)];
-    reg adc_valid_pulse;
-    reg [15:0] adc_val_reg[0:(FADC_NUM-1)];
-    
     wire [(FADC_NUM-1):0] adc_fifo_full;
     wire [(FADC_NUM-1):0] adc_fifo_halffull;
     wire [(FADC_NUM-1):0] adc_fifo_empty;
@@ -549,8 +545,8 @@ module top_level_module(
             
             always @(posedge clk_sys) begin
                 if (sys_rst == 1'b1) adc_valid_cnt[i] <= 1'b0;
-                else if (adc_valid_cnt[i] == 1'b1 & write_en_adc_o[i]) adc_valid_cnt[i] <= 1'b0;
-                else if (adc_valid_cnt[i] == 1'b0 & write_en_adc_o[i]) adc_valid_cnt[i] <= 1'b1;
+                else if ( (adc_valid_cnt[i] == 1'b1) & (write_en_adc_o[i] == 1'b1)) adc_valid_cnt[i] <= 1'b0;
+                else if ( (adc_valid_cnt[i] == 1'b0) & (write_en_adc_o[i] == 1'b1)) adc_valid_cnt[i] <= 1'b1;
             end         
             
             always @(posedge clk_sys) begin
@@ -561,13 +557,12 @@ module top_level_module(
             always @(posedge clk_sys) begin // TODO: filter / average 2 samples
                 adc_val_reg[i] <= adc_val[i];
             end
-            
      end
      endgenerate
 
-    assign sma[0] = write_en_adc_o[1];
-    assign sma[1] = adc_valid_pulse[1];
-
+    assign sma[0] = write_en_adc_o[1]; //J17, MC2-77
+    assign sma[1] = adc_valid_pulse[1]; //J16
+ 
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
     wire ddr_data_valid; 
