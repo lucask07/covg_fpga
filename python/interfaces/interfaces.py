@@ -2731,9 +2731,9 @@ class DDR3():
                            'sample_size': 524288,  # per channel
                            'channels': 8  # number of channels that the DDR is striped between
                            }
-        self.data_arrays = {}
+        self.data_arrays = []
         for i in range(self.parameters['channels']):
-            self.data_arrays['chan{}'.format(i)] = np.zeros(self.parameters['sample_size']).astype(np.int16)
+            self.data_arrays.append(np.zeros(self.parameters['sample_size']).astype(np.int16))
         self.update_rate = 400e-9  # 2.5 MHz -- requires SCLK ~ 50 MHZ
         # TODO: with a repeating waveform need to write an integer number of periods
         #       (force the frequency to be an integer number of sample rates)
@@ -2796,14 +2796,14 @@ class DDR3():
         """
         stripe data from the 8 channels across the DDR
         """
-        data = np.zeros(int(len(self.data_arrays['chan0'])*self.parameters['channels']))
+        data = np.zeros(int(len(self.data_arrays[0])*self.parameters['channels']))
         data = data.astype(np.int16)
 
         for i in range(self.parameters['channels']):
             if i % 2 == 0:  # extra order swap on the 32 bit wide pipe
-                data[(7-i - 1)::8] = self.data_arrays['chan{}'.format(i)]
+                data[(7-i - 1)::8] = self.data_arrays[0]
             else:
-                data[(7-i + 1)::8] = self.data_arrays['chan{}'.format(i)]
+                data[(7-i + 1)::8] = self.data_arrays[0]
 
         print('Length of data = {}'.format(len(data)))
         return self.write(bytearray(data))
