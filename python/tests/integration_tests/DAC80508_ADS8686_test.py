@@ -93,10 +93,8 @@ def fpga():
 @pytest.fixture(scope='module')
 def dac(fpga):
     dac = DAC80508(fpga=fpga)
-    dac.set_host_mode()
-    dac.set_divider(0x8)
-    dac.configure_master_bin(0x3218)
-    dac.select_slave(1)
+    dac.set_spi_sclk_divide(0x8)
+    dac.set_ctrl_reg(0x3218)
     dac.set_config_bin(0x00)
     return dac
 
@@ -137,7 +135,7 @@ def test_dac_gain_bin(dac, ads, gain_code, expected_gain):
     # divided by 2 or not.
     expected = to_voltage(data=voltage_data, num_bits=16, voltage_range=2.5 * expected_gain)
 
-    dac.write('DAC4', voltage_data)
+    dac.write_chip_reg('DAC4', voltage_data)
     dac.set_gain_bin(gain_code)
     # Read value with ADS8686
     read_dict = ads.read_last()
@@ -170,7 +168,7 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
     # divided by 2 or not.
     expected = to_voltage(data=voltage_data, num_bits=16, voltage_range=2.5 * expected_gain)
 
-    dac.write('DAC4', voltage_data)
+    dac.write_chip_reg('DAC4', voltage_data)
     dac.set_gain(gain=gain, outputs=4, divide_reference=divide_reference)
     # Read value with ADS8686
     read_dict = ads.read_last()
@@ -196,7 +194,7 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
 #     # divided by 2 or not.
 #     expected = to_voltage(data=voltage, num_bits=16,
 #                           voltage_range=2.5)
-#     dac.write('DAC4', voltage)
+#     dac.write_chip_reg('DAC4', voltage)
 #     dac.set_gain_bin(0x0000)
 
 #     # Read value with ADS8686
