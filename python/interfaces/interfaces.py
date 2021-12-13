@@ -2236,7 +2236,7 @@ class AD5453(SPIFifoDriven):
         """
 
         self.clk_edge_bits = 0b11
-        
+
     def set_ctrl_reg(self, reg_value=0x3010):
         """Configures the SPI Wishbone control register over the registerBridge.
 
@@ -2327,24 +2327,6 @@ class AD5453(SPIFifoDriven):
                                  12: 0xab762783,
                                  13: 0x287ecada,
                                  7: 0x7fffffff}
-
-        elif (target == 'all_equal'):
-            if value is None:
-                value = 0
-            self.filter_coeff = {0: value,
-                                 1: value,
-                                 2: value,
-                                 3: value,
-                                 4: value,
-                                 5: value,
-                                 8: value,
-                                 9: value,
-                                 10: value,
-                                 11: value,
-                                 12: value,
-                                 13: value,
-                                 7: value,
-                                 6: value}
 
 
 class ADCDATA():
