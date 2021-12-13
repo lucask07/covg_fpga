@@ -689,10 +689,10 @@ class I2CController:
             self.endpoints['MEMSTART'].address, self.endpoints['MEMSTART'].bit_index_low)
         for i in range(data_length + self.i2c['m_nDataStart']):
             # print('(transmit) WireIn Value = {}'.format(self.i2c['m_pBuf'][i]))
-            mask = 0xff << self.endpoints['WIRE_IN'].bit_index_low
-            value = self.i2c['m_pBuf'][i] << self.endpoints['WIRE_IN'].bit_index_low
+            mask = 0xff << self.endpoints['IN'].bit_index_low
+            value = self.i2c['m_pBuf'][i] << self.endpoints['IN'].bit_index_low
             self.fpga.xem.SetWireInValue(
-                self.endpoints['WIRE_IN'].address, value, mask)
+                self.endpoints['IN'].address, value, mask)
             self.fpga.xem.UpdateWireIns()
             self.fpga.xem.ActivateTriggerIn(
                 self.endpoints['MEMWRITE'].address, self.endpoints['MEMWRITE'].bit_index_low)
@@ -724,10 +724,10 @@ class I2CController:
         for i in range(self.i2c['m_nDataStart']):
             # print('WireIn Value = {}'.format(self.i2c['m_pBuf'][i]))
             # TODO: check this change (LJK)
-            mask = 0xff << self.endpoints['WIRE_IN'].bit_index_low
-            value = self.i2c['m_pBuf'][i] << self.endpoints['WIRE_IN'].bit_index_low
+            mask = 0xff << self.endpoints['IN'].bit_index_low
+            value = self.i2c['m_pBuf'][i] << self.endpoints['IN'].bit_index_low
             self.fpga.xem.SetWireInValue(
-                self.endpoints['WIRE_IN'].address, value, mask)
+                self.endpoints['IN'].address, value, mask)
             self.fpga.xem.UpdateWireIns()
             self.fpga.xem.ActivateTriggerIn(
                 self.endpoints['MEMWRITE'].address, self.endpoints['MEMWRITE'].bit_index_low)
@@ -752,9 +752,9 @@ class I2CController:
                         self.fpga.xem.UpdateWireOuts()
                         # TODO: check this change (LJK)
                         data_tmp = self.fpga.xem.GetWireOutValue(
-                            self.endpoints['WIRE_OUT'].address)
-                        mask = 0xff << self.endpoints['WIRE_OUT'].bit_index_low
-                        data[i] = (data_tmp & mask) >> self.endpoints['WIRE_OUT'].bit_index_low
+                            self.endpoints['OUT'].address)
+                        mask = 0xff << self.endpoints['OUT'].bit_index_low
+                        data[i] = (data_tmp & mask) >> self.endpoints['OUT'].bit_index_low
                         self.fpga.xem.ActivateTriggerIn(
                             self.endpoints['MEMREAD'].address, self.endpoints['MEMREAD'].bit_index_low)
                     return data
