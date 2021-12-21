@@ -21,7 +21,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum
+from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum, TCA9555
 from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
@@ -161,14 +161,14 @@ fg.set('function', 'SIN')
 output = pd.DataFrame()
 res = {}
 
-for f in np.logspace(4, 6.3, 60):
-    fg.set('freq', f)
-    t_range = float('{:.2g}'.format(1/f*num_periods))
+for freq in np.logspace(4, 4.2, 2):
+    fg.set('freq', freq)
+    t_range = float('{:.2g}'.format(1/freq*num_periods))
     osc.set('time_range', t_range)
 
     time.sleep(0.1)
     # measure peak-to-peak
-    res['freq'] = f
+    res['freq'] = freq
     res['vp_in'] = osc.get('meas_vpp', configs={'chan': input_chan})
     res['vp_out'] = osc.get('meas_vpp', configs={'chan': dac_chan})
     # measure phase shift
@@ -184,6 +184,50 @@ plt.plot(output['freq'], output['vp_out'])
 
 # osc.set('single_acq')
 # t = osc.save_display_data(os.path.join(data_dir, 'adc_sine_10kHz_2V_2V'))
+# TCA_addr_pins_0=0b110
+# TCA_0 = TCA9555(fpga=f, addr_pins=TCA_addr_pins_0,
+#                 endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDAQ'],1))
+
+TCA_addr_pins_1=0b000
+TCA_1 = TCA9555(fpga=f, addr_pins=TCA_addr_pins_1,
+                endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDAQ'],1))
+
+# TCA_0.endpoints['IN'].bit_index_high = 32
+# TCA_0.endpoints['IN'].bit_index_low = 16
+TCA_1.endpoints['IN'].bit_index_high = 32
+TCA_1.endpoints['IN'].bit_index_low = 16
+
+# TCA_0.endpoints['OUT'].bit_index_high = 16
+# TCA_0.endpoints['OUT'].bit_index_low = 8
+TCA_1.endpoints['OUT'].bit_index_high = 16
+TCA_1.endpoints['OUT'].bit_index_low = 8
+
+# configure as inputs and outputs: 16 pins. 0 is output
+# TCA_0.configure_pins([0x00, 0x00])
+# # each DAC channel has 4 gain bits. Logic 0 turns on the switches
+# TCA_0.write(0x0100)
+# time.sleep(2)
+# TCA_0.write(0x0f00)
+
+# configure as inputs and outputs: 16 pins. 0 is output
+TCA_1.configure_pins([0x00, 0x00])
+# each DAC channel has 4 gain bits. Logic 0 turns on the switches
+TCA_1.write(0x0100)
+time.sleep(2)
+TCA_1.write(0x0f00)
+
+
+# configure as inputs and outputs: 16 pins. 0 is output
+# TCA_0.configure_pins([0x00, 0x00])
+# # each DAC channel has 4 gain bits. Logic 0 turns on the switches
+# TCA_0.write(0x0100)
+# time.sleep(2)
+# TCA_0.write(0x0f00)
+
+
+# highest gain is all ones (switches open, large feedback resistance)
+# lowest gain is all zeros
+# GSEL3 is the MSB, this is at pin 03 of expander. This is bit3 of 1st byte
 
 """
 # capture a step response
