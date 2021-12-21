@@ -112,7 +112,7 @@ for i in range(6):
 # filter tests using host driven reads
 for ch in [0, 1]:
     fdac[ch].filter_select(operation='set')
-    fdac[ch].change_filter_coeff(target='100kHz')
+    fdac[ch].change_filter_coeff(target='100kHz')  # 100 kHz does not seem to work
     # fdac[ch].change_filter_coeff(target='500kHz')
     # fdac[ch].change_filter_coeff(target='passthrough')
     fdac[ch].write_filter_coeffs()
