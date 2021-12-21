@@ -64,6 +64,7 @@
 `define DDR3_READ_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define DDR3_FG_READ_ENABLE 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 // [5:3], [8:6], [11:9], [14:12], [17:15], [20:18]
 `define AD5453_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
@@ -127,6 +128,7 @@
 
 `define DDR3_BLOCK_PIPE_IN 8'h80 // bit_width=32
 `define DDR3_BLOCK_PIPE_OUT 8'ha6 // bit_width=32
+`define DDR3_BLOCK_PIPE_OUT_FG 8'ha8 // bit_width=32
 //`define DS_TRIG_OFFSET 32'h08 // bit 8
 
 //ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
@@ -157,6 +159,21 @@
 `define I2CDC_RESET_GEN_BIT 23 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define I2CDC_START_GEN_BIT 27 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD7961_TIMING_PLL_RESET 31 // address=GP_RST_VALID_TRIG_IN bit_width=1
+
+// wire in status signals for the DDR
+`define DDR3_INIT_CALIB_COMPLETE 8'h20 // bit_width=32
+`define DDR3_INIT_COMPLETE 0 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN1_FULL 1 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN1_EMPTY 2 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN2_FULL 3 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN2_EMPTY 4 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT1_FULL 5 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT1_EMPTY 6 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT2_FULL 7 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT2_EMPTY 8 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_ADC_DATA_COUNT 9 // address=DDR3_INIT_CALIB_COMPLETE bit_width=16
+
+`define DDR3_ADC_DATA_CNT 8'h3e // bit_width=32
 
 // trigger in at 0x41
 `define I2CDC_MEMSTART_GEN_BIT 0 // address=I2C_TRIG_IN bit_width=1
