@@ -40,20 +40,26 @@ class Clamp:
                     ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
                     P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None,
                     gain=None, FDBK=None, mode=None, EN_ipump=None,
-                    RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000)
+                    RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000, dc_num=0)
         Sets the I/O Expanders according to the arguments given.
     """
 
-    def __init__(self, fpga, TCA_addr_pins_0=0b110, TCA_addr_pins_1=0b000, UID_addr_pins=0b000, DAC_addr_pins=0b000):
-        # cwd = python/interfaces/
-        # i2c_bitfile = python/i2c.bit
-        self.TCA_0 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
-        self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
-        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
-        self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
+    def __init__(self, fpga, TCA_addr_pins_0=0b110, TCA_addr_pins_1=0b000,
+                 UID_addr_pins=0b000, DAC_addr_pins=0b000, dc_num=0):
+        # dc_num is the daughter card channel number since there are 0-3 channels
+
+        self.TCA = [None, None]
+        self.TCA[0] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0,
+                             endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+        self.TCA[1] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1,
+                             endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins,
+                                  endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+        self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins,
+                            endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
         self.serial_number = None  # Will get serial code from UID chip in setup()
 
-    def init_board(self):
+    def init_board(self, skip_dac=True):
         """Tests and configures the board.
 
         Tests connectivity with each chip, configures board for Voltage Clamp
@@ -68,27 +74,20 @@ class Clamp:
             'CONFIG'
         ]:
             # TCA_0
-            dev_addr = self.TCA_0.parameters['ADDRESS_HEADER'] | (
-                    self.TCA_0.addr_pins << 1) | 0b1
-            read_out = self.TCA_0.i2c_read_long(dev_addr, [self.TCA_0.parameters[register_name].address], 2)[
-                1]  # Only the second byte to come back is what we want
-            default = self.TCA_0.parameters[register_name].default
-            if read_out != default:
-                print(f'TCA_0 register: {register_name} FAILED\n    '
-                      f'(read_out) {read_out} != (default) {default}')
-                return False
+            for ch in [0,1]:
+                dev_addr = self.TCA[ch].ADDRESS_HEADER | (
+                        self.TCA[ch].addr_pins << 1) | 0b1
+                try:
+                    read_out = self.TCA[ch].i2c_read_long(dev_addr, [self.TCA[ch].registers[register_name].address], 2)[
+                        1]  # Only the second byte to come back is what we want
+                except:
+                    read_out = None
+                default = self.TCA[ch].registers[register_name].default
+                if read_out != default:
+                    print(f'TCA_{ch} register: {register_name} FAILED\n    '
+                          f'(read_out) {read_out} != (default) {default}')
+                    return False
 
-            # TCA_1
-            dev_addr = self.TCA_1.parameters['ADDRESS_HEADER'] | (
-                    self.TCA_1.addr_pins << 1) | 0b1
-            read_out = self.TCA_1.i2c_read_long(dev_addr, [self.TCA_1.parameters[register_name].address], 2)[
-                1]  # Only the second byte to come back is what we want
-            default = self.TCA_1.parameters[register_name].default
-            if read_out != default:
-                print(f'TCA_1 register: {register_name} FAILED\n    '
-                      f'(read_out) {read_out} != (default) {default}')
-
-                return False
 
         # Configure clamp
         # Command for Voltage Clamp Feedback loop
@@ -101,30 +100,31 @@ class Clamp:
 
         # UID
         read = self.UID.get_manufacturer_code()
-        default = self.UID.parameters['MANUFACTURER_CODE'].default
+        default = self.UID.registers['MANUFACTURER_CODE'].default
         if read != default:
             print(f'UID MANUFACTURER_CODE FAILED\n    '
                   f'(read) {read} != (default) {default}')
             return False
 
         read = self.UID.get_device_code()
-        default = self.UID.parameters['DEVICE_CODE'].default
+        default = self.UID.registers['DEVICE_CODE'].default
         if read != default:
             print(f'UID DEVICE_CODE FAILED\n    '
                   f'(read) {read} != (default) {default}')
             return False
 
         # DAC
-        read = self.DAC.get_id()
-        # Device and Version ID share the same default value across their combined bits
-        default = self.DAC.parameters['DEVICE_ID'].default
-        if read != default:
-            print(f'DAC ID FAILED\n    (read) {read} != (default) {default}')
-            return False
+        if not skip_dac:
+            read = self.DAC.get_id()
+            # Device and Version ID share the same default value across their combined bits
+            default = self.DAC.registers['DEVICE_ID'].default
+            if read != default:
+                print(f'DAC ID FAILED\n    (read) {read} != (default) {default}')
+                return False
 
-        # Get serial code
-        self.serial_number = self.UID.get_serial_number()
-        print(f'Serial Code: {hex(self.serial_number)}')
+            # Get serial code
+            self.serial_number = self.UID.get_serial_number()
+            print(f'Serial Code: {hex(self.serial_number)}')
 
         return True
 
@@ -243,7 +243,7 @@ class Clamp:
             60: 0b101,
             63: 0b110,
             64: 0b111,
-            None: 0b000
+            1: 0b000
         }
 
         FDBK_dict = {
@@ -344,16 +344,16 @@ class Clamp:
                  << 8) | reverse_bits(mask2 % 16**2)
 
         # Set pins to outputs
-        self.TCA_0.configure_pins([0x00, 0x00])
-        self.TCA_1.configure_pins([0x00, 0x00])
+        self.TCA[0].configure_pins([0x00, 0x00])
+        self.TCA[1].configure_pins([0x00, 0x00])
 
         # Write messages
-        self.TCA_0.write(message1, mask1)
-        self.TCA_1.write(message2, mask2)
+        self.TCA[0].write(message1, mask=mask1)  # register_name defaults to 'OUTPUT'
+        self.TCA[1].write(message2, mask=mask2)
 
         # Read messages
-        list_read1 = self.TCA_0.read()
-        list_read2 = self.TCA_1.read()
+        list_read1 = self.TCA[0].read()
+        list_read2 = self.TCA[1].read()
         read1 = (list_read1[0] << 8) | list_read1[1]
         read2 = (list_read2[0] << 8) | list_read2[1]
 
@@ -429,15 +429,36 @@ class Daq:
         self.fpga = fpga
         self.serial_number = None  # Will get serial code from UID chip in setup()
         # I2C
-        self.TCA_0 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
-        self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
-        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
-        self.DAC_I2C = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
+        i2c_eps = advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDAQ'],1)
+        self.TCA = [None, None]
+        self.TCA[0] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=i2c_eps)
+        self.TCA[1] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=i2c_eps)
+        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins, endpoints=i2c_eps)
+
+        # Endpoint advancing is not working with advances that are not a full 32 bits
+        for ch in [0,1]:
+            self.TCA[ch].endpoints['IN'].bit_index_high = 32
+            self.TCA[ch].endpoints['IN'].bit_index_low = 16
+
+            self.TCA[ch].endpoints['OUT'].bit_index_high = 16
+            self.TCA[ch].endpoints['OUT'].bit_index_low = 8
+        self.UID.endpoints['OUT'].bit_index_high = 16
+        self.UID.endpoints['OUT'].bit_index_low = 8
+        self.UID.endpoints['IN'].bit_index_high = 32
+        self.UID.endpoints['IN'].bit_index_low = 16
+
+
+
+        # self.DAC_I2C = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
         # SPI
-        self.DAC_gp_0, self.DAC_gp_1 = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
-        self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
+        self.DAC_gp = []
+        self.DAC_gp = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
+        self.DAC = []
+        self.DAC = AD5453.create_chips(fpga=fpga, number_of_chips=6)
+        #self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
         self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)
-        self.ADC_0, self.ADC_1, self.ADC_2, self.ADC_3 = AD7961.create_chips(fpga=fpga, number_of_chips=4)
+        self.ADC = []
+        self.ADC = AD7961.create_chips(fpga=fpga, number_of_chips=4)
 
     class Power:
 

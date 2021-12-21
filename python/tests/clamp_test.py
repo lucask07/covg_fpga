@@ -94,9 +94,6 @@ gpio.fpga.debug = True
 gpio.spi_debug('dfast0')
 gpio.ads_misc('sdoa')  # do not care for this experiment
 
-ddr = DDR3(f)
-ddr.reset_fifo()
-
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
 clamp = Clamp(f, dc_num=dc_num)
 
@@ -178,18 +175,25 @@ cc = daq.DAC[0]
 
 ddr = DDR3(f)
 ddr.reset_fifo()
-
-#port1_index = 0x7_ff_ff_f8
-port1_index = 0x800
-ddr.set_index(port1_index)
+port1_index = 0x7_ff_ff_f8  # fixed in the HDL
 ddr.parameters['sample_size'] = int( (port1_index + 8)/2)
+ddr.reset_fifo()
+for i in range(6):
+    ddr.data_arrays[i] = ddr.make_square(start=0x2000,
+                                        stop=0x2080,
+                                        legnth=2000)
 
-low_val = 0x2000
-high_val = 0x2040
-for i in [0, 1]:
-    ddr.data_arrays['chan{}'.format(i)][0:(port1_index//2)] = np.uint16(low_val*np.ones(port1_index//2))
-    ddr.data_arrays['chan{}'.format(i)][(port1_index//2):port1_index] = np.uint16(high_val*np.ones(port1_index//2))
-
+# port1_index = 0x7_ff_ff_f8
+# port1_index = 0x800
+# ddr.set_index(port1_index)
+# ddr.parameters['sample_size'] = int( (port1_index + 8)/2)
+#
+# low_val = 0x2000
+# high_val = 0x2040
+# for i in [0, 1]:
+#     ddr.data_arrays['chan{}'.format(i)][0:(port1_index//2)] = np.uint16(low_val*np.ones(port1_index//2))
+#     ddr.data_arrays['chan{}'.format(i)][(port1_index//2):port1_index] = np.uint16(high_val*np.ones(port1_index//2))
+#
 cmd_dac.set_data_mux('DDR')
 cc.set_data_mux('host')
 cc.write(int(0))
