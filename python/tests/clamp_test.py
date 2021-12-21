@@ -113,7 +113,7 @@ disp_device(clamp.DAC)
 
 log_info = clamp.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2', CCOMP=4.7,
                            RF1=2.1,ADG_RES=10, PClamp_CTRL=0, P1_E_CTRL=0, P1_CAL_CTRL=0,
-                           P2_E_CTRL=0, P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage',
+                           P2_E_CTRL=0, P2_CAL_CTRL=0, gain=None, FDBK=1, mode='voltage',
                            EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110, addr_pins_2=0b000)
 
 # log_info = clamp.configure_clamp(P2_E_CTRL=0, addr_pins_1=0b110, addr_pins_2=0b000)
@@ -171,7 +171,7 @@ for i in range(6):
     daq.DAC[i].set_clk_divider(divide_value=0x50)  # 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
 
 daq.TCA[0].configure_pins([0,0])
-daq.TCA[0].write((0xf-7)<<(4+8) + 0xfff)
+daq.TCA[0].write( ((0xf-7)<<(4+8)) + 0xfff)
 
 cmd_dac = daq.DAC[1]  # DAC channel 0 is connected to dc clamp ch 0 CMD signal
 cc = daq.DAC[0]
