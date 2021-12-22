@@ -54,7 +54,10 @@ root_logger.addHandler(handler)
 
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
-atexit.register(pwr_off, [dc_pwr, dc_pwr2])
+if pwr_setup == '3dual':
+    atexit.register(pwr_off, [dc_pwr])
+else:
+    atexit.register(pwr_off, [dc_pwr, dc_pwr2])
 config_supply(dc_pwr, dc_pwr2, setup=pwr_setup)
 
 # turn on the 7V
@@ -91,7 +94,7 @@ for name in ['1V8', '5V', '3V3']:
 gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 # configure the SPI debug MUXs
-gpio.spi_debug('dfast0')
+gpio.spi_debug('dfast1')
 gpio.ads_misc('sdoa')  # do not care for this experiment
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
@@ -108,10 +111,10 @@ disp_device(clamp.DAC)
 # included is masked and stays the same
 # TODO: configure_clamp errors out if not connected
 
-log_info = clamp.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2', CCOMP=4.7,
-                           RF1=2.1,ADG_RES=10, PClamp_CTRL=0, P1_E_CTRL=0, P1_CAL_CTRL=0,
-                           P2_E_CTRL=0, P2_CAL_CTRL=0, gain=None, FDBK=1, mode='voltage',
-                           EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110, addr_pins_2=0b000)
+# log_info = clamp.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2', CCOMP=4.7,
+#                            RF1=2.1,ADG_RES=10, PClamp_CTRL=0, P1_E_CTRL=0, P1_CAL_CTRL=0,
+#                            P2_E_CTRL=0, P2_CAL_CTRL=0, gain=1, FDBK=1, mode='voltage',
+#                            EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110, addr_pins_2=0b000)
 
 # log_info = clamp.configure_clamp(P2_E_CTRL=0, addr_pins_1=0b110, addr_pins_2=0b000)
 
@@ -121,40 +124,36 @@ test_channel = 1
 ADC_TEST_PATTERN = False
 
 # --------  Run ADC tests  --------
-for chan in [0, test_channel]:
-    for num in [1, 2, 3]:
-        if chan == 0:
-            setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
-            time.sleep(0.2)  # this pause is required. Failed at 100 ms.
-        else:
-            setup = ad7961s[chan].setup(reset_pll=False)  # resets FIFO and ADC controller
-            time.sleep(0.2) # this pause is required. Failed at 100 ms.
+# for chan in [0, test_channel]:
+#     for num in [1, 2, 3]:
+#         if chan == 0:
+#             setup = ad7961s[chan].setup(reset_pll=True)  # resets FIFO and ADC controller
+#             time.sleep(0.2)  # this pause is required. Failed at 100 ms.
+#         else:
+#             setup = ad7961s[chan].setup(reset_pll=False)  # resets FIFO and ADC controller
+#             time.sleep(0.2) # this pause is required. Failed at 100 ms.
+#
+#         if ADC_TEST_PATTERN:
+#             ad7961s[chan].test_pattern()
+#             time.sleep(0.2)
+#             ad7961s[chan].reset_fifo()
+#             time.sleep(0.2)  # FIFO fills in 204 us
+#             d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
+#             with open(os.path.join(data_dir,
+#                                    'test_pattern_chan{}_num{}.npy'.format(chan, num)), 'wb') as file1:
+#                 np.save(file1, d1)
+#
+#         ad7961s[chan].power_up_adc()  # standard sampling
+#         time.sleep(1)
+#         ad7961s[chan].reset_fifo()
+#         d2 = ad7961s[chan].stream_mult(swps=4)
+#
+#         with open(os.path.join(data_dir,
+#                                'test_data_chan{}_num{}.npy'.format(chan, num)), 'wb') as file1:
+#             np.save(file1, d2)
 
-        if ADC_TEST_PATTERN:
-            ad7961s[chan].test_pattern()
-            time.sleep(0.2)
-            ad7961s[chan].reset_fifo()
-            time.sleep(0.2)  # FIFO fills in 204 us
-            d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
-            with open(os.path.join(data_dir,
-                                   'test_pattern_chan{}_num{}.npy'.format(chan, num)), 'wb') as file1:
-                np.save(file1, d1)
-
-        ad7961s[chan].power_up_adc()  # standard sampling
-        time.sleep(1)
-        ad7961s[chan].reset_fifo()
-        d2 = ad7961s[chan].stream_mult(swps=4)
-
-        with open(os.path.join(data_dir,
-                               'test_data_chan{}_num{}.npy'.format(chan, num)), 'wb') as file1:
-            np.save(file1, d2)
-
-disp_device(ad7961s[0])
+# disp_device(ad7961s[0])
 daq = Daq(f)
-
-print('instantiate daq: ')
-disp_device(ad7961s[0])
-
 
 # fast DAC channel 0 and 1
 for i in range(6):
@@ -165,10 +164,10 @@ for i in range(6):
     daq.DAC[i].set_data_mux('host')
     daq.DAC[i].change_filter_coeff(target='passthru')
     daq.DAC[i].write_filter_coeffs()
-    daq.DAC[i].set_clk_divider(divide_value=0x50)  # 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
 
+daq.DAC[0].set_clk_divider(divide_value=0x50)  # 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
 daq.TCA[0].configure_pins([0,0])
-daq.TCA[0].write( ((0xf-7)<<(4+8)) + 0xfff)
+daq.TCA[0].write( ((0xf)<<(4+8)) + 0xfff)
 
 cmd_dac = daq.DAC[1]  # DAC channel 0 is connected to dc clamp ch 0 CMD signal
 cc = daq.DAC[0]
@@ -178,10 +177,19 @@ ddr.reset_fifo()
 port1_index = 0x7_ff_ff_f8  # fixed in the HDL
 ddr.parameters['sample_size'] = int( (port1_index + 8)/2)
 ddr.reset_fifo()
-for i in range(6):
-    ddr.data_arrays[i] = ddr.make_square(start=0x2000,
+for i in range(8):
+    ddr.data_arrays[i] = ddr.make_step(start=0x2000,
                                         stop=0x2080,
-                                        legnth=2000)
+                                        length=2000)
+
+ddr.clear_fg_read()
+g_buf = ddr.write_channels()
+ddr.reset_fifo()
+ddr.clear_write()
+ddr.set_read()
+time.sleep(0.5)  # allow the ADC data to accumulate into DDR
+#ddr.clear_read()
+# ddr.set_fg_read()
 
 # port1_index = 0x7_ff_ff_f8
 # port1_index = 0x800
@@ -197,24 +205,10 @@ for i in range(6):
 cmd_dac.set_data_mux('DDR')
 cc.set_data_mux('host')
 cc.write(int(0))
-cc.change_filter_coeff(target='passthru')
-cc.filter_select(operation='set')
-cc.set_data_mux('ad7961_ch0')
-
-ddr.reset_fifo()
-# ddr.clear_fg_read()
-g_buf = ddr.write_channels()
-
-ddr.clear_write()
-ddr.set_read()
-sleep(0.5)  # allow the ADC data to accumulate into DDR
-# ddr.clear_read()
-# ddr.set_fg_read()
-
-
-# for i in range(10000):
-#     cmd_dac.write(0x2000)  # host writes work. CSb:DSView_0, MOSI: DSView_1, SCLK: DSView_3
-#     cmd_dac.write(0x030A)
+# cc.change_filter_coeff(target='passthru')
+# cc.filter_select(operation='set')
+# cc.set_data_mux('ad7961_ch0')
+cc.set_data_mux('DDR')
 
 
 # TODO - a way to assign parts of the Daq TCAs to specific DACs so as to write the gain
