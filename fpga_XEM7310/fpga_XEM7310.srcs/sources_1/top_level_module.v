@@ -862,8 +862,8 @@ module top_level_module(
      assign up[1] = pipe_out2_data[0]; // pipe_out2_empty; // pipe_out_ready;
      assign up[2] = pipe_out2_data[15]; //pipe_in2_full;
      assign up[3] = pipe_out2_data[255]; //pipe_in2_full; // po0_ep_read;
-     assign up[4] = pipe_out2_data[249];
-     assign up[5] = pipe_out2_data[31];
+     assign up[4] = rd_en_0;
+     assign up[5] = ddr_data_valid;
      
      assign sma[0] = pipe_in2_valid; //adc_data_cnt > 8; // pipe_in2_read;
      assign sma[1] = pipe_in2_data[0]; //adc_data_cnt < 2;
@@ -999,7 +999,7 @@ module top_level_module(
                  .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
 
                  .rd_en_0(rd_en_fast_dac[p]),   //out: debug only 
-                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + p]), //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + p]), //input  -- sends state machine to init. Use for after updates via register bridge.
                  .filter_sel(ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + p*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1]),
                  .coeff_debug_out1(coeff_debug_out1[p]),
                  .coeff_debug_out2(coeff_debug_out2[p])
