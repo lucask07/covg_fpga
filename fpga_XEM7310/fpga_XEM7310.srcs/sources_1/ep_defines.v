@@ -71,7 +71,10 @@
 `define DAC80508_DATA_SEL_GEN_BIT 21 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 `define DAC80508_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 //[23:21], [26:24] 
+`define DDR3_ADC_DEBUG 27 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
+
+//TODO: the BIT_LEN should be constant for a set of devices. Need to remove the GEN?
 `define FILTER_SEL_WIRE_IN 8'h0d // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define AD5453_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
