@@ -907,13 +907,33 @@ module top_level_module(
           .rd_data_count(pipe_in_rd_count), // Bus [6 : 0]  //128 available for reading (by DDR)
           .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0] //1024 available for writing 
 
-    wire dac_data_valid; 
+    reg [15:0] adc_debug_cnt; 
+    always @(posedge clk_sys or posedge sys_rst) begin 
+        if (sys_rst == 1'b1) adc_debug_cnt <= 16'b0;
+        else if (ddr_data_valid == 1'b1) adc_debug_cnt <= adc_debug_cnt + 1'b1;
+    end
+    
+    reg [63:0] adc_ddr_data;
+    reg adc_ddr_wr_en;
+    assign adc_ddr_debug = ep03wire[`DDR3_ADC_DEBUG];
+    
+    always @(*) begin
+        if (adc_ddr_debug == 1'b0) begin // TODO: setup adc_ddr_debug, then route signals to FIFO
+            adc_ddr_data = {adc_val_reg[3][15:0], adc_val_reg[2][15:0], adc_val_reg[1][15:0], adc_val_reg[0][15:0]};
+            adc_ddr_wr_en = adc_valid_pulse[0];
+        end
+        else begin
+            adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};
+            adc_ddr_wr_en = ddr_data_valid;
+        end
+    end
+
      fifo_w64_512_r256_128_1 adc_to_ddr_fifo (  //ADC data input, output to DDR
          .rst(ddr3_rst),
          .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
-         .din({adc_val_reg[3][15:0], adc_val_reg[2][15:0], adc_val_reg[1][15:0], adc_val_reg[0][15:0]}),
-         .wr_en(adc_valid_pulse[0] & ep03wire[`DDR3_READ_ENABLE]), //
+         .din(adc_ddr_data),
+         .wr_en(adc_ddr_wr_en & ep03wire[`DDR3_READ_ENABLE]), //
          .rd_en(pipe_in2_read),
          .dout(pipe_in2_data), // Bus [255 : 0] - to DDR 
          .full(pipe_in2_full),
@@ -981,7 +1001,7 @@ module top_level_module(
             .datain_5({adc_valid_pulse[1], 15'b0, adc_val_reg[1][15:0]}), // data from AD7961
             .datain_6({adc_valid_pulse[2], 15'b0, adc_val_reg[2][15:0]}), // data from AD7961
             .datain_7({adc_valid_pulse[3], 15'b0, adc_val_reg[3][15:0]}), // data from AD7961
-            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 3]),
+            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: `AD5453_DATA_SEL_GEN_BIT_LEN]),
             .dataout({spi_data[p]})
         );
         
