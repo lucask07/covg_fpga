@@ -2908,6 +2908,20 @@ class DDR3():
         ddr_seq = ddr_seq.astype(np.uint16)
         return ddr_seq
 
+    def make_step(self, start, stop, length, duty=50):
+        """
+        create a step signal to write to the DDR
+        """
+        l_first = int(length/100*duty)
+        l_end = int(length/100*(100-duty))
+        ramp_seq = np.concatenate((np.ones(l_first)*start, np.ones(l_end)*stop))
+        num_tiles = self.parameters['sample_size']//len(ramp_seq)
+        extras = self.parameters['sample_size'] % len(ramp_seq)
+        ddr_seq = np.tile(ramp_seq, num_tiles)
+        ddr_seq = np.hstack((ddr_seq, ramp_seq[0:extras]))
+        ddr_seq = ddr_seq.astype(np.uint16)
+        return ddr_seq
+
     def write_channels(self):
         """
         stripe data from the 8 channels across the DDR

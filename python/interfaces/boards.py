@@ -455,8 +455,10 @@ class Daq:
         self.DAC_gp = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
         self.DAC = []
         self.DAC = AD5453.create_chips(fpga=fpga, number_of_chips=6)
+        for i in range(len(self.DAC)):
+            self.DAC[i].channel = i  # TODO: fix this hack in the create chips
         #self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
-        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)
+        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)  # TODO: does this use a "channel"
         self.ADC = []
         self.ADC = AD7961.create_chips(fpga=fpga, number_of_chips=4)
 
