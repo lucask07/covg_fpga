@@ -4,6 +4,9 @@ December 2021
 
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
+
+TODO: connect CC using 6.8 kOhm
+
 """
 
 import os, sys
@@ -178,9 +181,9 @@ port1_index = 0x7_ff_ff_f8  # fixed in the HDL
 ddr.parameters['sample_size'] = int( (port1_index + 8)/2)
 ddr.reset_fifo()
 for i in range(8):
-    ddr.data_arrays[i] = ddr.make_step(start=0x2000,
-                                        stop=0x2080,
-                                        length=2000)
+    ddr.data_arrays[i] = ddr.make_step(low=0x2000,
+                                       high=0x2080,
+                                       length=2000)
 
 ddr.clear_fg_read()
 g_buf = ddr.write_channels()
