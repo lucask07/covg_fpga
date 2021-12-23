@@ -13,6 +13,13 @@ import datetime
 import numpy as np
 import atexit
 import matplotlib.pyplot as plt
+import h5py
+for scipy import signal
+from filters.filter_tools import delayseq
+
+import matplotlib
+matplotlib.use("Qt4agg") # or "Qt5agg" depending on you version of Qt
+
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -27,7 +34,7 @@ sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Endpoint, advance_endpoints_bynum
 from interfaces.interfaces import FPGA, AD5453
-from interfaces.interfaces import DebugFIFO, DDR3, disp_device
+from interfaces.interfaces import DDR3, disp_device
 eps = Endpoint.endpoints_from_defines
 from interfaces.boards import Daq  # TODO: should I instantiate the Daq board or just pieces from it?
                                    # TODO: for now, pieces, eventually the DAQ board
@@ -65,14 +72,6 @@ gpio.ads_misc('sdoa')
 ddr = DDR3(f)
 ddr.reset_fifo()
 
-# the index is the DDR address that the circular buffer stops at.
-# need to write all the way up to this stoping point otherwise the SPI output will glitch
-
-port1_index = 0x7_ff_ff_f8
-ddr.set_index(port1_index,
-              int(port1_index*2))
-ddr.parameters['sample_size'] = int( (port1_index + 8)/2)
-
 fdac = []
 for i in range(6):
     fdac.append(AD5453(f,
@@ -83,12 +82,13 @@ for i in range(6):
 
     ddr.reset_fifo()
     time.sleep(0.001)
-    fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
 
-    # sin_buf = ddr.write_sin_wave(amplitude=2, frequency=10e3, dignum_volt=546)
+fdac[0].set_clk_divider(divide_value=0x50)  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+
+    # sin_buf = ddr.write_sine_wave(amplitude=2, frequency=10e3, dignum_volt=546)
 
     #t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_flat_voltage(256 + 256*i)
-    # t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_sin_wave(amplitude=1+i*0.25,
+    # t, ddr.data_arrays['chan{}'.format(i)] = ddr.make_sine_wave(amplitude=1+i*0.25,
     #                                                           frequency=10e3,
     #                                                           dignum_volt=546)
 ddr.reset_fifo()
@@ -100,6 +100,10 @@ for i in [6, 7]:
     ddr.data_arrays[i] = ddr.make_ramp(start=0 + 64*i,
                                         stop=2**16-1,
                                         step=1)
+
+ddr.data_arrays[2], actual_frequency = ddr.make_sine_wave(amplitude=2**14, frequency=500, offset=2**15,
+                                                          actual_frequency = False)
+
 # flat_len = 183
 # for i in [0]:
 #     for t in np.arange(64):
@@ -107,58 +111,98 @@ for i in [6, 7]:
 
 
 ddr.reset_fifo()
+ddr.set_adc_debug()
 ddr.clear_fg_read()
 g_buf = ddr.write_channels()
 
 ddr.reset_fifo()
 ddr.clear_write()
-fdac[0].set_clkenable_mux('spi_clk_en')  # shared between all DACs (only need to set one channel)
+fdac[0].set_data_mux('DDR')
+fdac[1].set_data_mux('DDR')
+
 ddr.set_read()
 time.sleep(0.5)  # allow the ADC data to accumulate into DDR
 #ddr.clear_read()
 ddr.set_fg_read()
 
-# block size is 2048. So expect 2048*4*128*128 bytes read (128 MB)
-t, bytes_read = ddr.read_adc(ddr.parameters['BLOCK_SIZE']*128*16)  # bits 0:63 of the DDR, first 4 channels of the FDAC
-# t, bytes_read = ddr.read(8192)  # bits 0:63 of the DDR, first 4 channels of the FDAC
 
-d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
-chan_data_swz = {}  # this data is swizzled
+def read_adc(ddr, blk_multiples=2048):
+    # block size is 2048.
+    t, bytes_read = ddr.read_adc(sample_size=ddr.parameters['BLOCK_SIZE']*blk_multiples)  # bits 0:63 of the DDR, first 4 channels of the
+    d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
+    return d
+
+def deswizzle(d):
+    chan_data_swz = {}  # this data is swizzled
+    for i in range(4):
+        chan_data_swz[i] = (d[(0 + i*2)::8] << 0) + (d[(1 + i*2)::8] << 8)
+
+    chan_data = {}
+    chan_data[0] = chan_data_swz[2]
+    chan_data[1] = chan_data_swz[3]
+    chan_data[2] = chan_data_swz[0]
+    chan_data[3] = chan_data_swz[1]
+
+    return chan_data
+
+"""
+plt_length = 2048
 for i in range(4):
-    chan_data_swz[i] = (d[(0 + i*2)::8] << 0) + (d[(1 + i*2)::8] << 8)
-
-chan_data = {}
-chan_data[0] = chan_data_swz[2]
-chan_data[1] = chan_data_swz[3]
-chan_data[2] = chan_data_swz[0]
-chan_data[3] = chan_data_swz[1]
-
-for i in range(4):
-    plt.plot(chan_data[i], marker='*')
+    plt.plot(chan_data[i][0:plt_length], marker='*', label=f'Ch:{i}')
 
 # check readback with write by channel given length
 readback = check_readback(ddr.data_arrays, chan_data, [0, 1, 2, 3])
-
 """
+
 # Continuous Graph
 plt.ion()
 fig, ax = plt.subplots()
 # ax.plot(data)
 ax.set_xlabel('Time')
-ax.set_ylabel('Voltage')
-while True:
-    for i in range(2):
-        data = [to_voltage(data=int(x), num_bits=16, voltage_range=10, use_twos_comp=True) for x in ads.stream_mult(twos_comp_conv=False)['A']]
-        x = [i*len(data) + j for j in range(len(data))]
-        ax.plot(x, data, color='blue', scalex=True, scaley=False)
-        ax.set_ylim(bottom=-5, top=5, auto=False)
-    plt.draw()
-    plt.pause(0.01)
-    plt.cla()
-"""
+ax.set_ylabel('DN')
+repeat = 0
+sample_rate = 1/5e6
+blk_multiples = 1024
+chunk_size = int(ddr.parameters['BLOCK_SIZE']*blk_multiples/8)
+num_repeats = 8
 
-"""
-(unique, counts) = np.unique((d[0::2] << 0) + (d[1::2] << 8),
-                             return_counts=True)
+path = 'out.h5'
+try:
+    os.remove(path)
+except:
+    pass
 
-"""
+with h5py.File('out.h5', 'a') as file:
+    data_set = file.create_dataset('adc', (4, chunk_size), maxshape=(4, None))
+    while repeat < num_repeats:
+        d = read_adc(ddr,blk_multiples)
+        chan_data = deswizzle(d)
+        chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
+        if repeat == 0:
+            t = np.arange(len(chan_data[1]))*sample_rate
+        l = ax.plot(t, chan_data[1], color='blue', scalex=True, scaley=False)
+        ax.set_ylim(bottom=0, top=2**16, auto=False)
+        plt.draw()
+        plt.pause(0.001)
+        repeat += 1
+        if repeat == 0:
+            data_set[:] = chan_stack
+        else:
+            data_set[:, -chunk_size:] = chan_stack
+        if repeat < num_repeats:
+            #plt.cla()
+            l[0].remove()
+            data_set.resize(data_set.shape[1] + chunk_size, axis=1)
+
+
+# read in h5 data and plot
+fig, ax = plt.subplots()
+file = h5py.File('out.h5', 'r')
+list(file.keys())  # this returns adc
+dset = file['adc']
+t = np.arange(len(dset[0,:]))*sample_rate
+for i in range(4):
+    ax.plot(t, dset[i,:], label=f'Ch: {i}')
+ax.legend()
+ax.set_xlabel('Time')
+ax.set_ylabel('DN')
