@@ -50,9 +50,9 @@ class Clamp:
 
         self.TCA = [None, None]
         self.TCA[0] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0,
-                             endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+                              endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
         self.TCA[1] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1,
-                             endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+                              endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
         self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins,
                                   endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
         self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins,
@@ -74,7 +74,7 @@ class Clamp:
             'CONFIG'
         ]:
             # TCA_0
-            for ch in [0,1]:
+            for ch in [0, 1]:
                 dev_addr = self.TCA[ch].ADDRESS_HEADER | (
                         self.TCA[ch].addr_pins << 1) | 0b1
                 try:
@@ -87,7 +87,6 @@ class Clamp:
                     print(f'TCA_{ch} register: {register_name} FAILED\n    '
                           f'(read_out) {read_out} != (default) {default}')
                     return False
-
 
         # Configure clamp
         # Command for Voltage Clamp Feedback loop
@@ -119,7 +118,8 @@ class Clamp:
             # Device and Version ID share the same default value across their combined bits
             default = self.DAC.registers['DEVICE_ID'].default
             if read != default:
-                print(f'DAC ID FAILED\n    (read) {read} != (default) {default}')
+                print(
+                    f'DAC ID FAILED\n    (read) {read} != (default) {default}')
                 return False
 
             # Get serial code
@@ -195,13 +195,13 @@ class Clamp:
         }
         ADG_RES_dict = {  # Select resistance acroos P2 and RF_1 (ADG)
             'current': 0b000,
-            10: 0b001,
+            10: 0b100,
             33: 0b010,
-            100: 0b011,
-            332: 0b100,
-            '1 MEG': 0b101,
-            '3 MEG': 0b110,
-            '10 MEG': 0b111,
+            100: 0b110,
+            332: 0b001,
+            1000: 0b101,
+            3000: 0b011,
+            10000: 0b111,
             None: 0b000
         }
 
@@ -348,7 +348,8 @@ class Clamp:
         self.TCA[1].configure_pins([0x00, 0x00])
 
         # Write messages
-        self.TCA[0].write(message1, mask=mask1)  # register_name defaults to 'OUTPUT'
+        # register_name defaults to 'OUTPUT'
+        self.TCA[0].write(message1, mask=mask1)
         self.TCA[1].write(message2, mask=mask2)
 
         # Read messages
@@ -422,21 +423,25 @@ class Daq:
     """
 
     def __init__(self, fpga, TCA_addr_pins_0=0b000,
-                             TCA_addr_pins_1=0b100,
-                             UID_addr_pins=0b000,
-                             DAC_addr_pins=0b000
-                             ):
+                 TCA_addr_pins_1=0b100,
+                 UID_addr_pins=0b000,
+                 DAC_addr_pins=0b000
+                 ):
         self.fpga = fpga
         self.serial_number = None  # Will get serial code from UID chip in setup()
         # I2C
-        i2c_eps = advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDAQ'],1)
+        i2c_eps = advance_endpoints_bynum(
+            Endpoint.endpoints_from_defines['I2CDAQ'], 1)
         self.TCA = [None, None]
-        self.TCA[0] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=i2c_eps)
-        self.TCA[1] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=i2c_eps)
-        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins, endpoints=i2c_eps)
+        self.TCA[0] = TCA9555(
+            fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=i2c_eps)
+        self.TCA[1] = TCA9555(
+            fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=i2c_eps)
+        self.UID = UID_24AA025UID(
+            fpga=fpga, addr_pins=UID_addr_pins, endpoints=i2c_eps)
 
         # Endpoint advancing is not working with advances that are not a full 32 bits
-        for ch in [0,1]:
+        for ch in [0, 1]:
             self.TCA[ch].endpoints['IN'].bit_index_high = 32
             self.TCA[ch].endpoints['IN'].bit_index_low = 16
 
@@ -447,8 +452,6 @@ class Daq:
         self.UID.endpoints['IN'].bit_index_high = 32
         self.UID.endpoints['IN'].bit_index_low = 16
 
-
-
         # self.DAC_I2C = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
         # SPI
         self.DAC_gp = []
@@ -458,9 +461,12 @@ class Daq:
         for i in range(len(self.DAC)):
             self.DAC[i].channel = i  # TODO: fix this hack in the create chips
         #self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
-        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)  # TODO: does this use a "channel"
+        # TODO: does this use a "channel"
+        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)
         self.ADC = []
         self.ADC = AD7961.create_chips(fpga=fpga, number_of_chips=4)
+        for i in range(len(self.ADC)):
+            self.ADC[i].chan = i  # TODO: fix this hack in the create chips
 
     class Power:
 
@@ -553,21 +559,20 @@ class Daq:
 
     class GPIO:
 
-        DEFAULT_PARAMETERS = dict(chips=
-            dict(
-            ads=0,
-            ds0=1,
-            ds1=2,
-            dfast0=3,
-            dfast1=4,
-            dfast2=5,
-            dfast3=6,
-            dfast4=7),
+        DEFAULT_PARAMETERS = dict(chips=dict(
+                ads=0,
+                ds0=1,
+                ds1=2,
+                dfast0=3,
+                dfast1=4,
+                dfast2=5,
+                dfast3=6,
+                dfast4=7),
             misc_ads=dict(
-            sdoa=0,
-            sdob=1,
-            convst=2,
-            busy=3
+                sdoa=0,
+                sdob=1,
+                convst=2,
+                busy=3
             ))
 
         def __init__(self, fpga, parameters=DEFAULT_PARAMETERS, endpoints=None, debug=False):
@@ -603,8 +608,8 @@ class Daq:
                 value = self.parameters['chips'][chip]
                 ep_name = spi_signal + '_DEBUG'
                 self.fpga.set_wire(self.endpoints[ep_name].address,
-                                   value<<self.endpoints[ep_name].bit_index_low,
-                                   mask=(0b111<<self.endpoints[ep_name].bit_index_low))
+                                   value << self.endpoints[ep_name].bit_index_low,
+                                   mask=(0b111 << self.endpoints[ep_name].bit_index_low))
 
         def ads_misc(self, pin):
             if pin not in self.parameters['misc_ads'].keys():
@@ -613,5 +618,5 @@ class Daq:
             value = self.parameters['misc_ads'][pin]
             ep_name = 'ADS_CONVST_DEBUG'
             return self.fpga.set_wire(self.endpoints[ep_name].address,
-                               value<<self.endpoints[ep_name].bit_index_low,
-                               mask=(0b111<<self.endpoints[ep_name].bit_index_low))
+                                      value << self.endpoints[ep_name].bit_index_low,
+                                      mask=(0b111 << self.endpoints[ep_name].bit_index_low))
