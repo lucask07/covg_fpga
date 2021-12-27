@@ -323,8 +323,9 @@ module top_level_module(
     /* ---------------- WI02 ---------------------- */
     okWireIn wi2 (.okHE(okHE), .ep_addr(`GP_PWR_REG_ADC_EN_WIRE_IN),
       .ep_dataout(ep02wire));
-
+     // 4:1
      assign a_en0_hv = ep02wire[(`AD7961_ENABLE_GEN_BIT+`AD7961_ENABLE_LEN - 1):`AD7961_ENABLE_GEN_BIT]; //1 for each channel
+     // 17:15
      assign a_en_hv = ep02wire[(`AD7961_GLOBAL_ENABLE+`AD7961_GLOBAL_ENABLE_LEN - 1):`AD7961_GLOBAL_ENABLE];    // global
 
      wire [9:0] en_period; //TODO: different for each channel?
@@ -562,8 +563,8 @@ module top_level_module(
      end
      endgenerate
 
-    // assign sma[0] = write_en_adc_o[1]; //J17, MC2-77
-    // assign sma[1] = adc_valid_pulse[1]; //J16
+    assign sma[0] = dco[0]; //J17, MC2-77
+    assign sma[1] = adc_serial_data[0]; //J16
  
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
@@ -865,8 +866,8 @@ module top_level_module(
      assign up[4] = rd_en_0;
      assign up[5] = ddr_data_valid;
      
-     assign sma[0] = pipe_in2_valid; //adc_data_cnt > 8; // pipe_in2_read;
-     assign sma[1] = pipe_in2_data[0]; //adc_data_cnt < 2;
+     //assign sma[0] = pipe_in2_valid; //adc_data_cnt > 8; // pipe_in2_read;
+     //assign sma[1] = pipe_in2_data[0]; //adc_data_cnt < 2;
 
      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
      okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
