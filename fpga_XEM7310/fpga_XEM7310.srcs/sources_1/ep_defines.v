@@ -65,13 +65,13 @@
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_FG_READ_ENABLE 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
-// [5:3], [8:6], [11:9], [14:12], [17:15], [20:18]
+`define AD5453_DATA_SEL_GEN_BIT 4 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+// [6:4], [9:7], [12:10], [15:13], [18:16], [21:19]
 `define AD5453_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
-`define DAC80508_DATA_SEL_GEN_BIT 21 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+`define DAC80508_DATA_SEL_GEN_BIT 22 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 `define DAC80508_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
-//[23:21], [26:24] 
-`define DDR3_ADC_DEBUG 27 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+//[24:22], [27:25]
+`define DDR3_ADC_DEBUG 28 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
 
 //TODO: the BIT_LEN should be constant for a set of devices. Need to remove the GEN?
@@ -81,10 +81,10 @@
 `define DAC80508_FILTER_SEL_GEN_BIT 4 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define DAC80508_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
 
-// wireIn address for index 
+// wireIn address for index
 `define DDR3_INDEX 8'h04 // bit_width=32
 
-// wireIn for host driven data 
+// wireIn for host driven data
 `define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32
 
 // trigger in addresses
