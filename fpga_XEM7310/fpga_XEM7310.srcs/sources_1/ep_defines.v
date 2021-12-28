@@ -65,14 +65,14 @@
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_FG_READ_ENABLE 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-`define AD5453_DATA_SEL_GEN_BIT 4 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
-// [6:4], [9:7], [12:10], [15:13], [18:16], [21:19]
+`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+// [5:3], [8:6], [11:9], [14:12], [17:15], [20:18]
 `define AD5453_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
-`define DAC80508_DATA_SEL_GEN_BIT 22 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+`define DAC80508_DATA_SEL_GEN_BIT 21 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 `define DAC80508_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
-//[24:22], [27:25]
-`define DDR3_ADC_DEBUG 28 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-
+//[23:21], [26:24] 
+`define DDR3_ADC_DEBUG 27 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define DDR3_ADC_ADDR_SET 28 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
 //TODO: the BIT_LEN should be constant for a set of devices. Need to remove the GEN?
 `define FILTER_SEL_WIRE_IN 8'h0d // bit_width=32
@@ -81,16 +81,17 @@
 `define DAC80508_FILTER_SEL_GEN_BIT 4 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define DAC80508_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
 
-// wireIn address for index
+// wireIn address for index (no longer used)
 `define DDR3_INDEX 8'h04 // bit_width=32
 
-// wireIn for host driven data
+// wireIn for host driven data 
 `define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32
 
 // trigger in addresses
 `define GP_RST_VALID_TRIG_IN 8'h40 // bit_width=32
 `define I2C_TRIG_IN 8'h41 // bit_width=32
 `define ADC_TIMING_TRIG_IN 8'h42 // bit_width=32
+`define DDR_RESET_ADDR_TRIG 8'h43 // bit_width=32
 
 `define AD7961_PLL_LOCKED_WIRE_OUT 8'h21 // bit_width=32
 `define AD7961_PLL_LOCKED 0 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
@@ -197,6 +198,11 @@
 `define AD7961_RESET_GEN_BIT 19 // address=ADC_TIMING_TRIG_IN bit_width=1
 `define DEBUGFIFO_CNT_RESET 23 // address=ADC_TIMING_TRIG_IN bit_width=1
 `define DEBUGFIFO_FIFO_RESET 24 // address=ADC_TIMING_TRIG_IN bit_width=1
+
+// trigger in at 0x43 -- sync to clk_ddr_ui
+`define DDR3_UI_RESET 0 // address=DDR_RESET_ADDR_TRIG bit_width=1
+`define DDR3_ADC_ADDR_RESET 1 // address=DDR_RESET_ADDR_TRIG bit_width=1
+
 
 // wire in at 0x00
 `define GPIO_CSB_DEBUG 0 // address=GPIO_DEBUG_WIRE_IN bit_width=3

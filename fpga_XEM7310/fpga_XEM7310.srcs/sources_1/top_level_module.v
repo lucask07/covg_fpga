@@ -638,6 +638,10 @@ module top_level_module(
     /*---------------- END DAC80508 -------------------*/
 
     /* --------------- DDR3 ---------------------------*/
+    wire [31:0] ep43trig;
+    okTriggerIn trigIn43 (.okHE(okHE),
+                            .ep_addr(`DDR_RESET_ADDR_TRIG), .ep_clk(clk_ddr_ui), .ep_trigger(ep43trig));
+
      ////////////////////////////*DDR3 INTERFACE INSTANTIATIONS*//////////////////////////////////////////////
      // OK RAMTest Parameters
      localparam BLOCK_SIZE = 512; // 512 bytes / 4 bytes per word. LJK update from 128 to 512. 
@@ -786,11 +790,14 @@ module top_level_module(
      // OK MIG DDR3 Testbench Instatiation
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
-         .reset              (ddr3_rst | rst_ddr_ui),
+         .reset              (ddr3_rst | ep43trig[`DDR3_UI_RESET]),
          .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
          .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
          .fg_reads_en        (ep03wire[`DDR3_FG_READ_ENABLE]),
          .calib_done         (init_calib_complete),
+         
+         .adc_addr_reset (ep43trig[`DDR3_ADC_ADDR_RESET]),
+         .adc_addr_restart (ep03wire[`DDR3_ADC_ADDR_SET]),
 
          .ib_re              (pipe_in_read),
          .ib_data            (pipe_in_data),
