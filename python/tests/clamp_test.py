@@ -128,6 +128,9 @@ disp_device(clamp.TCA[1])
 disp_device(clamp.UID)
 disp_device(clamp.DAC)
 
+daq = Daq(f)
+ad7961s = daq.ADC
+
 # configure the clamp board, settings default to None so that a setting that is not
 # included is masked and stays the same
 # TODO: configure_clamp errors out if not connected
@@ -139,8 +142,6 @@ log_info = clamp.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2', CCOMP
 
 # log_info = clamp.configure_clamp(P2_E_CTRL=0, addr_pins_1=0b110, addr_pins_2=0b000)
 
-daq = Daq(f)
-ad7961s = daq.ADC
 test_channel = 1
 ADC_TEST_PATTERN = False
 
@@ -197,8 +198,6 @@ cc = daq.DAC[0]
 
 ddr = DDR3(f)
 ddr.reset_fifo()
-port1_index = 0x7_ff_ff_f8  # fixed in the HDL
-ddr.parameters['sample_size'] = int((port1_index + 8)/2)
 ddr.reset_fifo()
 
 cc_scale_val = 33/4.7/10/2
