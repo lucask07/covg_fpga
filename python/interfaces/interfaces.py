@@ -2887,7 +2887,7 @@ class DDR3():
                            # number of channels that the DDR is striped between (for DACs)
                            'channels': 8,
                            'update_rate': 400e-9,  # 2.5 MHz -- requires SCLK ~ 50 MHZ
-                           'port1_index': 0x7_ff_ff_f8}
+                           'port1_index': 0x7f_ff_f8}
 
         # the index is the DDR address that the circular buffer stops at.
         # need to write all the way up to this stoping point otherwise the SPI output will glitch

@@ -468,6 +468,62 @@ class Daq:
         for i in range(len(self.ADC)):
             self.ADC[i].chan = i  # TODO: fix this hack in the create chips
 
+        self.parameters = {}
+        self.parameters["dac_gain_fs"] = {
+            15: 0xF,
+            5: 0xE,
+            2: 0xD,  # in volts full-scale
+            500: 0xB,
+            200: 0x7,
+        }  # in milli-volts full-scale
+
+        # exapander number, nibble_number
+        self.parameters["dac_expander_nibble"] = {
+            0: (0, 3),
+            1: (0, 2),
+            2: (0, 1),
+            3: (0, 0),
+            5: (1, 3),
+            6: (1, 2),
+        }
+
+        self.parameters["dac_resistors"] = {
+            "input": 49.9e3,
+            "fixed": 243e3,
+            "switched": [121e3, 37.4e3,  8.25e3, 3.24e3],
+        }
+
+    def set_dac_gain(self, dac, gain, bit_value=None):
+        tca_ch = self.parameters["dac_expander_nibble"][dac][0]
+        tca_nibble = self.parameters["dac_expander_nibble"][dac][1]
+        if gain not in self.parameters["dac_gain_fs"].keys():
+            print(f"Error invalid gain: {gain} in set_dac_gain")
+            return -1
+        if bit_value is not None:
+            gain_val = bit_value
+        else:
+            gain_val = self.parameters["dac_gain_fs"][gain]
+        mask = 0xF << (tca_nibble * 4)
+        gain_val = (gain_val) << (tca_nibble * 4)
+        print(
+            "Setting DAC gain value = 0x{:02X} with mask = 0x{:02X}".format(
+                gain_val, mask))
+
+        return self.TCA[tca_ch].write(gain_val, mask=mask)
+
+    def predict_gain(self, bit_value):
+
+        feedback_inv = 1 / self.parameters["dac_resistors"]["fixed"]
+        for idx, sw_res in enumerate(self.parameters["dac_resistors"]["switched"]):
+            r = (1 / sw_res) if ((bit_value & (1 << idx)) >> idx) == 0 else 0
+            print(r)
+            print(feedback_inv)
+            feedback_inv = feedback_inv + r
+        feedback = 1 / feedback_inv
+        gain = feedback / self.parameters["dac_resistors"]["input"]
+        print(f"Expected gain of {gain}")
+        return gain
+
     class Power:
 
         DEFAULT_PARAMETERS = dict(  # forces keys to string
