@@ -13,6 +13,7 @@ from interfaces.boards import Daq, Clamp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import logging
 from interfaces.interfaces import FPGA, AD5453, Endpoint, disp_device, DAC80508, AD7961, disp_device, DDR3, advance_endpoints_bynum, TCA9555
+from interfaces.utils import twos_comp
 import os
 import sys
 from time import sleep
@@ -22,6 +23,9 @@ import atexit
 from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
+import h5py
+import matplotlib
+matplotlib.use("Qt4agg")  # or "Qt5agg" depending on you version of Qt
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -78,7 +82,20 @@ elif pwr_setup == '3dual':
 
 # ------ oscilloscope -----------------
 osc = open_by_name('msox_scope')
+osc.set('chan_label', 'P2', configs={'chan': 1})
+osc.set('chan_label', 'Vm', configs={'chan': 2})
+osc.set('chan_label', 'ADC', configs={'chan': 3})
 
+# --------  function generator  --------
+fg = open_by_name('new_function_gen')
+
+fg.set('load', 'INF')
+fg.set('offset', 2)
+fg.set('v', 2)
+fg.set('freq', 10e3)
+fg.set('output', 'ON')
+
+atexit.register(fg.set, 'output', 'OFF')
 
 # Initialize FPGA
 f = FPGA(bitfile=os.path.join(covg_fpga_path, 'fpga_XEM7310',
@@ -201,10 +218,16 @@ ddr.clear_adc_read()
 g_buf = ddr.write_channels()
 ddr.reset_fifo()
 ddr.clear_write()
+cmd_dac.set_data_mux('DDR')
+# cc.change_filter_coeff(target='passthru')
+# cc.filter_select(operation='set')
+# cc.set_data_mux('ad7961_ch0')
+cc.set_data_mux('DDR')
+
 ddr.set_read()
 time.sleep(0.5)  # allow the ADC data to accumulate into DDR
-#ddr.clear_read()
-# ddr.set_fg_read()
+# ddr.clear_read()
+ddr.set_adc_read()
 
 # port1_index = 0x7_ff_ff_f8
 # port1_index = 0x800
@@ -217,15 +240,103 @@ time.sleep(0.5)  # allow the ADC data to accumulate into DDR
 #     ddr.data_arrays['chan{}'.format(i)][0:(port1_index//2)] = np.uint16(low_val*np.ones(port1_index//2))
 #     ddr.data_arrays['chan{}'.format(i)][(port1_index//2):port1_index] = np.uint16(high_val*np.ones(port1_index//2))
 #
-cmd_dac.set_data_mux('DDR')
-cc.set_data_mux('host')
-cc.write(int(0))
-# cc.change_filter_coeff(target='passthru')
-# cc.filter_select(operation='set')
-# cc.set_data_mux('ad7961_ch0')
-cc.set_data_mux('DDR')
 
 
 # TODO - a way to assign parts of the Daq TCAs to specific DACs so as to write the gain
-
 # slow DAC: DAC1_BP_OUT4 -- utility pin, replacing I2C DAC on daughter card
+
+
+def read_adc(ddr, blk_multiples=2048):
+    # block size is 2048.
+    # bits 0:63 of the DDR, first 4 channels of the
+    t, bytes_read = ddr.read_adc(  # just reads from the block pipe out
+        sample_size=ddr.parameters['BLOCK_SIZE']*blk_multiples)
+    d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
+    return d
+
+
+def deswizzle(d, convert_twos=True):
+
+    bits = 16
+    chan_data_swz = {}  # this data is swizzled
+    for i in range(4):
+        chan_data_swz[i] = (d[(0 + i*2)::8] << 0) + (d[(1 + i*2)::8] << 8)
+
+    chan_data = {}
+    chan_data[0] = chan_data_swz[2]
+    chan_data[1] = chan_data_swz[3]
+    chan_data[2] = chan_data_swz[0]
+    chan_data[3] = chan_data_swz[1]
+    if convert_twos:
+        for i in range(4):
+            chan_data[i] = twos_comp(chan_data[i], bits)
+
+    return chan_data
+
+
+"""
+plt_length = 2048
+for i in range(4):
+    plt.plot(chan_data[i][0:plt_length], marker='*', label=f'Ch:{i}')
+
+# check readback with write by channel given length
+readback = check_readback(ddr.data_arrays, chan_data, [0, 1, 2, 3])
+"""
+
+# Continuous Graph
+plt.ion()
+fig, ax = plt.subplots()
+# ax.plot(data)
+ax.set_xlabel('Time')
+ax.set_ylabel('DN')
+repeat = 0
+sample_rate = 1/5e6
+blk_multiples = 64
+chunk_size = int(ddr.parameters['BLOCK_SIZE']*blk_multiples/8)
+num_repeats = 4
+
+data_name = 'out_clamp2.h5'
+full_data_name = os.path.join(data_dir, data_name)
+try:
+    os.remove(data_name)
+except OSError:
+    pass
+
+# Save ADC DDR data to a file
+with h5py.File(data_name, 'a') as file:
+    data_set = file.create_dataset(
+        'adc', (4, chunk_size), maxshape=(4, None))
+    while repeat < num_repeats:
+        d = read_adc(ddr, blk_multiples)
+        chan_data = deswizzle(d)
+        chan_stack = np.vstack(
+            (chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
+        if repeat == 0:
+            t = np.arange(len(chan_data[1]))*sample_rate
+        ax_hdl = ax.plot(
+            t, chan_data[0], color='blue', scalex=True, scaley=False)
+        ax.set_ylim(bottom=-2**15, top=2**15, auto=False)
+        plt.draw()
+        plt.pause(0.001)
+        repeat += 1
+        if repeat == 0:
+            data_set[:] = chan_stack
+        else:
+            data_set[:, -chunk_size:] = chan_stack
+        if repeat < num_repeats:
+            ax_hdl[0].remove()
+            data_set.resize(data_set.shape[1] + chunk_size, axis=1)
+
+# Post processing: read in h5 data and plot
+fig, ax = plt.subplots()
+file = h5py.File(data_name, 'r')
+list(file.keys())  # this returns adc
+dset = file['adc']
+t = np.arange(len(dset[0, :]))*sample_rate
+# chan_list = range(4)
+chan_list = [0]
+for i in chan_list:
+    ax.plot(t, dset[i, :], label=f'Ch: {i}', marker='.')
+ax.legend()
+ax.set_xlabel('Time')
+ax.set_ylabel('DN')
