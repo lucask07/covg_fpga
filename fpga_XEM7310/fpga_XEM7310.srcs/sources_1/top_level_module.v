@@ -610,7 +610,7 @@ module top_level_module(
             .datain_5({adc_valid_pulse[1], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[1][15:0]}), // data from AD7961, channel is selected by input wire 
             .datain_6({adc_valid_pulse[2], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[2][15:0]}), // data from AD7961, channel is selected by input wire 
             .datain_7({adc_valid_pulse[3], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[3][15:0]}), // data from AD7961, channel is selected by input wire 
-            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + (k*`DAC80508_DATA_SEL_GEN_BIT_LEN)) +: 3]),
+            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + k*`DAC80508_DATA_SEL_GEN_BIT_LEN) +: `DAC80508_DATA_SEL_GEN_BIT_LEN]),
             .dataout({ds_spi_data[k]})
         );
         
