@@ -1891,7 +1891,9 @@ class SPIFifoDriven():
                                         self.endpoints['HOST_TRIG'].bit_index_low)
 
 
-class DAC80508(SPIController, SPIFifoDriven):
+#class DAC80508(SPIController, SPIFifoDriven):
+class DAC80508(SPIFifoDriven):
+
     """ Class for SPI DAC chip DAC80508.
 
     Subclass of the SPIController class. Attributes and methods below are
@@ -1950,11 +1952,13 @@ class DAC80508(SPIController, SPIFifoDriven):
         'ad7961_ch3': 7,
     }
 
-    def __init__(self, fpga, master_config=0x3218, slave_address=0x1, endpoints=None):
+    def __init__(self, fpga, master_config=0x3218, slave_address=0x1, endpoints=None, channel=0):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DAC80508')
         self.slave_address = slave_address
+        self.channel = channel
+        self.regbridge_advance = 19
         super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
         self.current_data_mux = None
         self.set_data_mux('host')
@@ -1969,11 +1973,13 @@ class DAC80508(SPIController, SPIFifoDriven):
             print(f'{register_name} not in registers')
             return False
 
-        # Get current data
-        current_data = self.read(register_name)
-        # Create new data from input data, mask, and current data
-        new_data = (data & mask) | (current_data & ~mask)
-
+        if 0:  # TODO: the read function does not work. Since version of chip does not have SDO
+            # Get current data
+            current_data = self.read(register_name)
+            # Create new data from input data, mask, and current data
+            new_data = (data & mask) | (current_data & ~mask)
+        else:
+            new_data = (data & mask)
         # 23=0 (write), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=D[15:0] (data)
         transmission = DAC80508.WRITE_OPERATION + \
             (reg.address << 16) + new_data
@@ -2184,24 +2190,6 @@ class DAC80508(SPIController, SPIFifoDriven):
         #     else:
         #         print('Reset: FAIL')
         # return ack
-
-    def set_data_mux(self, source):
-        """Configure the MUX that routes data source to the SPI output
-
-        Arguments
-        ---------
-        source : str
-            Name of the selected source. Found in self.data_mux
-        """
-        if source not in self.data_mux.keys():
-            print(f'Set data mux failed, {source} not available')
-
-        mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
-                              self.endpoints['DATA_SEL'].bit_index_high))
-        data = (self.data_mux[source]
-                << self.endpoints['DATA_SEL'].bit_index_low)
-        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
-                           mask=mask)
 
 
 class AD5453(SPIFifoDriven):
@@ -3209,6 +3197,19 @@ class DDR3():
         """
         self.fpga.clear_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
                                  self.endpoints['FG_READ_ENABLE'].bit_index_low)
+
+    def adc_single(self):
+        """Set ADC read address to the ADC write address
+            emulating an immediate "trigger" of an oscilloscope
+        Args:
+
+        Returns:
+            None
+        """
+        self.fpga.set_wire_bit(self.endpoints['ADC_ADDR_SET'].address,
+                                 self.endpoints['ADC_ADDR_SET'].bit_index_low)
+        self.fpga.send_trig(self.endpoints['ADC_ADDR_RESET'])
+
 
     def read_adc(self, sample_size=None, source='ADC', DEBUG_PRINT=False):
         """ Reads ADC data.

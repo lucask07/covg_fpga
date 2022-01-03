@@ -456,6 +456,8 @@ class Daq:
         # SPI
         self.DAC_gp = []
         self.DAC_gp = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
+        for ch in [0,1]:
+            self.DAC_gp[ch].channel = ch
         self.DAC = []
         self.DAC = AD5453.create_chips(fpga=fpga, number_of_chips=6)
         for i in range(len(self.DAC)):
@@ -483,8 +485,8 @@ class Daq:
             1: (0, 2),
             2: (0, 1),
             3: (0, 0),
-            5: (1, 3),
-            6: (1, 2),
+            4: (1, 3),
+            5: (1, 2),
         }
 
         self.parameters["dac_resistors"] = {
@@ -493,9 +495,20 @@ class Daq:
             "switched": [121e3, 37.4e3,  8.25e3, 3.24e3],
         }
 
-    def set_dac_gain(self, dac, gain, bit_value=None):
-        tca_ch = self.parameters["dac_expander_nibble"][dac][0]
-        tca_nibble = self.parameters["dac_expander_nibble"][dac][1]
+    def set_dac_gain(self, dac_num, gain, bit_value=None):
+        """ set the gain of the AD5453 DACs by configuring switch TMUX6111
+        Args:
+            dac_num: desired frequency
+            gain: desired gain options are 15, 5, 2, 500, 200 (see self.parameters["dac_gain_fs"])
+            bit_value: instead of using gain dictionary directly specify
+                        bits to write to io expander (default of None)
+
+        Returns:
+            result of i2c transaction to TCA io expander
+
+        """
+        tca_ch = self.parameters["dac_expander_nibble"][dac_num][0]
+        tca_nibble = self.parameters["dac_expander_nibble"][dac_num][1]
         if gain not in self.parameters["dac_gain_fs"].keys():
             print(f"Error invalid gain: {gain} in set_dac_gain")
             return -1
@@ -512,6 +525,17 @@ class Daq:
         return self.TCA[tca_ch].write(gain_val, mask=mask)
 
     def predict_gain(self, bit_value):
+        """ predict the DAC gain given the bit value written to the io Expander
+            depends on the resistor values in the "dac_resistors" dictionary
+
+        Args:
+            bit_value: bits to write to io expander (default of None)
+
+
+        Returns:
+            expected gain, currently relative (float)
+            TODO: verify with measurements to have an absolute gain
+        """
 
         feedback_inv = 1 / self.parameters["dac_resistors"]["fixed"]
         for idx, sw_res in enumerate(self.parameters["dac_resistors"]["switched"]):
