@@ -136,7 +136,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 );
 	 
 	 // Real-Time LPF
-       Butterworth u_Butterworth_0
+       Butter_pipelined u_Butterworth_0
          (
          .clk(clk),
          .clk_enable(data_rdy_0 | write_enable | write_done),
@@ -146,9 +146,9 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          .write_done(write_done),
          .write_address(write_address[3:0]),
          .coeffs_in(coeffs_in),
-         .filter_out(filter_out),
-         .coeff_debug_out1(coeff_debug_out1),
-         .coeff_debug_out2(coeff_debug_out2)
+         .filter_out(filter_out)
+         //.coeff_debug_out1(coeff_debug_out1),
+         //.coeff_debug_out2(coeff_debug_out2)
          );
               
      LPF_data_modify_fixpt u_dat_mod(
