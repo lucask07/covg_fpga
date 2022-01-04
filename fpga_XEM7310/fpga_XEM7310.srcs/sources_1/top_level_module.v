@@ -581,6 +581,9 @@ module top_level_module(
 
     assign sma[0] = dco[0]; //J17, MC2-77
     assign sma[1] = adc_serial_data[0]; //J16
+    
+    assign sma[0] = 1'b0; //J17, MC2-77
+    assign sma[1] = 1'b0; //J16
  
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
@@ -991,15 +994,28 @@ module top_level_module(
     wire [31:0] coeff_debug_out1[0:(AD5453_NUM-1)];
     wire [31:0] coeff_debug_out2[0:(AD5453_NUM-1)];
     
+    reg [13:0] last_ddr_read[0:(AD5453_NUM-1)];
+    reg ddr_data_valid_norepeat[0:(AD5453_NUM-1)];
+    
     genvar p;
     generate
     for (p=0; p<=(AD5453_NUM-1); p=p+1) begin : dac_ad5453_gen
         okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + p), .ep_dataout(host_spi_data[p]));
         
         assign spi_host_trigger_fast_dac[p] = ep41trig[`AD5453_HOST_TRIG_GEN_BIT + p];
+        
+        // don't update DDR SPI if the values don't change
+        always @(posedge clk_sys) begin
+            if (ddr_data_valid==1'b1) last_ddr_read[p] <= po0_ep_datain[(p*16) +:14];
+        end        
+        always @(posedge clk_sys) begin
+            if (last_ddr_read[p] == po0_ep_datain[(p*16) +:14]) ddr_data_valid_norepeat[p] <= 1'b0;
+            else ddr_data_valid_norepeat[p] <= ddr_data_valid;
+        end
                 
         mux8to1_32wide spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
-            .datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
+            //.datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
+            .datain_0({ddr_data_valid_norepeat[p], 17'b0, last_ddr_read[p]}),
             .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
             .datain_3({ads_data_valid, 15'b0, ads_data_out[31:16]}), // 
