@@ -11,7 +11,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 
 from interfaces.interfaces import *
 from interfaces.interfaces import Endpoint
-from interfaces.utils import reverse_bits
+from interfaces.utils import reverse_bits, test_bit
 
 
 class Clamp:
@@ -58,6 +58,134 @@ class Clamp:
         self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins,
                             endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
         self.serial_number = None  # Will get serial code from UID chip in setup()
+
+        self.configs = {}
+        #Dictonaries
+        self.configs['ADC_SEL_dict'] = {  # Select the signal to output (Usually only output one signal at a time)
+            'CAL_SIG1': 0b0111,
+            'CAL_SIG2': 0b1011,
+            'INAMP_OUT': 0b1101,
+            'CC': 0b1110,
+            'noDrive': 0b1111,
+            None: 0b0000
+        }
+
+        self.configs['DAC_SEL_dict'] = {  # Choose to drive/store CAL_Sig1 and CAL_Sig2
+            'drive_CAL1': 0b0111,
+            'drive_CAL2': 0b1011,
+            'gnd_CAL2': 0b1101,
+            'gnd_CAL1': 0b1110,
+            'store_CAL1': 0b0110,
+            'store_CAL2': 0b1001,
+            'noDrive': 0b1111,
+            None: 0b0000
+        }
+
+        comp_caps = np.array([4700, 1000, 200, 47])
+        CCOMP_dict = {}
+        for i in range(16):
+            cap_val = 0
+            for bit, j in enumerate(comp_caps):
+                if test_bit(i,bit) == 0: # a zero closes the switch
+                    cap_val += comp_caps[bit]
+            CCOMP_dict[cap_val] = i
+        self.configs['CCOMP_dict'] = CCOMP_dict
+
+        self.configs['RF1_dict'] = {  # Selecting the resistor value for the feedback circuit
+            0: 0b0000,
+            60: 0b0001,
+            30: 0b0010,
+            20: 0b0011,
+            12: 0b0100,
+            10: 0b0101,
+            8: 0b0110,
+            7: 0b0111,
+            3: 0b1000,
+            2.8: 0b1001,
+            2.7: 0b1010,
+            2.6: 0b1011,
+            2.4: 0b1100,
+            2.3: 0b1101,
+            2.2: 0b1110,
+            2.1: 0b1111,
+            None: 0b0000
+        }
+        self.configs['ADG_RES_dict'] = {  # Select resistance acroos P2 and RF_1 (ADG)
+            'current': 0b000,
+            10: 0b100,
+            33: 0b010,
+            100: 0b110,
+            332: 0b001,
+            1000: 0b101,
+            3000: 0b011,
+            10000: 0b111,
+            None: 0b000
+        }
+
+        self.configs['PClamp_CTRL_dict'] = {
+            0: 0,
+            1: 1,
+            None: 0
+        }
+
+        self.configs['P1_E_CTRL_dict'] = {
+            0: 0,
+            1: 1,
+            None: 0
+        }
+
+        self.configs['P1_CAL_CTRL_dict'] = {
+            0: 0,
+            1: 1,
+            None: 0
+        }
+
+        self.configs['P2_E_CTRL_dict'] = {
+            0: 0,
+            1: 1,
+            None: 0
+        }
+
+        self.configs['P2_CAL_CTRL_dict'] = {
+            0: 0,
+            1: 1,
+            None: 0
+        }
+
+        self.configs['gain_dict'] = {  # Selecet the gain of the instrumentation AMP in ADC Driver circuit
+            2: 0b100,
+            5: 0b010,
+            10: 0b001,
+            55: 0b011,
+            60: 0b101,
+            63: 0b110,
+            64: 0b111,
+            1: 0b000
+        }
+
+        self.configs['FDBK_dict'] = {
+            0: 0,
+            1: 1,
+            None: 0
+        }
+
+        self.configs['mode_dict'] = {  # select the mode for the ADC driver
+            'voltage': 0b00,
+            'current': 0b11,
+            None: 0b00
+        }
+
+        self.configs['EN_ipump_dict'] = {
+            0: 0,
+            1: 1,
+            None: 0
+        }
+
+        self.configs['RF_1_Out_dict'] = {
+            0: 0,
+            1: 1,
+            None: 0
+        }
 
     def init_board(self, skip_dac=True):
         """Tests and configures the board.
@@ -136,139 +264,7 @@ class Clamp:
         config_params = Register.get_chip_registers('clamp_configuration')
         """Configures the board using the I/O Expanders."""
 
-        #Dictonaries
-        ADC_SEL_dict = {  # Select the signal to output (Usually only output one signal at a time)
-            'CAL_SIG1': 0b0111,
-            'CAL_SIG2': 0b1011,
-            'INAMP_OUT': 0b1101,
-            'CC': 0b1110,
-            'noDrive': 0b1111,
-            None: 0b0000
-        }
-        DAC_SEL_dict = {  # Choose to drive/store CAL_Sig1 and CAL_Sig2
-            'drive_CAL1': 0b0111,
-            'drive_CAL2': 0b1011,
-            'gnd_CAL2': 0b1101,
-            'gnd_CAL1': 0b1110,
-            'store_CAL1': 0b0110,
-            'store_CAL2': 0b1001,
-            'noDrive': 0b1111,
-            None: 0b0000
-        }
-        CCOMP_dict = {  # Choosing the capacitor value for Compensation Switching Circuit
-            0: 0b0000,
-            4.7: 0b0001,
-            1: 0b0010,
-            5.7: 0b0011,
-            200: 0b0100,
-            204.7: 0b0101,
-            201: 0b0110,
-            205.7: 0b0111,
-            47: 0b1000,
-            51.7: 0b1001,
-            48: 0b1010,
-            52.7: 0b1011,
-            247: 0b1100,
-            251.7: 0b1101,
-            248: 0b1110,
-            252.7: 0b1111,
-            None: 0b0000
-        }
-        RF1_dict = {  # Selecting the resistor value for the feedback circuit
-            0: 0b0000,
-            60: 0b0001,
-            30: 0b0010,
-            20: 0b0011,
-            12: 0b0100,
-            10: 0b0101,
-            8: 0b0110,
-            7: 0b0111,
-            3: 0b1000,
-            2.8: 0b1001,
-            2.7: 0b1010,
-            2.6: 0b1011,
-            2.4: 0b1100,
-            2.3: 0b1101,
-            2.2: 0b1110,
-            2.1: 0b1111,
-            None: 0b0000
-        }
-        ADG_RES_dict = {  # Select resistance acroos P2 and RF_1 (ADG)
-            'current': 0b000,
-            10: 0b100,
-            33: 0b010,
-            100: 0b110,
-            332: 0b001,
-            1000: 0b101,
-            3000: 0b011,
-            10000: 0b111,
-            None: 0b000
-        }
 
-        PClamp_CTRL_dict = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        P1_E_CTRL_dict = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        P1_CAL_CTRL_dict = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        P2_E_CTRL_dict = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        P2_CAL_CTRL_dict = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        gain_dict = {  # Selecet the gain of the instrumentation AMP in ADC Driver circuit
-            2: 0b100,
-            5: 0b010,
-            10: 0b001,
-            55: 0b011,
-            60: 0b101,
-            63: 0b110,
-            64: 0b111,
-            1: 0b000
-        }
-
-        FDBK_dict = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        mode_dict = {  # select the mode for the ADC driver
-            'voltage': 0b00,
-            'current': 0b11,
-            None: 0b00
-        }
-
-        EN_ipump_dict = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        RF_1_Out_dict = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
 
         # Define configuration params for mask later
         input_params_1 = {'ADC_SEL': ADC_SEL,
@@ -279,23 +275,29 @@ class Clamp:
         # Get codes from the corresponding dictionaries
         # I/O Expander 1 (self.TCA_0)
         # Using .get so if the value is not in the dictionary it returns None
-        ADC_SEL_code = ADC_SEL_dict.get(ADC_SEL)
-        DAC_SEL_code = DAC_SEL_dict.get(DAC_SEL)
-        CCOMP_code = CCOMP_dict.get(CCOMP)
-        RF1_code = RF1_dict.get(RF1)
+        def get_dict_none_zero(d, key):
+            tmp = d.get(key)
+            if tmp is None:
+                tmp = 0
+            return tmp
+
+        ADC_SEL_code = get_dict_none_zero(self.configs['ADC_SEL_dict'], ADC_SEL)
+        DAC_SEL_code = get_dict_none_zero(self.configs['DAC_SEL_dict'], DAC_SEL)
+        CCOMP_code = get_dict_none_zero(self.configs['CCOMP_dict'], CCOMP)
+        RF1_code = get_dict_none_zero(self.configs['RF1_dict'], RF1)
 
         # I/O Expander 2 (self.TCA_1)
-        ADG_RES_code = ADG_RES_dict.get(ADG_RES)
-        PClamp_CTRL_code = PClamp_CTRL_dict.get(PClamp_CTRL)
-        P1_E_CTRL_code = P1_E_CTRL_dict.get(P1_E_CTRL)
-        P1_CAL_CTRL_code = P1_CAL_CTRL_dict.get(P1_CAL_CTRL)
-        P2_E_CTRL_code = P2_E_CTRL_dict.get(P2_E_CTRL)
-        P2_CAL_CTRL_code = P2_CAL_CTRL_dict.get(P2_CAL_CTRL)
-        gain_code = gain_dict.get(gain)
-        FDBK_code = FDBK_dict.get(FDBK)
-        mode_code = mode_dict.get(mode)
-        EN_ipump_code = EN_ipump_dict.get(EN_ipump)
-        RF_1_Out_code = RF_1_Out_dict.get(RF_1_Out)
+        ADG_RES_code = get_dict_none_zero(self.configs['ADG_RES_dict'], ADG_RES)
+        PClamp_CTRL_code = get_dict_none_zero(self.configs['PClamp_CTRL_dict'], PClamp_CTRL)
+        P1_E_CTRL_code = get_dict_none_zero(self.configs['P1_E_CTRL_dict'], P1_E_CTRL)
+        P1_CAL_CTRL_code = get_dict_none_zero(self.configs['P1_CAL_CTRL_dict'], P1_CAL_CTRL)
+        P2_E_CTRL_code = get_dict_none_zero(self.configs['P2_E_CTRL_dict'], P2_E_CTRL)
+        P2_CAL_CTRL_code = get_dict_none_zero(self.configs['P2_CAL_CTRL_dict'], P2_CAL_CTRL)
+        gain_code = get_dict_none_zero(self.configs['gain_dict'], gain)
+        FDBK_code = get_dict_none_zero(self.configs['FDBK_dict'], FDBK)
+        mode_code = get_dict_none_zero(self.configs['mode_dict'], mode)
+        EN_ipump_code = get_dict_none_zero(self.configs['EN_ipump_dict'], EN_ipump)
+        RF_1_Out_code = get_dict_none_zero(self.configs['RF_1_Out_dict'], RF_1_Out)
 
         # Assemble messages
         s0 = ''
@@ -322,7 +324,7 @@ class Clamp:
         mask1 = 0
         for key in input_params_1:
             # If the parameter was not set by the user, do not add it to the mask.
-            if input_params_1[key] == None:
+            if input_params_1[key] is None:
                 continue
             else:
                 mask1 += ((2**config_params[key].bit_width - 1)
@@ -331,7 +333,7 @@ class Clamp:
         mask2 = 0
         for key in input_params_2:
             # If the parameter was not set by the user, do not add it to the mask.
-            if input_params_2[key] == None:
+            if input_params_2[key] is None:
                 continue
             else:
                 mask2 += ((2**config_params[key].bit_width - 1)
@@ -358,7 +360,7 @@ class Clamp:
         read1 = (list_read1[0] << 8) | list_read1[1]
         read2 = (list_read2[0] << 8) | list_read2[1]
 
-        # making the read outputs into 16 bits so that they are easjer to analyze
+        # making the read outputs into 16 bits so that they are easier to analyze
         read1_bin = '{:016b}'.format(read1)
         read2_bin = '{:016b}'.format(read2)
 
@@ -374,7 +376,7 @@ class Clamp:
         read2_rev2 = read2_bin2[::-1]
 
         # Return configuration and code for logging or other purposes.
-        return [
+        log_string = [
             f'ADC_SEL = {ADC_SEL}',
             f'DAC_SEL = {DAC_SEL}',
             f'CCOMP = {CCOMP}',
@@ -393,6 +395,12 @@ class Clamp:
             f'Code 1 = {message1}',
             f'Code 2 = {message2}'
         ]
+        config_dict = {}
+        for i in log_string:
+            split_str = i.strip().split('=')
+            config_dict[split_str[0].strip()] = split_str[1].strip()
+
+        return log_string, config_dict
 
 
 class Daq:

@@ -29,11 +29,11 @@ import time
 import atexit
 from instrbuilder.instrument_opening import open_by_name
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import h5py
-import matplotlib
+#import matplotlib
 
-matplotlib.use("Qt4agg")  # or "Qt5agg" depending on you version of Qt
+# matplotlib.use("TkAgg")  # or "Qt5agg" depending on you version of Qt
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -49,7 +49,7 @@ sys.path.append(interfaces_path)
 eps = Endpoint.endpoints_from_defines
 
 today = datetime.datetime.today()
-data_dir = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}".format(
+data_dir = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{}{}".format(
     today.year, today.month, today.day
 )
 if not os.path.exists(data_dir):
@@ -130,8 +130,8 @@ for name in ["1V8", "5V", "3V3"]:
 gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 # configure the SPI debug MUXs
-# gpio.spi_debug("dfast1")
-gpio.spi_debug("ds0")
+gpio.spi_debug("dfast1")
+# gpio.spi_debug("ds0")
 gpio.ads_misc("sdoa")  # do not care for this experiment
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
@@ -151,12 +151,12 @@ ad7961s = daq.ADC
 # included is masked and stays the same
 # TODO: configure_clamp errors out if not connected
 
-log_info = clamp.configure_clamp(
+log_info, config_dict = clamp.configure_clamp(
     ADC_SEL="CAL_SIG1",
     DAC_SEL="drive_CAL2",
-    CCOMP=47,
+    CCOMP=1000,
     RF1=2.1,  # feedback circuit
-    ADG_RES=10,
+    ADG_RES=100,
     PClamp_CTRL=0,
     P1_E_CTRL=0,
     P1_CAL_CTRL=0,
@@ -171,7 +171,7 @@ log_info = clamp.configure_clamp(
     addr_pins_2=0b000,
 )
 
-# log_info = clamp.configure_clamp(P2_E_CTRL=0, addr_pins_1=0b110, addr_pins_2=0b000)
+# log_info, config_dict = clamp.configure_clamp(P2_E_CTRL=0, addr_pins_1=0b110, addr_pins_2=0b000)
 
 test_channel = 1
 ADC_TEST_PATTERN = False
@@ -194,23 +194,23 @@ for chan in [0, test_channel]:
             ad7961s[chan].reset_fifo()
             time.sleep(0.2)  # FIFO fills in 204 us
             d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
-            with open(
-                os.path.join(
-                    data_dir, "test_pattern_chan{}_num{}.npy".format(chan, num)
-                ),
-                "wb",
-            ) as file1:
-                np.save(file1, d1)
+            # with open(
+            #     os.path.join(
+            #         data_dir, "test_pattern_chan{}_num{}.npy".format(chan, num)
+            #     ),
+            #     "wb",
+            # ) as file1:
+            #     np.save(file1, d1)
 
         ad7961s[chan].power_up_adc()  # standard sampling
         time.sleep(1)
         ad7961s[chan].reset_fifo()
         d2 = ad7961s[chan].stream_mult(swps=4)
 
-        with open(
-            os.path.join(data_dir, "test_data_chan{}_num{}.npy".format(chan, num)), "wb"
-        ) as file1:
-            np.save(file1, d2)
+        # with open(
+        #     os.path.join(data_dir, "test_data_chan{}_num{}.npy".format(chan, num)), "wb"
+        # ) as file1:
+        #     np.save(file1, d2)
 
 # disp_device(ad7961s[0])
 daq.TCA[0].configure_pins([0, 0])
@@ -246,11 +246,12 @@ for i in range(2):
     print('Outputs powered on')
 
 #DAC1_BP_OUT4, J11 pin #14 -- connected to utility pin -- offset voltage
-daq.DAC_gp[0].write_voltage(2.5, 4)  # after bipolar conversion should be 0 V?
+# clamp board TP1
+daq.DAC_gp[0].write_voltage(1.25, 4)  # after bipolar conversion this produces about 0 V
+daq.DAC_gp[0].write_voltage(1.457, 4) # 0.6125 V, which approx centers P1 and P2
 
 # for the 3.3 V "supply voltage" to the op-amp
-daq.DAC_gp[0].write_voltage(3, 5)  # after bipolar conversion should be ???
-
+daq.DAC_gp[1].write_voltage(2.36, 7)
 
 cmd_dac = daq.DAC[1]  # DAC channel 0 is connected to dc clamp ch 0 CMD signal
 cc = daq.DAC[0]
@@ -270,8 +271,8 @@ for i in range(8):
     if i == 1:
         ddr.data_arrays[i] = ddr.make_step(
             low=0x2000 - int(cmd_val), high=0x2000 + int(cmd_val), length=8000)
-    if i > 1:
-        ddr.data_arrays[i] = ddr.data_arrays[1]
+    # if i > 1:
+    #     ddr.data_arrays[i] = ddr.data_arrays[1]
 
 
 ddr.clear_adc_read()
@@ -282,10 +283,11 @@ cmd_dac.set_data_mux("DDR")
 # cc.change_filter_coeff(target='passthru')
 # cc.filter_select(operation='set')
 # cc.set_data_mux('ad7961_ch0')
-cc.set_data_mux("DDR")
+#cc.set_data_mux("DDR")
+cc.set_data_mux("host")
 
 ddr.set_read()
-time.sleep(0.5)  # allow the ADC data to accumulate into DDR
+time.sleep(1)  # allow the ADC data to accumulate into DDR
 # ddr.clear_read()
 ddr.set_adc_read()
 
@@ -332,60 +334,54 @@ for i in range(4):
 readback = check_readback(ddr.data_arrays, chan_data, [0, 1, 2, 3])
 """
 PLT_ADC = False
-if PLT_ADC:
+READ_ADC = True
+
+if READ_ADC:
     # Continuous Graph
-    plt.ion()
-    fig, ax = plt.subplots()
-    # ax.plot(data)
-    ax.set_xlabel("Time")
-    ax.set_ylabel("DN")
+    if PLT_ADC:
+        plt.ion()
+        fig, ax = plt.subplots()
+        # ax.plot(data)
+        ax.set_xlabel("Time")
+        ax.set_ylabel("DN")
     repeat = 0
     sample_rate = 1 / 5e6
     blk_multiples = 64
     chunk_size = int(ddr.parameters["BLOCK_SIZE"] * blk_multiples / 8)
     num_repeats = 4
 
-    data_name = "out_clamp_tests.h5"
-    full_data_name = os.path.join(data_dir, data_name)
+    file_name = "out_clamp_tests_jan4_6.h5"
+    full_data_name = os.path.join(data_dir, file_name)
     try:
-        os.remove(data_name)
+        os.remove(full_data_name)
     except OSError:
         pass
 
-    ddr.adc_single()
+    # ddr.adc_single()  # TODO-does this work?
 
     # Save ADC DDR data to a file
-    with h5py.File(data_name, "a") as file:
+    with h5py.File(full_data_name, "w") as file:
         data_set = file.create_dataset("adc", (4, chunk_size), maxshape=(4, None))
         while repeat < num_repeats:
             d = read_adc(ddr, blk_multiples)
             chan_data = deswizzle(d)
             chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
-            if repeat == 0:
-                t = np.arange(len(chan_data[1])) * sample_rate
-            ax_hdl = ax.plot(t, chan_data[0], color="blue", scalex=True, scaley=False)
-            ax.set_ylim(bottom=-(2 ** 15), top=2 ** 15, auto=False)
-            plt.draw()
-            plt.pause(0.001)
+            if PLT_ADC:
+                if repeat == 0:
+                    t = np.arange(len(chan_data[1])) * sample_rate
+                ax_hdl = ax.plot(t, chan_data[0], color="blue", scalex=True, scaley=False)
+                ax.set_ylim(bottom=-(2 ** 15), top=2 ** 15, auto=False)
+                plt.draw()
+                plt.pause(0.001)
+
             repeat += 1
             if repeat == 0:
                 data_set[:] = chan_stack
             else:
                 data_set[:, -chunk_size:] = chan_stack
             if repeat < num_repeats:
-                ax_hdl[0].remove()
+                if PLT_ADC:
+                    ax_hdl[0].remove()
                 data_set.resize(data_set.shape[1] + chunk_size, axis=1)
 
-    # Post processing: read in h5 data and plot
-    fig, ax = plt.subplots()
-    with h5py.File(data_name, "r") as file:
-        list(file.keys())  # this returns adc
-        dset = file["adc"]
-    t = np.arange(len(dset[0, :])) * sample_rate
-    # chan_list = range(4)
-    chan_list = [0]
-    for i in chan_list:
-        ax.plot(t, dset[i, :], label=f"Ch: {i}", marker=".")
-    ax.legend()
-    ax.set_xlabel("Time")
-    ax.set_ylabel("DN")
+    print('Done with ADC reading')
