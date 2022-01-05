@@ -136,7 +136,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 );
 	 
 	 // Real-Time LPF
-       Butterworth u_Butterworth_0
+       Butter_pipelined u_Butterworth_0
          (
          .clk(clk),
          .clk_enable(data_rdy_0 | write_enable | write_done),

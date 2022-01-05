@@ -53,11 +53,11 @@ module LPF_data_modify_fixpt
 
     always@(*)begin
         if(din[13]==1'b1)begin
-            din_temp = {din, 5'b0};
+            din_temp = {din, 1'b0};
             din_temp = din_temp - 14'h2000;
         end
         else begin
-            din_temp = {din, 5'b0};
+            din_temp = {din, 1'b0};
             din_temp = din_temp + 14'h1fff;
         end
     end
