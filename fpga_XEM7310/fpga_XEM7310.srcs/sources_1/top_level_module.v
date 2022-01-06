@@ -579,8 +579,8 @@ module top_level_module(
      end
      endgenerate
 
-    assign sma[0] = dco[0]; //J17, MC2-77
-    assign sma[1] = adc_serial_data[0]; //J16
+    //assign sma[0] = dco[0]; //J17, MC2-77
+    //assign sma[1] = adc_serial_data[0]; //J16
     
     assign sma[0] = 1'b0; //J17, MC2-77
     assign sma[1] = 1'b0; //J16
