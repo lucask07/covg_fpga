@@ -49,7 +49,7 @@ sys.path.append(interfaces_path)
 eps = Endpoint.endpoints_from_defines
 
 today = datetime.datetime.today()
-data_dir = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{}{}".format(
+data_dir = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}".format(
     today.year, today.month, today.day
 )
 if not os.path.exists(data_dir):
@@ -74,7 +74,7 @@ if pwr_setup == "3dual":
     atexit.register(pwr_off, [dc_pwr])
 else:
     atexit.register(pwr_off, [dc_pwr, dc_pwr2])
-config_supply(dc_pwr, dc_pwr2, setup=pwr_setup)
+config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
 
 # turn on the 7V
 dc_pwr.set("out_state", "ON", configs={"chan": 1})
@@ -283,7 +283,7 @@ cmd_dac.set_data_mux("DDR")
 # cc.change_filter_coeff(target='passthru')
 # cc.filter_select(operation='set')
 # cc.set_data_mux('ad7961_ch0')
-#cc.set_data_mux("DDR")
+cc.set_data_mux("DDR")
 cc.set_data_mux("host")
 
 ddr.set_read()
@@ -299,11 +299,12 @@ ddr.set_adc_read()
 def read_adc(ddr, blk_multiples=2048):
     # block size is 2048.
     # bits 0:63 of the DDR, first 4 channels of the
-    t, bytes_read = ddr.read_adc(  # just reads from the block pipe out
+    t, bytes_read_error = ddr.read_adc(  # just reads from the block pipe out
         sample_size=ddr.parameters["BLOCK_SIZE"] * blk_multiples
     )
     d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
-    return d
+    print(f'Bytes read: {bytes_read_error}')
+    return d, bytes_read_error
 
 
 def deswizzle(d, convert_twos=True):
@@ -350,20 +351,20 @@ if READ_ADC:
     chunk_size = int(ddr.parameters["BLOCK_SIZE"] * blk_multiples / 8)
     num_repeats = 4
 
-    file_name = "out_clamp_tests_jan4_6.h5"
+    file_name = "out_clamp_tests_jan6_7.h5"
     full_data_name = os.path.join(data_dir, file_name)
     try:
         os.remove(full_data_name)
     except OSError:
         pass
 
-    # ddr.adc_single()  # TODO-does this work?
+    ddr.adc_single()  # TODO-does this work?
 
     # Save ADC DDR data to a file
     with h5py.File(full_data_name, "w") as file:
         data_set = file.create_dataset("adc", (4, chunk_size), maxshape=(4, None))
         while repeat < num_repeats:
-            d = read_adc(ddr, blk_multiples)
+            d, bytes_read_error = read_adc(ddr, blk_multiples)
             chan_data = deswizzle(d)
             chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
             if PLT_ADC:
