@@ -63,13 +63,16 @@ def pwr_off(dc_pwrs):
             dc_pwr.set('out_state', 'OFF', configs={'chan': ch})
 
 
-def config_supply(dc_pwr, dc_pwr2, setup=None):
+def config_supply(dc_pwr, dc_pwr2, setup=None, neg=16.5):
 
     if setup == '3dual':  # 3 channel capable supply
         # Channel 2, 3 setup (for +/-15V)
         for ch in [2, 3]:
             dc_pwr.set('i', 0.39, configs={'chan': ch})
-            dc_pwr.set('v', 16.5, configs={'chan': ch})
+            if ch == 3:
+                dc_pwr.set('v', neg, configs={'chan': ch})
+            else:
+                dc_pwr.set('v', 16.5, configs={'chan': ch})
             dc_pwr.set('ovp', 16.7, configs={'chan': ch})
             dc_pwr.set('ocp', 0.400, configs={'chan': ch})
 
