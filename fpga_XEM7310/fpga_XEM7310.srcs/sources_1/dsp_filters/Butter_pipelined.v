@@ -93,7 +93,8 @@ module Butter_pipelined
   reg  signed [31:0] coeff_scale1_reg; // sfix32_En31
   reg  signed [31:0] coeff_scale1_shadow_reg; // sfix32_En31
   wire signed [15:0] scale1; // sfix16_En15
-  wire signed [47:0] mul_temp; // sfix48_En46
+  //wire signed [47:0] mul_temp; // sfix48_En46
+  reg signed [47:0] mul_temp; // sfix48_En46
   wire signed [31:0] coeff_b1_section1_assigned; // sfix32_En29
   wire signed [31:0] coeff_b1_section1_temp; // sfix32_En29
   reg  signed [31:0] coeff_b1_section1_reg; // sfix32_En29
@@ -123,11 +124,16 @@ module Butter_pipelined
   reg  signed [15:0] delay2_section1; // sfix16_En14
   wire signed [15:0] inputconv1; // sfix16_En15
   wire signed [15:0] feedback1; // sfix16_En14
-  wire signed [47:0] a2mul1; // sfix48_En44
-  wire signed [47:0] a3mul1; // sfix48_En44
-  wire signed [47:0] b1mul1; // sfix48_En44
-  wire signed [47:0] b2mul1; // sfix48_En44
-  wire signed [47:0] b3mul1; // sfix48_En44
+  //wire signed [47:0] a2mul1; // sfix48_En44
+  reg signed [47:0] a2mul1; // sfix48_En44
+  //wire signed [47:0] a3mul1; // sfix48_En44
+  reg signed [47:0] a3mul1; // sfix48_En44
+  //wire signed [47:0] b1mul1; // sfix48_En44
+  reg signed [47:0] b1mul1; // sfix48_En44
+  //wire signed [47:0] b2mul1; // sfix48_En44
+  reg signed [47:0] b2mul1; // sfix48_En44
+  //wire signed [47:0] b3mul1; // sfix48_En44
+  reg signed [47:0] b3mul1; // sfix48_En44
   wire signed [47:0] sub_signext; // sfix48_En44
   wire signed [47:0] sub_signext_1; // sfix48_En44
   wire signed [47:0] add_signext; // sfix48_En44
@@ -146,7 +152,8 @@ module Butter_pipelined
   reg  signed [31:0] coeff_scale2_reg; // sfix32_En31
   reg  signed [31:0] coeff_scale2_shadow_reg; // sfix32_En31
   wire signed [15:0] scale2; // sfix16_En15
-  wire signed [47:0] mul_temp_1; // sfix48_En45
+  //wire signed [47:0] mul_temp_1; // sfix48_En45
+  reg signed [47:0] mul_temp_1; // sfix48_En45
   wire signed [31:0] coeff_b1_section2_assigned; // sfix32_En29
   wire signed [31:0] coeff_b1_section2_temp; // sfix32_En29
   reg  signed [31:0] coeff_b1_section2_reg; // sfix32_En29
@@ -176,11 +183,16 @@ module Butter_pipelined
   reg  signed [15:0] delay2_section2; // sfix16_En14
   wire signed [15:0] inputconv2; // sfix16_En15
   wire signed [15:0] feedback2; // sfix16_En14
-  wire signed [47:0] a2mul2; // sfix48_En44
-  wire signed [47:0] a3mul2; // sfix48_En44
-  wire signed [47:0] b1mul2; // sfix48_En44
-  wire signed [47:0] b2mul2; // sfix48_En44
-  wire signed [47:0] b3mul2; // sfix48_En44
+  //wire signed [47:0] a2mul2; // sfix48_En44
+  reg signed [47:0] a2mul2; // sfix48_En44
+  //wire signed [47:0] a3mul2; // sfix48_En44
+  reg signed [47:0] a3mul2; // sfix48_En44
+  //wire signed [47:0] b1mul2; // sfix48_En44
+  reg signed [47:0] b1mul2; // sfix48_En44
+  //wire signed [47:0] b2mul2; // sfix48_En44
+  reg signed [47:0] b2mul2; // sfix48_En44
+  //wire signed [47:0] b3mul2; // sfix48_En44
+  reg signed [47:0] b3mul2; // sfix48_En44
   wire signed [47:0] sub_signext_4; // sfix48_En44
   wire signed [47:0] sub_signext_5; // sfix48_En44
   wire signed [47:0] add_signext_4; // sfix48_En44
@@ -198,7 +210,8 @@ module Butter_pipelined
   reg  signed [31:0] coeff_scale3_reg; // sfix32_En31
   reg  signed [31:0] coeff_scale3_shadow_reg; // sfix32_En31
   wire signed [13:0] scale3; // sfix14_En12
-  wire signed [47:0] mul_temp_2; // sfix48_En45
+  //wire signed [47:0] mul_temp_2; // sfix48_En45
+  reg signed [47:0] mul_temp_2; // sfix48_En45
   wire signed [13:0] output_typeconvert; // sfix14_En12
   reg  signed [13:0] output_register; // sfix14_En12
 
@@ -222,10 +235,107 @@ module Butter_pipelined
         end
       end
     end // input_reg_process
+    
+    //Shared Multiplier
+    reg [4:0] ena;
+    reg [15:0] A;
+    reg [31:0] B;
+    wire [47:0] P;
+    
+    mult_gen_0 mult1(.clk(clk), .A(A), .B(B), .P(P));
+    
+    always @ ( posedge clk)begin
+        if(reset == 1'b1)begin
+            A <= 1'b0;
+            B <= 1'b0;
+            ena <= 4'b0;
+        end
+        else if(clk_enable == 1'b1)begin
+            ena <= 4'b0;
+        end
+        else if(ena < 5'h10) begin
+            ena <= ena + 1'b1;
+        end
+    end
+    always @ ( negedge clk)begin
+        if(ena == 5'h00)begin
+            A <= input_register;
+            B <= coeff_scale1_shadow_reg;
+        end
+        else if(ena == 5'h01)begin
+            A <= inputconv1;
+            B <= coeff_b3_section1_shadow_reg;
+        end
+        else if(ena == 5'h02)begin
+            A <= feedback1;
+            B <= coeff_a3_section1_shadow_reg;
+        end
+        else if(ena == 5'h03)begin
+            A <= inputconv1;
+            B <= coeff_b2_section1_shadow_reg;
+        end
+        else if(ena == 5'h04)begin//wait four cycles to grab mult output since mult has 4 pipeline stages
+            mul_temp <= P;
+            A <= feedback1;
+            B <= coeff_a2_section1_shadow_reg;
+        end
+        else if(ena == 5'h05)begin
+            b3mul1 <= P;
+            A <= inputconv1;
+            B <= coeff_b1_section1_shadow_reg;
+        end
+        else if(ena == 5'h06)begin
+            a3mul1 <= P;
+            A <= sos_pipeline1;
+            B <= coeff_scale2_shadow_reg;
+        end
+        else if(ena == 5'h07)begin
+            b2mul1 <= P;
+            A <= inputconv2;
+            B <= coeff_b3_section2_shadow_reg;
+        end
+        else if(ena == 5'h08)begin
+            a2mul1 <= P;
+            A <= feedback2;
+            B <= coeff_a3_section2_shadow_reg;
+        end
+        else if(ena == 5'h09)begin
+            b1mul1 <= P;
+            A <= inputconv2;
+            B <= coeff_b2_section2_shadow_reg;
+        end
+        else if(ena == 5'h0a)begin
+            mul_temp_1 <= P;
+            A <= feedback2;
+            B <= coeff_a2_section2_shadow_reg;
+        end
+        else if(ena == 5'h0b)begin
+            b3mul2 <= P;
+            A <= inputconv2;
+            B <= coeff_b1_section2_shadow_reg;
+        end
+        else if(ena == 5'h0c)begin
+            a3mul2 <= P;
+            A <= feedback2;
+            B <= coeff_scale3_shadow_reg;
+        end
+        else if(ena == 5'h0d)begin
+            b2mul2 <= P;
+        end
+        else if(ena == 5'h0e)begin
+            a2mul2 <= P;
+        end
+        else if(ena == 5'h0f)begin
+            b1mul2 <= P;
+        end
+        else if(ena == 5'h10)begin
+            mul_temp_2 <= P;
+        end
+    end
 
   //   -------- Section 1 Processor Interface logic------------------
 
-  assign mul_temp = input_register * coeff_scale1_shadow_reg;
+  //assign mul_temp = input_register * coeff_scale1_shadow_reg;
   assign scale1 = (mul_temp[46:0] + {mul_temp[31], {30{~mul_temp[31]}}})>>>31;
 
   assign coeff_scale1_assigned = (write_address_reg == 4'b0000) ? coeffs_in_reg :
@@ -300,15 +410,15 @@ module Butter_pipelined
 
   assign inputconv1 = scale1;
 
-  assign a2mul1 = feedback1 * coeff_a2_section1_shadow_reg;
+//  assign a2mul1 = feedback1 * coeff_a2_section1_shadow_reg;
 
-  assign a3mul1 = feedback1 * coeff_a3_section1_shadow_reg;
+//  assign a3mul1 = feedback1 * coeff_a3_section1_shadow_reg;
 
-  assign b1mul1 = inputconv1 * coeff_b1_section1_shadow_reg;
+//  assign b1mul1 = inputconv1 * coeff_b1_section1_shadow_reg;
 
-  assign b2mul1 = inputconv1 * coeff_b2_section1_shadow_reg;
+//  assign b2mul1 = inputconv1 * coeff_b2_section1_shadow_reg;
 
-  assign b3mul1 = inputconv1 * coeff_b3_section1_shadow_reg;
+//  assign b3mul1 = inputconv1 * coeff_b3_section1_shadow_reg;
 
   assign sub_signext = b3mul1;
   assign sub_signext_1 = a3mul1;
@@ -361,7 +471,7 @@ module Butter_pipelined
 
   //   -------- Section 2 Processor Interface logic------------------
 
-  assign mul_temp_1 = sos_pipeline1 * coeff_scale2_shadow_reg;
+  //assign mul_temp_1 = sos_pipeline1 * coeff_scale2_shadow_reg;
   assign scale2 = (mul_temp_1[45:0] + {mul_temp_1[30], {29{~mul_temp_1[30]}}})>>>30;
 
   assign coeff_scale2_assigned = (write_address_reg == 4'b1000) ? coeffs_in_reg :
@@ -436,15 +546,15 @@ module Butter_pipelined
 
   assign inputconv2 = scale2;
 
-  assign a2mul2 = feedback2 * coeff_a2_section2_shadow_reg;
+//  assign a2mul2 = feedback2 * coeff_a2_section2_shadow_reg;
 
-  assign a3mul2 = feedback2 * coeff_a3_section2_shadow_reg;
+//  assign a3mul2 = feedback2 * coeff_a3_section2_shadow_reg;
 
-  assign b1mul2 = inputconv2 * coeff_b1_section2_shadow_reg;
+//  assign b1mul2 = inputconv2 * coeff_b1_section2_shadow_reg;
 
-  assign b2mul2 = inputconv2 * coeff_b2_section2_shadow_reg;
+//  assign b2mul2 = inputconv2 * coeff_b2_section2_shadow_reg;
 
-  assign b3mul2 = inputconv2 * coeff_b3_section2_shadow_reg;
+//  assign b3mul2 = inputconv2 * coeff_b3_section2_shadow_reg;
 
   assign sub_signext_4 = b3mul2;
   assign sub_signext_5 = a3mul2;
@@ -485,7 +595,7 @@ module Butter_pipelined
 
   //   -------- Last Section Value -- Processor Interface logic------------------
 
-  assign mul_temp_2 = feedback2 * coeff_scale3_shadow_reg;
+  //assign mul_temp_2 = feedback2 * coeff_scale3_shadow_reg;
   assign scale3 = (mul_temp_2[46:0] + {mul_temp_2[33], {32{~mul_temp_2[33]}}})>>>33;
 
   assign coeff_scale3_assigned = (write_address_reg == 4'b0111) ? coeffs_in_reg :
