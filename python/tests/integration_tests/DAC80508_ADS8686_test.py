@@ -8,6 +8,7 @@ October 2021
 Abe Stroschein, ajstroschein@stthomas.edu
 """
 
+from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import pytest
 import os
 import sys
@@ -33,15 +34,9 @@ from interfaces.interfaces import FPGA, DAC80508, ADS8686
 from interfaces.boards import Daq
 from interfaces.utils import to_voltage, twos_comp
 
-dc_pwr = open_by_name(name='rigol_pwr1')  # 7V in
-dc_pwr2 = open_by_name(name='rigol_ps2')  # +/-16.5V -> needed for REFDIV going to Op-Amp buffers
+pwr_setup = '3dual'
+dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)  # 7V and +/-16.5V, None
 tolerance = 0.008
-
-def pwr_off():
-    for ch in [1, 2, 3]:
-        dc_pwr.set('out_state', 'OFF', configs={'chan': ch})
-    for ch in [1, 2, 3]:
-        dc_pwr2.set('out_state', 'OFF', configs={'chan': ch})
 
 # Fixtures
 @pytest.fixture(scope='module')
@@ -59,20 +54,11 @@ def fpga():
     pwr = Daq.Power(f)
     pwr.all_off()
 
-    # Channel 1 on supply1 for Vin
-    dc_pwr.set('i', 0.55, configs={'chan': 1})
-    dc_pwr.set('v', 7, configs={'chan': 1})
-    dc_pwr.set('ovp', 7.2, configs={'chan': 1})
-    dc_pwr.set('ocp', 0.75, configs={'chan': 1})
-    dc_pwr.set('out_state', 'ON', configs={'chan': 1})
-
-    # Channel 1 and 2 setup
-    for ch in [1, 2]:
-        dc_pwr2.set('i', 0.39, configs={'chan': ch})
-        dc_pwr2.set('v', 16.5, configs={'chan': ch})
-        dc_pwr2.set('ovp', 16.7, configs={'chan': ch})
-        dc_pwr2.set('ocp', 0.400, configs={'chan': ch})
-        dc_pwr2.set('out_state', 'ON', configs={'chan': ch})
+    # Configure and turn on power supplies
+    config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
+    dc_pwr.set("out_state", "ON", configs={"chan": 1})  # +7V
+    for ch in [2, 3]:
+        dc_pwr.set("out_state", "ON", configs={"chan": ch}) # +/- 16.5V
 
     for name in ['1V8', '5V', '3V3']:
         pwr.supply_on(name)
