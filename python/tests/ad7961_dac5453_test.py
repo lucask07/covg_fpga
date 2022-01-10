@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from instrbuilder.instrument_opening import open_by_name
 import atexit
+import pandas as pd
+
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
 for i in range(15):
@@ -19,13 +21,13 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum
+from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum, TCA9555
 from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
 
 today = datetime.datetime.today()
-data_dir = '/Users/koer2434/Google Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}'.format(today.year,
+data_dir = '/Users/koer2434/Google\ Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}'.format(today.year,
                                                                                                                    today.month,
                                                                                                                    today.day)
 if not os.path.exists(data_dir):
@@ -52,6 +54,8 @@ fg.set('v', 2)
 fg.set('freq', 10e3)
 fg.set('output', 'ON')
 
+osc = open_by_name('msox_scope')
+
 atexit.register(fg.set, 'output', 'OFF')
 ######################################
 
@@ -75,6 +79,28 @@ gpio.fpga.debug = True
 # configure the SPI debug MUXs
 gpio.spi_debug('dfast0')
 gpio.ads_misc('sdoa')  # do not care for this experiment
+
+
+filter_coeff = '500kHz'
+# filter_coeff = 'passthru'
+
+fdac = []
+for i in range(6):
+    fdac.append(AD5453(f,
+                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
+                channel=i))
+    fdac[i].set_data_mux('host')  # for writing filter coefficients
+    fdac[i].filter_select(operation='set')
+    fdac[i].set_spi_sclk_divide()
+    fdac[i].write(int(0))
+    fdac[i].change_filter_coeff(target=filter_coeff)
+    fdac[i].write_filter_coeffs()
+    fdac[i].set_clk_divider(divide_value=0x50)  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+
+    # fdac[i].write(0x2000)
+
+c1, c2 = fdac[0].read_coeff_debug()
+
 
 # --------  ADC instances  --------
 AD7961_CHANS = 4
@@ -119,15 +145,97 @@ def save_array(d, chan, test_name='test', number=1):
 
         np.save(file1, d)
 
-fdac = []
-for i in range(6):
-    fdac.append(AD5453(f,
-                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
-                channel=i))
-    fdac[i].set_spi_sclk_divide()
-    fdac[i].set_data_mux('ad7961_ch0')
-    # fdac[i].write_filter_coeffs()
-    # fdac[i].write(0x2000)
-    fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
 
-c1, c2 = fdac[0].read_coeff_debug()
+for ch in [0, 1]:
+    fdac[ch].set_data_mux('ad7961_ch1')
+    fdac[ch].filter_select(operation='set')
+
+time.sleep(0.1)
+
+input_chan = 3
+dac_chan = 1
+num_periods = 4
+
+fg.set('function', 'SIN')
+
+output = pd.DataFrame()
+res = {}
+
+for freq in np.logspace(4, 4.2, 2):
+    fg.set('freq', freq)
+    t_range = float('{:.2g}'.format(1/freq*num_periods))
+    osc.set('time_range', t_range)
+
+    time.sleep(0.1)
+    # measure peak-to-peak
+    res['freq'] = freq
+    res['vp_in'] = osc.get('meas_vpp', configs={'chan': input_chan})
+    res['vp_out'] = osc.get('meas_vpp', configs={'chan': dac_chan})
+    # measure phase shift
+    res['v_phase'] = osc.get('meas_phase', configs={'chan1': input_chan,
+                                             'chan2': dac_chan})
+    time.sleep(1)
+    output = output.append(res, ignore_index=True)
+
+print(output.head())
+output.to_csv(os.path.join(data_dir, 'bode_response2_{}.csv'.format(filter_coeff)))
+
+plt.plot(output['freq'], output['vp_out'])
+
+# osc.set('single_acq')
+# t = osc.save_display_data(os.path.join(data_dir, 'adc_sine_10kHz_2V_2V'))
+# TCA_addr_pins_0=0b110
+# TCA_0 = TCA9555(fpga=f, addr_pins=TCA_addr_pins_0,
+#                 endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDAQ'],1))
+
+TCA_addr_pins_1=0b000
+TCA_1 = TCA9555(fpga=f, addr_pins=TCA_addr_pins_1,
+                endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDAQ'],1))
+
+# TCA_0.endpoints['IN'].bit_index_high = 32
+# TCA_0.endpoints['IN'].bit_index_low = 16
+TCA_1.endpoints['IN'].bit_index_high = 32
+TCA_1.endpoints['IN'].bit_index_low = 16
+
+# TCA_0.endpoints['OUT'].bit_index_high = 16
+# TCA_0.endpoints['OUT'].bit_index_low = 8
+TCA_1.endpoints['OUT'].bit_index_high = 16
+TCA_1.endpoints['OUT'].bit_index_low = 8
+
+# configure as inputs and outputs: 16 pins. 0 is output
+# TCA_0.configure_pins([0x00, 0x00])
+# # each DAC channel has 4 gain bits. Logic 0 turns on the switches
+# TCA_0.write(0x0100)
+# time.sleep(2)
+# TCA_0.write(0x0f00)
+
+# configure as inputs and outputs: 16 pins. 0 is output
+TCA_1.configure_pins([0x00, 0x00])
+# each DAC channel has 4 gain bits. Logic 0 turns on the switches
+TCA_1.write(0x0100)
+time.sleep(2)
+TCA_1.write(0x0f00)
+
+
+# configure as inputs and outputs: 16 pins. 0 is output
+# TCA_0.configure_pins([0x00, 0x00])
+# # each DAC channel has 4 gain bits. Logic 0 turns on the switches
+# TCA_0.write(0x0100)
+# time.sleep(2)
+# TCA_0.write(0x0f00)
+
+
+# highest gain is all ones (switches open, large feedback resistance)
+# lowest gain is all zeros
+# GSEL3 is the MSB, this is at pin 03 of expander. This is bit3 of 1st byte
+
+"""
+# capture a step response
+fg.set('v', 0.5)
+fg.set('function', 'SQU')
+osc.set('time_range', 5e-6)
+osc.set('single_acq')
+time.sleep(0.1)
+
+t = osc.save_display_data(os.path.join(data_dir, 'adc_step_500mV_2V'))
+"""
