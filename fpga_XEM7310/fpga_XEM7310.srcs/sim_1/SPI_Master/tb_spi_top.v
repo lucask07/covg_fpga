@@ -117,8 +117,8 @@ module tb_spi_top;
             filter_in = 16'hc000;
         end
         else begin
-            //filter_in = 16'h0000;
-            filter_in = 16'hc000;
+            filter_in = 16'h0000;
+            //filter_in = 16'hc000;
             count = count + 1'b1;
         end
     end
