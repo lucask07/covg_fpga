@@ -76,6 +76,7 @@ localparam ADDRESS_INCREMENT   = 5'd8; // UI Address is a word address. BL8 Burs
 (* KEEP = "TRUE" *)reg         read_mode;
 (* KEEP = "TRUE" *)reg         fg_read_back_mode;
 (* KEEP = "TRUE" *)reg         reset_d;
+(* KEEP = "TRUE" *)reg         adc_addr_reset_reg;
 
 assign app_wdf_mask = 16'h0000;
 
@@ -130,11 +131,13 @@ always @(posedge clk) begin
 		ob_we             <= 1'b0;
 		ib2_re             <= 1'b0;
         ob2_we             <= 1'b0;
+        if (adc_addr_reset == 1'b1) adc_addr_reset_reg <= 1'b1;
 
 		case (state)
 			s_idle: begin  // only 1 clock cycle (at 200 MHz) of overhead in going back to the idle state 
 				burst_count <= BURST_UI_WORD_COUNT-1;
-				if (adc_addr_reset == 1'b1) begin
+				adc_addr_reset_reg <= 1'b0;  
+				if (adc_addr_reset_reg == 1'b1) begin
 				    state <= s_idle;
 				    if (adc_addr_restart == 1'b0) cmd_byte_addr_rd2 <= FIXED_INDEX2_START; // restart 
 				    else  cmd_byte_addr_rd2 <= cmd_byte_addr_wr2; // start at current write pointer
