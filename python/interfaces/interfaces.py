@@ -1170,7 +1170,9 @@ class DAC53401(I2CController):
     def write_voltage(self, voltage):
         """Write a voltage output from the DAC."""
 
-        self.write(voltage, 'DAC_DATA')
+        voltage_data = from_voltage(voltage=voltage, num_bits=10, voltage_range=5, with_negatives=False)
+
+        self.write(voltage_data, 'DAC_DATA')
 
     def enable_internal_reference(self):
         """Enable the DAC's internal reference.
@@ -1735,10 +1737,12 @@ class SPIFifoDriven():
         'ad7961_ch3': 7,
     }
 
-    def __init__(self, fpga, endpoints, master_config, data_mux=default_data_mux):
+    def __init__(self, fpga, endpoints, master_config, regbridge_advance, channel=0, data_mux=default_data_mux):
         self.fpga = fpga
         self.endpoints = endpoints
         self.master_config = master_config
+        self.regbridge_advance = regbridge_advance
+        self.channel = channel
         self.data_mux = data_mux
         # Start with host to minimize unintentional commands from other sources on startup
         self.current_data_mux = None
@@ -1766,14 +1770,14 @@ class SPIFifoDriven():
         if master_config is None:
             # Use class default for master_config
             for i in range(number_of_chips):
-                chips.append(cls(fpga=fpga, endpoints=endpoints))
+                chips.append(cls(fpga=fpga, endpoints=endpoints, channel=i))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
                 Endpoint.increment_endpoints(endpoints)
         else:
             for i in range(number_of_chips):
                 chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(
-                    endpoints), master_config=master_config))
+                    endpoints), master_config=master_config, channel=i))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
                 Endpoint.increment_endpoints(endpoints)
@@ -1892,13 +1896,10 @@ class SPIFifoDriven():
                                         self.endpoints['HOST_TRIG'].bit_index_low)
 
 
-#class DAC80508(SPIController, SPIFifoDriven):
 class DAC80508(SPIFifoDriven):
+    """Class for SPI DAC chip DAC80508.
 
-    """ Class for SPI DAC chip DAC80508.
-
-    Subclass of the SPIController class. Attributes and methods below are
-    differences in this class from I2CController only.
+    Subclass of the SPIFifoDriven class. Listed methods do not include SPIFifoDriven methods.
 
     Attributes
     ----------
@@ -1913,28 +1914,22 @@ class DAC80508(SPIFifoDriven):
 
     Methods
     -------
-    write(register_name, data, mask=0xffff)
+    write_chip_reg(register_name, data, mask=0xffff)
         Write to any register on the chip.
-    read(register_name)
-        Return data from any register on the chip.
+    write_voltage(voltage, outputs=[0, 1, 2, 3, 4, 5, 6, 7], auto_gain=False)
+        Write the voltage to the outputs of the DAC.
     set_config_bin(data, mask=0xffff)
         Set the configuration register with a binary number.
     set_config(ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0,
                DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0,
                DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0)
-        Set the configuration register with multiple arguments.
-    get_config(display_values=True)
-        Return and print the current configuration register data.
+        Set the configuration register using keyword arguments.
+    set_gain_bin(data, mask=0x01ff)
+        Set the gain register with a binary value.
     set_gain(data, mask=0x01ff)
         Set the gain value.
-    get_gain()
-        Get the gain value.
-    get_id(display=True)
-        Print the device info and return its ID.
     reset()
         Soft reset the chip.
-    set_data_mux()
-        Configure the MUX that routes data source to the SPI output
     """
 
     WRITE_OPERATION = 0x000000
@@ -1942,30 +1937,16 @@ class DAC80508(SPIFifoDriven):
 
     registers = Register.get_chip_registers('DAC80508')
 
-    data_mux = {
-        'DDR': 0,
-        'host': 1,
-        'ads8686_chA': 2,
-        'ads8686_chB': 3,
-        'ad7961_ch0': 4,
-        'ad7961_ch1': 5,
-        'ad7961_ch2': 6,
-        'ad7961_ch3': 7,
-    }
-
-    def __init__(self, fpga, master_config=0x3218, slave_address=0x1, endpoints=None, channel=0):
+    def __init__(self, fpga, master_config=0x3218, endpoints=None, channel=0, data_mux=SPIFifoDriven.default_data_mux):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DAC80508')
-        self.slave_address = slave_address
-        self.channel = channel
-        self.regbridge_advance = 19
-        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints)
+        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints, regbridge_advance=19, channel=channel, data_mux=data_mux)
         self.current_data_mux = None
         self.set_data_mux('host')
 
     # Method to write to any register on the chip.
-    def write(self, register_name, data, mask=0xffff):
+    def write_chip_reg(self, register_name, data):
         """Write to any register on the chip."""
 
         # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
@@ -1974,39 +1955,11 @@ class DAC80508(SPIFifoDriven):
             print(f'{register_name} not in registers')
             return False
 
-        if 0:  # TODO: the read function does not work. Since version of chip does not have SDO
-            # Get current data
-            current_data = self.read(register_name)
-            # Create new data from input data, mask, and current data
-            new_data = (data & mask) | (current_data & ~mask)
-        else:
-            new_data = (data & mask)
         # 23=0 (write), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=D[15:0] (data)
         transmission = DAC80508.WRITE_OPERATION + \
-            (reg.address << 16) + new_data
+            (reg.address << 16) + data
 
-        """
-        unconventional SPI -- only works if data mux is set to host
-        state machine converts this data to WB signals
-        """
-
-        # TODO - want spi_fifo_driven class?
-        if self.current_data_mux != 'host':
-            print('Host write not expected to work since mux is not set to host')
-
-        self.fpga.set_wire(
-            self.endpoints['HOST_WIRE_IN'].address, transmission)
-        self.fpga.xem.ActivateTriggerIn(self.endpoints['HOST_TRIG'].address,
-                                        self.endpoints['HOST_TRIG'].bit_index_low)
-
-        # print(f'Transmission = {hex(transmission)}')
-        # ack = super().write(transmission)
-
-        # if ack:
-        #     print(f'Write {hex(data)} to {register_name}: SUCCESS')
-        # else:
-        #     print(f'Write {hex(data)} to {register_name}: FAIL')
-        # return ack
+        self.write(transmission)
 
     def write_voltage(self, voltage, outputs=[0, 1, 2, 3, 4, 5, 6, 7], auto_gain=False):
         """Write the voltage to the outputs of the DAC.
@@ -2049,76 +2002,32 @@ class DAC80508(SPIFifoDriven):
             voltage=voltage, num_bits=16, voltage_range=2.5, with_negatives=False)
         if type(outputs) is list:
             for output in outputs:
-                self.write('DAC' + str(output), voltage_bin)
+                self.write_chip_reg('DAC' + str(output), voltage_bin)
         elif type(outputs) is int:
-            self.write('DAC' + str(outputs), voltage_bin)
+            self.write_chip_reg('DAC' + str(outputs), voltage_bin)
 
         return gain_info
 
-    def read(self, register_name):
-        """Return data from any register on the chip."""
-
-        # .get instead of [brackets] because .get will return None if the register name is not in the dictionary
-        reg = DAC80508.registers.get(register_name)
-        if reg == None:
-            print(f'{register_name} not in registers')
-            return False
-
-        # Issue read command
-        # 23=1 (read), [22:20]=000 (reserved), [19:16]=A[3:0] (reg address), [15:0]=0xXXXX (do not cares)
-        transmission = DAC80508.READ_OPERATION | (reg.address << 16)
-        super().write(transmission)
-
-        # Read in response
-        # 23=1 (echo read), [22:20]=000 (echo reserved), [19:16]=A[3:0] (echo reg address), [15:0]=D[15:0] (data read)
-        read_out = super().read()
-        data_read = read_out & 0xffff  # Data is only in bottom 16 bits
-        return data_read
-
-    def set_config_bin(self, data, mask=0xffff):
+    def set_config_bin(self, data):
         """Set the configuration register with a binary number."""
 
         # Write new config
-        return self.write('CONFIG', data, mask)
+        return self.write_chip_reg('CONFIG', data)
 
     def set_config(self, ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0, DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0, DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0):
-        """Set the configuration register with multiple arguments."""
+        """Set the configuration register using keyword arguments."""
 
         params = [ALM_SEL, ALM_EN, CRC_EN, FSDO,
                   DSDO, REF_PWDWN, DAC7_PWDWN, DAC6_PWDWN, DAC5_PWDWN, DAC4_PWDWN, DAC3_PWDWN, DAC2_PWDWN, DAC1_PWDWN, DAC0_PWDWN]
-        mask = ''
-        for bit in range(params):
-            if params[bit] == None:
-                mask += '0'
-                params[bit] = 0
-            else:
-                mask += '1'
-        mask = int(mask)
 
         # TODO: is this right?
         bit = 13
         data = 0
         for i in range(len(params)):
             data += params[i]*2**bit
-        self.set_config_bin(data, mask)
-
-    def get_config(self, display_values=True):
-        """Return and print the current configuration register data."""
-
-        config = self.read('CONFIG')
-        if not config:
-            print('Get Configuration: FAIL')
-            return False
-        if display_values:
-            for key in ['ALM-SEL', 'ALM-EN', 'CRC-EN', 'FSDO', 'DSDO', 'REF-PWDWN',
-                        'DAC7-PWDWN', 'DAC6-PWDWN', 'DAC5-PWDWN', 'DAC3-PWDWN',
-                        'DAC3-PWDWN', 'DAC2-PWDWN', 'DAC1-PWDWN', 'DAC0-PWDWN']:
-                # High and low bit indexes are the same because it is 1 bit wide
-                print(
-                    f"{key}: {bool(config & DAC80508.registers.get(key).bit_index_low)}")
-        return config
-
-    def set_gain_bin(self, data, mask=0x01ff):
+        self.set_config_bin(data)
+    
+    def set_gain_bin(self, data):
         """Set the gain register with a binary value.
 
         1 gives a gain of 2 for the output at that bit index (0-7). 0 gives a
@@ -2128,7 +2037,7 @@ class DAC80508(SPIFifoDriven):
         unaffected.
         """
 
-        return self.write('GAIN', data, mask)
+        return self.write_chip_reg('GAIN', data)
 
     def set_gain(self, gain, outputs=[0, 1, 2, 3, 4, 5, 6, 7], divide_reference=False):
         """Set the gain and reference divider.
@@ -2156,35 +2065,10 @@ class DAC80508(SPIFifoDriven):
             gain_bin |= (gain - 1) << outputs
         self.set_gain_bin(data=gain_bin)
 
-    def get_gain(self):
-        """Get the gain value."""
-
-        return self.read('GAIN')
-
-    def get_id(self, display=True):
-        """Print the device info and return its ID."""
-
-        id = self.read('ID')
-        if not id:  # Check to see if the read worked
-            print('ID could not be read')
-            return False
-        if display:
-            print(f'ID = {id} = {bin(id)}')
-            device_id = bin(id >> 2)[2:]  # Only from 2 on to skip the '0b'
-            version_id = bin(id & 0b11)[2:]
-            resolution = {'000': '16-bit', '001': '14-bit', '010': '12-bit'}
-            print(f'Resolution: {resolution.get(device_id[1:4])}')
-            channels = {'1000': 8}
-            print(f'Channels: {channels.get(device_id[4:8])}')
-            reset = {'0': 'reset to zero', '1': 'reset to midscale'}
-            print(f'Reset: {reset.get(device_id[8])}')
-            print(f'Version ID: {version_id}')
-        return id
-
     def reset(self):
         """Soft reset the chip."""
 
-        ack = self.write('TRIGGER', 0b1010, 0x000f)
+        ack = self.write_chip_reg('TRIGGER', 0b1010, 0x000f)
         # if self.debug:
         #     if ack:
         #         print('Reset: SUCCESS')
@@ -2205,12 +2089,10 @@ class AD5453(SPIFifoDriven):
 
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
         super().__init__(fpga=fpga, master_config=master_config,
-                         endpoints=endpoints, data_mux=data_mux)
+                         endpoints=endpoints, regbridge_advance=19, channel=channel, data_mux=data_mux)
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
-        self.channel = channel
 
-        self.regbridge_advance = 19
         self.filter_coeff = {0: 0x009e1586,
                              1: 0x20000000,
                              2: 0x40000000,
