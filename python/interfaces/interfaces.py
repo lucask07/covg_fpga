@@ -270,14 +270,14 @@ class Endpoint:
         none_to_neg_1 = {None: -1}
         # Make tuples of (address, bit) from each list, then concatenate the lists
         # The none_to_neg_1.get() translates None values of bit_index_low to -1 for sorting later
-        list_eps = [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in top_level_eps] + \
-            [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low))
-             for ep in lower_level_eps]
+        list_eps = [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in top_level_eps]
         list_len = len(list_eps)
         set_len = len(set(list_eps))  # A set removes duplicates
+
         if list_len != set_len:
-            # There are duplicates
-            print('Naming collision in ep_defines.v\nFinding collisions...')
+            # There may be duplicates. May not, because different groups can have endpoints of the same name.
+            print('Checking for naming collisions in ep_defines.v ...')
+
             # Search through to find duplicates
             # Copy the list to keep order in the original
             sorted_list_eps = list(list_eps)
@@ -338,11 +338,18 @@ class Endpoint:
 
         for key in endpoints_dict:
             endpoint = endpoints_dict[key]
-            if endpoint.gen_bit:
-                #endpoint.bit += endpoint.bit_width
+            if endpoint.gen_bit and endpoint.gen_address:
+                # Increment the bit by the endpoint's bit_width and if it would
+                # go outside the address's width, increment the address
+                # TODO: do we want to wrap around the bits on the same address, -> can change address on each bit individually
+                # or shift all bits when one moves to the next address? -> each bit needs to know if other bits fit on the current address as well
+                pass
+            elif endpoint.gen_bit:
+                # Increment the bit by the bit_width
                 endpoint.bit_index_low += endpoint.bit_width
                 endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
-            if endpoint.gen_address:
+            elif endpoint.gen_address:
+                # Increment the address by 1
                 endpoint.address += 1
 
 
@@ -362,12 +369,11 @@ def advance_endpoints_bynum(endpoints_dict, num):
         endpoint = endpoints_dict[key]
         if endpoint.gen_bit:
             endpoint.bit_index_low = (
-                endpoint.bit_index_low + (endpoint.bit_width*num)) % 32
+                endpoint.bit_index_low + (endpoint.bit_width*num))
             endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
         if endpoint.gen_address:
             print(f'gen address bit_width: {endpoint.bit_width}')
-            endpoint.address += ((endpoint.bit_width*num)//32)
-        endpoints_dict[key] = endpoint
+            endpoint.address += 1
     return endpoints_dict
 
 # Class for the FPGA itself. Handles FPGA configuration, setting wire values,
@@ -642,6 +648,8 @@ class I2CController:
 
     Methods
     -------
+    create_chips(cls, fpga, addr_pins, endpoints)
+        Class method. Instantiate a number of new I2C chips.
     i2c_configure(data_length, starts, stops, preamble)
         Configure the buffer for the next transmission.
     i2c_transmit(data, data_length)
@@ -658,10 +666,33 @@ class I2CController:
 
     I2C_MAX_TIMEOUT_MS = 50
 
-    def __init__(self, fpga, endpoints, i2c={'m_pBuf': [], 'm_nDataStart': 7}):
+    def __init__(self, fpga, addr_pins, endpoints, i2c={'m_pBuf': [], 'm_nDataStart': 7}):
         self.i2c = i2c
         self.fpga = fpga
+        self.addr_pins = addr_pins
         self.endpoints = endpoints
+
+    @classmethod
+    def create_chips(cls, fpga, addr_pins, endpoints):
+        """Instantiate a number of new I2C chips.
+        
+        The FPGA and endpoints will be the same for all instantiated chips.
+        
+        Arguments
+        ---------
+        fpga : FPGA
+            The fpga instance for the chip to connect with.
+        addr_pins : list
+            The list of addr_pins assigned to the new chips.
+
+        Returns
+        -------
+        list
+            A list of the newly instantiated chips in the same order addr_pins was given in.
+        """
+
+        return [cls(fpga=fpga, addr_pins=addr, endpoints=endpoints) for addr in addr_pins]
+
 
     # STARTS - Defines the preamble bytes after which a start bit is
     #      transmitted. For example, if STARTS=0x04, a start bit is
@@ -883,10 +914,6 @@ class TCA9555(I2CController):
     ADDRESS_HEADER = 0b0100_0000
     registers = Register.get_chip_registers('TCA9555')
 
-    def __init__(self, fpga, addr_pins, endpoints):
-        super().__init__(fpga=fpga, endpoints=endpoints)
-        self.addr_pins = addr_pins
-
     def configure_pins(self, data):
         """Configure the chip's pins as inputs (1's) or outputs (0's)."""
 
@@ -957,11 +984,6 @@ class UID_24AA025UID(I2CController):
 
     ADDRESS_HEADER = 0b10100000
     registers = Register.get_chip_registers('24AA025UID')
-
-    def __init__(self, fpga, addr_pins, endpoints):
-        # No endpoints default because I2CDC or I2CDAQ does not make sense as a default either way
-        super().__init__(fpga=fpga, endpoints=endpoints)
-        self.addr_pins = addr_pins
 
     def write(self, data, word_address=0x00, num_bytes=None):
         """Write data into memory at word_address."""
@@ -1105,10 +1127,6 @@ class DAC53401(I2CController):
     #           001   |   VDD
     #           010   |   SDA
     #           011   |   SCL
-
-    def __init__(self, fpga, addr_pins, endpoints):
-        super().__init__(fpga=fpga, endpoints=endpoints)
-        self.addr_pins = addr_pins
 
     def write(self, data, register_name='DAC_DATA'):
         """Write data to any register on the chip."""
@@ -1887,7 +1905,7 @@ class SPIFifoDriven():
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
     def write(self, data):
-        """Host write 24 bits of data ot the chip over SPI."""
+        """Host write 24 bits of data to the chip over SPI."""
 
         if self.current_data_mux != 'host':
             self.set_data_mux('host')
