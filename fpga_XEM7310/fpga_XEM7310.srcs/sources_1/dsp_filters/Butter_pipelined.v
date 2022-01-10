@@ -242,13 +242,27 @@ module Butter_pipelined
     reg [31:0] B;
     wire [47:0] P;
     
-    mult_gen_0 mult1(.clk(clk), .A(A), .B(B), .P(P));
+    mult_gen_0 mult1(.CLK(clk), .A(A), .B(B), .P(P));
     
     always @ ( posedge clk)begin
         if(reset == 1'b1)begin
             A <= 1'b0;
             B <= 1'b0;
             ena <= 4'b0;
+            mul_temp <= 47'b0;
+            a2mul1 <= 47'b0;
+            a3mul1 <= 47'b0;
+            b1mul1 <= 47'b0;
+            b2mul1 <= 47'b0;
+            b3mul1 <= 47'b0;
+            mul_temp_1 <= 47'b0;
+            a2mul2 <= 47'b0;
+            a3mul2 <= 47'b0;
+            b1mul2 <= 47'b0;
+            b2mul2 <= 47'b0;
+            b3mul2 <= 47'b0;
+            mul_temp_2 <= 47'b0;
+            sos_pipeline1 <= 16'b0;
         end
         else if(clk_enable == 1'b1)begin
             ena <= 4'b0;
@@ -280,6 +294,7 @@ module Butter_pipelined
             B <= coeff_a2_section1_shadow_reg;
         end
         else if(ena == 5'h05)begin
+            sos_pipeline1 <= feedback1;
             b3mul1 <= P;
             A <= inputconv1;
             B <= coeff_b1_section1_shadow_reg;
@@ -457,17 +472,17 @@ module Butter_pipelined
 
   assign feedback1 = (ab1sum1[45:0] + {ab1sum1[30], {29{~ab1sum1[30]}}})>>>30;
 
-  always @ ( posedge clk)
-    begin: sos_pipeline_process_section1
-      if (reset == 1'b1) begin
-        sos_pipeline1 <= 0;
-      end
-      else begin
-        if (clk_enable == 1'b1) begin
-          sos_pipeline1 <= feedback1;
-        end
-      end
-    end // sos_pipeline_process_section1
+//  always @ ( posedge clk)
+//    begin: sos_pipeline_process_section1
+//      if (reset == 1'b1) begin
+//        sos_pipeline1 <= 0;
+//      end
+//      else begin
+//        if (clk_enable == 1'b1) begin
+//          sos_pipeline1 <= feedback1;
+//        end
+//      end
+//    end // sos_pipeline_process_section1
 
   //   -------- Section 2 Processor Interface logic------------------
 
