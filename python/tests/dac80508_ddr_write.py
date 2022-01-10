@@ -76,28 +76,34 @@ gpio.fpga.debug = True
 gpio.spi_debug('ds0')
 
 # --- Configure for DDR read to DAC80508 ---
-dac.set_host_mode()
-dac.set_divider(0x8)
-dac.configure_master_bin(0x3218)
-dac.select_slave(1)
+dac.set_spi_sclk_divide(0x8)
+dac.set_ctrl_reg(0x3218)
 dac.set_config_bin(0x00)
 dac.set_data_mux('DDR')
 # Need byte index value
-ddr.set_index(ceil(122/8) - 1)
+ddr.set_index(ddr.parameters['sample_size']) # For now set the sample size and index the same.
+# TODO: figure out what the index needs to be in a general form
 
 # --- Write to the DDR ---
-# 6 AD5453 which each need 14 bits   = 84  bits
-# 2 DAC80580 which each need 19 bits = 38  bits
-# Total                              = 122 bits
-fast_dac_voltage = from_voltage(voltage=5, num_bits=14, voltage_range=10, with_negatives=False)
-slow_dac_voltage = from_voltage(voltage=2.5, num_bits=16, voltage_range=2.5, with_negatives=False)
-ddr_write_data = 0
-# For now, we are only going to write to DAC OUT 0 so we don't have to worry about the address bits
-for i in range(num_fast_dacs):
-    ddr_write_data |= fast_dac_voltage << (16 * i)
-for i in range(num_slow_dacs):
-    ddr_write_data |= slow_dac_voltage << (16 * i)
-# I am not sure if the to_bytes function will mess up the order of the bits because
-# they to not fit into separate bytes
-ddr_write_buf = ddr_write_data.to_bytes(length=16, byteorder='big')
-ddr.write(ddr_write_buf)
+# [0:13]    FDAC_1 [14:15] ADDR SDAC_1
+# [16:29]   FDAC_2 [31:32] ADDR SDAC_1 and SDAC_2
+# [32:45]   FDAC_3 [46:47] ADDR SDAC_2
+# [48:61]   FDAC_4 [62:63] 0's
+# [64:77]   FDAC_5 [78:79] 0's
+# [80:93]   FDAC_6 [94:95] 0's
+# [96:111]  SDAC_1
+# [112:127] SDAC_2
+
+# For now, we are only going to write to DAC OUT 0 on the SDAC (DAC80508) so we don't have to worry about the address bits
+# Data for the 6 AD5453 "Fast DACs"
+for i in range(6):
+    t, ddr.data_arrays[f'chan{i}'] = ddr.make_flat_voltage(from_voltage(voltage=5, num_bits=14, voltage_range=10, with_negatives=False))
+# Data for the 2 DAC80508 "Slow DACs"
+for i in range(2):
+    t, ddr.data_arrays[f'chan{i}'] = ddr.make_flat_voltage(
+        from_voltage(voltage=2.5,
+                     num_bits=16,
+                     voltage_range=2.5,
+                     with_negatives=False))
+
+g_buf = ddr.write_channels()
