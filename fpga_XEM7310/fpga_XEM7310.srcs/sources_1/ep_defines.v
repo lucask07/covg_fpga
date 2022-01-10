@@ -100,10 +100,10 @@
 `define DDR3_INIT_CALIB_COMPLETE 0 // address=0x27 bit_width=1
 `define DDR3_WIRE_OUT 8'h29 // bit_width=32
 
-`define AD5453_COEFF_DEBUG1_0 8'h2a // bit_width=32
-`define AD5453_COEFF_DEBUG2_0 8'h2b // bit_width=32
-`define AD5453_COEFF_DEBUG1_1 8'h2c // bit_width=32
-`define AD5453_COEFF_DEBUG2_1 8'h2d // bit_width=32
+`define AD5453_COEFF_DEBUG_0 8'h2a // bit_width=32
+`define AD5453_COEFF_DEBUG_1 8'h2b // bit_width=32
+`define AD5453_COEFF_DEBUG_2 8'h2c // bit_width=32
+`define AD5453_COEFF_DEBUG_3 8'h2d // bit_width=32
 
 `define GP_FIFO_FLAG_I2C_DONE_TRIG_OUT 8'h60 // bit_width=32
 
@@ -250,9 +250,16 @@
 
 `define ADS8686_RESET 25 // address=GP_PWR_REG_ADC_EN_WIRE_IN bit_width=1
 
-`define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
-`define DAC80508_REGBRIDGE_OFFSET 8'h05 // bit_width=32
-`define AD5453_REGBRIDGE_OFFSET 8'h2B // bit_width=32
+// Don't need address for these so can just use 0x0 (must be hex)
+// To use GEN_BIT with bit_width for RegBridge incrementing between instances,
+// need the numbers in decimal, not hex.
+// 8'h00 == 0
+// 8'h05 == 5
+// 8'h2B == 43
+// Only 1 ADS8686 instantiation so no GEN_BIT
+`define ADS8686_REGBRIDGE_OFFSET 0 // address=0x0 bit_width=19
+`define DAC80508_REGBRIDGE_OFFSET_GEN_BIT 5 // address=0x0 bit_width=19
+`define AD5453_REGBRIDGE_OFFSET_GEN_BIT 43 // address=0x0 bit_width=19
 
 // TODO set this up!
 // `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
