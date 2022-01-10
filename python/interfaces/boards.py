@@ -440,25 +440,21 @@ class Daq:
         # I2C
         i2c_eps = advance_endpoints_bynum(
             Endpoint.endpoints_from_defines['I2CDAQ'], 1)
-        self.TCA = [None, None]
-        self.TCA[0] = TCA9555(
-            fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=i2c_eps)
-        self.TCA[1] = TCA9555(
-            fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=i2c_eps)
+        self.TCA = TCA9555.create_chips(fpga=fpga, addr_pins=[TCA_addr_pins_0, TCA_addr_pins_1], endpoints=i2c_eps)
         self.UID = UID_24AA025UID(
             fpga=fpga, addr_pins=UID_addr_pins, endpoints=i2c_eps)
 
         # Endpoint advancing is not working with advances that are not a full 32 bits
-        for ch in [0, 1]:
-            self.TCA[ch].endpoints['IN'].bit_index_high = 32
-            self.TCA[ch].endpoints['IN'].bit_index_low = 16
+        # for ch in [0, 1]:
+        #     self.TCA[ch].endpoints['IN'].bit_index_high = 32
+        #     self.TCA[ch].endpoints['IN'].bit_index_low = 16
 
-            self.TCA[ch].endpoints['OUT'].bit_index_high = 16
-            self.TCA[ch].endpoints['OUT'].bit_index_low = 8
-        self.UID.endpoints['OUT'].bit_index_high = 16
-        self.UID.endpoints['OUT'].bit_index_low = 8
-        self.UID.endpoints['IN'].bit_index_high = 32
-        self.UID.endpoints['IN'].bit_index_low = 16
+        #     self.TCA[ch].endpoints['OUT'].bit_index_high = 16
+        #     self.TCA[ch].endpoints['OUT'].bit_index_low = 8
+        # self.UID.endpoints['OUT'].bit_index_high = 16
+        # self.UID.endpoints['OUT'].bit_index_low = 8
+        # self.UID.endpoints['IN'].bit_index_high = 32
+        # self.UID.endpoints['IN'].bit_index_low = 16
 
         # self.DAC_I2C = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
         # SPI
