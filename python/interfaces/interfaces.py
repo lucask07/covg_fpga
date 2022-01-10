@@ -15,6 +15,7 @@ import time
 from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list, from_voltage, to_voltage
 import copy
 
+
 class Register:
     """Class for internal registers on a device.
 
@@ -58,7 +59,8 @@ class Register:
             # The Registers spreadsheet is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
             for i in range(15):
                 if os.path.basename(workbook_path) == 'covg_fpga':
-                    workbook_path = os.path.join(workbook_path, 'Registers.xlsx')
+                    workbook_path = os.path.join(
+                        workbook_path, 'Registers.xlsx')
                     break
                 else:
                     # If we aren't in covg_fpga, move up a folder and check again
@@ -148,7 +150,8 @@ class Endpoint:
             # The Registers spreadsheet is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
             for i in range(15):
                 if os.path.basename(ep_defines_path) == 'covg_fpga':
-                    ep_defines_path = os.path.join(ep_defines_path, 'fpga_XEM7310', 'fpga_XEM7310.srcs', 'sources_1', 'ep_defines.v')
+                    ep_defines_path = os.path.join(
+                        ep_defines_path, 'fpga_XEM7310', 'fpga_XEM7310.srcs', 'sources_1', 'ep_defines.v')
                     break
                 else:
                     # If we aren't in covg_fpga, move up a folder and check again
@@ -216,7 +219,8 @@ class Endpoint:
                     # the interfaces.py name of that endpoint so we can look it
                     # up going through all lines
                     address_name = pieces[4].split('=')[1]
-                    address_name_no_gen = address_name.split('_GEN', maxsplit=1)[0]
+                    address_name_no_gen = address_name.split(
+                        '_GEN', maxsplit=1)[0]
                     address = address_name_no_gen
                 bit = int(pieces[2])
                 bit_width = int(pieces[5].split('=')[1])
@@ -226,7 +230,8 @@ class Endpoint:
             # Put defined endpoint in endpoints_from_defines dictionary
             if Endpoint.endpoints_from_defines.get(class_name) is None:
                 # Class doesn't exist yet in the dictionary
-                Endpoint.endpoints_from_defines[class_name] = {ep_name: endpoint}
+                Endpoint.endpoints_from_defines[class_name] = {
+                    ep_name: endpoint}
             else:
                 # Class already exists in the dictionary
                 Endpoint.endpoints_from_defines[class_name][ep_name] = endpoint
@@ -239,20 +244,25 @@ class Endpoint:
                 endpoint = group[endpoint_name]
                 if type(endpoint.address) == str:
                     # Address is a name
-                    class_name, ep_name = endpoint.address.split('_', maxsplit=1)
-                    referenced_group = Endpoint.endpoints_from_defines.get(class_name)
+                    class_name, ep_name = endpoint.address.split(
+                        '_', maxsplit=1)
+                    referenced_group = Endpoint.endpoints_from_defines.get(
+                        class_name)
                     if referenced_group is None:
-                        print(f'{group_name}[{endpoint_name}]: Referenced group "{class_name}" not found.')
+                        print(
+                            f'{group_name}[{endpoint_name}]: Referenced group "{class_name}" not found.')
                         continue
                     endpoint.address = referenced_group.get(ep_name).address
                     if endpoint.address is None:
-                        print(f'{group_name}[{endpoint_name}]: Referenced address "{class_name}_{ep_name}" not found.')
+                        print(
+                            f'{group_name}[{endpoint_name}]: Referenced address "{class_name}_{ep_name}" not found.')
                         continue
 
         # At this point the dictionary should be built
         # Check for naming collisions (2+ names sharing same address or bit within address)
         # Collect all top level endpoints
-        top_level_eps = [x for x in Endpoint.endpoints_from_defines.values() if type(x) == Endpoint]
+        top_level_eps = [
+            x for x in Endpoint.endpoints_from_defines.values() if type(x) == Endpoint]
         # Collect all endpoints in dictionaries
         lower_level_eps = []
         for eps in [d.values() for d in Endpoint.endpoints_from_defines.values() if type(d) == dict]:
@@ -261,34 +271,39 @@ class Endpoint:
         # Make tuples of (address, bit) from each list, then concatenate the lists
         # The none_to_neg_1.get() translates None values of bit_index_low to -1 for sorting later
         list_eps = [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in top_level_eps] + \
-            [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in lower_level_eps]
+            [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low))
+             for ep in lower_level_eps]
         list_len = len(list_eps)
-        set_len = len(set(list_eps)) # A set removes duplicates
+        set_len = len(set(list_eps))  # A set removes duplicates
         if list_len != set_len:
             # There are duplicates
             print('Naming collision in ep_defines.v\nFinding collisions...')
             # Search through to find duplicates
-            sorted_list_eps = list(list_eps) # Copy the list to keep order in the original
-            sorted_list_eps.sort() # Put duplicates next to one another in new list
-            top_level_names = [x for x in Endpoint.endpoints_from_defines.keys() if type(Endpoint.endpoints_from_defines[x]) == Endpoint]
+            # Copy the list to keep order in the original
+            sorted_list_eps = list(list_eps)
+            sorted_list_eps.sort()  # Put duplicates next to one another in new list
+            top_level_names = [x for x in Endpoint.endpoints_from_defines.keys() if type(
+                Endpoint.endpoints_from_defines[x]) == Endpoint]
             lower_level_names = []
             for sub_dicts in [x for x in Endpoint.endpoints_from_defines.values() if type(x) == dict]:
                 lower_level_names += list(sub_dicts.keys())
             list_names = top_level_names + lower_level_names
 
-            collision = False # Keep track of whether there was a collision for return value
+            collision = False  # Keep track of whether there was a collision for return value
             for ep_index in range(len(sorted_list_eps) - 1):
                 ep = sorted_list_eps[ep_index]
                 next_ep = sorted_list_eps[ep_index + 1]
                 name = list_names[list_eps.index(sorted_list_eps[ep_index])]
-                next_name = list_names[list_eps.index(sorted_list_eps[ep_index])]
+                next_name = list_names[list_eps.index(
+                    sorted_list_eps[ep_index])]
                 if (ep == next_ep) and (name != next_name):
                     # Need different names because otherwise they are from different groups and do not actually conflict
 
                     # The name part of this uses a list of names created in the same order as the original list_eps (list_names)
                     # then finds the index of the current endpoint in list_eps and uses that to find the corresponding
                     # name in list_names
-                    print(f'Collision found at address={ep[0]} bit={ep[1]}: {name} with {next_name}')
+                    print(
+                        f'Collision found at address={ep[0]} bit={ep[1]}: {name} with {next_name}')
                     collision = True
             if collision:
                 return -1
@@ -346,9 +361,11 @@ def advance_endpoints_bynum(endpoints_dict, num):
     for key in endpoints_dict:
         endpoint = endpoints_dict[key]
         if endpoint.gen_bit:
-            endpoint.bit_index_low = (endpoint.bit_index_low + (endpoint.bit_width*num)) % 32
+            endpoint.bit_index_low = (
+                endpoint.bit_index_low + (endpoint.bit_width*num)) % 32
             endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
         if endpoint.gen_address:
+            print(f'gen address bit_width: {endpoint.bit_width}')
             endpoint.address += ((endpoint.bit_width*num)//32)
         endpoints_dict[key] = endpoint
     return endpoints_dict
@@ -445,7 +462,8 @@ class FPGA:
     def set_wire(self, address, value, mask=0xFFFFFFFF):
         """Return the error code after setting an OK WireIn value."""
         if self.debug:
-            print(f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
+            print(
+                f'set_wire(address={hex(address)}, value={hex(value)}, mask={hex(mask)})')
         error_code = self.xem.SetWireInValue(address, value, mask)
         self.xem.UpdateWireIns()
         return error_code
@@ -466,7 +484,8 @@ class FPGA:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
         if self.debug:
-            print(f'set_endpoint(address={hex(ep_bit.address)}, value={hex(mask)}, mask={hex(mask)})')
+            print(
+                f'set_endpoint(address={hex(ep_bit.address)}, value={hex(mask)}, mask={hex(mask)})')
         self.xem.SetWireInValue(ep_bit.address, mask, mask)  # set
         self.xem.UpdateWireIns()
 
@@ -480,7 +499,8 @@ class FPGA:
             mask = gen_mask(
                 list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
         if self.debug:
-            print(f'clear_endpoint(address={hex(ep_bit.address)}, value={hex(0)}, mask={hex(mask)})')
+            print(
+                f'clear_endpoint(address={hex(ep_bit.address)}, value={hex(0)}, mask={hex(mask)})')
         self.xem.SetWireInValue(ep_bit.address, 0x0000, mask)  # clear
         self.xem.UpdateWireIns()
 
@@ -587,13 +607,15 @@ class FPGA:
         """Set a single bit to 1 in a OpalKelly wire in."""
 
         if self.debug:
-            print(f'set_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)})')
+            print(
+                f'set_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)})')
         return self.set_wire(address, value=1 << bit, mask=1 << bit)
 
     def clear_wire_bit(self, address, bit):
         """Clear a single bit to 0 in a OpalKelly wire in."""
         if self.debug:
-            print(f'clear_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)})')
+            print(
+                f'clear_wire_bit(address={hex(address)},value={hex(1 << bit)},mask={hex(1 << bit)})')
 
         return self.set_wire(address, value=0, mask=1 << bit)
 
@@ -689,10 +711,10 @@ class I2CController:
             self.endpoints['MEMSTART'].address, self.endpoints['MEMSTART'].bit_index_low)
         for i in range(data_length + self.i2c['m_nDataStart']):
             # print('(transmit) WireIn Value = {}'.format(self.i2c['m_pBuf'][i]))
-            mask = 0xff << self.endpoints['WIRE_IN'].bit_index_low
-            value = self.i2c['m_pBuf'][i] << self.endpoints['WIRE_IN'].bit_index_low
+            mask = 0xff << self.endpoints['IN'].bit_index_low
+            value = self.i2c['m_pBuf'][i] << self.endpoints['IN'].bit_index_low
             self.fpga.xem.SetWireInValue(
-                self.endpoints['WIRE_IN'].address, value, mask)
+                self.endpoints['IN'].address, value, mask)
             self.fpga.xem.UpdateWireIns()
             self.fpga.xem.ActivateTriggerIn(
                 self.endpoints['MEMWRITE'].address, self.endpoints['MEMWRITE'].bit_index_low)
@@ -724,10 +746,10 @@ class I2CController:
         for i in range(self.i2c['m_nDataStart']):
             # print('WireIn Value = {}'.format(self.i2c['m_pBuf'][i]))
             # TODO: check this change (LJK)
-            mask = 0xff << self.endpoints['WIRE_IN'].bit_index_low
-            value = self.i2c['m_pBuf'][i] << self.endpoints['WIRE_IN'].bit_index_low
+            mask = 0xff << self.endpoints['IN'].bit_index_low
+            value = self.i2c['m_pBuf'][i] << self.endpoints['IN'].bit_index_low
             self.fpga.xem.SetWireInValue(
-                self.endpoints['WIRE_IN'].address, value, mask)
+                self.endpoints['IN'].address, value, mask)
             self.fpga.xem.UpdateWireIns()
             self.fpga.xem.ActivateTriggerIn(
                 self.endpoints['MEMWRITE'].address, self.endpoints['MEMWRITE'].bit_index_low)
@@ -752,9 +774,10 @@ class I2CController:
                         self.fpga.xem.UpdateWireOuts()
                         # TODO: check this change (LJK)
                         data_tmp = self.fpga.xem.GetWireOutValue(
-                            self.endpoints['WIRE_OUT'].address)
-                        mask = 0xff << self.endpoints['WIRE_OUT'].bit_index_low
-                        data[i] = (data_tmp & mask) >> self.endpoints['WIRE_OUT'].bit_index_low
+                            self.endpoints['OUT'].address)
+                        mask = 0xff << self.endpoints['OUT'].bit_index_low
+                        data[i] = (
+                            data_tmp & mask) >> self.endpoints['OUT'].bit_index_low
                         self.fpga.xem.ActivateTriggerIn(
                             self.endpoints['MEMREAD'].address, self.endpoints['MEMREAD'].bit_index_low)
                     return data
@@ -856,13 +879,12 @@ class TCA9555(I2CController):
         Read 2 bytes of data from the pins.
     """
 
-    ADDRESS_HEADER=0b0100_0000
+    ADDRESS_HEADER = 0b0100_0000
     registers = Register.get_chip_registers('TCA9555')
 
     def __init__(self, fpga, addr_pins, endpoints):
         super().__init__(fpga=fpga, endpoints=endpoints)
         self.addr_pins = addr_pins
-
 
     def configure_pins(self, data):
         """Configure the chip's pins as inputs (1's) or outputs (0's)."""
@@ -873,7 +895,6 @@ class TCA9555(I2CController):
         self.i2c_write_long(
             dev_addr, [TCA9555.registers['CONFIG'].address], 2, data)
 
-
     def write(self, data, register_name='OUTPUT', mask=0xffff):
         """Write 2 bytes of data to the pins."""
 
@@ -883,7 +904,7 @@ class TCA9555(I2CController):
         if mask == 0xffff:
             new_data = data
         else:
-            read_out = self.read(self.addr_pins)
+            read_out = self.read()
             current_data = (read_out[0] << 8) | read_out[1]
             if current_data == None:
                 print('Read for masking FAILED')
@@ -894,7 +915,6 @@ class TCA9555(I2CController):
         list_data = [new_data // (16**2), new_data % (16**2)]
         self.i2c_write_long(
             dev_addr, [TCA9555.registers[register_name].address], 2, list_data)
-
 
     def read(self, register_name='INPUT'):
         """Read 2 bytes of data from the pins."""
@@ -934,7 +954,7 @@ class UID_24AA025UID(I2CController):
         Return the chip's device code.
     """
 
-    ADDRESS_HEADER=0b10100000
+    ADDRESS_HEADER = 0b10100000
     registers = Register.get_chip_registers('24AA025UID')
 
     def __init__(self, fpga, addr_pins, endpoints):
@@ -942,12 +962,12 @@ class UID_24AA025UID(I2CController):
         super().__init__(fpga=fpga, endpoints=endpoints)
         self.addr_pins = addr_pins
 
-
     def write(self, data, word_address=0x00, num_bytes=None):
         """Write data into memory at word_address."""
 
         dev_addr = UID_24AA025UID.ADDRESS_HEADER | (self.addr_pins << 1)
-        print(f'word_address: {hex(word_address)}\ndata: {hex(data)}\nnum_bytes: {num_bytes}')
+        print(
+            f'word_address: {hex(word_address)}\ndata: {hex(data)}\nnum_bytes: {num_bytes}')
 
         # Convert data into a list
         if num_bytes is None:
@@ -979,7 +999,6 @@ class UID_24AA025UID(I2CController):
         self.i2c_write_long(dev_addr, [word_address], num_bytes, list_data)
         return True
 
-
     def read(self, word_address=0x00, words_read=1):
         """Return words_read words of data from memory at word_address."""
 
@@ -987,7 +1006,6 @@ class UID_24AA025UID(I2CController):
         dev_addr = UID_24AA025UID.ADDRESS_HEADER | (
             self.addr_pins << 1) | 0b1
         return self.i2c_read_long(dev_addr, [word_address], words_read)
-
 
     def get_serial_number(self):
         """Return the unique 32-serial number stored in memory on the chip."""
@@ -1001,7 +1019,6 @@ class UID_24AA025UID(I2CController):
 
         return serial_number
 
-
     def get_manufacturer_code(self):
         """Return the chip's manufacturer code.
 
@@ -1009,7 +1026,6 @@ class UID_24AA025UID(I2CController):
         """
 
         return self.read(word_address=UID_24AA025UID.registers['MANUFACTURER_CODE'].address)[0]
-
 
     def get_device_code(self):
         """Return the chip's device code.
@@ -1138,6 +1154,7 @@ class DAC53401(I2CController):
             return None
         # First byte in the list is the MSB, shift and append the next byte
         for byte in read_back_list:
+            print('Readback byte of {:02X}'.format(byte))
             read_back_data <<= 8
             read_back_data |= byte
         # Get only the bits for the specified register from what was read back.
@@ -1223,7 +1240,6 @@ class DAC53401(I2CController):
             return False
         self.write(func_code, 'FUNC_CONFIG')
 
-
     def start_func(self):
         """Start function generation.
 
@@ -1231,12 +1247,10 @@ class DAC53401(I2CController):
         """
         self.write(0b1, 'START_FUNC_GEN')
 
-
     def stop_func(self):
         """Stop function generation."""
 
         self.write(0b0, 'START_FUNC_GEN')
-
 
     def config_margins(self, margin_high=None, margin_low=None):
         """Configure margin high and low values."""
@@ -1246,7 +1260,6 @@ class DAC53401(I2CController):
 
         if margin_low != None:
             self.write(margin_low, 'MARGIN_LOW')
-
 
     def config_step(self, step):
         """Configure the number of bits to step through."""
@@ -1267,7 +1280,6 @@ class DAC53401(I2CController):
             print('Invalid step')
             return False
         self.write(step_code, 'CODE_STEP')
-
 
     def config_rate(self, rate):
         """Configure the rate to step through each bit."""
@@ -1298,42 +1310,35 @@ class DAC53401(I2CController):
             return False
         self.write(rate_code, 'SLEW_RATE')
 
-
     def reset(self):
         """Reset the chip using a software reset."""
 
         self.write(0b1010, 'SW_RESET')
-
 
     def lock(self):
         """Lock the registers of the device so they cannot be changed."""
 
         self.write(0b1, 'DEVICE_LOCK')
 
-
     def unlock(self):
         """Unlock the registers of the device so they can be changed again."""
 
         self.write(0b0101, 'DEVICE_UNLOCK_CODE')
-
 
     def power_up(self):
         """Power up the DAC output."""
 
         self.write(0b00, 'DAC_PDN')
 
-
     def power_down_10k(self):
         """Power down the DAC output to 10K ohms."""
 
         self.write(0b01, 'DAC_PDN')
 
-
     def power_down_high_impedance(self):
         """Power down the DAC output to high impedance (default)."""
 
         self.write(0b10, 'DAC_PDN')
-
 
     def get_id(self):
         """Return the device ID and version ID as one integer."""
@@ -1399,11 +1404,11 @@ class SPIController:
         Reset the Wishbone Master and SPI Core.
     """
 
-    WB_SET_ADDRESS=0x80000000  # These 3 are from the SPI core manual
-    WB_WRITE=0x40000000
-    WB_READ=0x00000000
+    WB_SET_ADDRESS = 0x80000000  # These 3 are from the SPI core manual
+    WB_WRITE = 0x40000000
+    WB_READ = 0x00000000
     # ACK=0x200000000
-    WB_CLK_FREQ=200  # clk_sys = 200 MHz in the top_level_module.v comments
+    WB_CLK_FREQ = 200  # clk_sys = 200 MHz in the top_level_module.v comments
 
     registers = Register.get_chip_registers('SPI')
 
@@ -1438,7 +1443,8 @@ class SPIController:
                 Endpoint.increment_endpoints(endpoints)
         else:
             for i in range(number_of_chips):
-                chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(endpoints), master_config=master_config))
+                chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(
+                    endpoints), master_config=master_config))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
                 Endpoint.increment_endpoints(endpoints)
@@ -1463,7 +1469,6 @@ class SPIController:
 
         return chips
 
-
     def wb_send_cmd(self, command):
         """Send a command to the Wishbone.
 
@@ -1477,7 +1482,8 @@ class SPIController:
         # DEBUG: temporary for logging DAC80508 test
         # print(f'ActivateTriggerIn(address={hex(self.parameters["WB_CONVERT"].address)}, index={hex(self.parameters["WB_CONVERT"].bit_index_high)}')
 
-        self.fpga.send_trig(self.endpoints['WB_CONVERT'])  # allows for optional debug prints
+        # allows for optional debug prints
+        self.fpga.send_trig(self.endpoints['WB_CONVERT'])
         #self.fpga.xem.ActivateTriggerIn(
         #    self.endpoints['WB_CONVERT'].address, self.endpoints['WB_CONVERT'].bit_index_low)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
 
@@ -1579,7 +1585,8 @@ class SPIController:
         # TODO: determine if register argument is really necessary
 
         # Set address to Tx register
-        ack = self.wb_set_address(SPIController.registers['Tx' + str(register)].address)
+        ack = self.wb_set_address(
+            SPIController.registers['Tx' + str(register)].address)
         # TODO: fix ack
         # if ack:
         #     if self.debug:
@@ -1610,7 +1617,8 @@ class SPIController:
         """
 
         # Set address to the Rx register Rx0, Rx1, Rx2, or Rx3
-        ack = self.wb_set_address(SPIController.registers['Rx' + str(register)].address)
+        ack = self.wb_set_address(
+            SPIController.registers['Rx' + str(register)].address)
 
         # TODO: fix ack
         # if ack:
@@ -1824,8 +1832,8 @@ class SPIFifoDriven():
 
         mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
                               self.endpoints['DATA_SEL'].bit_index_high))
-        data = (self.data_mux[source] <<
-                self.endpoints['DATA_SEL'].bit_index_low)
+        data = (self.data_mux[source]
+                << self.endpoints['DATA_SEL'].bit_index_low)
         self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
                            mask=mask)
         self.current_data_mux = source
@@ -1971,7 +1979,7 @@ class DAC80508(SPIFifoDriven):
             if voltage <= 1.25:
                 gain = 1
                 divide_reference = True
-                voltage *= 2 # Double voltage so we can write as if output unaffected
+                voltage *= 2  # Double voltage so we can write as if output unaffected
             elif voltage <= 2.5:
                 # *2 and /2 is recommended instead of *1 and /1
                 gain = 2
@@ -1983,12 +1991,14 @@ class DAC80508(SPIFifoDriven):
                 voltage /= 2  # Halve voltage so we can write as if output unaffected
             else:
                 print(f'ERROR: cannot write voltage {voltage}V, max 5V')
-            self.set_gain(gain=gain, outputs=outputs, divide_reference=divide_reference)
+            self.set_gain(gain=gain, outputs=outputs,
+                          divide_reference=divide_reference)
             gain_info = {'gain': gain, 'divide_reference': divide_reference}
         else:
             gain_info = {}
 
-        voltage_bin = from_voltage(voltage=voltage, num_bits=16, voltage_range=2.5, with_negatives=False)
+        voltage_bin = from_voltage(
+            voltage=voltage, num_bits=16, voltage_range=2.5, with_negatives=False)
         if type(outputs) is list:
             for output in outputs:
                 self.write_chip_reg('DAC' + str(output), voltage_bin)
@@ -2097,7 +2107,8 @@ class AD5453(SPIFifoDriven):
                              7: 0x7fffffff}
 
         self.filter_offset = 4
-        self.filter_len = np.max(list(self.filter_coeff.keys())) - np.min(list(self.filter_coeff.keys()))
+        self.filter_len = np.max(
+            list(self.filter_coeff.keys())) - np.min(list(self.filter_coeff.keys()))
         self.current_data_mux = None
         self.set_data_mux('host')
 
@@ -2109,7 +2120,7 @@ class AD5453(SPIFifoDriven):
         """
 
         self.clk_edge_bits = 0b11
-        
+
     def set_ctrl_reg(self, reg_value=0x3010):
         """Configures the SPI Wishbone control register over the registerBridge.
 
@@ -2120,28 +2131,34 @@ class AD5453(SPIFifoDriven):
 
     def write_filter_coeffs(self):
 
-        for i in np.arange(self.filter_offset, 1 + self.filter_offset + self.filter_len):  #TODO is this correct? and how to parameterize?
+        # TODO is this correct? and how to parameterize?
+        for i in np.arange(self.filter_offset, 1 + self.filter_offset + self.filter_len):
             if (i-self.filter_offset) in self.filter_coeff:
-                addr = int(self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
+                addr = int(
+                    self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
                 val = int(self.filter_coeff[i-self.filter_offset])
                 # TODO: ian has first addr of 0x19, second as 0x1a
-                print('Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
+                print(
+                    'Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
                 self.fpga.xem.WriteRegister(addr, val)
 
     def write_filter_coeffs_simultaneous(self):
         # https://opalkelly.com/examples/setting-and-getting-multiple-registers/#tab-python
-        loop_thru = np.arange(self.filter_offset, 1 + self.filter_offset + self.filter_len)
+        loop_thru = np.arange(self.filter_offset, 1
+                              + self.filter_offset + self.filter_len)
         regs = ok.okTRegisterEntries((len(loop_thru)))
 
-        for i in loop_thru:  #TODO is this correct? and how to parameterize?
+        for i in loop_thru:  # TODO is this correct? and how to parameterize?
             if (i-self.filter_offset) in self.filter_coeff:
-                addr = int(self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
+                addr = int(
+                    self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
                 val = int(self.filter_coeff[i-self.filter_offset])
                 idx = int(i-self.filter_offset)
                 regs[idx].address = addr
                 regs[idx].data = val
                 # TODO: ian has first addr of 0x19, second as 0x1a
-                print('Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
+                print(
+                    'Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
         self.fpga.xem.WriteRegisters(regs)
 
     def read_coeff_debug(self):
@@ -2150,8 +2167,10 @@ class AD5453(SPIFifoDriven):
         debug wires available for filters 0, 1
         """
 
-        debug_coeff1 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG1_{self.channel}'].address)
-        debug_coeff2 = self.fpga.read_wire(self.endpoints[f'COEFF_DEBUG2_{self.channel}'].address)
+        debug_coeff1 = self.fpga.read_wire(
+            self.endpoints[f'COEFF_DEBUG1_{self.channel}'].address)
+        debug_coeff2 = self.fpga.read_wire(
+            self.endpoints[f'COEFF_DEBUG2_{self.channel}'].address)
 
         print(f'Read {hex(debug_coeff1)}, {hex(debug_coeff2)}')
         return debug_coeff1, debug_coeff2
@@ -2201,24 +2220,6 @@ class AD5453(SPIFifoDriven):
                                  13: 0x287ecada,
                                  7: 0x7fffffff}
 
-        elif (target == 'all_equal'):
-            if value is None:
-                value = 0
-            self.filter_coeff = {0: value,
-                                 1: value,
-                                 2: value,
-                                 3: value,
-                                 4: value,
-                                 5: value,
-                                 8: value,
-                                 9: value,
-                                 10: value,
-                                 11: value,
-                                 12: value,
-                                 13: value,
-                                 7: value,
-                                 6: value}
-
 
 class ADCDATA():
     def __init__(self):
@@ -2228,14 +2229,16 @@ class ADCDATA():
         d = np.frombuffer(buf, dtype=np.uint8).astype(np.uint32)
         if self.num_bits == 16:
             d1 = d[0::4] + (d[1::4] << 8)  # TODO: check the byte ordering
-            d2 = d[2::4] + (d[3::4] << 8)  # TODO: is breaking this up necessary? looks like it
+            # TODO: is breaking this up necessary? looks like it
+            d2 = d[2::4] + (d[3::4] << 8)
         elif self.num_bits == 18:
             # TODO: check 18-bit data conversion
             d2 = (d[3::4] << 8) + d[1::4] + ((d[0::4] << 16) & 0x03)
 
         if self.name == 'AD7961':
             c = np.empty((d1.size + d2.size,), dtype=d1.dtype)
-            c[0::2] = d2  # see Xilinx FIFO guide PG057 pg 115, memory fills up from left to right (MSB to LSB)
+            # see Xilinx FIFO guide PG057 pg 115, memory fills up from left to right (MSB to LSB)
+            c[0::2] = d2
             c[1::2] = d1
         elif self.name == 'ADS8686':
             c = {'A': np.array([]),
@@ -2359,7 +2362,8 @@ class ADS8686(SPIController, ADCDATA):
             towrite += ADS8686.range[val] << ((idx % 4)*2)
             if idx % 4 == 3:
                 if self.fpga.debug:
-                    print('Writing 0x{:x} to reg {}'.format(towrite, regs[idx//4]))
+                    print('Writing 0x{:x} to reg {}'.format(
+                        towrite, regs[idx//4]))
                 self.write(towrite, regs[idx//4])
                 towrite = 0
 
@@ -2380,19 +2384,19 @@ class ADS8686(SPIController, ADCDATA):
         """
         # Configures the clock divider to determine the CONVST frequency
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x0,
-                                          clk_div)  # (1/200e6)*1000 = 5 us period
+                                    clk_div)  # (1/200e6)*1000 = 5 us period
         # now load the sequence of wishbone commands that will be sent to the SPI converter
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x1,
-                                          0x8000_0001)  # Tx data register
+                                    0x8000_0001)  # Tx data register
 
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x2,
-                                          0x4000_0000)  # 0x0000 loaded into the Tx register -- for NOP
+                                    0x4000_0000)  # 0x0000 loaded into the Tx register -- for NOP
 
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x3,
-                                          0x8000_0041)  #
+                                    0x8000_0041)  #
 
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x4,
-                                          0x4000_3110)  #
+                                    0x4000_3110)  #
         # reset the clk divider
         self.fpga.send_trig(self.endpoints['CLK_DIV_RESET'])
         self.set_fpga_mode()  # lower the control bit for host vs. FPGA driven
@@ -2402,7 +2406,8 @@ class ADS8686(SPIController, ADCDATA):
         if lpf not in ADS8686.lpf_khz.keys():
             print('Error in ADS8686 LPF setup.')
             print('   Skipping ADS8686 LPF setup')
-            print('   Frequency options are: {}'.format(list(ADS8686.lpf_khz.keys())))
+            print('   Frequency options are: {}'.format(
+                list(ADS8686.lpf_khz.keys())))
             print('-'*40)
         else:
             self.write(ADS8686.lpf_khz[lpf], 'lpf')  # 376 khZ
@@ -2476,7 +2481,8 @@ class ADS8686(SPIController, ADCDATA):
             code = codes[i]
             self.write(code, 'seq' + str(i))
         # Write last code with loop back: use (len(codes) - 1) since i is not set if len(codes)==1
-        self.write((codes[-1] | backto_first_stack), 'seq' + str(len(codes) - 1))
+        self.write((codes[-1] | backto_first_stack),
+                   'seq' + str(len(codes) - 1))
         # enable the sequencer
         self.write(base_creg | 0x20, 'config')
         return codes
@@ -2602,7 +2608,7 @@ class AD7961(ADCDATA):
             self.set_enables(0b1101)
         else:
             print('incorrect input sampling bandwidth for {}:Channel{}'.format(self.name,
-                                                                        self.chan))
+                                                                               self.chan))
 
     def power_down_all(self):
         self.set_enables(0b0000)  # TODO: return anything here?
@@ -2658,15 +2664,18 @@ class AD7961(ADCDATA):
             mask = gen_mask(gl_mask) | mask
 
         # setup the values
-        value_chan = (value & 0b0001) << (self.endpoints['ENABLE'].bit_index_low)
+        value_chan = (value & 0b0001) << (
+            self.endpoints['ENABLE'].bit_index_low)
         if global_enables:
             #  globabl enables are the 3 MSBs
-            val_global = (value & 0b1110) << (self.endpoints['GLOBAL_ENABLE'].bit_index_low - 1)
+            val_global = (value & 0b1110) << (
+                self.endpoints['GLOBAL_ENABLE'].bit_index_low - 1)
             # minus 1 since already left shifted by 1
             print('Global value = 0x{:0x}'.format(val_global))
             value = value_chan | val_global
 
-        print('Enables setting value = 0x{:0x} with mask = = 0x{:0x}'.format(value, mask))
+        print('Enables setting value = 0x{:0x} with mask = = 0x{:0x}'.format(
+            value, mask))
         self.fpga.set_wire(self.endpoints['ENABLE'].address, value, mask=mask)
 
     def setup(self, reset_pll=False):
@@ -2704,22 +2713,38 @@ class AD7961(ADCDATA):
 
 
 class DDR3():
-    """ DDR is striped in groups of 16 bits to 8 channels  (128 bits)
-
+    """
+        TODO: Check and update this:
+        DDR is striped in groups of 16 bits to 8 channels  (128 bits)
         Out of the DDR FIFO
         Input write is 256 bits wide.
         Output read bus is 128 bits wide.
         Supports up to 8 channels at 16 bits each.
-
         Into the DDR:
         FIFO Write side 32 bits (PipeIn), Read side is 256 bits
         Write: W31-W0:     t0: W31-W0 [MSB]; W63-W32, ... W255-W224
-
         Out of the DDR:
         FIFO Write: W255 - W0 : t0 W255 - W128, t1: W127 - W0
         so:
         channel 0: 128    + 15:128, W15-W0
         channel 1: 128+16 + 15:144, 16*1 + 15: 16
+
+        The DDR is now divided into 2 buffers
+        1st buffer: function generator like data that provides data-stream to the DACs
+                      write from the host when WRITE_ENABLE is set
+                      read to the host when READ_FG_ENABLE is set ... but this is not very useful
+        2nd buffer: buffering for ADC data.
+                      ADC data writes to the DDR when READ_ENABLE is set
+                      ADC data in DDR can be read to the host when READ_ENABLE is set
+
+        expected operation:
+            1) at startup write pattern for DACs (note that write sets the correct status bits)
+            2)
+
+        DDR configuration bits:
+        WRITE_ENABLE
+        READ_ENABLE
+        READ_FG_ENABLE
     """
 
     def __init__(self, fpga, endpoints=None):
@@ -2727,222 +2752,409 @@ class DDR3():
             endpoints = Endpoint.get_chip_endpoints('DDR3')
         self.fpga = fpga
         self.endpoints = endpoints
-        self.parameters = {'BLOCK_SIZE': 16384,  # 1/2 the incoming FIFO depth (size of the BlockPipeIn)
-                           'sample_size': 524288,  # per channel
-                           'channels': 8  # number of channels that the DDR is striped between
-                           }
-        self.data_arrays = []
+        self.parameters = {'BLOCK_SIZE': 2048,  # 1/2 the incoming FIFO depth in bytes (size of the BlockPipeIn)
+                           'sample_size': 65536,  # per channel
+                           # number of channels that the DDR is striped between (for DACs)
+                           'channels': 8,
+                           'update_rate': 400e-9,  # 2.5 MHz -- requires SCLK ~ 50 MHZ
+                           'port1_index': 0x7f_ff_f8}
+
+        # the index is the DDR address that the circular buffer stops at.
+        # need to write all the way up to this stoping point otherwise the SPI output will glitch
+        self.parameters['sample_size'] = int(
+            (self.parameters['port1_index'] + 8)/2)
+
+        self.data_arrays = {}
         for i in range(self.parameters['channels']):
-            self.data_arrays.append(np.zeros(self.parameters['sample_size']).astype(np.int16))
-        self.update_rate = 400e-9  # 2.5 MHz -- requires SCLK ~ 50 MHZ
-        # TODO: with a repeating waveform need to write an integer number of periods
-        #       (force the frequency to be an integer number of sample rates)
-        # TODO: create a make_square wave
-        # TODO: create a ramp wave
-        # TODO: understand index
+            self.data_arrays[i] = np.zeros(
+                self.parameters['sample_size']).astype(np.int16)
 
-    def make_flat_voltage(self, input_voltage):
-        """
-        given the amplitude, and the time between each step, creates entire period
-        full-scale time is 2*pi
-        The "voltage" is actually the digital value written to DDR
-        """
-        t = np.arange(0, self.update_rate*self.parameters['sample_size'],
-                      self.update_rate)
-        amplitude = np.ones(len(t))*input_voltage
-        amplitude = amplitude.astype(np.int16)
-        return t, amplitude
+        self.clear_adc_debug()
 
-    def freq_to_samples(self, freq):
+    def set_adc_debug(self):
+        """ Set the ADC debug bit which multiplexes a counter to ADC channel 0
+            and bits 47:0 of the DAC data to ADC channels 1,2,3
+        Args:
+
+        Returns:
+            None
         """
-        determine closest frequency so that period is an integer number of
-        samples (possibly so that period * N is integer number of samples)
+        self.fpga.set_wire_bit(self.endpoints['ADC_DEBUG'].address,
+                               self.endpoints['ADC_DEBUG'].bit_index_low)
+
+    def clear_adc_debug(self):
+        """ Clear the ADC debug bit. DDR ADC data will be from the ADC
+        Args:
+
+        Returns:
+            None
         """
-        period = 1/freq
-        samples_per_period = period / self.update_rate
-        if samples_per_period > 128:
-            new_period = int(samples_per_period)*self.update_rate
-            samples_per_period = 1
-        elif samples_per_period >= 8:
-            samples_per_period = 16
-            new_period = int(samples_per_period*samples_per_period)*self.update_rate/samples_per_period
-        else:
+        self.fpga.clear_wire_bit(self.endpoints['ADC_DEBUG'].address,
+                                 self.endpoints['ADC_DEBUG'].bit_index_low)
+
+    def make_flat_voltage(self, amplitude):
+        """
+        Produces a constant unit16 array of value amplitude. Array length based on the
+        sample_size parameter
+
+        Args:
+            amplitude: digital value of the flat voltage (int or float)
+
+        Returns:
+            np.array (for DDR data array)
+        """
+        amplitude = np.ones(self.parameters['sample_size'])*amplitude
+        amplitude = amplitude.astype(np.uint16)
+        return amplitude
+
+    def closest_frequency(self, freq):
+        """
+        Determine closest frequency so the waveform evenly divides into the length of the DDR3
+
+        Args:
+            freq: desired frequency
+
+        Returns:
+            The closest possible frequency (float)
+        """
+        samples_per_period = (1/freq) / self.parameters['update_rate']
+
+        if samples_per_period <= 2:
             print('Frequency is too high for the DDR update rate')
-            return -1,-1,-1
+            return None
+        total_periods = self.parameters['sample_size']/samples_per_period
+        # round and recalculate frequency
+        round_total_periods = np.round(total_periods)
+        round_samples_per_period = self.parameters['sample_size'] / \
+            round_total_periods
+        new_frequency = 1 / \
+            (self.parameters['update_rate'] * round_samples_per_period)
 
-        return samples_per_period, num_periods, new_freq
+        return new_frequency
 
-    def make_sin_wave(self, amplitude, frequency, dignum_volt=546):
+    def make_sine_wave(self, amplitude, frequency,
+                       offset=0x2000, actual_frequency=True):
         """
-        creates a sine-wave
+        creates a sine-wave array for writing to DDR
 
-        amplitude [in Volts]
-        frequency [in Hz]
-        dignum_volt [default 0x2000/15 V full-scale = 546] will depend on Vref setting
+        Args:
+            amplitude: digital value of the sine wave (int or float in digital numbers)
+            frequency: desired frequency [float in Hz]
+            offset: digital value offset (float of int)
+            actual_frequency: decide if the closest frequency that fits an integer number of periods is calculated and used (bool)
 
+        Returns:
+            np.array (for DDR data array)
         """
-        offset = 0x2000  # for AD5453 in digital numbers
-        if (amplitude/dignum_volt) > offset:
-            print('error amplitude too large')
+        if (amplitude) > offset:
+            print('Error: amplitude in sine-wave is too large')
             return -1
-        t = np.arange(0, self.update_rate*self.parameters['sample_size'],
-                      self.update_rate)
-        print('length of time axis after creation ', len(t))
-        ddr_seq = (dignum_volt*amplitude)*np.sin(t*frequency*2*np.pi) + offset
-        ddr_seq = ddr_seq.astype(np.int16)
-        return t, ddr_seq
+        if actual_frequency:
+            frequency = self.closest_frequency(frequency)
 
-    def write_channels(self):
+        t = np.arange(0, self.parameters['update_rate']*self.parameters['sample_size'],
+                      self.parameters['update_rate'])
+        # print('length of time axis after creation ', len(t))
+        ddr_seq = (amplitude)*np.sin(t*frequency*2*np.pi) + offset
+        if any(ddr_seq < 0) or any(ddr_seq > (2**16-1)):
+            print('Error: Uint16 overflow in make sine wave')
+            return -1
+        ddr_seq = ddr_seq.astype(np.uint16)
+        return ddr_seq, frequency
+
+    def make_ramp(self, start, stop, step, actual_length=True):
+        """ create a ramp signal to write to the DDR
+
+        Args:
+            start: digital value to start the ramp at
+            stop: digital value to stop the ramp at
+            step: digital code to step by
+
+        Returns:
+            np.array (for DDR data array)
         """
-        stripe data from the 8 channels across the DDR
+        # change the stop value for integer number of cycles
+        ramp_seq = np.arange(start, stop, step)
+        len_ramp_seq = len(ramp_seq)
+        if actual_length:
+            length = int(
+                self.parameters['sample_size']/np.round(self.parameters['sample_size']/len_ramp_seq))
+            stop = start + length*step
+            ramp_seq = np.arange(start, stop, step)
+        num_tiles = self.parameters['sample_size']//len(ramp_seq)
+        extras = self.parameters['sample_size'] % len(ramp_seq)
+        ddr_seq = np.tile(ramp_seq, num_tiles)
+        ddr_seq = np.hstack((ddr_seq, ramp_seq[0:extras]))
+        ddr_seq = ddr_seq.astype(np.uint16)
+        return ddr_seq
+
+    def make_step(self, low, high, length, actual_length=True, duty=50):
         """
-        data = np.zeros(int(len(self.data_arrays[0])*self.parameters['channels']))
-        data = data.astype(np.int16)
+        create a step signal (square wave) to write to the DDR
+        """
+        if actual_length:
+            length = int(
+                self.parameters['sample_size']/np.round(self.parameters['sample_size']/length))
+        l_first = int(length/100*duty)
+        l_end = int(length/100*(100-duty))
+        ramp_seq = np.concatenate((np.ones(l_first)*low, np.ones(l_end)*high))
+        num_tiles = self.parameters['sample_size']//len(ramp_seq)
+        extras = self.parameters['sample_size'] % len(ramp_seq)
+        ddr_seq = np.tile(ramp_seq, num_tiles)
+        ddr_seq = np.hstack((ddr_seq, ramp_seq[0:extras]))
+        ddr_seq = ddr_seq.astype(np.uint16)
+        return ddr_seq
+
+    def write_channels(self, SET_READ=True):
+        """ stripe data from the 8 channels across the DDR
+            and then write to the DDR over the OpalKelly interface
+        Args:
+
+        Returns:
+            The buffer written to the DDR
+        """
+        data = np.zeros(
+            int(len(self.data_arrays[0])*self.parameters['channels']))
+        data = data.astype(np.uint16)
 
         for i in range(self.parameters['channels']):
             if i % 2 == 0:  # extra order swap on the 32 bit wide pipe
-                data[(7-i - 1)::8] = self.data_arrays[0]
+                data[(7-i - 1)::8] = self.data_arrays[i]
             else:
-                data[(7-i + 1)::8] = self.data_arrays[0]
+                data[(7-i + 1)::8] = self.data_arrays[i]
 
         print('Length of data = {}'.format(len(data)))
-        return self.write(bytearray(data))
+        return self.write(bytearray(data), SET_READ=SET_READ)
 
-    def write(self, g_buf):
+    def write(self, buf, SET_READ=True):
+        """ write a bytearray to the DDR3
+        Args:
+            buf: a bytearray to write to the DDR (bytearray)
+
+        Returns:
+            The length of the buffer written to the DDR (or error code if unsuccessful)
+            Speed of the write in MB/s
+
         """
-        given a buffer, it writes a bytearray to the DDR3
-        """
-        print('Length of buffer at the top of WriteSDRAM: ', len(g_buf))
+        print('Length of buffer at the top of WriteSDRAM: ', len(buf))
         # Reset FIFOs
         self.reset_fifo()
         self.clear_read()
+        self.clear_adc_read()
         self.set_write()
 
         print('Writing to DDR...')
         time1 = time.time()
-        r = self.fpga.xem.WriteToBlockPipeIn(epAddr=self.endpoints['BLOCK_PIPE_IN'].address,
-                                             blockSize=self.parameters['BLOCK_SIZE'],
-                                             data=g_buf)
-        print('The length of the write is ', r)
+        block_pipe_return = self.fpga.xem.WriteToBlockPipeIn(epAddr=self.endpoints['BLOCK_PIPE_IN'].address,
+                                                             blockSize=self.parameters['BLOCK_SIZE'],
+                                                             data=buf)
+        print(f'The length of the write is {block_pipe_return}')
 
         time2 = time.time()
         time3 = (time2-time1)
-        mbs = (int)(r/1024/1024/time3)
-        print("The speed of the write was ", mbs, " MegaBytes per second")
+        speed_MBs = (int)(block_pipe_return/1024/1024/time3)
+        print(f'The speed of the write was {speed_MBs} MB/s')
 
-        # below sets the HDL into read mode
+        # below prepares the HDL into read mode
         self.reset_fifo()
         self.clear_write()
-        self.set_read()
-        return g_buf
+        if SET_READ:
+            self.set_read()
+        return block_pipe_return, speed_MBs
 
     def reset_fifo(self):
-        """
-         Resets both FIFOs + DDR Mig
-         TODO: convert to trigger, split resets?
+        """ Resets both FIFOs + DDR Mig + DDR address pointers
+        Args:
+
+        Returns:
+            None
+
+         TODO: convert to trigger, split resets? This is synchronized on the FPGA
+         TODO: important! the rst_ddr_ui is not connected on the FPGA
         """
         self.fpga.set_wire_bit(self.endpoints['RESET'].address,
                                self.endpoints['RESET'].bit_index_low)
         self.fpga.clear_wire_bit(self.endpoints['RESET'].address,
                                  self.endpoints['RESET'].bit_index_low)
 
+    def fifo_status(self):
+        """ Check the empty, full, and count status of the DDR interfacing FIFOs
+        Args:
+
+        Returns:
+            dictionary of fifo status ('EMPTY', 'FULL', 'ADC_DATA_COUNT')
+                for 'IN', 'OUT', and channels 1, 2
+        """
+        wire_status = self.fpga.read_wire(
+            self.endpoints['INIT_CALIB_COMPLETE'].address)
+        fifo_status = {}
+        for fe in ['EMPTY', 'FULL']:
+            for num in [1, 2]:
+                for inout in ['IN', 'OUT']:
+                    ep_name = '{}{}_{}'.format(inout, num, fe)
+                    bit_pos = self.endpoints[ep_name].bit_index_low
+                    val = test_bit(wire_status, bit_pos)
+                    fifo_status[ep_name] = val
+                    print('{} = {}'.format(ep_name, val))
+
+        ep_name = 'ADC_DATA_COUNT'
+        cnt_bit_low = self.endpoints[ep_name].bit_index_low
+        cnt_bit_width = self.endpoints[ep_name].bit_width
+        cnt_msk = gen_mask(np.arange(cnt_bit_low, cnt_bit_width))
+        fifo_status[ep_name] = (wire_status & cnt_msk) >> cnt_bit_low
+        print('{} = {}'.format(ep_name, val))
+
+        # self.print_fifo_status(fifo_status)
+        return fifo_status
+
+    def print_fifo_status(self, fifo_status):
+        """ Print the FIFO status dictionary
+        Args:
+            fifo_status: dictionary of fifo status
+
+        Returns:
+            None
+        """
+        for k in fifo_status:
+            print('{} = {}'.format(k, fifo_status[k]))
+
     def set_read(self):
+        """ Set DDR / FIFOs to read
+        Args:
+
+        Returns:
+            None
+        """
         self.fpga.set_wire_bit(self.endpoints['READ_ENABLE'].address,
                                self.endpoints['READ_ENABLE'].bit_index_low)
 
     def clear_read(self):
+        """ Set DDR / FIFOs to read
+        Args:
+
+        Returns:
+            None
+        """
         self.fpga.clear_wire_bit(self.endpoints['READ_ENABLE'].address,
                                  self.endpoints['READ_ENABLE'].bit_index_low)
 
     def set_write(self):
+        """ Set DDR / FIFOs to read
+        Args:
+
+        Returns:
+            None
+        """
         self.fpga.set_wire_bit(self.endpoints['WRITE_ENABLE'].address,
                                self.endpoints['WRITE_ENABLE'].bit_index_low)
 
     def clear_write(self):
+        """ Set DDR / FIFOs to read
+        Args:
+
+        Returns:
+            None
+        """
         self.fpga.clear_wire_bit(self.endpoints['WRITE_ENABLE'].address,
                                  self.endpoints['WRITE_ENABLE'].bit_index_low)
 
-    def read(self):
-        """
-        #reads to an empty array passed to the function
-        """
-        amplitude = np.zeros((self.parameters['sample_size'],), dtype=int)
-        pass_buf = bytearray(amplitude)
-        # Reset FIFOs
-        self.reset_fifo()
-        self.clear_write()
-        self.set_read()
+    def set_adc_read(self):
+        """ Set DDR / FIFOs to read
+        Args:
 
-        print('Reading from DDR...')
+        Returns:
+            None
+
+        # TODO: change this name to ADC_READ_ENABLE and modify names in FPGA
+        """
+        self.fpga.set_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
+                               self.endpoints['FG_READ_ENABLE'].bit_index_low)
+
+    def clear_adc_read(self):
+        """ Set DDR / FIFOs to read
+        Args:
+
+        Returns:
+            None
+        """
+        self.fpga.clear_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
+                                 self.endpoints['FG_READ_ENABLE'].bit_index_low)
+
+    def adc_single(self):
+        """Set ADC read address to the ADC write address
+            emulating an immediate "trigger" of an oscilloscope
+        Args:
+
+        Returns:
+            None
+        """
+        self.fpga.set_wire_bit(self.endpoints['ADC_ADDR_SET'].address,
+                                 self.endpoints['ADC_ADDR_SET'].bit_index_low)
+        self.fpga.send_trig(self.endpoints['ADC_ADDR_RESET'])
+
+
+    def read_adc(self, sample_size=None, source='ADC', DEBUG_PRINT=False):
+        """ Reads ADC data.
+        Args:
+            sample_size: length of read in bytes. if none uses DDR parameter 'sample_size'
+            source: FIFO output buffer to read. Either 'ADC' or 'FG'.
+                        'FG' just reads back what is written for DACs (as function generator) so not so useful
+        Returns:
+            The data read as a bytearray
+            The count (or error code) read from the OpalKelly interface
+        """
+        if sample_size is None:
+            data = np.zeros((self.parameters['sample_size'],), dtype=int)
+            data_buf = bytearray(data)
+        else:
+            data_buf = bytearray(sample_size)
+
         # Block size must be a power of two from 16 to 16384
         # will automatically perform multiple transfers to complete the full LENGTH
         # the length must be an integer multiple of 16 for USB3.0
+        # and the length must be an Integer multiple of Block Size
 
-        r = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'].address,
-                                               blockSize=self.parameters['BLOCK_SIZE'],
-                                               data=pass_buf)
-        print('The length [num of bytes] of the BlockPipeOut read is: ', r)
-        return pass_buf
+        # epAddr	The address of the source Pipe Out.
+        # [in]	length	The length of the transfer (in bytes).
+        # [in]	blockSize	Block size (in bytes).
+        # [in]	data	A pointer to the transfer data buffer.
+        block_size = self.parameters['BLOCK_SIZE']
+        # check block size
+        if block_size % 16 != 0:
+            print('Error in read adc. Block size is not a multiple of 16')
+            return -1, -1
+        if block_size > 16384:
+            print('Error in read adc. Block size is greater than 16384')
+            return -2, -2
 
-    def unpack(self, buf):
-        """
-        given a buffer, it unpacks into into human readable float values
-        """
-        unpacked_var = []
-        for x in range(self.parameters['sample_size']):
-            unpacked_var.append(struct.unpack('i', buf[(x*4):((x+1)*4)]))
-        return unpacked_var
+        if source == 'ADC':
+            read_cnt = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT'].address,
+                                                          blockSize=block_size,
+                                                          data=data_buf)
 
-    def write_sin_wave(self, amplitude, frequency, dignum_volt=546):
-        """
+        elif source == 'FG':  # TODO: test, don't expect this to work
+            read_cnt = self.fpga.xem.ReadFromBlockPipeOut(epAddr=self.endpoints['BLOCK_PIPE_OUT_FG'].address,
+                                                          blockSize=block_size,
+                                                          data=data_buf)
+        else:
+            print('incorrect source in read_adc')
+            return -11, -11
 
-        """
-        time_axis, g_buf_init = self.make_sin_wave(amplitude, frequency,
-                                                   dignum_volt)
-        print("The length of the array before casting ", len(g_buf_init))
-        pass_buf = bytearray(g_buf_init)
-        self.write(pass_buf)
+        if DEBUG_PRINT:
+            print(
+                f'The length [num of bytes] of the BlockPipeOut read is: {read_cnt}')
+        return data_buf, read_cnt
 
-    def write_flat_voltage(self, input_voltage):
+    def set_index(self, factor, factor2=None):
         """
-        given an amplitude and a period, it will write a flat voltage to the DDR3
+        No longer used. Index is fixed to improve timing performance.
+        # Set the index value at which the DDR3 loops back
         """
-        time_axis, g_buf_init = self.make_flat_voltage(input_voltage)
-        pass_buf2 = bytearray(g_buf_init)
-        self.write(pass_buf2)
-
-    def print(self):
-        """
-        Reads and prints the contents of the DDR3
-        """
-        g_rbuf = self.read()
-        unpacked_g_rbuf = np.array(self.unpack(g_rbuf)).astype('float64')
-        for x in range(len(unpacked_g_rbuf)):
-            unpacked_g_rbuf[x] = (unpacked_g_rbuf[x]/1000)
-        return unpacked_g_rbuf
-
-    def set_index(self, factor):
-        """
-        Set the byte index value at which the DDR3 loops back
-        """
-        self.fpga.set_wire(self.endpoints['INDEX'].address, factor)
-
-
-    """ Example usage of the DDR
-    #Wait for the configuration
-    time.sleep(3)
-    factor = (int)(sample_size/8)
-    f.xem.SetWireInValue(0x04, factor)  # sets the index value -- this is where the DDR3 cycles back
-    #f.xem.SetWireInValue(0x04, 0xFF)
-    f.xem.UpdateWireIns()
-
-    #Sample rate speed, to bits 18:9
-    f.xem.SetWireInValue(0x02, 0x0000A000, 0x0003FF00)  # wire-in to set the clock divider freq.
-    f.xem.UpdateWireIns()
-    write_sin_wave(2)
-    f.xem.WriteRegister(0x80000010, 0x00003410)  # configure the SPI WB control register
-    f.xem.ActivateTriggerIn(0x40, 8)
-    """
+        print('Set index is no longer used. Index is fixed to: {}'.format(
+            self.parameters['port1_index']))
+        # self.fpga.set_wire(self.endpoints['INDEX'].address, factor)
+        # if factor2 is not None:
+        #     self.fpga.set_wire(self.endpoints['INDEX2'].address, factor)
 
 
 def disp_device(dev, reg=True):

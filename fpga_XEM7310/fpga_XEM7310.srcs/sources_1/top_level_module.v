@@ -264,7 +264,7 @@ module top_level_module(
 	wire [64:0] okEH;
 	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
 	//TODO: better way to keep track of these
-	wire [22*65-1:0] okEHx;
+	wire [23*65-1:0] okEHx;
 
 	//Opal Kelly wires and triggers
 	wire [31:0] ep00wire;
@@ -279,7 +279,7 @@ module top_level_module(
 	assign sys_rst = (pushreset | ep40trig[`GP_SYSTEM_RESET]); 
 
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(22)) wireOR (okEH, okEHx); //TODO
+	okWireOR # (.N(23)) wireOR (okEH, okEHx); //TODO
 
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
@@ -323,8 +323,9 @@ module top_level_module(
     /* ---------------- WI02 ---------------------- */
     okWireIn wi2 (.okHE(okHE), .ep_addr(`GP_PWR_REG_ADC_EN_WIRE_IN),
       .ep_dataout(ep02wire));
-
+     // 4:1
      assign a_en0_hv = ep02wire[(`AD7961_ENABLE_GEN_BIT+`AD7961_ENABLE_LEN - 1):`AD7961_ENABLE_GEN_BIT]; //1 for each channel
+     // 17:15
      assign a_en_hv = ep02wire[(`AD7961_GLOBAL_ENABLE+`AD7961_GLOBAL_ENABLE_LEN - 1):`AD7961_GLOBAL_ENABLE];    // global
 
      wire [9:0] en_period; //TODO: different for each channel?
@@ -341,6 +342,22 @@ module top_level_module(
 
      assign ads_resetb = ep02wire[`ADS8686_RESET];
 
+     wire [31:0]  ep03wire;
+      okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
+      //okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
+     
+       wire [31:0] ep20wire;
+       okWireOut      wo20 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(`DDR3_INIT_CALIB_COMPLETE), .ep_datain(ep20wire));
+       assign ep20wire[`DDR3_INIT_COMPLETE] = init_calib_complete;
+       assign ep20wire[`DDR3_IN1_FULL] = pipe_in_full;
+       assign ep20wire[`DDR3_IN1_EMPTY] = pipe_in_empty;
+       assign ep20wire[`DDR3_IN2_FULL] = pipe_in2_full;
+       assign ep20wire[`DDR3_IN2_EMPTY] = pipe_in2_empty;
+       assign ep20wire[`DDR3_OUT1_FULL] = pipe_out_full;
+       assign ep20wire[`DDR3_OUT1_EMPTY] = pipe_out_empty;
+       assign ep20wire[`DDR3_OUT2_FULL] = pipe_out2_full;
+       assign ep20wire[`DDR3_OUT2_EMPTY] = pipe_out2_empty;
+       assign ep20wire[`DDR3_ADC_DATA_COUNT] = adc_data_cnt;
 	//trigger to tell the wishbone signal converter/state machine that the input command is valid
 	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
 	//ep40trig[1] will be used as the master reset for the rest of the design
@@ -402,7 +419,7 @@ module top_level_module(
                                                      adc_fifo_empty,    // 4 bits wide: 12-9
 													 adc_fifo_halffull, // 4 bits wide: 8-5
 													 adc_fifo_full,     // 4 bits wide: 4-1
-													 hostinterrupt}));  // bit 0
+													 hostinterrupt}));  // bit 0 -- not used
 
        //register bridge for writing filter coefficients to BRAM and to the spi_controller
        wire regWrite;
@@ -410,7 +427,7 @@ module top_level_module(
        wire [31:0] regAddress;
        wire [31:0] regDataOut;
        wire [31:0] regDataIn; // Was reg, gave error in Vivado synthesis
-       assign redDataIn = 32'haaaa;  // TODO: unused
+       assign regDataIn = 32'haaaa;  // TODO: unused
 
        okRegisterBridge regBridge (
            .okHE(okHE),
@@ -502,7 +519,9 @@ module top_level_module(
         AD7961 adc7961 (
         .m_clk_i(adc_timing_clk),       // 100 MHz Clock, used for timing
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
-        .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
+        //.reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
+        // Must reset all synchronously so that all data can go into the same FIFO
+        .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+0] | adc_sync_rst[0])),// Reset signal active low: both Python signals are active high due to inversion
         .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
         .d_pos_i(a_d_p[i]),                    // Data Ii, Positive Pair
         .d_neg_i(a_d_n[i]),                    // Data In, Negative Pair
@@ -560,8 +579,11 @@ module top_level_module(
      end
      endgenerate
 
-    assign sma[0] = write_en_adc_o[1]; //J17, MC2-77
-    assign sma[1] = adc_valid_pulse[1]; //J16
+    //assign sma[0] = dco[0]; //J17, MC2-77
+    //assign sma[1] = adc_serial_data[0]; //J16
+    
+    assign sma[0] = 1'b0; //J17, MC2-77
+    assign sma[1] = 1'b0; //J16
  
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
@@ -576,68 +598,14 @@ module top_level_module(
          .clk_en(rd_en_0)  // output : ddr read enable
      );
 
-    /*---------------- DAC80508 -------------------*/
-    wire [31:0] ds_spi_data[0:(DAC80508_NUM - 1)];
-    wire [31:0] ds_host_spi_data[0:(DAC80508_NUM - 1)];
-    wire [(DAC80508_NUM - 1):0] rd_en_ds;
-    wire [(DAC80508_NUM - 1):0] data_ready_ds;
-    wire [(DAC80508_NUM - 1):0] spi_host_trigger_ds; 
-    
-    wire [31:0] ep_wire_filtsel;
-    okWireIn wi_filt_sel (.okHE(okHE), .ep_addr(`FILTER_SEL_WIRE_IN), .ep_dataout(ep_wire_filtsel));
-    
-    genvar k;
-    generate
-    for (k=0; k<=(DAC80508_NUM-1); k=k+1) begin : dac80508_gen
-    
-        okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`DAC80508_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(ds_host_spi_data[k]));
-        assign spi_host_trigger_ds[k] = ep41trig[`DAC80508_HOST_TRIG_GEN_BIT + k];
-        
-        mux8to1_32wide spi_mux_bus( // lower 24 bits are data, most-significant bit is the data_ready signal 
-            .datain_0({ddr_data_valid, 11'b0, 1'b1, po0_ep_datain[ (k*2*16 + 14) +:2], po0_ep_datain[((k*2 + 1)*16 + 14) +:1], po0_ep_datain[(AD5453_NUM*16 + k*16) +:16]}),
-            //                            [15:14] for k=0                 [30:30] for k =0        ,              [111:96] for k  = 0
-            // Leading 1 to complete OUT channel address on chip (for DAC0 - DAC7 always 1),
-            // last 2 bits of an AD5453 16-bit group for addressing,
-            // 15th bit of the next AD5453 group to complete the address,
-            // 16 bits data from DAC80508 group
-            .datain_1({spi_host_trigger_ds[k], 7'b0, ds_host_spi_data[k][23:0]}), // TODO: determine size for this, I believe it should be 24 bits of SPI message that the host must determine because the spi_fifo_driven is expecting 24 bits
-            .datain_2({ads_data_valid, 11'b0, 1'b1, ds_host_spi_data[k][2:0], ads_data_out[15:0]}),  // data from ADS8686
-            .datain_3({ads_data_valid, 11'b0, 1'b1, ds_host_spi_data[k][2:0], ads_data_out[31:16]}), // Default to output channel DAC0
-            .datain_4({adc_valid_pulse[0], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[0][15:0]}), // data from AD7961, channel is selected by input wire 
-            .datain_5({adc_valid_pulse[1], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[1][15:0]}), // data from AD7961, channel is selected by input wire 
-            .datain_6({adc_valid_pulse[2], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[2][15:0]}), // data from AD7961, channel is selected by input wire 
-            .datain_7({adc_valid_pulse[3], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[3][15:0]}), // data from AD7961, channel is selected by input wire 
-            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + (k*`DAC80508_DATA_SEL_GEN_BIT_LEN)) +: 3]),
-            .dataout({ds_spi_data[k]})
-        );
-        
-        assign data_ready_ds[k] = ds_spi_data[k][31];
-            
-        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET + k*19))spi_fifo1 (
-                 .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
-                 .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
-                 .data_rdy_0(data_ready_ds[k]), 
-                 .data_i(ds_spi_data[k][23:0]), 
-                 // register bridge //TODO: add address increment based on generate k
-                 .ep_write(regWrite),           //input wire 
-                 .ep_address(regAddress),       //input wire [31:0] 
-                 .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
-                  /*.ep_datain(regDataIn),*/
-                 
-                 // All DAC80508 output channels have the form {0b1, number_output_channel}
-                 .rd_en_0(rd_en_ds[k]),   //out: debug of state machine
-                 .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]), //input: state machine to init after SPI clock divider is re-programmed
-                 .filter_sel(ep_wire_filtsel[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1])
-                 );
-        assign ds_sdo[k] = 1'b1; // sdo for the DAC80508C is CLRB -- force to logic high
-        end
-    endgenerate
-    /*---------------- END DAC80508 -------------------*/
-
     /* --------------- DDR3 ---------------------------*/
+    wire [31:0] ep43trig;
+    okTriggerIn trigIn43 (.okHE(okHE),
+                            .ep_addr(`DDR_RESET_ADDR_TRIG), .ep_clk(clk_ddr_ui), .ep_trigger(ep43trig));
+
      ////////////////////////////*DDR3 INTERFACE INSTANTIATIONS*//////////////////////////////////////////////
      // OK RAMTest Parameters
-     localparam BLOCK_SIZE = 128; // 512 bytes / 4 bytes per word,
+     localparam BLOCK_SIZE = 512; // 512 bytes / 4 bytes per word. LJK update from 128 to 512. 
      localparam FIFO_SIZE = 1023; // note that Xilinx does not allow use of the full 1024 words
      localparam BUFFER_HEADROOM = 20; // headroom for the FIFO count to account for latency
 
@@ -664,8 +632,6 @@ module top_level_module(
      wire          clk_ddr_ui;
      wire          rst_ddr_ui;
 
-     wire [31:0]  ep03wire;
-
      wire         pipe_in_read;
      wire [255:0] pipe_in_data;
      wire [6:0]   pipe_in_rd_count;
@@ -677,18 +643,42 @@ module top_level_module(
 
      wire         pipe_out_write;
      wire [255:0] pipe_out_data;
-     wire [9:0]   pipe_out_rd_count;
+     wire [7:0]   pipe_out_rd_count;
      wire [6:0]   pipe_out_wr_count;
      wire         pipe_out_full;
      wire         pipe_out_empty;
      reg          pipe_out_ready;
+
+     wire         pipe_in2_read;
+     wire [255:0] pipe_in2_data;
+     wire [6:0]   pipe_in2_rd_count;
+     wire [8:0]   pipe_in2_wr_count;
+     wire         pipe_in2_valid;
+     wire         pipe_in2_full;
+     wire         pipe_in2_empty;
+     reg          pipe_in2_ready;
+
+     wire         pipe_out2_write;
+     wire [255:0] pipe_out2_data;
+     wire [9:0]   pipe_out2_rd_count;
+     wire [6:0]   pipe_out2_wr_count;
+     wire         pipe_out2_full;
+     wire         pipe_out2_empty;
+     reg          pipe_out2_ready;
 
      // Pipe Fifos
      wire         pi0_ep_write;
      wire         po0_ep_read;
      wire [31:0]  pi0_ep_dataout;
      wire [31:0] INDEX;
-     wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out
+     wire [31:0] INDEX2;
+     
+     wire          ddr3_rst;// MIG/DDR3 synchronous reset
+     wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out to DACs 
+     
+     wire         po2_ep_read;
+     wire [31:0]  po2_ep_datain;// MIG/DDR3 ADC FIFO data out
+     wire [31:0]  adc_data_cnt; // count of ADC words in DDR
 
      reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
      .clk(clk_sys),
@@ -758,11 +748,14 @@ module top_level_module(
      // OK MIG DDR3 Testbench Instatiation
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
-         .INDEX              (INDEX),
-         .reset              (ddr3_rst | rst_ddr_ui),
+         .reset              (ddr3_rst | ep43trig[`DDR3_UI_RESET]),
          .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
          .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
+         .fg_reads_en        (ep03wire[`DDR3_FG_READ_ENABLE]),
          .calib_done         (init_calib_complete),
+         
+         .adc_addr_reset (ep43trig[`DDR3_ADC_ADDR_RESET]),
+         .adc_addr_restart (ep03wire[`DDR3_ADC_ADDR_SET]),
 
          .ib_re              (pipe_in_read),
          .ib_data            (pipe_in_data),
@@ -774,6 +767,19 @@ module top_level_module(
          .ob_data            (pipe_out_data),
          .ob_count           (pipe_out_wr_count),
          .ob_full            (pipe_out_full),
+         
+         .ib2_re              (pipe_in2_read),
+         .ib2_data            (pipe_in2_data),
+         .ib2_count           (pipe_in2_rd_count),
+         .ib2_valid           (pipe_in2_valid),
+         .ib2_empty           (pipe_in2_empty),
+
+         .ob2_we              (pipe_out2_write),
+         .ob2_data            (pipe_out2_data),
+         .ob2_count           (pipe_out2_wr_count),
+         .ob2_full            (pipe_out2_full),
+         
+         .adc_data_count        (adc_data_cnt),
 
          .app_rdy            (app_rdy),
          .app_en             (app_en),
@@ -791,65 +797,192 @@ module top_level_module(
          .app_wdf_mask       (app_wdf_mask)
          );
 
-     //Block Throttle
+     //Block Throttle OK interfaces: check for enough space or enough data
      always @(posedge okClk) begin
          // Check for enough space in input FIFO to pipe in another block
-         // The count is compared against a reduced size to account for delays in
-         // FIFO count updates.
+         // The count is compared against a reduced size to account for delays in FIFO count updates.
          if(pipe_in_wr_count <= (FIFO_SIZE-BUFFER_HEADROOM-BLOCK_SIZE) ) begin
              pipe_in_ready <= 1'b1;
          end
          else begin
              pipe_in_ready <= 1'b0;
          end
-         // Check for enough space in output FIFO to pipe out another block
-         if(pipe_out_rd_count >= BLOCK_SIZE) begin
+         // Check for enough data in FIFO to pipe out another block -- this is to DACs -- reading from pipeOut is not optimized
+         if(pipe_out_rd_count >= BLOCK_SIZE) begin  // size is in 4 bytes so block size is 512*4 = 2048 bytes 
              pipe_out_ready <= 1'b1;
          end
          else begin
              pipe_out_ready <= 1'b0;
          end
+        // Check for enough space in ADC output FIFO to pipe out another block
+         if(pipe_out2_rd_count >= BLOCK_SIZE) begin // size is in 4 bytes so block size is 512*4 = 2048 bytes 
+             pipe_out2_ready <= 1'b1;
+         end
+         else begin
+             pipe_out2_ready <= 1'b0;
+         end
      end
 
-     okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
-     okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
-     okWireOut      wo02 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(`DDR3_INIT_CALIB_COMPLETE), .ep_datain({31'h00, init_calib_complete}));
-     okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_WIRE_OUT), .ep_datain(po0_ep_datain/*CAPABILITY*/));
-     okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_IN), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
-     okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain[31:0]),   .ep_ready(pipe_out_ready));
+     // DDR debug signals
+     assign up[0] = pipe_out2_write; // pipe_out2_full; //pipe_in_ready;
+     assign up[1] = pipe_out2_data[0]; // pipe_out2_empty; // pipe_out_ready;
+     assign up[2] = pipe_out2_data[15]; //pipe_in2_full;
+     assign up[3] = pipe_out2_data[255]; //pipe_in2_full; // po0_ep_read;
+     assign up[4] = rd_en_0;
+     assign up[5] = ddr_data_valid;
+     
+     //assign sma[0] = pipe_in2_valid; //adc_data_cnt > 8; // pipe_in2_read;
+     //assign sma[1] = pipe_in2_data[0]; //adc_data_cnt < 2;
 
-     fifo_w32_1024_r256_128 okPipeIn_fifo (
+      
+      okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_ADC_DATA_CNT), .ep_datain(adc_data_cnt));
+      okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_IN), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
+      //PipeOuts
+      //     EP_READ    Output    Active-high read signal.  Data must be provided in the cycle following as assertion of this signal.
+      //     EP_BLOCKSTROBE    Output    Active-high block strobe.  This is asserted for one cycle just before a block of data is read.
+      //     EP_READY    Input    Active-high ready signal.  Logic should assert this signal when it is prepared to transmit a full block of data.     
+      okBTPipeOut    po0  (.okHE(okHE), .okEH(okEHx[ 14*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT_FG), .ep_read(po0_ep_read),   .ep_blockstrobe(), .ep_datain(po0_ep_datain[31:0]),   .ep_ready(pipe_out_ready));
+      okBTPipeOut    po2  (.okHE(okHE), .okEH(okEHx[ 22*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT), .ep_read(po2_ep_read),   .ep_blockstrobe(), .ep_datain(po2_ep_datain[31:0]),   .ep_ready(pipe_out2_ready));
+ 
+      fifo_w32_1024_r256_128 fg_pipein_fifo (  // Function generator data from the host via pi0 
+          .rst(ddr3_rst),
+          .wr_clk(okClk),
+          .rd_clk(clk_ddr_ui),
+          .din(pi0_ep_dataout), // Bus [31 : 0]
+          .wr_en(pi0_ep_write),
+          .rd_en(pipe_in_read),
+          .dout(pipe_in_data), // Bus [255 : 0] -- to DDR 
+          .full(pipe_in_full),
+          .empty(pipe_in_empty),
+          .valid(pipe_in_valid),
+          .rd_data_count(pipe_in_rd_count), // Bus [6 : 0]  //128 available for reading (by DDR)
+          .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0] //1024 available for writing 
+
+    reg [15:0] adc_debug_cnt; 
+    always @(posedge clk_sys or posedge sys_rst) begin 
+        if (sys_rst == 1'b1) adc_debug_cnt <= 16'b0;
+        else if (ddr_data_valid == 1'b1) adc_debug_cnt <= adc_debug_cnt + 1'b1;
+    end
+    
+    reg [63:0] adc_ddr_data;
+    reg adc_ddr_wr_en;
+    assign adc_ddr_debug = ep03wire[`DDR3_ADC_DEBUG];
+    
+    always @(*) begin
+        if (adc_ddr_debug == 1'b0) begin // TODO: setup adc_ddr_debug, then route signals to FIFO
+            adc_ddr_data = {adc_val_reg[3][15:0], adc_val_reg[2][15:0], adc_val_reg[1][15:0], adc_val_reg[0][15:0]};
+            adc_ddr_wr_en = adc_valid_pulse[0];
+        end
+        else begin
+            adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};
+            adc_ddr_wr_en = ddr_data_valid;
+        end
+    end
+
+     fifo_w64_512_r256_128_1 adc_to_ddr_fifo (  //ADC data input, output to DDR
          .rst(ddr3_rst),
-         .wr_clk(okClk),
+         .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
-         .din(pi0_ep_dataout), // Bus [31 : 0]
-         .wr_en(pi0_ep_write),
-         .rd_en(pipe_in_read),
-         .dout(pipe_in_data), // Bus [255 : 0]
-         .full(pipe_in_full),
-         .empty(pipe_in_empty),
-         .valid(pipe_in_valid),
-         .rd_data_count(pipe_in_rd_count), // Bus [6 : 0]
-         .wr_data_count(pipe_in_wr_count)); // Bus [9 : 0]
+         .din(adc_ddr_data),
+         .wr_en(adc_ddr_wr_en & ep03wire[`DDR3_READ_ENABLE]), //
+         .rd_en(pipe_in2_read),
+         .dout(pipe_in2_data), // Bus [255 : 0] - to DDR 
+         .full(pipe_in2_full),
+         .empty(pipe_in2_empty),
+         .valid(pipe_in2_valid),  //output 
+         .rd_data_count(pipe_in2_rd_count), // Bus [6 : 0]  //128 available for reading (by DDR)
+         .wr_data_count(pipe_in2_wr_count)); // Bus [8 : 0] //1024 available for writing 
 
+    // DDR: read from DDR and 1) output data to DACs and 2) output data to host through BTPipeOut
 
-     fifo_w256_128_r128_256_1 okPipeOut_fifo_ddr (
-         .rst(ep03wire[`DDR3_RESET]), // supports asynchronous reset 
+     fifo_w256_128_r128_256_1 ddr_to_dac_fifo_ddr ( //Data in from DDR -> Output to DACs 
+         .rst(ddr3_rst), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys),
-         .din(pipe_out_data), // Bus [255 : 0]
+         .din(pipe_out_data), // Bus [255 : 0] -- from DDR 
          .wr_en(pipe_out_write),
          .rd_en(rd_en_0 & ep03wire[`DDR3_READ_ENABLE]),
-         .dout(po0_ep_datain), // Bus [31 : 0]
+         .dout(po0_ep_datain), // Bus [127 : 0]
          .full(pipe_out_full),
          .empty(pipe_out_empty),
-         .valid(ddr_data_valid),
-         .rd_data_count(pipe_out_rd_count), // Bus [9 : 0]
+         .valid(ddr_data_valid), //output 
+         .rd_data_count(pipe_out_rd_count), // Bus [7 : 0]
          .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
 
+     fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (  // Output ADC data from DDR -> input data of ADCs to PipeOut
+         .rst(ddr3_rst), // supports asynchronous reset 
+         .wr_clk(clk_ddr_ui),
+         .rd_clk(okClk),
+         .din(pipe_out2_data), // Bus [255 : 0] -- from DDR 
+         .wr_en(pipe_out2_write),
+         .rd_en(po2_ep_read),
+         .dout(po2_ep_datain), // Bus [31 : 0]
+         .full(pipe_out2_full),
+         .empty(pipe_out2_empty),
+         .valid(),  //output
+         .rd_data_count(pipe_out2_rd_count), // Bus [9 : 0]
+         .wr_data_count(pipe_out2_wr_count)); // Bus [6 : 0]
 
     /* ------------------ END DDR3 ------------------- */
-
+    
+    /*---------------- DAC80508 -------------------*/
+    wire [31:0] ds_spi_data[0:(DAC80508_NUM - 1)];
+    wire [31:0] ds_host_spi_data[0:(DAC80508_NUM - 1)];
+    wire [(DAC80508_NUM - 1):0] rd_en_ds;
+    wire [(DAC80508_NUM - 1):0] data_ready_ds;
+    wire [(DAC80508_NUM - 1):0] spi_host_trigger_ds; 
+    
+    wire [31:0] ep_wire_filtsel;
+    okWireIn wi_filt_sel (.okHE(okHE), .ep_addr(`FILTER_SEL_WIRE_IN), .ep_dataout(ep_wire_filtsel));
+    
+    genvar k;
+    generate
+    for (k=0; k<=(DAC80508_NUM-1); k=k+1) begin : dac80508_gen
+    
+        okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`DAC80508_HOST_WIRE_IN_GEN_ADDR + k), .ep_dataout(ds_host_spi_data[k]));
+        assign spi_host_trigger_ds[k] = ep41trig[`DAC80508_HOST_TRIG_GEN_BIT + k];
+        
+        mux8to1_32wide spi_mux_bus( // lower 24 bits are data, most-significant bit is the data_ready signal 
+            .datain_0({ddr_data_valid, 11'b0, 1'b1, po0_ep_datain[ (k*2*16 + 14) +:2], po0_ep_datain[((k*2 + 1)*16 + 14) +:1], po0_ep_datain[(AD5453_NUM*16 + k*16) +:16]}),
+            //                            [15:14] for k=0                 [30:30] for k =0        ,              [111:96] for k  = 0
+            // Leading 1 to complete OUT channel address on chip (for DAC0 - DAC7 always 1),
+            // last 2 bits of an AD5453 16-bit group for addressing,
+            // 15th bit of the next AD5453 group to complete the address,
+            // 16 bits data from DAC80508 group
+            .datain_1({spi_host_trigger_ds[k], 7'b0, ds_host_spi_data[k][23:0]}), // TODO: determine size for this, I believe it should be 24 bits of SPI message that the host must determine because the spi_fifo_driven is expecting 24 bits
+            .datain_2({ads_data_valid, 11'b0, 1'b1, ds_host_spi_data[k][2:0], ads_data_out[15:0]}),  // data from ADS8686
+            .datain_3({ads_data_valid, 11'b0, 1'b1, ds_host_spi_data[k][2:0], ads_data_out[31:16]}), // Default to output channel DAC0
+            .datain_4({adc_valid_pulse[0], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[0][15:0]}), // data from AD7961, channel is selected by input wire 
+            .datain_5({adc_valid_pulse[1], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[1][15:0]}), // data from AD7961, channel is selected by input wire 
+            .datain_6({adc_valid_pulse[2], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[2][15:0]}), // data from AD7961, channel is selected by input wire 
+            .datain_7({adc_valid_pulse[3], 11'b0, 1'b1, ds_host_spi_data[k][2:0], adc_val_reg[3][15:0]}), // data from AD7961, channel is selected by input wire 
+            .sel(ep03wire[(`DAC80508_DATA_SEL_GEN_BIT + k*`DAC80508_DATA_SEL_GEN_BIT_LEN) +: `DAC80508_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({ds_spi_data[k]})
+        );
+        
+        assign data_ready_ds[k] = ds_spi_data[k][31];
+            
+        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET + k*19))spi_fifo1 (
+                 .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+                 .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
+                 .data_rdy_0(data_ready_ds[k]), 
+                 .data_i(ds_spi_data[k][23:0]), 
+                 // register bridge //TODO: add address increment based on generate k
+                 .ep_write(regWrite),           //input wire 
+                 .ep_address(regAddress),       //input wire [31:0] 
+                 .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
+                  /*.ep_datain(regDataIn),*/
+                 
+                 // All DAC80508 output channels have the form {0b1, number_output_channel}
+                 .rd_en_0(rd_en_ds[k]),   //out: debug of state machine
+                 .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]), //input: state machine to init after SPI clock divider is re-programmed
+                 .filter_sel(ep_wire_filtsel[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1])
+                 );
+        assign ds_sdo[k] = 1'b1; // sdo for the DAC80508C is CLRB -- force to logic high
+        end
+    endgenerate
+    /*---------------- END DAC80508 -------------------*/
+    
     /* ------------------ AD5453 SPI ------------------- */
     wire [(AD5453_NUM-1):0] rd_en_fast_dac;
     wire [(AD5453_NUM-1):0] data_ready_fast_dac;
@@ -861,15 +994,28 @@ module top_level_module(
     wire [31:0] coeff_debug_out1[0:(AD5453_NUM-1)];
     wire [31:0] coeff_debug_out2[0:(AD5453_NUM-1)];
     
+    reg [13:0] last_ddr_read[0:(AD5453_NUM-1)];
+    reg ddr_data_valid_norepeat[0:(AD5453_NUM-1)];
+    
     genvar p;
     generate
     for (p=0; p<=(AD5453_NUM-1); p=p+1) begin : dac_ad5453_gen
         okWireIn wi_ddr_spi (.okHE(okHE), .ep_addr(`AD5453_HOST_WIRE_IN_GEN_ADDR + p), .ep_dataout(host_spi_data[p]));
         
         assign spi_host_trigger_fast_dac[p] = ep41trig[`AD5453_HOST_TRIG_GEN_BIT + p];
+        
+        // don't update DDR SPI if the values don't change
+        always @(posedge clk_sys) begin
+            if (ddr_data_valid==1'b1) last_ddr_read[p] <= po0_ep_datain[(p*16) +:14];
+        end        
+        always @(posedge clk_sys) begin
+            if (last_ddr_read[p] == po0_ep_datain[(p*16) +:14]) ddr_data_valid_norepeat[p] <= 1'b0;
+            else ddr_data_valid_norepeat[p] <= ddr_data_valid;
+        end
                 
         mux8to1_32wide spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
-            .datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
+            //.datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
+            .datain_0({ddr_data_valid_norepeat[p], 17'b0, last_ddr_read[p]}),
             .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
             .datain_3({ads_data_valid, 15'b0, ads_data_out[31:16]}), // 
@@ -877,7 +1023,7 @@ module top_level_module(
             .datain_5({adc_valid_pulse[1], 15'b0, adc_val_reg[1][15:0]}), // data from AD7961
             .datain_6({adc_valid_pulse[2], 15'b0, adc_val_reg[2][15:0]}), // data from AD7961
             .datain_7({adc_valid_pulse[3], 15'b0, adc_val_reg[3][15:0]}), // data from AD7961
-            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: 3]),
+            .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: `AD5453_DATA_SEL_GEN_BIT_LEN]),
             .dataout({spi_data[p]})
         );
         
@@ -895,7 +1041,7 @@ module top_level_module(
                  .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
 
                  .rd_en_0(rd_en_fast_dac[p]),   //out: debug only 
-                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + p]), //input  TODO: For now since DDR is driven by DAC0 all spi_fifo_driven should have the same clock period.
+                 .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + p]), //input  -- sends state machine to init. Use for after updates via register bridge.
                  .filter_sel(ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + p*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1]),
                  .coeff_debug_out1(coeff_debug_out1[p]),
                  .coeff_debug_out2(coeff_debug_out2[p])
@@ -910,12 +1056,13 @@ module top_level_module(
     //assign up[1] = data_ready_fast_dac[0];
     //assign up[0] = data_ready_fast_dac[1];
     
-    assign up[5] = ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + 1*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1];
-    assign up[4] = ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + 0*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1];
-    assign up[3] = spi_data[0][2];
-    assign up[2] = spi_data[0][1];
-    assign up[1] = spi_data[0][0];
-    assign up[0] = data_ready_fast_dac[0];
+    // TODO: set these back up once debug is finished
+    //assign up[5] = ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + 1*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1];
+    //assign up[4] = ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + 0*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1];
+    //assign up[3] = spi_data[0][2];
+    //assign up[2] = spi_data[0][1];
+    //assign up[1] = spi_data[0][0];
+    //assign up[0] = data_ready_fast_dac[0];
 
      okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG1_0), .ep_datain(coeff_debug_out1[0]));
      okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG2_0), .ep_datain(coeff_debug_out2[0]));

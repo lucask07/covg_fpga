@@ -84,6 +84,7 @@ for i in range(6):
     fdac.append(AD5453(f,
                 endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
+    fdac[i].set_ctrl_reg(fdac[i].master_config)
     fdac[i].set_spi_sclk_divide()
     fdac[i].filter_select(operation='clear')
     fdac[i].write(int(0))
@@ -111,7 +112,8 @@ for i in range(6):
 # filter tests using host driven reads
 for ch in [0, 1]:
     fdac[ch].filter_select(operation='set')
-    fdac[ch].change_filter_coeff(target='100kHz')
+    fdac[ch].change_filter_coeff(target='100kHz')  # 100 kHz does not seem to work
+    # fdac[ch].change_filter_coeff(target='500kHz')
     # fdac[ch].change_filter_coeff(target='passthrough')
     fdac[ch].write_filter_coeffs()
 
@@ -135,10 +137,14 @@ def host_sine(fs_over_f, total_length, amp, off):
     return amp*np.sin(t*2*np.pi/fs_over_f) + off
 
 
-x = host_sine(10, 6000, 0x1000, 0x1000)  # with fc = 100 kHz and 2.5 MHz sample rate expect x25 to show filtering
-for i in x:
-    fdac[0].write(int(i))
+for fs_over_f in [100,40,30,20,15,12,10,9,8,7,6,5,4]:
+    x = host_sine(fs_over_f, 6000, 0x1000, 0x1000)  # with fc = 100 kHz and 2.5 MHz sample rate expect x25 to show filtering
+    for i in x:
+        fdac[0].write(int(i))
+        fdac[1].write(int(i))
 
-x = host_sine(100, 6000, 0x1000, 0x1000)  # with fc = 100 kHz and 2.5 MHz sample rate expect x25 to show filtering  
+
+x = np.arange(1, 5000)
 for i in x:
-    fdac[0].write(int(i))
+    for ch in [0,1,2,3,4,5]:
+        fdac[ch].write(int(0))

@@ -64,20 +64,24 @@
 `define DDR3_READ_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_WRITE_ENABLE 1 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_RESET 2 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
-`define AD5453_DATA_SEL_GEN_BIT 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+`define DDR3_FG_READ_ENABLE 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define AD5453_DATA_SEL_GEN_BIT 4 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 // [5:3], [8:6], [11:9], [14:12], [17:15], [20:18]
 `define AD5453_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
-`define DAC80508_DATA_SEL_GEN_BIT 21 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
+`define DAC80508_DATA_SEL_GEN_BIT 22 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 `define DAC80508_DATA_SEL_GEN_BIT_LEN 3 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=3
 //[23:21], [26:24] 
+`define DDR3_ADC_DEBUG 28 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+`define DDR3_ADC_ADDR_SET 29 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
+//TODO: the BIT_LEN should be constant for a set of devices. Need to remove the GEN?
 `define FILTER_SEL_WIRE_IN 8'h0d // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define AD5453_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define DAC80508_FILTER_SEL_GEN_BIT 4 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define DAC80508_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
 
-// wireIn address for index 
+// wireIn address for index (no longer used)
 `define DDR3_INDEX 8'h04 // bit_width=32
 
 // wireIn for host driven data 
@@ -87,6 +91,7 @@
 `define GP_RST_VALID_TRIG_IN 8'h40 // bit_width=32
 `define I2C_TRIG_IN 8'h41 // bit_width=32
 `define ADC_TIMING_TRIG_IN 8'h42 // bit_width=32
+`define DDR_RESET_ADDR_TRIG 8'h43 // bit_width=32
 
 `define AD7961_PLL_LOCKED_WIRE_OUT 8'h21 // bit_width=32
 `define AD7961_PLL_LOCKED 0 // address=AD7961_PLL_LOCKED_WIRE_OUT bit_width=1
@@ -127,6 +132,7 @@
 
 `define DDR3_BLOCK_PIPE_IN 8'h80 // bit_width=32
 `define DDR3_BLOCK_PIPE_OUT 8'ha6 // bit_width=32
+`define DDR3_BLOCK_PIPE_OUT_FG 8'ha8 // bit_width=32
 //`define DS_TRIG_OFFSET 32'h08 // bit 8
 
 //ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
@@ -158,6 +164,21 @@
 `define I2CDC_START_GEN_BIT 27 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD7961_TIMING_PLL_RESET 31 // address=GP_RST_VALID_TRIG_IN bit_width=1
 
+// wire in status signals for the DDR
+`define DDR3_INIT_CALIB_COMPLETE 8'h20 // bit_width=32
+`define DDR3_INIT_COMPLETE 0 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN1_FULL 1 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN1_EMPTY 2 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN2_FULL 3 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_IN2_EMPTY 4 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT1_FULL 5 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT1_EMPTY 6 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT2_FULL 7 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_OUT2_EMPTY 8 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
+`define DDR3_ADC_DATA_COUNT 9 // address=DDR3_INIT_CALIB_COMPLETE bit_width=16
+
+`define DDR3_ADC_DATA_CNT 8'h3e // bit_width=32
+
 // trigger in at 0x41
 `define I2CDC_MEMSTART_GEN_BIT 0 // address=I2C_TRIG_IN bit_width=1
 `define I2CDC_MEMWRITE_GEN_BIT 4 // address=I2C_TRIG_IN bit_width=1
@@ -177,6 +198,11 @@
 `define AD7961_RESET_GEN_BIT 19 // address=ADC_TIMING_TRIG_IN bit_width=1
 `define DEBUGFIFO_CNT_RESET 23 // address=ADC_TIMING_TRIG_IN bit_width=1
 `define DEBUGFIFO_FIFO_RESET 24 // address=ADC_TIMING_TRIG_IN bit_width=1
+
+// trigger in at 0x43 -- sync to clk_ddr_ui
+`define DDR3_UI_RESET 0 // address=DDR_RESET_ADDR_TRIG bit_width=1
+`define DDR3_ADC_ADDR_RESET 1 // address=DDR_RESET_ADDR_TRIG bit_width=1
+
 
 // wire in at 0x00
 `define GPIO_CSB_DEBUG 0 // address=GPIO_DEBUG_WIRE_IN bit_width=3
