@@ -425,6 +425,7 @@ class FPGA:
               (self.device_info.deviceMajorVersion, self.device_info.deviceMinorVersion))
         print("   Serial Number: %s" % self.device_info.serialNumber)
         print("       Device ID: %s" % self.device_info.deviceID)
+        print("       USB Speed  %d" % self.device_info.usbSpeed)
 
         self.xem.LoadDefaultPLLConfiguration()
 
@@ -2870,7 +2871,7 @@ class DDR3():
             endpoints = Endpoint.get_chip_endpoints('DDR3')
         self.fpga = fpga
         self.endpoints = endpoints
-        self.parameters = {'BLOCK_SIZE': 2048,  # 1/2 the incoming FIFO depth in bytes (size of the BlockPipeIn)
+        self.parameters = {'BLOCK_SIZE': 2048, # 1/2 the incoming FIFO depth in bytes (size of the BlockPipeIn)
                            'sample_size': 65536,  # per channel
                            # number of channels that the DDR is striped between (for DACs)
                            'channels': 8,

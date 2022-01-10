@@ -29,8 +29,12 @@ import time
 import atexit
 from instrbuilder.instrument_opening import open_by_name
 import numpy as np
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import h5py
+from filters.filter_tools import delayseq, butter_lowpass_filter
+from analysis.adc_data import read_plot, read_h5, peak_area
+import pandas as pd
+
 #import matplotlib
 
 # matplotlib.use("TkAgg")  # or "Qt5agg" depending on you version of Qt
@@ -48,8 +52,16 @@ sys.path.append(interfaces_path)
 
 eps = Endpoint.endpoints_from_defines
 
+data_dir_base = os.path.expanduser('~')
+if sys.platform == "linux" or sys.platform == "linux2":
+    pass
+elif sys.platform == "darwin":
+    data_dir_covg = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}"
+elif sys.platform == "win32":
+    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/{}{:02d}{:02d}')
+
 today = datetime.datetime.today()
-data_dir = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}".format(
+data_dir = data_dir_covg.format(
     today.year, today.month, today.day
 )
 if not os.path.exists(data_dir):
@@ -90,9 +102,11 @@ elif pwr_setup == "3dual":
 
 # ------ oscilloscope -----------------
 osc = open_by_name("msox_scope")
-osc.set("chan_label", "P2", configs={"chan": 1})
-osc.set("chan_label", "Vm", configs={"chan": 2})
-osc.set("chan_label", "ADC", configs={"chan": 3})
+osc.set("chan_label", '"P2"', configs={"chan": 1}) 
+osc.set("chan_label", '"Vm"', configs={"chan": 2})
+osc.set("chan_label", '"CC"', configs={"chan": 4}) # label must be in "" for the scope to accept
+osc.comm_handle.write(':DISP:LAB 1')  # turn on the labels
+osc.set('chan_display', 0, configs={'chan': 3})
 
 # --------  function generator  --------
 fg = open_by_name("new_function_gen")
@@ -122,6 +136,12 @@ f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
 
+daq = Daq(f)
+ad7961s = daq.ADC
+
+ad7961s[0].reset_wire(1)
+
+
 # power supply turn on via FPGA enables
 for name in ["1V8", "5V", "3V3"]:
     pwr.supply_on(name)
@@ -136,16 +156,7 @@ gpio.ads_misc("sdoa")  # do not care for this experiment
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
 clamp = Clamp(f, dc_num=dc_num)
-
 clamp.init_board()
-
-#disp_device(clamp.TCA[0])
-#disp_device(clamp.TCA[1])
-#disp_device(clamp.UID)
-#disp_device(clamp.DAC)
-
-daq = Daq(f)
-ad7961s = daq.ADC
 
 # configure the clamp board, settings default to None so that a setting that is not
 # included is masked and stays the same
@@ -177,23 +188,32 @@ test_channel = 1
 ADC_TEST_PATTERN = False
 
 # --------  Run ADC tests  --------
-for chan in [0, test_channel]:
-    for num in [1, 2, 3]:
-        if chan == 0:
-            # resets FIFO and ADC controller
-            setup = ad7961s[chan].setup(reset_pll=True)
-            time.sleep(0.2)  # this pause is required. Failed at 100 ms.
-        else:
-            # resets FIFO and ADC controller
-            setup = ad7961s[chan].setup(reset_pll=False)
-            time.sleep(0.2)  # this pause is required. Failed at 100 ms.
+# setup = ad7961s[0].setup(reset_pll=True)
+# time.sleep(1)  # this pause is required. Failed at 100 ms.
+
+d1 = {}
+d2 = {}
+
+
+
+for chan in [0,1,2,3]:
+    ad7961s[chan].power_up_adc()  # standard sampling
+
+ad7961s[0].reset_wire(0)
+time.sleep(1)
+
+for chan in [0,1,2,3]:
+    for num in [1, 2]:
+        # resets FIFO and ADC controller
+        # setup = ad7961s[chan].setup(reset_pll=False)
+        # time.sleep(0.2)  # this pause is required. Failed at 100 ms.
 
         if ADC_TEST_PATTERN:
             ad7961s[chan].test_pattern()
             time.sleep(0.2)
             ad7961s[chan].reset_fifo()
             time.sleep(0.2)  # FIFO fills in 204 us
-            d1 = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
+            d1[chan] = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
             # with open(
             #     os.path.join(
             #         data_dir, "test_pattern_chan{}_num{}.npy".format(chan, num)
@@ -202,10 +222,9 @@ for chan in [0, test_channel]:
             # ) as file1:
             #     np.save(file1, d1)
 
-        ad7961s[chan].power_up_adc()  # standard sampling
-        time.sleep(1)
+        # ad7961s[chan].power_up_adc()  # standard sampling
         ad7961s[chan].reset_fifo()
-        d2 = ad7961s[chan].stream_mult(swps=4)
+        d2[chan] = ad7961s[chan].stream_mult(swps=4)
 
         # with open(
         #     os.path.join(data_dir, "test_data_chan{}_num{}.npy".format(chan, num)), "wb"
@@ -225,7 +244,7 @@ for i in range(6):
     daq.DAC[i].set_data_mux("host")
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
-    daq.set_dac_gain(i, 500)
+    daq.set_dac_gain(i, 500)  # 500 mV full-scale
 
 # 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
 daq.DAC[0].set_clk_divider(divide_value=0x50)
@@ -257,43 +276,35 @@ cmd_dac = daq.DAC[1]  # DAC channel 0 is connected to dc clamp ch 0 CMD signal
 cc = daq.DAC[0]
 
 ddr = DDR3(f)
-ddr.reset_fifo()
 
-cc_scale_val = 33 / 4.7 / 10 / 2
-cmd_val = 0x1d00
-for i in range(8):
-    if i == 0:
-        ddr.data_arrays[i] = ddr.make_step(
-            low=0x2000 + int(cmd_val * cc_scale_val),
-            high=0x2000 - int(cmd_val * cc_scale_val),
-            length=8000
-        )
-    if i == 1:
-        ddr.data_arrays[i] = ddr.make_step(
-            low=0x2000 - int(cmd_val), high=0x2000 + int(cmd_val), length=8000)
-    # if i > 1:
-    #     ddr.data_arrays[i] = ddr.data_arrays[1]
+def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3):
 
+    # adjust the DDR settings of both DACs 
+    # quiet both DACs 
+    cc.set_data_mux("host")
+    cmd_dac.set_data_mux("host")
+    ddr.reset_fifo()
 
-ddr.clear_adc_read()
-g_buf = ddr.write_channels()
-ddr.reset_fifo()
-ddr.clear_write()
-cmd_dac.set_data_mux("DDR")
-# cc.change_filter_coeff(target='passthru')
-# cc.filter_select(operation='set')
-# cc.set_data_mux('ad7961_ch0')
-cc.set_data_mux("DDR")
-cc.set_data_mux("host")
+    cmd_ch = 1
+    cc_ch = 0
 
-ddr.set_read()
-time.sleep(1)  # allow the ADC data to accumulate into DDR
-# ddr.clear_read()
-ddr.set_adc_read()
+    ddr.data_arrays[cmd_ch] = ddr.make_step(
+        low=0x2000 - int(cmd_val), high=0x2000 + int(cmd_val), length=8000)
 
+    ddr.data_arrays[cc_ch] = butter_lowpass_filter(ddr.data_arrays[cmd_ch], cutoff=fc, fs=2.5e6, order=1)*cc_scale + 0x2000
 
-# TODO - a way to assign parts of the Daq TCAs to specific DACs so as to write the gain
-# slow DAC: DAC1_BP_OUT4 -- utility pin, replacing I2C DAC on daughter card
+    # if cc_delay !=0:
+    #     ddr.data_arrays[0] = delayseq(ddr.data_arrays[0], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+
+    g_buf = ddr.write_channels() # clear read, set write, etc. handled within write_channels
+
+    # reenable both DACs 
+    cmd_dac.set_data_mux("DDR")
+    cc.set_data_mux("DDR")
+
+    time.sleep(0.1)  # allow the ADC data to accumulate into DDR
+    # allow for ADC reading initialized by a BTPipeOut
+    ddr.set_adc_read()
 
 
 def read_adc(ddr, blk_multiples=2048):
@@ -326,39 +337,34 @@ def deswizzle(d, convert_twos=True):
     return chan_data
 
 
-"""
-plt_length = 2048
-for i in range(4):
-    plt.plot(chan_data[i][0:plt_length], marker='*', label=f'Ch:{i}')
+def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64, PLT_ADC=False, scaling=1, ylabel='DN', ax=None):
 
-# check readback with write by channel given length
-readback = check_readback(ddr.data_arrays, chan_data, [0, 1, 2, 3])
-"""
-PLT_ADC = False
-READ_ADC = True
-
-if READ_ADC:
     # Continuous Graph
     if PLT_ADC:
         plt.ion()
-        fig, ax = plt.subplots()
+        if ax is None:
+            fig, ax = plt.subplots()
         # ax.plot(data)
         ax.set_xlabel("Time")
-        ax.set_ylabel("DN")
+        ax.set_ylabel(ylabel)
+    sample_rate = 2e-7  # 1 / 5e6
+    chunk_size = int(ddr.parameters["BLOCK_SIZE"] * blk_multiples / (4*2))  # readings per ADC
     repeat = 0
-    sample_rate = 1 / 5e6
-    blk_multiples = 64
-    chunk_size = int(ddr.parameters["BLOCK_SIZE"] * blk_multiples / 8)
-    num_repeats = 4
+    adc_readings = chunk_size*num_repeats
 
-    file_name = "out_clamp_tests_jan6_7.h5"
+    print(f'Reading {adc_readings*2/1024} kB per ADC channel for a total of {adc_readings*sample_rate*1000} ms of data')
+
     full_data_name = os.path.join(data_dir, file_name)
     try:
         os.remove(full_data_name)
     except OSError:
         pass
 
-    ddr.adc_single()  # TODO-does this work?
+    ddr.adc_single()  # TODO-does this work? -- can it be missed at times?
+    ddr.adc_single()  # TODO-does this work? -- can it be missed at times?
+    ddr.adc_single()  # TODO-does this work? -- can it be missed at times?
+
+    # TODO: the first FIFO (or 1/2 FIFO) worth of data should be stale
 
     # Save ADC DDR data to a file
     with h5py.File(full_data_name, "w") as file:
@@ -370,8 +376,8 @@ if READ_ADC:
             if PLT_ADC:
                 if repeat == 0:
                     t = np.arange(len(chan_data[1])) * sample_rate
-                ax_hdl = ax.plot(t, chan_data[0], color="blue", scalex=True, scaley=False)
-                ax.set_ylim(bottom=-(2 ** 15), top=2 ** 15, auto=False)
+                ax_hdl = ax.plot(t, chan_data[0]*scaling, color="blue", scalex=True, scaley=False)
+                ax.set_ylim(bottom=-(2 ** 15)*scaling, top= (2 ** 15)*scaling, auto=False)
                 plt.draw()
                 plt.pause(0.001)
 
@@ -385,4 +391,59 @@ if READ_ADC:
                     ax_hdl[0].remove()
                 data_set.resize(data_set.shape[1] + chunk_size, axis=1)
 
-    print('Done with ADC reading')
+    print(f'Done with ADC reading: saved as {full_data_name}')
+    return chan_data
+
+output = pd.DataFrame()
+
+cc_scale = 0.335
+cc_delay = 0
+cc_fc = 4.8e3
+idx = 0
+for cc_fc in (np.linspace(2e3, 40e3, 1)):
+    for cc_delay in (np.linspace(-30e-6, 30e-6, 2)):
+        for cc_scale in (np.linspace(-0.9, 0.9, 1)):
+            data = {}
+            file_name = f'cc_swp3_{idx}'
+
+            set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc) # already sleeps 0.1 seconds 
+            data['cc_scale'] = cc_scale
+            data['cc_delay'] = cc_delay
+            data['cc_fc'] = cc_fc
+
+            result_ok = False
+            num_tries = 0
+            while ((not result_ok) and (num_tries<5)):
+                try:
+                    save_adc_data(data_dir, file_name + '.h5', num_repeats = 2)
+                    t, adc_data = read_h5(os.path.join(data_dir, file_name + '.h5'), chan_list=[0])
+                    pa, num_found = peak_area(t[64:], adc_data[0][64:])  # crop the first 64 since might be from stale FIFO
+                    result_ok=True
+                except:
+                    print('retry')
+                    num_tries += 1
+            if num_tries==5:
+                raise ValueError('A very specific bad thing happened')      
+
+            data['peak_area'] = pa
+            data['peaks_found'] = num_found
+            osc.set('single_acq')
+            time.sleep(0.15)
+
+            # general measure -- input measure type
+            for ch in [1,2,4]:
+                rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch}) 
+                data[f'rise_{ch}'] = rt
+                va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch}) 
+                data[f'amp_{ch}'] = va
+
+            # save a PNG screen-shot to host computer
+            t = osc.save_display_data(os.path.join(data_dir, file_name))
+            osc.set('run_acq')
+
+            data['filename'] = file_name
+            output = output.append(data, ignore_index=True)
+            idx = idx + 1
+
+print(output.head())
+output.to_csv(os.path.join(data_dir, file_name + '.csv'))
