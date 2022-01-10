@@ -86,8 +86,12 @@ class Endpoint:
     Attributes
     ----------
     endpoints_from_defines : dict
-        Dictionary of each group of endpoints paired with inner dictionaries
+        Class attribute. Dictionary of each group of endpoints paired with inner dictionaries
         of endpoint names to Endpoint objects, starts empty.
+    I2CDAQ_level_shifted : dict
+        Class attribute. Dictionary of Endpoints for the level shifted I2CDAQ bus.
+    I2CDAQ_QW : dict
+        Class attribute. Dictionary of Endpoints for QW 3.3V I2CDAQ bus.
     address : int
         Address location of the Endpoint.
     bit_index_low : int
@@ -113,6 +117,8 @@ class Endpoint:
     """
 
     endpoints_from_defines = dict()
+    I2CDAQ_level_shifted = dict()
+    I2CDAQ_QW = dict()
 
     def __init__(self, address, bit_index_low, bit_width, gen_bit, gen_address):
         self.address = address
@@ -309,6 +315,11 @@ class Endpoint:
                 return -1
             else:
                 print('No collisions found.')
+        
+        # Assign I2CDAQ busses
+        Endpoint.I2CDAQ_level_shifted = Endpoint.endpoints_from_defines['I2CDAQ']
+        # We want the endpoints_from_defines to be the same so in_place=False to use a copy when incrementing
+        Endpoint.I2CDAQ_QW = Endpoint.increment_endpoints(endpoints_dict=Endpoint.endpoints_from_defines['I2CDAQ'], in_place=False)
 
         # If the list and set match length, no duplicates
         return Endpoint.endpoints_from_defines
@@ -329,12 +340,24 @@ class Endpoint:
         return copy.deepcopy(Endpoint.endpoints_from_defines.get(chip_name))
 
     @staticmethod
-    def increment_endpoints(endpoints_dict):
+    def increment_endpoints(endpoints_dict, in_place=True):
         """Increment all Endpoints in endpoints_dict.
 
         Use each Endpoint's gen_bit and gen_addr values to determine whether to
         increment bits and addresses, respectively.
+
+        Arguments
+        ---------
+        endpoints_dict : dict
+            The dict of Endpoints to increment.
+        in_place : bool
+            If True, the dictionary given will be changed. Otherwise, a copy 
+            of the dictionary will be made.
         """
+
+        if not in_place:
+            # Make a copy
+            endpoints_dict = copy.deepcopy(endpoints_dict)
 
         for key in endpoints_dict:
             endpoint = endpoints_dict[key]
@@ -351,6 +374,8 @@ class Endpoint:
             elif endpoint.gen_address:
                 # Increment the address by 1
                 endpoint.address += 1
+        
+        return endpoints_dict
 
 
 def advance_endpoints_bynum(endpoints_dict, num):
