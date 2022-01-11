@@ -8,7 +8,6 @@ October 2021
 Abe Stroschein, ajstroschein@stthomas.edu
 """
 
-from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import pytest
 import os
 import sys
@@ -33,10 +32,11 @@ top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
 from interfaces.interfaces import FPGA, DAC80508, ADS8686
 from interfaces.boards import Daq
 from interfaces.utils import to_voltage, twos_comp
+from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
 pwr_setup = '3dual'
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)  # 7V and +/-16.5V, None
-tolerance = 0.008
+tolerance = 0.009
 
 # Fixtures
 @pytest.fixture(scope='module')
@@ -73,7 +73,7 @@ def fpga():
     # Teardown
     f.xem.Close()
     # Power off
-    pwr_off()
+    pwr_off([dc_pwr])
 
 
 @pytest.fixture(scope='module')
@@ -114,8 +114,8 @@ def test_dac_gain_bin(dac, ads, gain_code, expected_gain):
 
     # Looking for values within 1 LSB of expected
     global tolerance
-    # Set the output on DAC80508
-    voltage_data = 0xffff
+    # Set the output on DAC80508 (1/2 scale)
+    voltage_data = 0x7fff
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
     # adjusted by the gain of the output and whether the internal reference is
     # divided by 2 or not.
@@ -130,8 +130,6 @@ def test_dac_gain_bin(dac, ads, gain_code, expected_gain):
     # both +/- sides of the range.
     # Ex. set_range(5) == +/-5V which spans a total of 10V
     read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
-    print(read_dict)
-    print(read, expected)
     # Compare
     assert abs(read - expected) <= tolerance
 
@@ -147,8 +145,8 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
 
     # Looking for values within 1 LSB of expected
     global tolerance
-    # Set the output on DAC80508
-    voltage_data = 0xffff
+    # Set the output on DAC80508 (1/2 scale)
+    voltage_data = 0x7fff
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
     # adjusted by the gain of the output and whether the internal reference is
     # divided by 2 or not.
@@ -163,8 +161,6 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
     # both +/- sides of the range.
     # Ex. set_range(5) == +/-5V which spans a total of 10V
     read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
-    print(read_dict)
-    print(read, expected)
     # Compare
     assert abs(read - expected) <= tolerance
 
@@ -191,8 +187,6 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
 #     # Ex. set_range(5) == +/-5V which spans a total of 10V
 #     read = to_voltage(data=read_data, num_bits=ads.num_bits,
 #                       voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
-#     print(read_dict)
-#     print(read, expected)
 #     # Compare
 #     assert abs(read - expected) <= tolerance
 
@@ -208,7 +202,6 @@ def test_dac_write_voltage(dac, ads, voltage):
     # divided by 2 or not.
     # dac.set_gain(gain=1, divide_reference=False)
     gain_info = dac.write_voltage(voltage=voltage, outputs=4, auto_gain=True)
-    print(gain_info)
 
     # Read value with ADS8686
     read_dict = ads.read_last()
@@ -218,7 +211,5 @@ def test_dac_write_voltage(dac, ads, voltage):
     # Ex. set_range(5) == +/-5V which spans a total of 10V
     read = to_voltage(data=read_data, num_bits=ads.num_bits,
                       voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
-    print(read_dict)
-    print(read, voltage)
     # Compare
     assert abs(read - voltage) <= tolerance
