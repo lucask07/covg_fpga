@@ -86,8 +86,12 @@ class Endpoint:
     Attributes
     ----------
     endpoints_from_defines : dict
-        Dictionary of each group of endpoints paired with inner dictionaries
+        Class attribute. Dictionary of each group of endpoints paired with inner dictionaries
         of endpoint names to Endpoint objects, starts empty.
+    I2CDAQ_level_shifted : dict
+        Class attribute. Dictionary of Endpoints for the level shifted I2CDAQ bus.
+    I2CDAQ_QW : dict
+        Class attribute. Dictionary of Endpoints for QW 3.3V I2CDAQ bus.
     address : int
         Address location of the Endpoint.
     bit_index_low : int
@@ -113,6 +117,8 @@ class Endpoint:
     """
 
     endpoints_from_defines = dict()
+    I2CDAQ_level_shifted = dict()
+    I2CDAQ_QW = dict()
 
     def __init__(self, address, bit_index_low, bit_width, gen_bit, gen_address):
         self.address = address
@@ -270,14 +276,14 @@ class Endpoint:
         none_to_neg_1 = {None: -1}
         # Make tuples of (address, bit) from each list, then concatenate the lists
         # The none_to_neg_1.get() translates None values of bit_index_low to -1 for sorting later
-        list_eps = [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in top_level_eps] + \
-            [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low))
-             for ep in lower_level_eps]
+        list_eps = [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in top_level_eps]
         list_len = len(list_eps)
         set_len = len(set(list_eps))  # A set removes duplicates
+
         if list_len != set_len:
-            # There are duplicates
-            print('Naming collision in ep_defines.v\nFinding collisions...')
+            # There may be duplicates. May not, because different groups can have endpoints of the same name.
+            print('Checking for naming collisions in ep_defines.v ...')
+
             # Search through to find duplicates
             # Copy the list to keep order in the original
             sorted_list_eps = list(list_eps)
@@ -309,6 +315,11 @@ class Endpoint:
                 return -1
             else:
                 print('No collisions found.')
+        
+        # Assign I2CDAQ busses
+        Endpoint.I2CDAQ_level_shifted = Endpoint.endpoints_from_defines['I2CDAQ']
+        # We want the endpoints_from_defines to be the same so in_place=False to use a copy when incrementing
+        Endpoint.I2CDAQ_QW = Endpoint.increment_endpoints(endpoints_dict=Endpoint.endpoints_from_defines['I2CDAQ'], in_place=False)
 
         # If the list and set match length, no duplicates
         return Endpoint.endpoints_from_defines
@@ -329,21 +340,42 @@ class Endpoint:
         return copy.deepcopy(Endpoint.endpoints_from_defines.get(chip_name))
 
     @staticmethod
-    def increment_endpoints(endpoints_dict):
+    def increment_endpoints(endpoints_dict, in_place=True):
         """Increment all Endpoints in endpoints_dict.
 
         Use each Endpoint's gen_bit and gen_addr values to determine whether to
         increment bits and addresses, respectively.
+
+        Arguments
+        ---------
+        endpoints_dict : dict
+            The dict of Endpoints to increment.
+        in_place : bool
+            If True, the dictionary given will be changed. Otherwise, a copy 
+            of the dictionary will be made.
         """
+
+        if not in_place:
+            # Make a copy
+            endpoints_dict = copy.deepcopy(endpoints_dict)
 
         for key in endpoints_dict:
             endpoint = endpoints_dict[key]
-            if endpoint.gen_bit:
-                #endpoint.bit += endpoint.bit_width
+            if endpoint.gen_bit and endpoint.gen_address:
+                # Increment the bit by the endpoint's bit_width and if it would
+                # go outside the address's width, increment the address
+                # TODO: do we want to wrap around the bits on the same address, -> can change address on each bit individually
+                # or shift all bits when one moves to the next address? -> each bit needs to know if other bits fit on the current address as well
+                pass
+            elif endpoint.gen_bit:
+                # Increment the bit by the bit_width
                 endpoint.bit_index_low += endpoint.bit_width
                 endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
-            if endpoint.gen_address:
+            elif endpoint.gen_address:
+                # Increment the address by 1
                 endpoint.address += 1
+        
+        return endpoints_dict
 
 
 def advance_endpoints_bynum(endpoints_dict, num):
@@ -362,12 +394,11 @@ def advance_endpoints_bynum(endpoints_dict, num):
         endpoint = endpoints_dict[key]
         if endpoint.gen_bit:
             endpoint.bit_index_low = (
-                endpoint.bit_index_low + (endpoint.bit_width*num)) % 32
+                endpoint.bit_index_low + (endpoint.bit_width*num))
             endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
         if endpoint.gen_address:
             print(f'gen address bit_width: {endpoint.bit_width}')
-            endpoint.address += ((endpoint.bit_width*num)//32)
-        endpoints_dict[key] = endpoint
+            endpoint.address += 1
     return endpoints_dict
 
 # Class for the FPGA itself. Handles FPGA configuration, setting wire values,
@@ -475,60 +506,44 @@ class FPGA:
         self.xem.UpdateWireOuts()
         return self.xem.GetWireOutValue(address)
 
-    def set_endpoint(self, ep_bit, adc_chan=None):
+    def set_endpoint(self, ep_bit):
         """Set all bits in an Endpoint high."""
 
-        if adc_chan is None:
-            mask = gen_mask(
-                list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
-        else:
-            mask = gen_mask(
-                list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
+        mask = gen_mask(
+            list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
         if self.debug:
             print(
                 f'set_endpoint(address={hex(ep_bit.address)}, value={hex(mask)}, mask={hex(mask)})')
         self.xem.SetWireInValue(ep_bit.address, mask, mask)  # set
         self.xem.UpdateWireIns()
 
-    def clear_endpoint(self, ep_bit, adc_chan=None):
+    def clear_endpoint(self, ep_bit):
         """Set all bits in an Endpoint low."""
 
-        if adc_chan is None:
-            mask = gen_mask(
-                list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
-        else:
-            mask = gen_mask(
-                list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
+        mask = gen_mask(
+            list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
         if self.debug:
             print(
                 f'clear_endpoint(address={hex(ep_bit.address)}, value={hex(0)}, mask={hex(mask)})')
         self.xem.SetWireInValue(ep_bit.address, 0x0000, mask)  # clear
         self.xem.UpdateWireIns()
 
-    def toggle_low(self, ep_bit, adc_chan=None):
+    def toggle_low(self, ep_bit):
         """Toggle all bits in an Endpoint low then back to high."""
 
-        if adc_chan is None:
-            mask = gen_mask(
-                list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
-        else:
-            mask = gen_mask(
-                list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
+        mask = gen_mask(
+            list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
         self.xem.SetWireInValue(
             ep_bit.address, 0x0000, mask)  # toggle low
         self.xem.UpdateWireIns()
         self.xem.SetWireInValue(ep_bit.address, mask, mask)   # back high
         self.xem.UpdateWireIns()
 
-    def toggle_high(self, ep_bit, adc_chan=None):
+    def toggle_high(self, ep_bit):
         """Toggle all bits in an Endpoint high then back to low."""
 
-        if adc_chan is None:
-            mask = gen_mask(
-                list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
-        else:
-            mask = gen_mask(
-                list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1))[adc_chan])
+        mask = gen_mask(
+            list(range(ep_bit.bit_index_low, ep_bit.bit_index_high + 1)))
         self.xem.SetWireInValue(ep_bit.address, mask, mask)  # toggle high
         self.xem.UpdateWireIns()
         self.xem.SetWireInValue(ep_bit.address, 0x0000, mask)   # back low
@@ -642,6 +657,8 @@ class I2CController:
 
     Methods
     -------
+    create_chips(cls, fpga, addr_pins, endpoints)
+        Class method. Instantiate a number of new I2C chips.
     i2c_configure(data_length, starts, stops, preamble)
         Configure the buffer for the next transmission.
     i2c_transmit(data, data_length)
@@ -658,10 +675,33 @@ class I2CController:
 
     I2C_MAX_TIMEOUT_MS = 50
 
-    def __init__(self, fpga, endpoints, i2c={'m_pBuf': [], 'm_nDataStart': 7}):
+    def __init__(self, fpga, addr_pins, endpoints, i2c={'m_pBuf': [], 'm_nDataStart': 7}):
         self.i2c = i2c
         self.fpga = fpga
+        self.addr_pins = addr_pins
         self.endpoints = endpoints
+
+    @classmethod
+    def create_chips(cls, fpga, addr_pins, endpoints):
+        """Instantiate a number of new I2C chips.
+        
+        The FPGA and endpoints will be the same for all instantiated chips.
+        
+        Arguments
+        ---------
+        fpga : FPGA
+            The fpga instance for the chip to connect with.
+        addr_pins : list
+            The list of addr_pins assigned to the new chips.
+
+        Returns
+        -------
+        list
+            A list of the newly instantiated chips in the same order addr_pins was given in.
+        """
+
+        return [cls(fpga=fpga, addr_pins=addr, endpoints=endpoints) for addr in addr_pins]
+
 
     # STARTS - Defines the preamble bytes after which a start bit is
     #      transmitted. For example, if STARTS=0x04, a start bit is
@@ -883,10 +923,6 @@ class TCA9555(I2CController):
     ADDRESS_HEADER = 0b0100_0000
     registers = Register.get_chip_registers('TCA9555')
 
-    def __init__(self, fpga, addr_pins, endpoints):
-        super().__init__(fpga=fpga, endpoints=endpoints)
-        self.addr_pins = addr_pins
-
     def configure_pins(self, data):
         """Configure the chip's pins as inputs (1's) or outputs (0's)."""
 
@@ -957,11 +993,6 @@ class UID_24AA025UID(I2CController):
 
     ADDRESS_HEADER = 0b10100000
     registers = Register.get_chip_registers('24AA025UID')
-
-    def __init__(self, fpga, addr_pins, endpoints):
-        # No endpoints default because I2CDC or I2CDAQ does not make sense as a default either way
-        super().__init__(fpga=fpga, endpoints=endpoints)
-        self.addr_pins = addr_pins
 
     def write(self, data, word_address=0x00, num_bytes=None):
         """Write data into memory at word_address."""
@@ -1105,10 +1136,6 @@ class DAC53401(I2CController):
     #           001   |   VDD
     #           010   |   SDA
     #           011   |   SCL
-
-    def __init__(self, fpga, addr_pins, endpoints):
-        super().__init__(fpga=fpga, endpoints=endpoints)
-        self.addr_pins = addr_pins
 
     def write(self, data, register_name='DAC_DATA'):
         """Write data to any register on the chip."""
@@ -1737,12 +1764,10 @@ class SPIFifoDriven():
         'ad7961_ch3': 7,
     }
 
-    def __init__(self, fpga, endpoints, master_config, regbridge_advance, channel=0, data_mux=default_data_mux):
+    def __init__(self, fpga, endpoints, master_config, data_mux=default_data_mux):
         self.fpga = fpga
         self.endpoints = endpoints
         self.master_config = master_config
-        self.regbridge_advance = regbridge_advance
-        self.channel = channel
         self.data_mux = data_mux
         # Start with host to minimize unintentional commands from other sources on startup
         self.current_data_mux = None
@@ -1770,14 +1795,14 @@ class SPIFifoDriven():
         if master_config is None:
             # Use class default for master_config
             for i in range(number_of_chips):
-                chips.append(cls(fpga=fpga, endpoints=endpoints, channel=i))
+                chips.append(cls(fpga=fpga, endpoints=endpoints))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
                 Endpoint.increment_endpoints(endpoints)
         else:
             for i in range(number_of_chips):
                 chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(
-                    endpoints), master_config=master_config, channel=i))
+                    endpoints), master_config=master_config))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
                 Endpoint.increment_endpoints(endpoints)
@@ -1859,10 +1884,9 @@ class SPIFifoDriven():
         """Configures the SPI Wishbone control register over the registerBridge.
 
         HDL default is ctrlValue = 16'h3010 (initialized in the HDL)
-        4*channel (rather than 1*channel) allows for expansion
         """
-        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + self.regbridge_advance*self.channel,
-                                    reg_value)
+
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].bit_index_low)
 
         # resets the SPI state machine -- needed since these registers are only
         #   programmed at startup of the state machine
@@ -1873,13 +1897,12 @@ class SPIFifoDriven():
         """Configures the SPI Wishbone clock divider register over the registerBridge.
 
         HDL default is 8'h13 (initialized in the HDL)
-        4*channel (rather than 1*channel) allows for expansion
         """
+
         sys_clk = 200  # in MHz
         print('SCLK predicted frequency {:.2f} [MHz]'.format(
             sys_clk/(divide_value+1)))
-        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 1 + self.regbridge_advance*self.channel,
-                                    divide_value)
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].bit_index_low)
 
         # resets the SPI state machine -- needed since these WishBone
         #   registers are only programmed at startup of the state machine
@@ -1887,7 +1910,7 @@ class SPIFifoDriven():
                                         self.endpoints['REG_TRIG'].bit_index_low)
 
     def write(self, data):
-        """Host write 24 bits of data ot the chip over SPI."""
+        """Host write 24 bits of data to the chip over SPI."""
 
         if self.current_data_mux != 'host':
             self.set_data_mux('host')
@@ -1937,11 +1960,11 @@ class DAC80508(SPIFifoDriven):
 
     registers = Register.get_chip_registers('DAC80508')
 
-    def __init__(self, fpga, master_config=0x3218, endpoints=None, channel=0, data_mux=SPIFifoDriven.default_data_mux):
+    def __init__(self, fpga, master_config=0x3218, endpoints=None, data_mux=SPIFifoDriven.default_data_mux):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DAC80508')
-        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints, regbridge_advance=19, channel=channel, data_mux=data_mux)
+        super().__init__(fpga=fpga, master_config=master_config, endpoints=endpoints, data_mux=data_mux)
         self.current_data_mux = None
         self.set_data_mux('host')
 
@@ -2082,14 +2105,14 @@ class AD5453(SPIFifoDriven):
     bits = 12,
     vref = 2.5*2
 
-    def __init__(self, fpga, master_config=0x3010, endpoints=None, channel=0, data_mux=SPIFifoDriven.default_data_mux):
+    def __init__(self, fpga, master_config=0x3010, endpoints=None, data_mux=SPIFifoDriven.default_data_mux):
 
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('AD5453')
 
         # master_config=0x3010 Sets CHAR_LEN=16, ASS, IE
         super().__init__(fpga=fpga, master_config=master_config,
-                         endpoints=endpoints, regbridge_advance=19, channel=channel, data_mux=data_mux)
+                         endpoints=endpoints, data_mux=data_mux)
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
 
@@ -2136,7 +2159,7 @@ class AD5453(SPIFifoDriven):
         for i in np.arange(self.filter_offset, 1 + self.filter_offset + self.filter_len):
             if (i-self.filter_offset) in self.filter_coeff:
                 addr = int(
-                    self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
+                    self.endpoints['REGBRIDGE_OFFSET'].bit_index_low + i)
                 val = int(self.filter_coeff[i-self.filter_offset])
                 # TODO: ian has first addr of 0x19, second as 0x1a
                 print(
@@ -2152,7 +2175,7 @@ class AD5453(SPIFifoDriven):
         for i in loop_thru:  # TODO is this correct? and how to parameterize?
             if (i-self.filter_offset) in self.filter_coeff:
                 addr = int(
-                    self.endpoints['REGBRIDGE_OFFSET'].address + i + self.regbridge_advance*self.channel)
+                    self.endpoints['REGBRIDGE_OFFSET'].bit_index_low + i)
                 val = int(self.filter_coeff[i-self.filter_offset])
                 idx = int(i-self.filter_offset)
                 regs[idx].address = addr
@@ -2168,13 +2191,21 @@ class AD5453(SPIFifoDriven):
         debug wires available for filters 0, 1
         """
 
-        debug_coeff1 = self.fpga.read_wire(
-            self.endpoints[f'COEFF_DEBUG1_{self.channel}'].address)
-        debug_coeff2 = self.fpga.read_wire(
-            self.endpoints[f'COEFF_DEBUG2_{self.channel}'].address)
+        debug_coeff_0 = self.fpga.read_wire(
+            self.endpoints[f'COEFF_DEBUG_0'].address)
+        debug_coeff_1 = self.fpga.read_wire(
+            self.endpoints[f'COEFF_DEBUG_1'].address)
+        debug_coeff_2 = self.fpga.read_wire(
+            self.endpoints[f'COEFF_DEBUG_2'].address)
+        debug_coeff_3 = self.fpga.read_wire(
+            self.endpoints[f'COEFF_DEBUG_3'].address)
 
-        print(f'Read {hex(debug_coeff1)}, {hex(debug_coeff2)}')
-        return debug_coeff1, debug_coeff2
+        print(f'Read Coefficients:')
+        print('    0:', debug_coeff_0)
+        print('    1:', debug_coeff_1)
+        print('    2:', debug_coeff_2)
+        print('    3:', debug_coeff_3)
+        return debug_coeff_0, debug_coeff_1, debug_coeff_2, debug_coeff_3
 
     def change_filter_coeff(self, target, value=None):
         if (target == 'passthru') or (target == 'passthrough'):
@@ -2260,7 +2291,6 @@ class ADCDATA():
     # TODO: test composite ADC function that enables, reads, converts and plots
     # TODO: incorporate/connect QT graphing (UIscript.py)
     def read(self, twos_comp_conv=True):
-        # s, e = self.fpga.read_pipe_out(self.eps['AD796x_POUT_OFFSET'] + self.chan)
         s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
         if twos_comp_conv:
             data = self.convert_data(s)
@@ -2517,12 +2547,11 @@ class AD7961(ADCDATA):
 
     # the AD7961 does not have internal registers -- just OK endpoints
 
-    def __init__(self, fpga, chan=0, endpoints=None):
+    def __init__(self, fpga, endpoints=None):
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('AD7961')
         self.fpga = fpga
         self.endpoints = endpoints
-        self.chan = chan  # starts at 0
         self.name = 'AD7961'
         self.num_bits = 16  # for AD7961 bits=18 for AD7960
 
@@ -2608,8 +2637,7 @@ class AD7961(ADCDATA):
         elif bw == '9M':
             self.set_enables(0b1101)
         else:
-            print('incorrect input sampling bandwidth for {}:Channel{}'.format(self.name,
-                                                                               self.chan))
+            print(f'incorrect input sampling bandwidth for {self.name}')
 
     def power_down_all(self):
         self.set_enables(0b0000)  # TODO: return anything here?
