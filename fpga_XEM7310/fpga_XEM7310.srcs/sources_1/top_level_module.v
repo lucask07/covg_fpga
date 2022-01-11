@@ -194,7 +194,7 @@ module top_level_module(
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
 	.reset(ep40trig[`AD7961_PLL_RESET]),
-	.clk_out1(adc_clk), //out at 200 MHz
+	.clk_out1(adc_clk), //out at 250 MHz
 	.locked(adc_pll_locked)
 	);
 

@@ -5,3 +5,6 @@
 
 # IP: ip/fifo_w64_512_r256_128_1/fifo_w64_512_r256_128_1.xci
 set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==fifo_w64_512_r256_128_1 || ORIG_REF_NAME==fifo_w64_512_r256_128_1} -quiet] -quiet
+
+# IP: ip/clk_wiz_0/clk_wiz_0.xci
+set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==clk_wiz_0 || ORIG_REF_NAME==clk_wiz_0} -quiet] -quiet
