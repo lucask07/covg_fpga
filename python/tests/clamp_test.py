@@ -58,7 +58,7 @@ if sys.platform == "linux" or sys.platform == "linux2":
 elif sys.platform == "darwin":
     data_dir_covg = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}"
 elif sys.platform == "win32":
-    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/{}{:02d}{:02d}')
+    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
 
 today = datetime.datetime.today()
 data_dir = data_dir_covg.format(
@@ -257,7 +257,6 @@ for i in range(2):
     daq.DAC_gp[i].set_ctrl_reg(daq.DAC_gp[i].master_config)
     daq.DAC_gp[i].set_spi_sclk_divide()
     daq.DAC_gp[i].filter_select(operation="clear")
-    daq.DAC_gp[i].write('DAC4', int(0))
     daq.DAC_gp[i].set_data_mux("host")
     #daq.DAC_gp[i].set_gain(0x01ff)
     print('Gain changed')
@@ -293,8 +292,8 @@ def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3):
 
     ddr.data_arrays[cc_ch] = butter_lowpass_filter(ddr.data_arrays[cmd_ch], cutoff=fc, fs=2.5e6, order=1)*cc_scale + 0x2000
 
-    # if cc_delay !=0:
-    #     ddr.data_arrays[0] = delayseq(ddr.data_arrays[0], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+    if cc_delay !=0:
+        ddr.data_arrays[0] = delayseq(ddr.data_arrays[0], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
 
     g_buf = ddr.write_channels() # clear read, set write, etc. handled within write_channels
 
@@ -400,11 +399,11 @@ cc_scale = 0.335
 cc_delay = 0
 cc_fc = 4.8e3
 idx = 0
-for cc_fc in (np.linspace(2e3, 40e3, 1)):
-    for cc_delay in (np.linspace(-30e-6, 30e-6, 2)):
-        for cc_scale in (np.linspace(-0.9, 0.9, 1)):
+for cc_fc in (np.linspace(2e3, 30e3, 12)):
+    for cc_delay in (np.linspace(-20e-6, 20e-6, 16)):
+        for cc_scale in (np.linspace(-0.7, 0.7, 18)):
             data = {}
-            file_name = f'cc_swp3_{idx}'
+            file_name = f'cc_swp4_{idx}'
 
             set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc) # already sleeps 0.1 seconds 
             data['cc_scale'] = cc_scale
