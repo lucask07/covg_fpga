@@ -1886,7 +1886,7 @@ class SPIFifoDriven():
         HDL default is ctrlValue = 16'h3010 (initialized in the HDL)
         """
 
-        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].bit_index_low)
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].bit_index_low, reg_value)
 
         # resets the SPI state machine -- needed since these registers are only
         #   programmed at startup of the state machine
@@ -1902,7 +1902,7 @@ class SPIFifoDriven():
         sys_clk = 200  # in MHz
         print('SCLK predicted frequency {:.2f} [MHz]'.format(
             sys_clk/(divide_value+1)))
-        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].bit_index_low)
+        self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].bit_index_low, divide_value)
 
         # resets the SPI state machine -- needed since these WishBone
         #   registers are only programmed at startup of the state machine
@@ -2793,10 +2793,10 @@ class DDR3():
         self.parameters['sample_size'] = int(
             (self.parameters['port1_index'] + 8)/2)
 
-        self.data_arrays = {}
+        self.data_arrays = []
         for i in range(self.parameters['channels']):
-            self.data_arrays[i] = np.zeros(
-                self.parameters['sample_size']).astype(np.int16)
+            self.data_arrays.append(np.zeros(
+                self.parameters['sample_size']).astype(np.int16))
 
         self.clear_adc_debug()
 
