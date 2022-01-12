@@ -316,6 +316,7 @@ class Endpoint:
             else:
                 print('No collisions found.')
         
+        # TODO: should this be in interfaces or be defined elsewhere?
         # Assign I2CDAQ busses
         Endpoint.I2CDAQ_level_shifted = Endpoint.endpoints_from_defines['I2CDAQ']
         # We want the endpoints_from_defines to be the same so in_place=False to use a copy when incrementing
@@ -955,6 +956,7 @@ class TCA9555(I2CController):
 
     def read(self, register_name='INPUT'):
         """Read 2 bytes of data from the pins."""
+
         dev_addr = self.ADDRESS_HEADER | (
             self.addr_pins << 1) | 0b1
         return self.i2c_read_long(dev_addr, [TCA9555.registers[register_name].address], 2)
@@ -1515,7 +1517,9 @@ class SPIController:
         #self.fpga.xem.ActivateTriggerIn(
         #    self.endpoints['WB_CONVERT'].address, self.endpoints['WB_CONVERT'].bit_index_low)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
 
-    def wb_is_acknowledged(self):
+    def wb_is_ack(self):
+        """Check if the Wishbone sent back a write acknowledge."""
+        
         pass
     #     response = self.fpga.read_wire(self.endpoints['OUT'].address)
     #     return response == SPIController.ACK
@@ -1525,13 +1529,13 @@ class SPIController:
 
         self.wb_send_cmd(
             SPIController.WB_SET_ADDRESS | (address << 2) | 0x1)  # TODO: comment here what the | 0x1 is for when I figure it out
-        return self.wb_is_acknowledged()  # TODO: test if acknowledge actually comes back
+        return self.wb_is_ack()  # TODO: test if acknowledge actually comes back
 
     def wb_write(self, data):
         """Write up to 30 bytes of data to the currently selected register."""
 
         self.wb_send_cmd(SPIController.WB_WRITE | data)
-        return self.wb_is_acknowledged()  # TODO: test if acknowledge actually comes back
+        return self.wb_is_ack()  # TODO: test if acknowledge actually comes back
 
     def wb_read(self):
         """Return the data stored in the currently selected register."""
@@ -1609,8 +1613,6 @@ class SPIController:
 
         Register should be either 0, 1, 2, or 3.
         """
-
-        # TODO: determine if register argument is really necessary
 
         # Set address to Tx register
         ack = self.wb_set_address(
@@ -1707,12 +1709,14 @@ class SPIController:
             self.endpoints['MASTER_RESET'].bit_index_low)
 
     def set_host_mode(self):
-        """ Configure SPI controller to be host driven """
+        """ Configure SPI controller to be host driven."""
+
         self.fpga.set_wire_bit(self.endpoints['HOST_FPGA'].address,
                                self.endpoints['HOST_FPGA'].bit_index_low)
 
     def set_fpga_mode(self):
-        """ Configure SPI controller to be host driven """
+        """ Configure SPI controller to be host driven."""
+
         self.fpga.clear_wire_bit(self.endpoints['HOST_FPGA'].address,
                                  self.endpoints['HOST_FPGA'].bit_index_low)
 
@@ -2101,6 +2105,7 @@ class DAC80508(SPIFifoDriven):
 
 
 class AD5453(SPIFifoDriven):
+    # TODO: add class docstring
 
     bits = 12,
     vref = 2.5*2
@@ -2154,6 +2159,7 @@ class AD5453(SPIFifoDriven):
         super().set_ctrl_reg(reg_value=reg_value)
 
     def write_filter_coeffs(self):
+        # TODO: add method docstring
 
         # TODO is this correct? and how to parameterize?
         for i in np.arange(self.filter_offset, 1 + self.filter_offset + self.filter_len):
@@ -2167,6 +2173,8 @@ class AD5453(SPIFifoDriven):
                 self.fpga.xem.WriteRegister(addr, val)
 
     def write_filter_coeffs_simultaneous(self):
+        # TODO: add method docstring
+
         # https://opalkelly.com/examples/setting-and-getting-multiple-registers/#tab-python
         loop_thru = np.arange(self.filter_offset, 1
                               + self.filter_offset + self.filter_len)
@@ -2208,6 +2216,8 @@ class AD5453(SPIFifoDriven):
         return debug_coeff_0, debug_coeff_1, debug_coeff_2, debug_coeff_3
 
     def change_filter_coeff(self, target, value=None):
+        # TODO: add method docstring
+
         if (target == 'passthru') or (target == 'passthrough'):
             self.filter_coeff = {0: 0x7fff_ffff,   # changed for about unity gain
                                  1: 0x20000000,
@@ -2254,10 +2264,14 @@ class AD5453(SPIFifoDriven):
 
 
 class ADCDATA():
+    # TODO: add class docstring
+
     def __init__(self):
         pass
 
     def deswizzle(self, buf):
+        # TODO: add method docstring
+
         d = np.frombuffer(buf, dtype=np.uint8).astype(np.uint32)
         if self.num_bits == 16:
             d1 = d[0::4] + (d[1::4] << 8)  # TODO: check the byte ordering
@@ -2280,17 +2294,20 @@ class ADCDATA():
         return c
 
     def convert_twos(self, d):
+        """Convert data to integer two's complement representation."""
+
         return twos_comp(d, self.num_bits)
 
     def convert_data(self, buf):
-        """
-        deswizle and convert the twos complement representation
-        """
+        """Deswizle and convert the twos complement representation."""
+
         return self.convert_twos(self.deswizzle(buf))
 
     # TODO: test composite ADC function that enables, reads, converts and plots
     # TODO: incorporate/connect QT graphing (UIscript.py)
     def read(self, twos_comp_conv=True):
+        # TODO: add method docstring
+
         s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address)
         if twos_comp_conv:
             data = self.convert_data(s)
@@ -2299,6 +2316,8 @@ class ADCDATA():
         return data
 
     def stream_mult(self, swps=4, twos_comp_conv=True, data_len=1024):
+        # TODO: add method docstring
+
         cnt = 0
         st = bytearray(np.asarray(np.ones(0, np.uint8)))
         self.fpga.xem.UpdateTriggerOuts()
@@ -2322,6 +2341,8 @@ class ADCDATA():
 
 # Class for the ADS8686 ADC chip.
 class ADS8686(SPIController, ADCDATA):
+    # TODO: add class docstring
+
     registers = Register.get_chip_registers('ADS8686')
     msg_w = 0x8000
     range = {10:  0b00,
@@ -2342,16 +2363,21 @@ class ADS8686(SPIController, ADCDATA):
         self.name = 'ADS8686'
 
     def write(self, msg, reg_name):
+        """Write to an internal register on the chip."""
+
         reg = self.registers[reg_name].address << 9
         return super().write(reg | ADS8686.msg_w | msg)
 
     def read(self, reg_name):
+        """Read from an internal register on the chip."""
+
         reg = self.registers[reg_name].address << 9
         super().write(reg)
         return super().read()
 
-    # Method to read a desired channel on the chip
     def read_channel(self, channel):
+        """Read a desired channel on the chip."""
+
         pass  # TODO: write method
 
     def read_last(self):
@@ -2365,8 +2391,10 @@ class ADS8686(SPIController, ADCDATA):
         buf = int.to_bytes(data, 4, byteorder='little')
         return self.deswizzle(buf)
 
-    # Method to set up the chip
-    def setup(self):  # TODO -- defaults to modify the SPI setup
+    def setup(self):
+        """Perform basic setup for default chip use."""
+
+        # TODO -- defaults to modify the SPI setup
         self.set_host_mode()  # required for the SPI configuration to work
         self.configure_master_bin(self.master_config)  # configures directly
         # self.set_frequency(5)
@@ -2399,10 +2427,9 @@ class ADS8686(SPIController, ADCDATA):
                 towrite = 0
 
     def reg_to_voltage(self, reg_val, chan_num=0):
-        """ Calculates the channels voltage from the register value
-        using the stored gain range
-
-        reg_val: list of ints or int
+        """Calculates the channel's voltage from the register value.
+        
+        Uses the stored gain range. reg_val can be list of ints or int
         """
         #  TODO: setup for sequence of channels
         val = twos_comp(reg_val, 16)  # 16-bit channel readings
@@ -2410,9 +2437,8 @@ class ADS8686(SPIController, ADCDATA):
         return val*lsb
 
     def write_reg_bridge(self, clk_div=1000):
-        """ setup the clk divider and spi_controller to continuously regAddr
-        ADC data
-        """
+        """Set clk divider and spi_controller to continuously read ADC data."""
+
         # Configures the clock divider to determine the CONVST frequency
         self.fpga.xem.WriteRegister(self.endpoints['REGBRIDGE_OFFSET'].address + 0x0,
                                     clk_div)  # (1/200e6)*1000 = 5 us period
@@ -2434,6 +2460,8 @@ class ADS8686(SPIController, ADCDATA):
         # so the FPGA takes control of sending SPI
 
     def set_lpf(self, lpf):
+        # TODO: add method docstring
+
         if lpf not in ADS8686.lpf_khz.keys():
             print('Error in ADS8686 LPF setup.')
             print('   Skipping ADS8686 LPF setup')
@@ -2519,7 +2547,8 @@ class ADS8686(SPIController, ADCDATA):
         return codes
 
     def hw_reset(self, val=True):
-        #  ADS8686 active low hardware reset
+        """Trigger ADS8686 active low hardware reset."""
+
         if val:
             self.fpga.clear_wire_bit(self.endpoints['RESET'].address,
                                      self.endpoints['RESET'].bit_index_low)
@@ -2596,14 +2625,20 @@ class AD7961(ADCDATA):
         return status
 
     def get_pll_status(self):
+        """Get status of the phase locked loop."""
+
         return self.fpga.read_wire_bit(self.endpoints['PLL_LOCKED'].address,
                                        self.endpoints['PLL_LOCKED'].bit_index_low)
 
     def get_timing_pll_status(self):
+        """Get status of the timing of the phase locked loop."""
+
         return self.fpga.read_wire_bit(self.endpoints['TIMING_PLL_LOCKED'].address,
                                        self.endpoints['TIMING_PLL_LOCKED'].bit_index_low)
 
     def get_fifo_status(self):
+        """Get fullness status of the FIFO."""
+
         flags = ['FULL', 'HALFFULL', 'EMPTY']
         fifo_status = {}
         self.fpga.xem.UpdateTriggerOuts()
@@ -2612,26 +2647,30 @@ class AD7961(ADCDATA):
                                                        self.endpoints['FIFO_{}'.format(k)].bit_index_low)
         return fifo_status
 
-    """
-    Enable pins:
-    0000 - power down
-    1001 - enabled with ref buffer on; 28 MHZ
-    0100 - test patterns on LVDS
-    1101 - enabled with ref buffer on; 9 MHZ
-    Note that EN[3]=1 enables the VCM output buffer.
-    """
+    # Enable pins:
+    # 0000 - power down
+    # 1001 - enabled with ref buffer on; 28 MHZ
+    # 0100 - test patterns on LVDS
+    # 1101 - enabled with ref buffer on; 9 MHZ
+    # Note that EN[3]=1 enables the VCM output buffer.
 
     def power_down_adc(self):
-        # power down single channel of the ADC
-        # fails if the global enables are 010 for LVDS test patterns
-        # don't
+        """Power down single channel of the ADC.
+
+        Fails if the global enables are 010 for LVDS test patterns
+        """
+
         self.set_enables(0b0, global_enables=False)
 
     def test_pattern(self):
-        # enable PRBS test pattern on the LVDS interface
+        """Enable PRBS test pattern on the LVDS interface."""
+
         self.set_enables(value=0b0100)
 
     def power_up_adc(self, bw='28M'):
+        # TODO: add method docstring
+        # TODO: explain what bw should be in docstring
+
         if bw == '28M':
             self.set_enables(0b1001)
         elif bw == '9M':
@@ -2640,31 +2679,46 @@ class AD7961(ADCDATA):
             print(f'incorrect input sampling bandwidth for {self.name}')
 
     def power_down_all(self):
+        """Power down all channels of the ADC."""
+
         self.set_enables(0b0000)  # TODO: return anything here?
 
     def reset_pll(self):
+        """Reset the phase locked loop."""
+
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['PLL_RESET'].address,
                                                self.endpoints['PLL_RESET'].bit_index_low)
 
     def reset_fifo(self):
-        """resets the FIFO for the ADC data
-            one per channel"""
+        """Reset the FIFO for the ADC data.
+        
+        One per channel.
+        """
+
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['FIFO_RESET'].address,
                                                self.endpoints['FIFO_RESET'].bit_index_low)
 
     def reset_trig(self):
-        """resets the FPGA controller for the ADC
-            one per channel
-            uses the Opal Kelly Trigger"""
+        """Reset the FPGA controller for the ADC.
+        
+        One per channel. Uses the Opal Kelly Trigger
+        """
+
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['RESET'].address,
                                                self.endpoints['RESET'].bit_index_low)
 
     def reset_wire(self, value):
-        """sets the value of the wire to reset the FPGA controller for the ADC
+        """Set the value of the wire to reset the FPGA controller for the ADC.
+
+        Uses the Opal Kelly WireIn (the trigger can't hold the reset).
+
+        Arguments:
+        -----------
+        value : int
             value = 1 is reset
             value = 0 releases reset
-            uses the Opal Kelly WireIn (the trigger can't hold the reset)
         """
+
         if value == 1:
             self.fpga.set_wire_bit(self.endpoints['WIRE_RESET'].address,
                                    self.endpoints['WIRE_RESET'].bit_index_low)
@@ -2673,15 +2727,16 @@ class AD7961(ADCDATA):
                                      self.endpoints['WIRE_RESET'].bit_index_low)
 
     def power_down_fpga(self):
-        """power down the FPGA controller through wirein"""
+        """Power down the FPGA controller through WireIn."""
+
         # TODO: add functionality (wirein bit) to the FPGA
         #       this would reduce FPGA power consumption
         self.reset_wire(0)
 
     def set_enables(self, value=0b0000, global_enables=True):
-        """
-        will always set the EN0 specific to this channel (LSB in values)
-        optionally also modify the global enables (all channels)
+        """Set the EN0 specific to this channel (LSB in values).
+
+        Optionally also modify the global enables (all channels).
         """
 
         mask = gen_mask(self.endpoints['ENABLE'].bit_index_low)
@@ -2742,6 +2797,8 @@ class AD7961(ADCDATA):
 
 
 class DDR3():
+    # TODO: complete class docstring
+
     """
         TODO: Check and update this:
         DDR is striped in groups of 16 bits to 8 channels  (128 bits)
@@ -2801,35 +2858,35 @@ class DDR3():
         self.clear_adc_debug()
 
     def set_adc_debug(self):
-        """ Set the ADC debug bit which multiplexes a counter to ADC channel 0
-            and bits 47:0 of the DAC data to ADC channels 1,2,3
-        Args:
-
-        Returns:
-            None
+        """Set the ADC debug bit.
+        
+        That bit multiplexes a counter to ADC channel 0 and bits 47:0 of the
+        DAC data to ADC channels 1,2,3.
         """
+
         self.fpga.set_wire_bit(self.endpoints['ADC_DEBUG'].address,
                                self.endpoints['ADC_DEBUG'].bit_index_low)
 
     def clear_adc_debug(self):
-        """ Clear the ADC debug bit. DDR ADC data will be from the ADC
-        Args:
-
-        Returns:
-            None
+        """Clear the ADC debug bit.
+        
+        DDR ADC data will be from the ADC.
         """
         self.fpga.clear_wire_bit(self.endpoints['ADC_DEBUG'].address,
                                  self.endpoints['ADC_DEBUG'].bit_index_low)
 
     def make_flat_voltage(self, amplitude):
-        """
-        Produces a constant unit16 array of value amplitude. Array length based on the
-        sample_size parameter
+        """Return a constant unit16 array of value amplitude.
+        
+        Array length based on the sample_size parameter
 
-        Args:
-            amplitude: digital value of the flat voltage (int or float)
+        Arguments
+        ---------
+        amplitude: int or float
+            Digital value of the flat voltage (int or float)
 
-        Returns:
+        Returns
+        -------
             np.array (for DDR data array)
         """
         amplitude = np.ones(self.parameters['sample_size'])*amplitude
@@ -2837,15 +2894,18 @@ class DDR3():
         return amplitude
 
     def closest_frequency(self, freq):
-        """
-        Determine closest frequency so the waveform evenly divides into the length of the DDR3
+        """Determine closest frequency so the waveform evenly divides into the length of the DDR3
 
-        Args:
-            freq: desired frequency
+        Arguments
+        ---------
+        freq : float
+            Desired frequency
 
-        Returns:
-            The closest possible frequency (float)
+        Returns
+        -------
+        float : The closest possible frequency
         """
+
         samples_per_period = (1/freq) / self.parameters['update_rate']
 
         if samples_per_period <= 2:
@@ -2863,18 +2923,24 @@ class DDR3():
 
     def make_sine_wave(self, amplitude, frequency,
                        offset=0x2000, actual_frequency=True):
-        """
-        creates a sine-wave array for writing to DDR
+        """Return a sine-wave array for writing to DDR.
 
-        Args:
-            amplitude: digital value of the sine wave (int or float in digital numbers)
-            frequency: desired frequency [float in Hz]
-            offset: digital value offset (float of int)
-            actual_frequency: decide if the closest frequency that fits an integer number of periods is calculated and used (bool)
+        Arguments
+        ---------
+        amplitude : int or float
+            Digital value of the sine wave
+        frequency : float
+            Desired frequency in Hz
+        offset : int or float
+            Digital value offset
+        actual_frequency : bool
+            Decide whether closest frequency that fits an integer number of periods is used
 
-        Returns:
-            np.array (for DDR data array)
+        Returns
+        -------
+        np.array : for DDR data array
         """
+
         if (amplitude) > offset:
             print('Error: amplitude in sine-wave is too large')
             return -1
@@ -2892,16 +2958,22 @@ class DDR3():
         return ddr_seq, frequency
 
     def make_ramp(self, start, stop, step, actual_length=True):
-        """ create a ramp signal to write to the DDR
+        """Create a ramp signal to write to the DDR.
 
-        Args:
-            start: digital value to start the ramp at
-            stop: digital value to stop the ramp at
-            step: digital code to step by
+        Arguments
+        ---------
+        start : float
+            Digital value to start the ramp at
+        stop : float
+            Digital value to stop the ramp at
+        step : float
+            Digital code to step by
 
-        Returns:
-            np.array (for DDR data array)
+        Returns
+        -------
+            np.array : for DDR data array
         """
+
         # change the stop value for integer number of cycles
         ramp_seq = np.arange(start, stop, step)
         len_ramp_seq = len(ramp_seq)
@@ -2918,9 +2990,8 @@ class DDR3():
         return ddr_seq
 
     def make_step(self, low, high, length, actual_length=True, duty=50):
-        """
-        create a step signal (square wave) to write to the DDR
-        """
+        """Return a step signal (square wave) to write to the DDR."""
+
         if actual_length:
             length = int(
                 self.parameters['sample_size']/np.round(self.parameters['sample_size']/length))
@@ -2934,14 +3005,9 @@ class DDR3():
         ddr_seq = ddr_seq.astype(np.uint16)
         return ddr_seq
 
-    def write_channels(self, SET_READ=True):
-        """ stripe data from the 8 channels across the DDR
-            and then write to the DDR over the OpalKelly interface
-        Args:
+    def write_channels(self, set_ddr_read=True):
+        """Write the channels as striped data to the DDR."""
 
-        Returns:
-            The buffer written to the DDR
-        """
         data = np.zeros(
             int(len(self.data_arrays[0])*self.parameters['channels']))
         data = data.astype(np.uint16)
@@ -2953,18 +3019,21 @@ class DDR3():
                 data[(7-i + 1)::8] = self.data_arrays[i]
 
         print('Length of data = {}'.format(len(data)))
-        return self.write(bytearray(data), SET_READ=SET_READ)
+        return self.write(bytearray(data), set_ddr_read=set_ddr_read)
 
-    def write(self, buf, SET_READ=True):
-        """ write a bytearray to the DDR3
-        Args:
-            buf: a bytearray to write to the DDR (bytearray)
+    def write(self, buf, set_ddr_read=True):
+        """Write a bytearray to the DDR3.
 
-        Returns:
-            The length of the buffer written to the DDR (or error code if unsuccessful)
-            Speed of the write in MB/s
+        Arguments
+        ---------
+        buf : bytearray
+            bytearray to write to the DDR
 
+        Returns
+        -------
+            int, float : length of the buffer written to the DDR (or error code if unsuccessful), speed of the write in MB/s
         """
+
         print('Length of buffer at the top of WriteSDRAM: ', len(buf))
         # Reset FIFOs
         self.reset_fifo()
@@ -2987,32 +3056,28 @@ class DDR3():
         # below prepares the HDL into read mode
         self.reset_fifo()
         self.clear_write()
-        if SET_READ:
+        if set_ddr_read:
             self.set_read()
         return block_pipe_return, speed_MBs
 
     def reset_fifo(self):
-        """ Resets both FIFOs + DDR Mig + DDR address pointers
-        Args:
+        """Reset both FIFOs and DDR Mig and DDR address pointers."""
 
-        Returns:
-            None
+        # TODO: convert to trigger, split resets? This is synchronized on the FPGA
+        # TODO: important! the rst_ddr_ui is not connected on the FPGA
 
-         TODO: convert to trigger, split resets? This is synchronized on the FPGA
-         TODO: important! the rst_ddr_ui is not connected on the FPGA
-        """
         self.fpga.set_wire_bit(self.endpoints['RESET'].address,
                                self.endpoints['RESET'].bit_index_low)
         self.fpga.clear_wire_bit(self.endpoints['RESET'].address,
                                  self.endpoints['RESET'].bit_index_low)
 
     def fifo_status(self):
-        """ Check the empty, full, and count status of the DDR interfacing FIFOs
-        Args:
+        """Check the empty, full, and count status of the DDR interfacing FIFOs
 
-        Returns:
-            dictionary of fifo status ('EMPTY', 'FULL', 'ADC_DATA_COUNT')
-                for 'IN', 'OUT', and channels 1, 2
+        Returns
+        -------
+        dict : dictionary of fifo status ('EMPTY', 'FULL', 'ADC_DATA_COUNT')
+            for 'IN', 'OUT', and channels 1, 2
         """
         wire_status = self.fpga.read_wire(
             self.endpoints['INIT_CALIB_COMPLETE'].address)
@@ -3037,101 +3102,84 @@ class DDR3():
         return fifo_status
 
     def print_fifo_status(self, fifo_status):
-        """ Print the FIFO status dictionary
-        Args:
-            fifo_status: dictionary of fifo status
+        """Print the FIFO status dictionary.
 
-        Returns:
-            None
+        Arguments
+        ---------
+        fifo_status : dict
+            Dictionary of fifo status.
         """
+
         for k in fifo_status:
             print('{} = {}'.format(k, fifo_status[k]))
 
     def set_read(self):
-        """ Set DDR / FIFOs to read
-        Args:
-
-        Returns:
-            None
-        """
+        """Set DDR / FIFOs to read."""
+        
         self.fpga.set_wire_bit(self.endpoints['READ_ENABLE'].address,
                                self.endpoints['READ_ENABLE'].bit_index_low)
 
     def clear_read(self):
-        """ Set DDR / FIFOs to read
-        Args:
+        # TODO: add method docstring
 
-        Returns:
-            None
-        """
         self.fpga.clear_wire_bit(self.endpoints['READ_ENABLE'].address,
                                  self.endpoints['READ_ENABLE'].bit_index_low)
 
     def set_write(self):
-        """ Set DDR / FIFOs to read
-        Args:
+        """Set DDR / FIFOs to write."""
 
-        Returns:
-            None
-        """
         self.fpga.set_wire_bit(self.endpoints['WRITE_ENABLE'].address,
                                self.endpoints['WRITE_ENABLE'].bit_index_low)
 
     def clear_write(self):
-        """ Set DDR / FIFOs to read
-        Args:
+        # TODO: add method docstring
 
-        Returns:
-            None
-        """
         self.fpga.clear_wire_bit(self.endpoints['WRITE_ENABLE'].address,
                                  self.endpoints['WRITE_ENABLE'].bit_index_low)
 
     def set_adc_read(self):
-        """ Set DDR / FIFOs to read
-        Args:
+        """Set DDR / FIFOs to read."""
 
-        Returns:
-            None
-
+        # TODO: fix method docstring
         # TODO: change this name to ADC_READ_ENABLE and modify names in FPGA
-        """
         self.fpga.set_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
                                self.endpoints['FG_READ_ENABLE'].bit_index_low)
 
     def clear_adc_read(self):
-        """ Set DDR / FIFOs to read
-        Args:
+        """Set DDR / FIFOs to read."""
+        # TODO: fix method docstring
 
-        Returns:
-            None
-        """
         self.fpga.clear_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
                                  self.endpoints['FG_READ_ENABLE'].bit_index_low)
 
     def adc_single(self):
-        """Set ADC read address to the ADC write address
-            emulating an immediate "trigger" of an oscilloscope
-        Args:
+        """Set ADC read address to the ADC write address.
 
-        Returns:
-            None
+        Emulates an immediate "trigger" of an oscilloscope.
         """
+
         self.fpga.set_wire_bit(self.endpoints['ADC_ADDR_SET'].address,
                                  self.endpoints['ADC_ADDR_SET'].bit_index_low)
         self.fpga.send_trig(self.endpoints['ADC_ADDR_RESET'])
 
 
     def read_adc(self, sample_size=None, source='ADC', DEBUG_PRINT=False):
-        """ Reads ADC data.
-        Args:
-            sample_size: length of read in bytes. if none uses DDR parameter 'sample_size'
-            source: FIFO output buffer to read. Either 'ADC' or 'FG'.
-                        'FG' just reads back what is written for DACs (as function generator) so not so useful
-        Returns:
-            The data read as a bytearray
-            The count (or error code) read from the OpalKelly interface
+        """Read ADC data.
+
+        Arguments
+        ---------
+        sample_size : int
+            Length of read in bytes. If none uses DDR parameter 'sample_size.'
+        source : str
+            FIFO output buffer to read. Either 'ADC' or 'FG'. 'FG' just reads
+            back what is written for DACs (as function generator) so not so
+            useful.
+        
+        Returns
+        -------
+        byearray, int : The data read as a bytearray, The count (or error code) read from the OpalKelly interface
         """
+
         if sample_size is None:
             data = np.zeros((self.parameters['sample_size'],), dtype=int)
             data_buf = bytearray(data)
@@ -3186,7 +3234,17 @@ class DDR3():
         #     self.fpga.set_wire(self.endpoints['INDEX2'].address, factor)
 
 
+# TODO: should there be a 'device' or similar class that all controllers are subclasses of?
 def disp_device(dev, reg=True):
+    """Display endpoints and registers for a chip.
+    
+    Arguments
+    ---------
+    dev : I2CController or SPIController or SPIFifoDriven or AD7961
+        Chip instance to display information for.
+    reg : bool
+        Whether to display registers.
+    """
 
     print('Displaying endpoints')
     for k in dev.endpoints:
