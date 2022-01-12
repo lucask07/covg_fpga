@@ -26,24 +26,44 @@ from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
 
+data_dir_base = os.path.expanduser('~')
+if sys.platform == "linux" or sys.platform == "linux2":
+    pass
+elif sys.platform == "darwin":
+    data_dir_covg = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}"
+elif sys.platform == "win32":
+    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
+
 today = datetime.datetime.today()
-data_dir = '/Users/koer2434/Google\ Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}'.format(today.year,
-                                                                                                                   today.month,
-                                                                                                                   today.day)
+data_dir = data_dir_covg.format(
+    today.year, today.month, today.day
+)
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
+
+pwr_setup = "3dual"
+dc_num = 0  # the Daughter-card channel under test. Order on board from L to R: 1,0,2,3
+
 # -------- power supplies -----------
-dc_pwr, dc_pwr2 = open_rigol_supply()
-atexit.register(pwr_off, [dc_pwr, dc_pwr2])
-config_supply(dc_pwr, dc_pwr2)
-# turn on the 7V in, but keep +/-16.6 down
-dc_pwr.set('out_state', 'ON', configs={'chan': 1})
-# turn on the +/-16.5 V input
-for ch in [1, 2]:
-    dc_pwr2.set('out_state', 'ON', configs={'chan': ch})
-######################################
-time.sleep(2)
+dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
+if pwr_setup == "3dual":
+    atexit.register(pwr_off, [dc_pwr])
+else:
+    atexit.register(pwr_off, [dc_pwr, dc_pwr2])
+config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
+
+# turn on the 7V
+dc_pwr.set("out_state", "ON", configs={"chan": 1})
+
+if pwr_setup != "3dual":
+    # turn on the +/-16.5 V input
+    for ch in [1, 2]:
+        dc_pwr2.set("out_state", "ON", configs={"chan": ch})
+elif pwr_setup == "3dual":
+    # turn on the +/-16.5 V input
+    for ch in [2, 3]:
+        dc_pwr.set("out_state", "ON", configs={"chan": ch})
 
 # --------  function generator  --------
 fg = open_by_name('new_function_gen')
@@ -181,53 +201,6 @@ print(output.head())
 output.to_csv(os.path.join(data_dir, 'bode_response2_{}.csv'.format(filter_coeff)))
 
 plt.plot(output['freq'], output['vp_out'])
-
-# osc.set('single_acq')
-# t = osc.save_display_data(os.path.join(data_dir, 'adc_sine_10kHz_2V_2V'))
-# TCA_addr_pins_0=0b110
-# TCA_0 = TCA9555(fpga=f, addr_pins=TCA_addr_pins_0,
-#                 endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDAQ'],1))
-
-TCA_addr_pins_1=0b000
-TCA_1 = TCA9555(fpga=f, addr_pins=TCA_addr_pins_1,
-                endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDAQ'],1))
-
-# TCA_0.endpoints['IN'].bit_index_high = 32
-# TCA_0.endpoints['IN'].bit_index_low = 16
-TCA_1.endpoints['IN'].bit_index_high = 32
-TCA_1.endpoints['IN'].bit_index_low = 16
-
-# TCA_0.endpoints['OUT'].bit_index_high = 16
-# TCA_0.endpoints['OUT'].bit_index_low = 8
-TCA_1.endpoints['OUT'].bit_index_high = 16
-TCA_1.endpoints['OUT'].bit_index_low = 8
-
-# configure as inputs and outputs: 16 pins. 0 is output
-# TCA_0.configure_pins([0x00, 0x00])
-# # each DAC channel has 4 gain bits. Logic 0 turns on the switches
-# TCA_0.write(0x0100)
-# time.sleep(2)
-# TCA_0.write(0x0f00)
-
-# configure as inputs and outputs: 16 pins. 0 is output
-TCA_1.configure_pins([0x00, 0x00])
-# each DAC channel has 4 gain bits. Logic 0 turns on the switches
-TCA_1.write(0x0100)
-time.sleep(2)
-TCA_1.write(0x0f00)
-
-
-# configure as inputs and outputs: 16 pins. 0 is output
-# TCA_0.configure_pins([0x00, 0x00])
-# # each DAC channel has 4 gain bits. Logic 0 turns on the switches
-# TCA_0.write(0x0100)
-# time.sleep(2)
-# TCA_0.write(0x0f00)
-
-
-# highest gain is all ones (switches open, large feedback resistance)
-# lowest gain is all zeros
-# GSEL3 is the MSB, this is at pin 03 of expander. This is bit3 of 1st byte
 
 """
 # capture a step response
