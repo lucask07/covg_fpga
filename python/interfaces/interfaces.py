@@ -2842,7 +2842,7 @@ class DDR3():
                            'sample_size': 65536,  # per channel
                            # number of channels that the DDR is striped between (for DACs)
                            'channels': 8,
-                           'update_rate': 400e-9,  # 2.5 MHz -- requires SCLK ~ 50 MHZ
+                           'update_period': 400e-9,  # 2.5 MHz -- requires SCLK ~ 50 MHZ
                            'port1_index': 0x7f_ff_f8}
 
         # the index is the DDR address that the circular buffer stops at.
@@ -2878,17 +2878,20 @@ class DDR3():
     def make_flat_voltage(self, amplitude):
         """Return a constant unit16 array of value amplitude.
         
-        Array length based on the sample_size parameter
+        Array length based on the sample_size parameter. The conversion from
+        float or int voltage to int digital (binary) code should take place
+        BEFORE this function.
 
         Arguments
         ---------
-        amplitude: int or float
-            Digital value of the flat voltage (int or float)
+        amplitude: int
+            Digital (binary) value of the flat voltage
 
         Returns
         -------
-            np.array (for DDR data array)
+            numpy.ndarray (for DDR data array)
         """
+        
         amplitude = np.ones(self.parameters['sample_size'])*amplitude
         amplitude = amplitude.astype(np.uint16)
         return amplitude
@@ -2906,7 +2909,7 @@ class DDR3():
         float : The closest possible frequency
         """
 
-        samples_per_period = (1/freq) / self.parameters['update_rate']
+        samples_per_period = (1/freq) / self.parameters['update_period']
 
         if samples_per_period <= 2:
             print('Frequency is too high for the DDR update rate')
@@ -2917,7 +2920,7 @@ class DDR3():
         round_samples_per_period = self.parameters['sample_size'] / \
             round_total_periods
         new_frequency = 1 / \
-            (self.parameters['update_rate'] * round_samples_per_period)
+            (self.parameters['update_period'] * round_samples_per_period)
 
         return new_frequency
 
@@ -2925,20 +2928,23 @@ class DDR3():
                        offset=0x2000, actual_frequency=True):
         """Return a sine-wave array for writing to DDR.
 
+        The conversion from float or int voltage to int digital (binary) code
+        should take place BEFORE this function.
+
         Arguments
         ---------
-        amplitude : int or float
-            Digital value of the sine wave
+        amplitude : int
+            Digital (binary) value of the sine wave
         frequency : float
             Desired frequency in Hz
-        offset : int or float
-            Digital value offset
+        offset : int
+            Digital (binary) value offset
         actual_frequency : bool
             Decide whether closest frequency that fits an integer number of periods is used
 
         Returns
         -------
-        np.array : for DDR data array
+        numpy.ndarray : for DDR data array
         """
 
         if (amplitude) > offset:
@@ -2947,8 +2953,8 @@ class DDR3():
         if actual_frequency:
             frequency = self.closest_frequency(frequency)
 
-        t = np.arange(0, self.parameters['update_rate']*self.parameters['sample_size'],
-                      self.parameters['update_rate'])
+        t = np.arange(0, self.parameters['update_period']*self.parameters['sample_size'],
+                      self.parameters['update_period'])
         # print('length of time axis after creation ', len(t))
         ddr_seq = (amplitude)*np.sin(t*frequency*2*np.pi) + offset
         if any(ddr_seq < 0) or any(ddr_seq > (2**16-1)):
@@ -2960,18 +2966,21 @@ class DDR3():
     def make_ramp(self, start, stop, step, actual_length=True):
         """Create a ramp signal to write to the DDR.
 
+        The conversion from float or int voltage to int digital (binary) code
+        should take place BEFORE this function.
+
         Arguments
         ---------
-        start : float
-            Digital value to start the ramp at
-        stop : float
-            Digital value to stop the ramp at
-        step : float
-            Digital code to step by
+        start : int
+            Digital (binary) value to start the ramp at
+        stop : int
+            Digital (binary) value to stop the ramp at
+        step : int
+            Digital (binary) code to step by
 
         Returns
         -------
-            np.array : for DDR data array
+        numpy.ndarray : for DDR data array
         """
 
         # change the stop value for integer number of cycles
@@ -2990,7 +2999,28 @@ class DDR3():
         return ddr_seq
 
     def make_step(self, low, high, length, actual_length=True, duty=50):
-        """Return a step signal (square wave) to write to the DDR."""
+        """Return a step signal (square wave) to write to the DDR.
+        
+        The conversion from float or int voltage to int digital (binary) code
+        should take place BEFORE this function.
+        
+        Arguments
+        ---------
+        low : int
+            Digital (binary) code for the low value of the step.
+        high : int
+            Digital (binary) code for the high value of the step.
+        length : TODO add type for length
+            TODO add description for length
+        actual_length : bool
+            TODO add description for actual_length
+        duty : int or float
+            Duty cycle percentage. Enter as a percentage [0.0, 100.0].
+
+        Returns
+        -------
+        numpy.ndarray : for DDR data array
+        """
 
         if actual_length:
             length = int(
