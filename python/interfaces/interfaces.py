@@ -133,8 +133,8 @@ class Endpoint:
         self.gen_address = gen_address
 
     def __str__(self):
-        str_rep = 'Endpoint at address 0x{:0x}, [high {} to low {}]'.format(
-            self.address, self.bit_index_high, self.bit_index_low)
+        str_rep = '0x{:0x}[{}:{}]'.format(
+            self.address, self.bit_index_low, self.bit_index_high)
         return str_rep
 
     def __eq__(self, other):
@@ -258,11 +258,12 @@ class Endpoint:
                         print(
                             f'{group_name}[{endpoint_name}]: Referenced group "{class_name}" not found.')
                         continue
-                    endpoint.address = referenced_group.get(ep_name).address
-                    if endpoint.address is None:
+                    referenced_endpoint = referenced_group.get(ep_name)
+                    if referenced_endpoint is None:
                         print(
-                            f'{group_name}[{endpoint_name}]: Referenced address "{class_name}_{ep_name}" not found.')
+                            f'{group_name}[{endpoint_name}]: Referenced endpoint "{class_name}_{ep_name}" not found.')
                         continue
+                    endpoint.address = referenced_endpoint.address
 
         # At this point the dictionary should be built
         # Check for naming collisions (2+ names sharing same address or bit within address)
@@ -316,12 +317,6 @@ class Endpoint:
             else:
                 print('No collisions found.')
         
-        # TODO: should this be in interfaces or be defined elsewhere?
-        # Assign I2CDAQ busses
-        Endpoint.I2CDAQ_level_shifted = Endpoint.endpoints_from_defines['I2CDAQ']
-        # We want the endpoints_from_defines to be the same so in_place=False to use a copy when incrementing
-        Endpoint.I2CDAQ_QW = Endpoint.increment_endpoints(endpoints_dict=Endpoint.endpoints_from_defines['I2CDAQ'], in_place=False)
-
         # If the list and set match length, no duplicates
         return Endpoint.endpoints_from_defines
 
@@ -2934,13 +2929,13 @@ class DDR3():
         Arguments
         ---------
         amplitude : int
-            Digital (binary) value of the sine wave
+            Digital (binary) value of the sine wave.
         frequency : float
-            Desired frequency in Hz
+            Desired frequency in Hz.
         offset : int
-            Digital (binary) value offset
+            Digital (binary) value offset. 
         actual_frequency : bool
-            Decide whether closest frequency that fits an integer number of periods is used
+            Decide whether closest frequency that fits an integer number of periods is used.
 
         Returns
         -------
