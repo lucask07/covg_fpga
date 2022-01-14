@@ -53,7 +53,8 @@ v_out = to_voltage(data=v_out_codes, num_bits=16, voltage_range=2.5, use_twos_co
 
 # Minor shift to see if it smooths out data
 # shift_amt = ddr.parameters['sample_size'] // 20
-shift_amt = -(len(t) // 8)  # 90 degrees off matching capacitor simulation
+# 90 degrees off matching inductor simulation: https://www.multisim.com/content/bB8jZR4bvDyNKYP5kx4TcX/impedance-analyzer-test-inductor/open/
+shift_amt = (len(t) // 4)
 new_len = min(len(v_in), len(v_out)) - shift_amt
 v_in = v_in[:new_len]
 v_out = v_out[-new_len:]
@@ -66,10 +67,10 @@ plt.show()
 
 # Plot impedance
 impedance_calc = calc_impedance(v_in=v_in, v_out=v_out, resistance=resistor)
-# print(impedance_calc)
-# This part casts to reals
-# plt.plot(t, impedance_calc, c='g')  # Impedance in green
-# plt.show()
+magnitude = [abs(x) for x in impedance_calc]
+print('Average magnitude:', sum(magnitude) / len(magnitude))
+plt.plot(t, magnitude, c='g')  # Impedance magnitude in green
+plt.show()
 
 # This graphs reals against imaginary parts
 section_len = len(impedance_calc) // 5
@@ -80,6 +81,6 @@ plt.scatter([x.real for x in impedance_calc[3 * section_len: 4 * section_len]], 
 # plt.scatter([x.real for x in impedance_calc[4 * section_len:]], [x.imag for x in impedance_calc[4 * section_len:]], c='k')
 plt.show()
 
-inverse_impedance_calc = ifft(impedance_calc)
-plt.scatter([x.real for x in inverse_impedance_calc], [x.imag for x in inverse_impedance_calc], c='purple')
-plt.show()
+# inverse_impedance_calc = ifft(impedance_calc)
+# plt.scatter([x.real for x in inverse_impedance_calc], [x.imag for x in inverse_impedance_calc], c='purple')
+# plt.show()
