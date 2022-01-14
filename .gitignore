@@ -115,3 +115,4 @@
 *.swp
 replace_params.py
 python/tests/testing_boards_endpoints_incrementing.py
+python/tests/unit_tests/test_defines.v

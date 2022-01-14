@@ -231,7 +231,7 @@ class Endpoint:
                 bit = int(pieces[2])
                 bit_width = int(pieces[5].split('=')[1])
 
-            endpoint = Endpoint(address, bit, bit_width, gen_bit, gen_address)
+            endpoint = Endpoint(address=address, bit_index_low=bit, bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
 
             # Put defined endpoint in endpoints_from_defines dictionary
             if Endpoint.endpoints_from_defines.get(class_name) is None:
