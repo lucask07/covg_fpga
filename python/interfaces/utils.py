@@ -7,6 +7,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import numpy as np
+from scipy.fft import fft
 import datetime
 
 def rev_lookup(dd, val):
@@ -120,9 +121,9 @@ def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
 
     Returns
     -------
-    int or list : binary version of the voltage data in similar form data was given in
-        int -> int
-        list, numpy.ndarray -> list(int)
+    float or list : binary version of the voltage data in similar form data was given in
+        int -> float
+        list, numpy.ndarray -> list(float)
     """
 
     if type(data) is list:
@@ -162,8 +163,9 @@ def from_voltage(voltage, num_bits, voltage_range, with_negatives=False):
 
     Returns
     -------
-    int or list : voltage version of the binary data in similar form voltage was given in
+    int or float or list : voltage version of the binary data in similar form voltage was given in
         int -> int
+        float -> int
         list, numpy.ndarray -> list(int)
     """
 
@@ -207,3 +209,37 @@ def from_voltage(voltage, num_bits, voltage_range, with_negatives=False):
 
 def get_timestamp():
     return int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
+
+
+def calc_impedance(v_in, v_out, resistance):
+    """Calculate the impedance of an unknown component.
+    
+    It is assumed the voltage source is connect in series with both the resistor and the unknown component.
+
+    Arguments
+    ---------
+    v_in : list(int or float)
+        The voltage source in the circuit.
+    v_out : list(int or float)
+        The output voltage across the unknown component.
+    resistance : int or float
+        The resistance of the resistor in the circuit in Ohms.
+
+    Returns
+    -------
+    
+    """
+
+    min_len = min(len(v_in), len(v_out))
+    in_minus_out = []
+    for i in range(min_len):
+        in_minus_out.append(v_in[i] - v_out[i])
+
+    numerator = fft(v_out)
+    denominator = fft([x - resistance for x in in_minus_out])
+
+    impedance_calc = []
+    for i in range(min_len):
+        impedance_calc.append(numerator[i] / denominator[i])
+    
+    return impedance_calc
