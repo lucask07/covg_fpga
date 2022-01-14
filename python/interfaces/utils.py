@@ -236,7 +236,7 @@ def calc_impedance(v_in, v_out, resistance):
         in_minus_out.append(v_in[i] - v_out[i])
 
     numerator = fft(v_out)
-    denominator = fft([x - resistance for x in in_minus_out])
+    denominator = fft([x / resistance for x in in_minus_out])
 
     impedance_calc = []
     for i in range(min_len):
