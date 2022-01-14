@@ -962,7 +962,7 @@ module top_level_module(
         
         assign data_ready_ds[k] = ds_spi_data[k][31];
             
-        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET + k*19))spi_fifo1 (
+        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_BIT + k*19))spi_fifo1 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
                  .data_rdy_0(data_ready_ds[k]), 
@@ -1030,7 +1030,7 @@ module top_level_module(
         assign data_ready_fast_dac[p] = spi_data[p][31];
             
         // instantiate old top-level (but only for the AD5453 SPI)
-        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET + p*19))spi_fifo0 (
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_BIT + p*19))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[p]), .mosi_0(d_sdi[p]), .sclk_0(d_sclk[p]), 
                  .data_rdy_0(data_ready_fast_dac[p]), 
@@ -1064,10 +1064,10 @@ module top_level_module(
     //assign up[1] = spi_data[0][0];
     //assign up[0] = data_ready_fast_dac[0];
 
-     okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG1_0), .ep_datain(coeff_debug_out1[0]));
-     okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG2_0), .ep_datain(coeff_debug_out2[0]));
-     okWireOut      wo08 (.okHE(okHE), .okEH(okEHx[ 20*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG1_1), .ep_datain(coeff_debug_out1[1]));
-     okWireOut      wo09 (.okHE(okHE), .okEH(okEHx[ 21*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG2_1), .ep_datain(coeff_debug_out2[1]));
+     okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_0), .ep_datain(coeff_debug_out1[0]));
+     okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_1), .ep_datain(coeff_debug_out2[0]));
+     okWireOut      wo08 (.okHE(okHE), .okEH(okEHx[ 20*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_2), .ep_datain(coeff_debug_out1[1]));
+     okWireOut      wo09 (.okHE(okHE), .okEH(okEHx[ 21*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_3), .ep_datain(coeff_debug_out2[1]));
 
     /* ----------------- END AD5453 ------------------------------------ */
 
