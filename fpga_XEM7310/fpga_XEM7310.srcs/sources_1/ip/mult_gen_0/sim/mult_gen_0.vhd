@@ -115,7 +115,7 @@ BEGIN
     GENERIC MAP (
       C_VERBOSITY => 0,
       C_MODEL_TYPE => 0,
-      C_OPTIMIZE_GOAL => 0,
+      C_OPTIMIZE_GOAL => 1,
       C_XDEVICEFAMILY => "artix7",
       C_HAS_CE => 0,
       C_HAS_SCLR => 0,
@@ -126,7 +126,7 @@ BEGIN
       C_B_TYPE => 0,
       C_OUT_HIGH => 47,
       C_OUT_LOW => 0,
-      C_MULT_TYPE => 0,
+      C_MULT_TYPE => 1,
       C_CE_OVERRIDES_SCLR => 0,
       C_CCM_IMP => 0,
       C_B_VALUE => "10000001",

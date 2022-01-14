@@ -244,7 +244,7 @@ module Butter_pipelined
     
     mult_gen_0 mult1(.CLK(clk), .A(A), .B(B), .P(P));
     
-    always @ ( posedge clk)begin
+    always @ ( negedge clk)begin
         if(reset == 1'b1)begin
             A <= 1'b0;
             B <= 1'b0;
@@ -270,8 +270,8 @@ module Butter_pipelined
         else if(ena < 5'h10) begin
             ena <= ena + 1'b1;
         end
-    end
-    always @ ( negedge clk)begin
+//    end
+//    always @ ( negedge clk)begin
         if(ena == 5'h00)begin
             A <= input_register;
             B <= coeff_scale1_shadow_reg;
