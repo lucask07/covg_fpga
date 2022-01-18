@@ -137,8 +137,5 @@ def test_update_endpoints_from_defines(test_params):
     for created, read in [(group1_eps, Endpoint.endpoints_from_defines['GROUP1']), (group2_eps, Endpoint.endpoints_from_defines['GROUP2']), (group3_eps, Endpoint.endpoints_from_defines['GROUP3'])]:
         i = 0
         for read_ep in read.values():
-            print(read_ep, '==', created[i])
-            print(read_ep.gen_bit, created[i].gen_bit)
-            print(read_ep.gen_address, created[i].gen_address)
             assert read_ep == created[i]
             i += 1
