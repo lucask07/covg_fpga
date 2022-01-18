@@ -93,6 +93,4 @@ def test_str(address, default, bit_index_high, bit_index_low, bit_width):
 
 def test_get_chip_registers(gotten_regs, test_regs):
     for expected in test_regs:
-        print(expected)
-        print(gotten_regs[test_regs.index(expected)])
         assert expected in gotten_regs
