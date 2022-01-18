@@ -37,7 +37,6 @@ for i in range(num_test_params):
     gen_bit = bool(randint(0, 1))
     gen_address = bool(randint(0, 1))
     test_params.append((address, bit_index_low, bit_width, gen_bit, gen_address))
-# Fixtures
 
 # Tests
 @pytest.mark.parametrize('address, bit_index_low, bit_width, gen_bit, gen_address', test_params)
@@ -58,6 +57,7 @@ def test_str(address, bit_index_low, bit_width, gen_bit, gen_address):
 def test_update_endpoints_from_defines(test_params):
     # --- First, write the defines file in the current directory ---
     file_name = 'test_defines.v'
+    file_loc = os.path.join(interfaces_path, 'tests', 'unit_tests', file_name)
     file_text = ''
     # Group 1 - Addresses
     # Group 2 - Bits referenced to group 1
@@ -121,11 +121,11 @@ def test_update_endpoints_from_defines(test_params):
         file_text += line1 + '\n' + line2 + '\n' + line3 + '\n'
     
     # Write to file
-    with open(file_name, 'w') as file:
+    with open(file_loc, 'w') as file:
         file.write(file_text)
 
     # --- Second, compare update_endpoints_from_defines output with endpoints created earlier ---
-    Endpoint.update_endpoints_from_defines(ep_defines_path=file_name)
+    Endpoint.update_endpoints_from_defines(ep_defines_path=file_loc)
     for created, read in [(group1_eps, Endpoint.endpoints_from_defines['GROUP1']), (group2_eps, Endpoint.endpoints_from_defines['GROUP2']), (group3_eps, Endpoint.endpoints_from_defines['GROUP3'])]:
         i = 0
         for read_ep in read.values():
