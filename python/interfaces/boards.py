@@ -13,6 +13,12 @@ from interfaces.interfaces import *
 from interfaces.interfaces import Endpoint
 from interfaces.utils import reverse_bits, test_bit
 
+# Assign I2CDAQ busses
+Endpoint.I2CDAQ_level_shifted = Endpoint.endpoints_from_defines['I2CDAQ']
+# We want the endpoints_from_defines to be the same so in_place=False to use a copy when incrementing
+Endpoint.I2CDAQ_QW = Endpoint.increment_endpoints(
+    endpoints_dict=Endpoint.endpoints_from_defines['I2CDAQ'], in_place=False)
+
 
 class Clamp:
     """Class for the Clamp board daughtercards.
