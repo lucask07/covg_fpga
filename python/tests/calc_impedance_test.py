@@ -51,7 +51,7 @@ v_out_codes, freq_out_calc = ddr.make_sine_wave(amplitude=amp_out_code, frequenc
 v_out = to_voltage(data=v_out_codes, num_bits=16, voltage_range=2.5, use_twos_comp=False)
 
 # 45 degrees behind for about -1000j Ohms impedance
-shift_amt = (len(t) // 8)
+shift_amt = (len(t) // 16)
 new_len = min(len(v_in), len(v_out)) - shift_amt
 v_in = v_in[:new_len]
 v_out = v_out[-new_len:]
@@ -107,6 +107,14 @@ magnitude = np.abs(impedance_calc)
 avg = sum(impedance_calc) / len(impedance_calc)
 print('Average magnitude:', sum(magnitude) / len(magnitude))
 print('Average impedance:', avg)
+i = 0
+for f in x_frequencies:
+    if f < freq_in_calc:
+        i += 1
+    else:
+        break
+z = impedance_calc[i]
+print(f'Impedance at {freq_in_calc}: {z}')
 
 # Plot magnitude impedance over frequencies
 plt.plot(x_frequencies, magnitude, c='b', label='Impedance Magnitude')
