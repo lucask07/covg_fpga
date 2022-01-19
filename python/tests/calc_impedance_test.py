@@ -11,10 +11,13 @@ January 2022
 
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.fft import ifft, fft, fftfreq, rfft, rfftfreq
-import os, sys
+from scipy.fft import rfft, rfftfreq
+import os
+import sys
 
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+# The interfaces.py file is located in the covg_fpga folder so we need to
+# find that folder. If it is not above the current directory, the program
+# fails.
 cwd = os.getcwd()
 if 'covg_fpga' in cwd:
     covg_fpga_index = cwd.index('covg_fpga')
@@ -25,30 +28,48 @@ else:
 interfaces_path = os.path.join(covg_fpga_path, 'python')
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import FPGA, DDR3
 from interfaces.utils import calc_impedance, from_voltage, to_voltage
+from interfaces.interfaces import FPGA, DDR3
 
 f = FPGA()
 f.init_device()
 ddr = DDR3(fpga=f)
 resistor = 1000  # 1000 Ohm resistor
-# Without phase shift, we should get a 184.86 Ohm resistor for the unkown impedance
-# Frequency in Hertz
-freq = 1000
+freq = 1000  # Frequency in Hertz
 amp_in = 1
 amp_out = 0.7072
 dac80508_offset = 0x8000
-t = np.arange(0, ddr.parameters['update_period']*ddr.parameters['sample_size'], ddr.parameters['update_period'])
+t = np.arange(0,
+              ddr.parameters['update_period'] * ddr.parameters['sample_size'],
+              ddr.parameters['update_period'])
 
 # Input 1V amplitude at 1KHz
-amp_in_code = from_voltage(voltage=amp_in, num_bits=16, voltage_range=2.5, with_negatives=False)
-v_in_codes, freq_in_calc = ddr.make_sine_wave(amplitude=amp_in_code, frequency=freq, offset=dac80508_offset)
-v_in = to_voltage(data=v_in_codes, num_bits=16, voltage_range=2.5, use_twos_comp=False)
+amp_in_code = from_voltage(voltage=amp_in,
+                           num_bits=16,
+                           voltage_range=2.5,
+                           with_negatives=False)
+v_in_codes, freq_in_calc = ddr.make_sine_wave(amplitude=amp_in_code,
+                                              frequency=freq,
+                                              offset=dac80508_offset)
+v_in = to_voltage(data=v_in_codes,
+                  num_bits=16,
+                  voltage_range=2.5,
+                  use_twos_comp=False)
 
-# These values according to MultiSim simulation at https://www.multisim.com/content/iosH7R4mMVBJ4s2L7RcdvK/impedance-analyzer-test/open/
-amp_out_code = from_voltage(voltage=amp_out, num_bits=16, voltage_range=2.5, with_negatives=False)
-v_out_codes, freq_out_calc = ddr.make_sine_wave(amplitude=amp_out_code, frequency=freq, offset=dac80508_offset)
-v_out = to_voltage(data=v_out_codes, num_bits=16, voltage_range=2.5, use_twos_comp=False)
+# Output 0.7072V amplitude at 1KHz
+# These values according to MultiSim simulation at
+# https://www.multisim.com/content/iosH7R4mMVBJ4s2L7RcdvK/impedance-analyzer-test/open/
+amp_out_code = from_voltage(voltage=amp_out,
+                            num_bits=16,
+                            voltage_range=2.5,
+                            with_negatives=False)
+v_out_codes, freq_out_calc = ddr.make_sine_wave(amplitude=amp_out_code,
+                                                frequency=freq,
+                                                offset=dac80508_offset)
+v_out = to_voltage(data=v_out_codes,
+                   num_bits=16,
+                   voltage_range=2.5,
+                   use_twos_comp=False)
 
 # 45 degrees behind for about -1000j Ohms impedance
 shift_amt = (len(t) // 16)
@@ -57,7 +78,7 @@ v_in = v_in[:new_len]
 v_out = v_out[-new_len:]
 t = t[:new_len]
 
-# Remove offset
+# Remove offset before transform
 v_in = [x - 1.25 for x in v_in]
 v_out = [x - 1.25 for x in v_out]
 
@@ -73,8 +94,8 @@ v_in = v_in[:end_index]
 v_out = v_out[:end_index]
 
 # Plot input, output over time
-plt.plot(t, v_in, c='b', label='v_in')    # Input in blue
-plt.plot(t, v_out, c='r', label='v_out')   # Output in red
+plt.plot(t, v_in, c='b', label='v_in')  # Input in blue
+plt.plot(t, v_out, c='r', label='v_out')  # Output in red
 plt.title('v_in, v_out')
 plt.legend(loc='upper left')
 plt.show()
@@ -121,24 +142,27 @@ plt.plot(x_frequencies, magnitude, c='b', label='Impedance Magnitude')
 plt.title('Impedance Magnitude over Frequencies')
 plt.show()
 
-# Plot impedance magnitude over time
-# plt.plot(t[::2], magnitude, c='g')
-# plt.title('calc_impedance Magnitude over Time')
-# plt.show()
-
-# Plot impedance real and imaginary parts over time
-# plt.plot(t[::2], [x.real for x in impedance_calc], c='b', label='real')
-# plt.plot(t[::2], [x.imag for x in impedance_calc], c='r', label='imaginary')
-# plt.legend(loc='upper left')
-# plt.title('Parts of Impedance over Time')
-# plt.show()
-
 # This graphs reals against imaginary parts
 section_len = len(impedance_calc) // 5
-plt.scatter([x.real for x in impedance_calc[0: section_len]], [x.imag for x in impedance_calc[0: section_len]], c='b', label='Section 1')
-plt.scatter([x.real for x in impedance_calc[1 * section_len: 2 * section_len]], [x.imag for x in impedance_calc[1 * section_len: 2 * section_len]], c='g', label='Section 2')
-plt.scatter([x.real for x in impedance_calc[2 * section_len: 3 * section_len]], [x.imag for x in impedance_calc[2 * section_len: 3 * section_len]], c='c', label='Section 3')
-plt.scatter([x.real for x in impedance_calc[3 * section_len: 4 * section_len]], [x.imag for x in impedance_calc[3 * section_len: 4 * section_len]], c='m', label='Section 4')
-plt.scatter([x.real for x in impedance_calc[4 * section_len:]], [x.imag for x in impedance_calc[4 * section_len:]], c='k', label='Section 5')
+plt.scatter([x.real for x in impedance_calc[0:section_len]],
+            [x.imag for x in impedance_calc[0:section_len]],
+            c='b',
+            label='Section 1')
+plt.scatter([x.real for x in impedance_calc[1 * section_len:2 * section_len]],
+            [x.imag for x in impedance_calc[1 * section_len:2 * section_len]],
+            c='g',
+            label='Section 2')
+plt.scatter([x.real for x in impedance_calc[2 * section_len:3 * section_len]],
+            [x.imag for x in impedance_calc[2 * section_len:3 * section_len]],
+            c='c',
+            label='Section 3')
+plt.scatter([x.real for x in impedance_calc[3 * section_len:4 * section_len]],
+            [x.imag for x in impedance_calc[3 * section_len:4 * section_len]],
+            c='m',
+            label='Section 4')
+plt.scatter([x.real for x in impedance_calc[4 * section_len:]],
+            [x.imag for x in impedance_calc[4 * section_len:]],
+            c='k',
+            label='Section 5')
 plt.title('Real vs. Imaginary calc_impedance')
 plt.show()
