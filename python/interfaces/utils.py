@@ -7,7 +7,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import numpy as np
-from scipy.fft import fft
+from scipy.fft import fft, rfft
 import datetime
 
 def rev_lookup(dd, val):
@@ -219,7 +219,7 @@ def calc_impedance(v_in, v_out, resistance):
     Arguments
     ---------
     v_in : list(int or float)
-        The voltage source in the circuit.
+        The sinusoidal voltage source in the circuit.
     v_out : list(int or float)
         The output voltage across the unknown component.
     resistance : int or float
@@ -230,16 +230,8 @@ def calc_impedance(v_in, v_out, resistance):
     
     """
 
-    min_len = min(len(v_in), len(v_out))
-    in_minus_out = []
-    for i in range(min_len):
-        in_minus_out.append(v_in[i] - v_out[i])
+    current = np.subtract(v_in, v_out) / resistance
 
-    numerator = fft(v_out)
-    denominator = fft([x / resistance for x in in_minus_out])
-
-    impedance_calc = []
-    for i in range(min_len):
-        impedance_calc.append(numerator[i] / denominator[i])
+    impedance_calc = np.divide(rfft(v_out), rfft(current))
     
     return impedance_calc
