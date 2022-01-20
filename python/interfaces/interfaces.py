@@ -2943,7 +2943,7 @@ class DDR3():
 
         Returns
         -------
-        numpy.ndarray : for DDR data array
+        numpy.ndarray, float : for DDR data array, actual frequeny used
         """
 
         if (amplitude) > offset:
