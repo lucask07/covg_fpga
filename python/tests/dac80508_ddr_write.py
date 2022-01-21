@@ -18,7 +18,7 @@ top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1',
                                         'top_level_module.bit')
 
-from interfaces.interfaces import DDR3, FPGA, DAC80508
+from interfaces.interfaces import DDR3, FPGA, DAC80508, AD5453
 from interfaces.boards import Daq
 from interfaces.utils import to_voltage, from_voltage, calc_impedance
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
@@ -71,6 +71,12 @@ for dac in [dac1, dac2]:
     dac.set_gain(gain=1, outputs=[4], divide_reference=False)
     dac.set_data_mux('DDR')
 
+# Change DDR read clock using AD5453 chip (only one with correct endpoints for this)
+# TODO: make set_clk_divider a DDR3 method rather than a SPIFifoDriven method
+# 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
+ad5453 = AD5453(fpga=f)
+ad5453.set_clk_divider(divide_value=0x50)
+
 # --- Write to the DDR ---
 # [0:13]    FDAC_1 [14:15] ADDR SDAC_1
 # [16:29]   FDAC_2 [31:32] ADDR SDAC_1 and SDAC_2
@@ -84,7 +90,8 @@ for dac in [dac1, dac2]:
 # FDAC: 1V 1KHz sine wave; SDAC: 1V 1KHz sine wave
 fdac_amp_volt = 1
 sdac_amp_volt = 1
-target_freq = 12804.09731
+# target_freq = 12804.09731  # Required when the DDR read clock divide doesn't work
+target_freq = 1000.0
 # TODO: figure out what the voltage range should be for fdac, 3.3 is just a guess
 fdac_amp_code = from_voltage(voltage=fdac_amp_volt, num_bits=14, voltage_range=3.3, with_negatives=False)
 sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
@@ -95,15 +102,15 @@ fdac_sine, fdac_freq = ddr.make_sine_wave(amplitude=fdac_amp_code, frequency=tar
 sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq, offset=dac80508_offset)
 
 # Specify output channel for DAC80508
-sdac_1_out_chan = 4
-sdac_2_out_chan = 4
+sdac_1_out_chan = 0
+sdac_2_out_chan = 0
 # Clear channel bits
 np.logical_and(np.full(shape=np.shape(fdac_sine), fill_value=0x3fff), fdac_sine)
 # Set channel bits
-two_bit_pieces = [(sdac_1_out_chan & 0b011) << 14, ((sdac_1_out_chan & 0b100) | (sdac_2_out_chan & 0b001)) << 14, (sdac_2_out_chan & 0b100) << 14]
-two_bit_list = two_bit_pieces * int(len(fdac_sine) // len(two_bit_pieces))
-two_bit_array = np.array(two_bit_list + two_bit_list[:len(fdac_sine) - len(two_bit_list)])
-fdac_sine = np.logical_or(fdac_sine, two_bit_array)
+# two_bit_pieces = [(sdac_1_out_chan & 0b011) << 14, ((sdac_1_out_chan & 0b100) | (sdac_2_out_chan & 0b001)) << 14, (sdac_2_out_chan & 0b100) << 14]
+# two_bit_list = two_bit_pieces * int(len(fdac_sine) // len(two_bit_pieces))
+# two_bit_array = np.array(two_bit_list + two_bit_list[:len(fdac_sine) - len(two_bit_list)])
+# fdac_sine = np.logical_or(fdac_sine, two_bit_array)
 
 # Load data into DDR
 for i in range(6):
