@@ -46,9 +46,13 @@ class Register:
         self.bit_width = bit_width
 
     def __str__(self):
-        str_rep = 'Register with address 0x{:0x}, bit-high {} to low {}, width = {}'.format(
-            self.address, self.bit_index_high, self.bit_index_low, self.bit_width)
-        return str_rep
+        return f'{hex(self.address)}[{self.bit_index_low}:{self.bit_index_high}]'
+
+    def __eq__(self, other):
+        if type(self) is type(other):
+            return self.__dict__ == other.__dict__
+        else:
+            return False
 
     @staticmethod
     def get_chip_registers(sheet, workbook_path=None):
@@ -2939,7 +2943,7 @@ class DDR3():
 
         Returns
         -------
-        numpy.ndarray : for DDR data array
+        numpy.ndarray, float : for DDR data array, actual frequeny used
         """
 
         if (amplitude) > offset:
