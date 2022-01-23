@@ -15,7 +15,7 @@ from scipy import signal
 from scipy.interpolate import interp1d
 
 
-def delayseq(x, delay_sec: float, fs: int):
+def delayseq(x, delay_sec: float, fs: float):
     """ delays signal (non-integer delays) using FFT
         frequency-dependent phase shift
 
@@ -91,7 +91,7 @@ def delayseq_interp(x, delay_sec: float, fs: int):
 
     xs = xshift[resolution_increase//2::resolution_increase]
 
-    return xs, xnew, t
+    return xs
 
 
 def nextpow2(n: int) -> int:

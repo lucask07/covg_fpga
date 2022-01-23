@@ -1,5 +1,5 @@
 import numpy as np
-
+import scipy.fftpack
 
 def find_nearest(array, target):
     """ find value in an array nearest to a target value
@@ -33,3 +33,18 @@ def find_closest_row(df, target_dict, prefilter = ('peak_area', 7e5)):
         idx = idx & (output[k] == c)
         print(f'Length of index = {np.sum(idx)}')
     return idx
+
+
+def calc_fft(data, FS, plot=True):
+    # Number of samplepoints
+    N = len(data)
+
+    yf = np.fft.fft(data)
+
+    freq = np.fft.fftfreq(N, d=1/FS)
+
+    if plot:
+        fig, ax = plt.subplots()
+        ax.loglog(freq[:N//2], 2.0/N * np.abs(yf[:N//2]))
+        ax.set_xlabel('f [Hz]')
+        ax.set_ylabel('|A|')
