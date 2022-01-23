@@ -1,6 +1,7 @@
 import os, sys
 import time
 import atexit
+import numpy as np
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 cwd = os.getcwd()
@@ -19,7 +20,7 @@ top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
 
 from interfaces.interfaces import DDR3, FPGA, DAC80508
 from interfaces.boards import Daq
-from interfaces.utils import to_voltage, from_voltage
+from interfaces.utils import to_voltage, from_voltage, calc_impedance
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
 
@@ -27,7 +28,7 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 pwr_setup = '3dual'
 num_fast_dacs = 6
 num_slow_dacs = 2
-dac_out_channel = 0
+dac80508_offset = 0x8000
 
 
 # --- Instantiations ---
@@ -63,10 +64,12 @@ for name in ['1V8', '5V', '3V3']:
 gpio.spi_debug('ds0')
 
 # --- Configure for DDR read to DAC80508 ---
-dac2.set_spi_sclk_divide(0x8)
-dac2.set_ctrl_reg(0x3218)
-dac2.set_config_bin(0x00)
-dac2.set_data_mux('DDR')
+for dac in [dac1, dac2]:
+    dac.set_spi_sclk_divide(0x8)
+    dac.set_ctrl_reg(0x3218)
+    dac.set_config_bin(0x00)
+    dac.set_gain(gain=1, outputs=[4], divide_reference=False)
+    dac.set_data_mux('DDR')
 
 # --- Write to the DDR ---
 # [0:13]    FDAC_1 [14:15] ADDR SDAC_1
@@ -78,24 +81,34 @@ dac2.set_data_mux('DDR')
 # [96:111]  SDAC_1
 # [112:127] SDAC_2
 
-# For now, we are only going to write to DAC OUT 0 on the SDAC (DAC80508) so we don't have to worry about the address bits
+# FDAC: 1V 1KHz sine wave; SDAC: 1V 1KHz sine wave
+fdac_amp_volt = 1
+sdac_amp_volt = 1
+target_freq = 12804.09731
+# TODO: figure out what the voltage range should be for fdac, 3.3 is just a guess
+fdac_amp_code = from_voltage(voltage=fdac_amp_volt, num_bits=14, voltage_range=3.3, with_negatives=False)
+sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
 
-# FDAC: 5V; SDAC: 2.5V
 # Data for the 6 AD5453 "Fast DACs"
-for i in range(6):
-    ddr.data_arrays[i] = ddr.make_flat_voltage(5)
+fdac_sine, fdac_freq = ddr.make_sine_wave(amplitude=fdac_amp_code, frequency=target_freq)
 # Data for the 2 DAC80508 "Slow DACs"
+sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq, offset=dac80508_offset)
+
+# Specify output channel for DAC80508
+sdac_1_out_chan = 4
+sdac_2_out_chan = 4
+# Clear channel bits
+np.logical_and(np.full(shape=np.shape(fdac_sine), fill_value=0x3fff), fdac_sine)
+# Set channel bits
+two_bit_pieces = [(sdac_1_out_chan & 0b011) << 14, ((sdac_1_out_chan & 0b100) | (sdac_2_out_chan & 0b001)) << 14, (sdac_2_out_chan & 0b100) << 14]
+two_bit_list = two_bit_pieces * int(len(fdac_sine) // len(two_bit_pieces))
+two_bit_array = np.array(two_bit_list + two_bit_list[:len(fdac_sine) - len(two_bit_list)])
+fdac_sine = np.logical_or(fdac_sine, two_bit_array)
+
+# Load data into DDR
+for i in range(6):
+    ddr.data_arrays[i] = fdac_sine
 for i in range(2):
-    ddr.data_arrays[i + 6] = ddr.make_flat_voltage(5)
+    ddr.data_arrays[i + 6] = sdac_sine
 
 g_buf = ddr.write_channels()
-
-input()
-
-# FDAC: 5V 1KHz sine wave; SDAC: 1V 1KHz sine wave
-# Data for the 6 AD5453 "Fast DACs"
-for i in range(6):
-    ddr.data_arrays[i] = ddr.make_sine_wave(amplitude=5, frequency=1000.0)
-# Data for the 2 DAC80508 "Slow DACs"
-for i in range(2):
-    ddr.data_arrays[i + 6] = ddr.make_sine_wave(amplitude=2.5, frequency=1000.0)
