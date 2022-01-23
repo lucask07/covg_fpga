@@ -7,7 +7,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import numpy as np
-from scipy.fft import fft, rfft
+from scipy.fft import rfft
 import datetime
 
 def rev_lookup(dd, val):
