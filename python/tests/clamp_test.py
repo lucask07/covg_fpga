@@ -6,6 +6,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 
+from interfaces.boards import Daq, Clamp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import logging
 from interfaces.interfaces import (
@@ -31,10 +32,11 @@ from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
 import h5py
-from filters.filter_tools import delayseq, butter_lowpass_filter
+from filters.filter_tools import delayseq, butter_lowpass_filter, delayseq_interp
 from analysis.adc_data import read_plot, read_h5, peak_area
 import pandas as pd
-
+import pickle as pkl
+from analysis.clamp_data import adjust_step2
 #import matplotlib
 
 # matplotlib.use("TkAgg")  # or "Qt5agg" depending on you version of Qt
@@ -271,10 +273,23 @@ daq.DAC_gp[1].write_voltage(2.36, 7)
 
 cmd_dac = daq.DAC[1]  # DAC channel 0 is connected to dc clamp ch 0 CMD signal
 cc = daq.DAC[0]
-
 ddr = DDR3(f)
 
-def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3):
+
+def get_cc_optimize(nums):
+
+    data_dir_base = os.path.expanduser('~')
+    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
+    data_dir = data_dir_covg.format(2022,1,19)
+
+    #for nums in ([20,21], [30,31], [14,15], [40,41]):
+    with open(os.path.join(data_dir, 'basin_hop_cc_nums{}.pickle'.format(nums[0])), 'rb') as fp:
+        out = pkl.load(fp)
+    return out
+
+
+def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000, 
+               cc_val=None, cc_pickle_num=None):
 
     # adjust the DDR settings of both DACs 
     # quiet both DACs 
@@ -282,20 +297,42 @@ def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3):
     cmd_dac.set_data_mux("host")
     ddr.reset_fifo()
 
+    dac_offset = 0x2000
     cmd_ch = 1
     cc_ch = 0
 
     ddr.data_arrays[cmd_ch] = ddr.make_step(
-        low=0x2000 - int(cmd_val), high=0x2000 + int(cmd_val), length=8000)
+        low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len) # 1.6 ms between edges
 
-    if cc_delay !=0:
-        ddr.data_arrays[0] = delayseq(ddr.data_arrays[0], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+    # create the cc using multiple methods 
+    if cc_pickle_num is not None:
+        cc_impulse_scale = -2600/7424
+        out = get_cc_optimize(cc_pickle_num)
+        cc_wave = adjust_step2(out['x'], ddr.data_arrays[cmd_ch].astype(np.int32) - dac_offset)
+        cc_wave = cc_wave * cc_impulse_scale
+        cc_wave = cc_wave + dac_offset
+        if cc_delay !=0:
+            cc_wave = delayseq_interp(cc_wave, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+        ddr.data_arrays[cc_ch] = cc_wave.astype(np.uint16)
 
-    ddr.data_arrays[cc_ch] = butter_lowpass_filter(ddr.data_arrays[cmd_ch], cutoff=fc, fs=2.5e6, order=1)*cc_scale + 0x2000
+    elif cc_val is None: # get the cc signal from scaling the cmd signal
+        if fc is not None:
+            ddr.data_arrays[cc_ch] = butter_lowpass_filter(ddr.data_arrays[cmd_ch] - dac_offset, cutoff=fc, fs=2.5e6, order=1)*cc_scale + dac_offset
+        else:
+            ddr.data_arrays[cc_ch] = (ddr.data_arrays[cmd_ch] - dac_offset)*cc_scale + dac_offset
+        if cc_delay !=0:
+            ddr.data_arrays[cc_ch] = delayseq_interp(ddr.data_arrays[cc_ch], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
 
-    if cc_delay !=0:
-        ddr.data_arrays[0] = delayseq(ddr.data_arrays[0], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
-
+    else: # needed so that the cmd signal can be zero with a non-zero cc signal
+        ddr.data_arrays[cc_ch] = ddr.make_step(low=dac_offset - int(cc_val), 
+                                                high=dac_offset + int(cc_val), 
+                                                length=step_len) # 1.6 ms between edges
+        if fc is not None:
+            ddr.data_arrays[cc_ch] = butter_lowpass_filter(ddr.data_arrays[cc_ch], cutoff=fc, fs=2.5e6, order=1)
+        if cc_delay !=0:
+            ddr.data_arrays[cc_ch] = delayseq_interp(ddr.data_arrays[cc_ch], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+   
+    # write channels to the DDR 
     g_buf = ddr.write_channels(set_ddr_read=False) # clear read, set write, etc. handled within write_channels
 
     # reenable both DACs 
@@ -392,120 +429,32 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64, PLT_
     print(f'Done with ADC reading: saved as {full_data_name}')
     return chan_data
 
-output = pd.DataFrame()
-
-cc_scale = -0.36
-cc_delay = 20e-6
-cc_fc = 8e3
-idx = 0
-for cc_fc in np.linspace(4e3, 15e3, 12):  # 12
-    for cc_delay in np.linspace(-10e-6, 40e-6, 12):  # 16
-        for cc_scale in np.concatenate((np.array([0]), np.linspace(-0.4, -0.3, 10))):  # 18
-            data = {}
-            file_name = f'cc_swp4_{idx}'
-
-            set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc) 
-            time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
-
-            data['cc_scale'] = cc_scale
-            data['cc_delay'] = cc_delay
-            data['cc_fc'] = cc_fc
-
-            result_ok = False
-            num_tries = 0
-            while ((not result_ok) and (num_tries<5)):
-                try:
-                    save_adc_data(data_dir, file_name + '.h5', num_repeats = 2)
-                    t, adc_data = read_h5(os.path.join(data_dir, file_name + '.h5'), chan_list=[0])
-                    pa, num_found = peak_area(t[64:], adc_data[0][64:])  # crop the first 64 since might be from stale FIFO
-                    result_ok=True
-                except:
-                    print('retry')
-                    num_tries += 1
-            if num_tries==5:
-                raise ValueError('A very specific bad thing happened')      
-
-            data['peak_area'] = pa
-            data['peaks_found'] = num_found
-            osc.set('single_acq')
-            time.sleep(0.10)
-
-            # general measure -- input measure type
-            for ch in [1,3,4]:
-                rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch}) 
-                data[f'rise_{ch}'] = rt
-                va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch}) 
-                data[f'amp_{ch}'] = va
-
-            # save a PNG screen-shot to host computer
-            t = osc.save_display_data(os.path.join(data_dir, file_name))
-            osc.set('run_acq')
-
-            data['filename'] = file_name
-            output = output.append(data, ignore_index=True)
-            idx = idx + 1
-
-print(output.head())
-output.to_csv(os.path.join(data_dir, file_name + '.csv'))
-
-
-def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000], ccomp_arr=[47,247,1047,4747,5900], file_name='rf_swp3_{}'):
+def cc_search():
     output = pd.DataFrame()
 
-    # optimal cc parameters 
-    cc_scale = -0.33
-    cc_delay = 10e-6
-    cc_fc = 15e3
-
+    cc_scale = -0.36
+    cc_delay = 20e-6
+    cc_fc = 8e3
     idx = 0
-
-    for rf in rf_arr:
-        for ccomp in ccomp_arr:
-
-            log_info, config_dict = clamp.configure_clamp(
-                ADC_SEL="CAL_SIG1",
-                DAC_SEL="drive_CAL2",
-                CCOMP=ccomp,
-                RF1=2.1,  # feedback circuit
-                ADG_RES=rf,
-                PClamp_CTRL=0,
-                P1_E_CTRL=0,
-                P1_CAL_CTRL=0,
-                P2_E_CTRL=0,
-                P2_CAL_CTRL=0,
-                gain=1,  # instrumentation amplifier
-                FDBK=1,
-                mode="voltage",
-                EN_ipump=0,
-                RF_1_Out=1,
-                addr_pins_1=0b110,
-                addr_pins_2=0b000,
-            )
-
-            for cc_adj in [False, True]:
+    for cc_fc in np.linspace(4e3, 15e3, 12):  # 12
+        for cc_delay in np.linspace(-10e-6, 40e-6, 12):  # 16
+            for cc_scale in np.concatenate((np.array([0]), np.linspace(-0.4, -0.3, 10))):  # 18
                 data = {}
-                data['rf'] = rf
-                data['ccomp'] = ccomp
+                file_name = f'cc_swp4_{idx}'
 
-                if cc_adj:
-                    set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc) 
-                    data['cc_scale'] = cc_scale
-                    data['cc_delay'] = cc_delay
-                    data['cc_fc'] = cc_fc
-                else:
-                    set_cmd_cc(cc_scale=0, cc_delay=0, fc=1e3) 
-                    data['cc_scale'] = 0
-                    data['cc_delay'] = 0
-                    data['cc_fc'] = 1e3
-
+                set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc) 
                 time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
+
+                data['cc_scale'] = cc_scale
+                data['cc_delay'] = cc_delay
+                data['cc_fc'] = cc_fc
 
                 result_ok = False
                 num_tries = 0
                 while ((not result_ok) and (num_tries<5)):
                     try:
-                        save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 2)
-                        t, adc_data = read_h5(os.path.join(data_dir, file_name.format(idx) + '.h5'), chan_list=[0])
+                        save_adc_data(data_dir, file_name + '.h5', num_repeats = 2)
+                        t, adc_data = read_h5(os.path.join(data_dir, file_name + '.h5'), chan_list=[0])
                         pa, num_found = peak_area(t[64:], adc_data[0][64:])  # crop the first 64 since might be from stale FIFO
                         result_ok=True
                     except:
@@ -526,19 +475,216 @@ def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000], ccomp_arr=[47,247,1047,4747,5
                     va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch}) 
                     data[f'amp_{ch}'] = va
 
-                # save a PNG screen-shot to host computer -- would like to check for a trigger first but osc.get('is_running') doesn't seem to work
-                osc.set('stop_acq') # in case the trigger didn't work
-                t = osc.save_display_data(os.path.join(data_dir, file_name.format(idx)))
+                # save a PNG screen-shot to host computer
+                t = osc.save_display_data(os.path.join(data_dir, file_name))
                 osc.set('run_acq')
 
-                data['filename'] = file_name.format(idx)
+                data['filename'] = file_name
                 output = output.append(data, ignore_index=True)
                 idx = idx + 1
+
+    print(output.head())
+    output.to_csv(os.path.join(data_dir, file_name + '.csv'))
+    return output
+
+SCOPE_SCREENSHOT = False
+
+def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000], 
+                ccomp_arr=[47,247,1047,4747,5900], file_name='rf_swp_{}'):
+    output = pd.DataFrame()
+
+    # optimal cc parameters 
+    cc_scale = -0.33
+    cc_delay = 10e-6
+    cc_fc = 15e3
+
+    idx = 0
+
+    for rf in rf_arr:
+        for ccomp in ccomp_arr:
+            log_info, config_dict = clamp.configure_clamp(
+                ADC_SEL="CAL_SIG1",
+                DAC_SEL="drive_CAL2",
+                CCOMP=ccomp,
+                RF1=2.1,  # feedback circuit
+                ADG_RES=rf,
+                PClamp_CTRL=0,
+                P1_E_CTRL=0,
+                P1_CAL_CTRL=0,
+                P2_E_CTRL=0,
+                P2_CAL_CTRL=0,
+                gain=1,  # instrumentation amplifier
+                FDBK=1,
+                mode="voltage",
+                EN_ipump=0,
+                RF_1_Out=1,
+                addr_pins_1=0b110,
+                addr_pins_2=0b000,
+            )
+            for cmd_val in [0, 0x1d00]:
+                for cc_adj in [False, True]:
+                    data = {}
+                    data['rf'] = rf
+                    data['ccomp'] = ccomp
+
+                    if cc_adj:
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc,step_len=16000) 
+                        data['cc_scale'] = cc_scale
+                        data['cc_delay'] = cc_delay
+                        data['cc_fc'] = cc_fc
+                    else:
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=0, fc=1e3, step_len=16000) 
+                        data['cc_scale'] = 0
+                        data['cc_delay'] = 0
+                        data['cc_fc'] = 1e3
+                    data['cmd_val'] = cmd_val
+
+                    time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
+
+                    save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
+                    t, adc_data = read_h5(os.path.join(data_dir, file_name.format(idx) + '.h5'), chan_list=[0])
+ 
+                    try:
+                        pa, num_found = peak_area(t[64:], adc_data[0][64:])  # crop the first 64 since might be from stale FIFO
+                    except:
+                        print('no peaks found')
+                        pa = -1
+                        num_found = 0
+
+                    data['peak_area'] = pa
+                    data['peaks_found'] = num_found
+                    # general measure -- input measure type
+                    for ch in [1,3,4]:
+                        rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch}) 
+                        data[f'rise_{ch}'] = rt
+                        va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch}) 
+                        data[f'amp_{ch}'] = va
+
+                    if SCOPE_SCREENSHOT:
+                        osc.set('single_acq')
+                        time.sleep(0.10)
+                        # save a PNG screen-shot to host computer -- would like to check for a trigger first but osc.get('is_running') doesn't seem to work
+                        osc.set('stop_acq') # in case the trigger didn't work
+                        t = osc.save_display_data(os.path.join(data_dir, file_name.format(idx)))
+                        osc.set('run_acq')
+
+                    data['filename'] = file_name.format(idx)
+                    output = output.append(data, ignore_index=True)
+                    idx = idx + 1
 
     print(output.head())
     output.to_csv(os.path.join(data_dir, file_name.format(idx) + '.csv'))
 
     return output
+
+# enable only cmd or only cc to measure the step response (to get the impulse response)
+def step_responses(rf_arr=[10,33,100,332,3000,10000], 
+                    ccomp_arr=[47,247,1047,4747,5900], 
+                    cc_delay_arr = np.linspace(-5e-6,5e-6,16),
+                    file_name='step_swp_{}'):
+    output = pd.DataFrame()
+
+    # cc parameters 
+    cc_scale = 0
+    cc_delay = 0
+    cc_fc = 0
+
+    idx = 0
+
+    for rf in rf_arr:
+        for ccomp in ccomp_arr:
+            log_info, config_dict = clamp.configure_clamp(
+                ADC_SEL="CAL_SIG1",
+                DAC_SEL="drive_CAL2",
+                CCOMP=ccomp,
+                RF1=2.1,  # feedback circuit
+                ADG_RES=rf,
+                PClamp_CTRL=0,
+                P1_E_CTRL=0,
+                P1_CAL_CTRL=0,
+                P2_E_CTRL=0,
+                P2_CAL_CTRL=0,
+                gain=1,  # instrumentation amplifier
+                FDBK=1,
+                mode="voltage",
+                EN_ipump=0,
+                RF_1_Out=1,
+                addr_pins_1=0b110,
+                addr_pins_2=0b000,
+            )
+            for cmd_val, cc_val in [(0x1d00, 0), (0x1d00, -2600), (0x1d00, 'cc_basin')]:
+                for cc_delay in cc_delay_arr:
+
+                    data = {}
+                    data['rf'] = rf
+                    data['ccomp'] = ccomp
+
+                    if cc_val == 'cc_basin':
+                        if rf == 33:
+                            nums = [14,15]
+                        elif rf == 100:
+                            nums = [20,21]
+                        elif rf == 332:
+                            nums = [30,31]
+                        elif rf == 3000:
+                            nums = [40,41]
+                        else:
+                            nums = None
+                            cc_scale = 0
+                            cc_val = 0
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16000, cc_val=cc_val, cc_pickle_num=nums) 
+                    else:
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16000, cc_val=cc_val) 
+                    data['cc_val'] = cc_val
+                    data['cc_delay'] = cc_delay
+                    data['cc_fc'] = cc_fc
+                    data['cmd_val'] = cmd_val
+
+                    time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
+
+                    save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
+                    t, adc_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=[0])
+ 
+                    try:
+                        pa, num_found = peak_area(t[64:], adc_data[0][64:])  # crop the first 64 since might be from stale FIFO
+                    except:
+                        print('no peaks found')
+                        pa = -1
+                        num_found = 0
+
+                    data['peak_area'] = pa
+                    data['peaks_found'] = num_found
+                    # general measure -- input measure type
+                    for ch in [1,3,4]:
+                        rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch}) 
+                        data[f'rise_{ch}'] = rt
+                        va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch}) 
+                        data[f'amp_{ch}'] = va
+
+                    if SCOPE_SCREENSHOT:
+                        osc.set('single_acq')
+                        time.sleep(0.10)
+                        # save a PNG screen-shot to host computer -- would like to check for a trigger first but osc.get('is_running') doesn't seem to work
+                        osc.set('stop_acq') # in case the trigger didn't work
+                        t = osc.save_display_data(os.path.join(data_dir, file_name.format(idx)))
+                        osc.set('run_acq')
+
+                    data['filename'] = file_name.format(idx)
+                    output = output.append(data, ignore_index=True)
+                    idx = idx + 1
+
+    print(output.head())
+    output.to_csv(os.path.join(data_dir, file_name.format(idx) + '.csv'))
+
+    return output
+
+def cc_comp():
+    
+    set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000, 
+               cc_val=None, cc_pickle_num=[20,21])
+
+    plt.plot(ddr.data_arrays[0])
+    plt.plot(ddr.data_arrays[1])
 
 
 """
@@ -551,10 +697,17 @@ plt.close('all')
 """
 
 """
-
 save_adc_data(data_dir, file_name + '.h5', num_repeats = 2)
 t, adc_data = read_h5(os.path.join(data_dir, file_name + '.h5'), chan_list=[0])
 plt.plot(t, adc_data[0], marker = '.')
 plt.pause(1)
 plt.close('all')
+"""
+
+"""
+step_responses(rf_arr=[332], 
+                    ccomp_arr=[47], 
+                    file_name='step_swp_delay5_{}',
+                    cc_delay_arr = np.linspace(-800e-9,800e-9,16))
+
 """
