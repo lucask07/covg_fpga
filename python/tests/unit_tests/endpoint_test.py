@@ -36,20 +36,25 @@ for i in range(num_test_params):
     bit_width = randint(0, 32)
     gen_bit = bool(randint(0, 1))
     gen_address = bool(randint(0, 1))
-    test_params.append((address, bit_index_low, bit_width, gen_bit, gen_address))
-# Fixtures
+    test_params.append(
+        (address, bit_index_low, bit_width, gen_bit, gen_address))
 
 # Tests
+
+
 @pytest.mark.parametrize('address, bit_index_low, bit_width, gen_bit, gen_address', test_params)
 def test_eq(address, bit_index_low, bit_width, gen_bit, gen_address):
-    ep1 = Endpoint(address=address, bit_index_low=bit_index_low, bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
-    ep2 = Endpoint(address=address, bit_index_low=bit_index_low, bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
+    ep1 = Endpoint(address=address, bit_index_low=bit_index_low,
+                   bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
+    ep2 = Endpoint(address=address, bit_index_low=bit_index_low,
+                   bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
     assert ep1 == ep2
 
 
 @pytest.mark.parametrize('address, bit_index_low, bit_width, gen_bit, gen_address', test_params)
 def test_str(address, bit_index_low, bit_width, gen_bit, gen_address):
-    ep = Endpoint(address=address, bit_index_low=bit_index_low, bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
+    ep = Endpoint(address=address, bit_index_low=bit_index_low,
+                  bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
     expected_str = f'{hex(address)}[{bit_index_low}:{bit_index_low + bit_width}]'
     assert str(ep) == expected_str
 
@@ -58,6 +63,7 @@ def test_str(address, bit_index_low, bit_width, gen_bit, gen_address):
 def test_update_endpoints_from_defines(test_params):
     # --- First, write the defines file in the current directory ---
     file_name = 'test_defines.v'
+    file_loc = os.path.join(interfaces_path, 'tests', 'unit_tests', file_name)
     file_text = ''
     # Group 1 - Addresses
     # Group 2 - Bits referenced to group 1
@@ -87,9 +93,9 @@ def test_update_endpoints_from_defines(test_params):
             else:
                 name1 = name1_base
             line1 = f"`define {name1} 8'h{hex(address)[2:]} // bit_width={bit_width}"
-            ep = Endpoint(address=address, bit_index_low=None, bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
+            ep = Endpoint(address=address, bit_index_low=None,
+                          bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
             group1_eps.append(ep)
-
 
         # Create Group 2 endpoint with address pointing to Group 1 endpoint
         address_unused, bit_index_low, bit_width, gen_bit, gen_address = test_params[i + 1]
@@ -101,7 +107,8 @@ def test_update_endpoints_from_defines(test_params):
             if gen_address:
                 name2 += '_GEN_ADDR'
             line2 = f"`define {name2} {bit_index_low} // address={name1_base} bit_width={bit_width}"
-            ep = Endpoint(address=address, bit_index_low=bit_index_low, bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
+            ep = Endpoint(address=address, bit_index_low=bit_index_low,
+                          bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
             group2_eps.append(ep)
 
         # Create Group 3 endpoint with bit and absolute address
@@ -114,23 +121,21 @@ def test_update_endpoints_from_defines(test_params):
             if gen_address:
                 name3 += '_GEN_ADDR'
             line3 = f"`define {name3} {bit_index_low} // address={hex(address)} bit_width={bit_width}"
-            ep = Endpoint(address=address, bit_index_low=bit_index_low, bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
+            ep = Endpoint(address=address, bit_index_low=bit_index_low,
+                          bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
             group3_eps.append(ep)
-    
+
         # Append lines to file text
         file_text += line1 + '\n' + line2 + '\n' + line3 + '\n'
-    
+
     # Write to file
-    with open(file_name, 'w') as file:
+    with open(file_loc, 'w') as file:
         file.write(file_text)
 
     # --- Second, compare update_endpoints_from_defines output with endpoints created earlier ---
-    Endpoint.update_endpoints_from_defines(ep_defines_path=file_name)
+    Endpoint.update_endpoints_from_defines(ep_defines_path=file_loc)
     for created, read in [(group1_eps, Endpoint.endpoints_from_defines['GROUP1']), (group2_eps, Endpoint.endpoints_from_defines['GROUP2']), (group3_eps, Endpoint.endpoints_from_defines['GROUP3'])]:
         i = 0
         for read_ep in read.values():
-            print(read_ep, '==', created[i])
-            print(read_ep.gen_bit, created[i].gen_bit)
-            print(read_ep.gen_address, created[i].gen_address)
             assert read_ep == created[i]
             i += 1
