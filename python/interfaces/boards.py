@@ -450,21 +450,11 @@ class Daq:
 
         # self.DAC_I2C = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
         # SPI
-        self.DAC_gp = []
         self.DAC_gp = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
-        for ch in [0,1]:
-            self.DAC_gp[ch].channel = ch
-        self.DAC = []
         self.DAC = AD5453.create_chips(fpga=fpga, number_of_chips=6)
-        for i in range(len(self.DAC)):
-            self.DAC[i].channel = i  # TODO: fix this hack in the create chips
         #self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
-        # TODO: does this use a "channel"
         self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)
-        self.ADC = []
         self.ADC = AD7961.create_chips(fpga=fpga, number_of_chips=4)
-        for i in range(len(self.ADC)):
-            self.ADC[i].chan = i  # TODO: fix this hack in the create chips
 
         self.parameters = {}
         self.parameters["dac_gain_fs"] = {
