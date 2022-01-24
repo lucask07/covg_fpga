@@ -37,7 +37,7 @@ import pickle as pkl
 import h5py
 from filters.filter_tools import delayseq, butter_lowpass_filter, delayseq_interp
 from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv
-from analysis.clamp_data import adjust_step2, adjust_step
+from analysis.clamp_data import adjust_step2, adjust_step, adjust_step_delay, adjust_step_scale
 
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
@@ -455,17 +455,10 @@ def tune_cc(data_dir, file_name, rf, ccomp):
 
     idx += 1
     # cc_scaling -- set to avoid saturation (filename?)
-    set_cmd_cc(cmd_val=cmd_impulse_scaling, cc_scale=0, cc_delay=0, fc=None, step_len=16000)
+    set_cmd_cc(cmd_val=0, cc_scale=0, cc_delay=0, fc=None, step_len=16000, cc_val=cc_impulse_scaling)
     time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
     save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
     cc_impulse, _,_ = get_impulse(data_dir, file_name.format(idx))
-
-    # flag warning if saturated
-    SAT_VAL = 30000
-    if any(np.abs(cmd_impulse) > SAT_VAL):
-        print(f'warning CMD impulse is over {SAT_VAL}')
-    if any(np.abs(cc_impulse) > SAT_VAL):
-        print(f'warning CC impulse is over {SAT_VAL}')
 
     if PLT_DEBUG:
         fig, ax = plt.subplots() # plot before normalizing by scaling so that
@@ -480,38 +473,55 @@ def tune_cc(data_dir, file_name, rf, ccomp):
     # normalize impulse function
     cmd_impulse = cmd_impulse/cmd_impulse_scaling
     cc_impulse = cc_impulse/cc_impulse_scaling
+    cmd_over_cc = cmd_impulse_scaling/cc_impulse_scaling
 
-    bnds = ((-2, 2), (-5e-6, 5e-6),
-            (-2, 2), (2e3, 2.45e6), (-5e-6, 5e-6),
-            (-2, 2), (2e3, 2.45e6),(-5e-6, 5e-6),
-            (-2, 2), (2e3, 2.45e6), (-5e-6, 5e-6),
+    bnds = ((-1, 1), (-5e-6, 5e-6),
+            (-1, 1), (2e3, 2.45e6), (-5e-6, 5e-6),
+            (-1, 1), (2e3, 2.45e6),(-5e-6, 5e-6),
+            (-1, 1), (2e3, 2.45e6), (-5e-6, 5e-6),
             (-0.3, 0.3), (runt_idx-50, runt_idx+50), (runt_idx-20, runt_idx+80))
-    out_min = minimize(im_conv, x0=[0.5,0,
-                                    0.5, 100e3, 10e-6,
-                                    0.5,100e3, 0e-6,
-                                    0.5, 100e3, -10e-6,
-                                    0.1, runt_idx, runt_idx+30],
-                        args=(cmd_impulse, step_func, cc_impuse, step_func, adjust_step2), bounds=bnds, method='L-BFGS-B')
+    out_min = minimize(im_conv, x0=[-0.16, 0e-6,
+                                    -0.16, 100e3, 0e-6,
+                                    -0.05,100e3, 0e-6,
+                                    0.1, 100e3, 0e-6,
+                                    0.02, runt_idx, runt_idx+20],
+                        args=(cmd_impulse, step_func, cc_impulse, step_func, adjust_step2), bounds=bnds, method='L-BFGS-B')
+    new_cc_step = adjust_step2(out_min['x'], step_func)
+
+    # now minimize just delay and just global scale
+    bnds = ((-3e-6, 3e-6), )
+    out_min = minimize(im_conv, x0=[0],
+                        args=(cmd_impulse, step_func, cc_impulse, new_cc_step, adjust_step_delay), 
+                        bounds=bnds, method='L-BFGS-B', options={'gtol':1e-7})
+    new_cc_step = adjust_step_delay(out_min['x'], new_cc_step)
+    print('delay shift {}'.format(out_min['x']))
+    out_min_dly = out_min
+
+    bnds = ((0.95, 1.05), ) # trailing comma required for len(bnds)==1
+    out_min = minimize(im_conv, x0=[1],
+                        args=(cmd_impulse, step_func, cc_impulse, new_cc_step, adjust_step_scale), bounds=bnds, method='L-BFGS-B')
+    new_cc_step = adjust_step_scale(out_min['x'], new_cc_step)
+    print('scale shift {}'.format(out_min['x']))
 
     if PLT_DEBUG:
         fig, ax = plt.subplots()
-        y = np.convolve(cmd_impulse, step_func, mode='valid') + np.convolve(cc_impulse, step_func, mode='valid')
-        t = np.linspace(0, (len(y) - 1)*SAMPLE_PERIOD, len(y))
-        ax.plot(t*1e6, y, 'b', label='CMD + CC; no tuning')
-        ax.plot(t*1e6, np.convolve(cmd_impulse, step_func, mode='valid') + \
-                np.convolve(cc_impulse, adjust_step2(out_min['x'], step_func), mode='valid'),
+        y = np.convolve(cmd_impulse, step_func, mode='same') + np.convolve(-cc_impulse, step_func*1/cmd_over_cc, mode='same')
+        t_im = np.linspace(0, (len(y) - 1)*SAMPLE_PERIOD, len(y))
+        ax.plot(t_im*1e6, y, 'b', label='CMD + CC; no tuning')
+        ax.plot(t_im*1e6, np.convolve(cmd_impulse, step_func, mode='same') + \
+                np.convolve(cc_impulse, new_cc_step, mode='same'),
                 'r', label='CMD + CC; tuned')
-        ax.plot(t*1e6, np.convolve(cmd_impulse, step_func, mode='valid'), 'k', label='CMD only')
+        ax.plot(t_im*1e6, np.convolve(cmd_impulse, step_func, mode='same'), 'k', label='CMD only')
         ax.legend()
 
         fig, ax = plt.subplots()
         ax.plot(t*1e6, step_func, 'k', label='CMD step')
-        ax.plot(t*1e6, adjust_step2(out_min['x'], step_func), 'm', label='CC step')
+        ax.plot(t*1e6, new_cc_step, 'm', label='CC step')
         ax.legend()
 
     # optimize cc function with given impulse responses (pass a given cc-creation function)
     # adjust_step2(x, cc_func)
-    return out_min, adjust_step2(out_min['x'], step_func)
+    return out_min, new_cc_step, out_min_dly
     # tune cc function using experimental measurements -- create function
 
 
@@ -772,7 +782,7 @@ def cc_comp():
     plt.plot(ddr.data_arrays[1])
 
 
-tune_cc(data_dir, 'test_tune_{}', 100, 47)
+out_min, cc_step_func, out_min_dly = tune_cc(data_dir, 'test_tune_{}', 100, 47)
 
 """
 set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc)
