@@ -31,7 +31,7 @@ import atexit
 from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize
+from scipy.optimize import minimize, basinhopping
 import pandas as pd
 import pickle as pkl
 import h5py
@@ -488,18 +488,20 @@ def tune_cc(data_dir, file_name, rf, ccomp):
                         args=(cmd_impulse, step_func, cc_impulse, step_func, adjust_step2), bounds=bnds, method='L-BFGS-B')
     new_cc_step = adjust_step2(out_min['x'], step_func)
 
-    # now minimize just delay and just global scale
+    # now minimize just delay and global scale separately
     bnds = ((-3e-6, 3e-6), )
-    out_min = minimize(im_conv, x0=[0],
-                        args=(cmd_impulse, step_func, cc_impulse, new_cc_step, adjust_step_delay), 
-                        bounds=bnds, method='L-BFGS-B', options={'gtol':1e-7})
+    minimizer_kwargs = { "method": "L-BFGS-B","bounds":bnds,"args":(cmd_impulse, step_func, cc_impulse, new_cc_step, adjust_step_delay) }
+    out_min = basinhopping(im_conv, x0=[0],
+                           minimizer_kwargs = minimizer_kwargs)
+
     new_cc_step = adjust_step_delay(out_min['x'], new_cc_step)
     print('delay shift {}'.format(out_min['x']))
     out_min_dly = out_min
 
     bnds = ((0.95, 1.05), ) # trailing comma required for len(bnds)==1
-    out_min = minimize(im_conv, x0=[1],
-                        args=(cmd_impulse, step_func, cc_impulse, new_cc_step, adjust_step_scale), bounds=bnds, method='L-BFGS-B')
+    minimizer_kwargs = { "method": "L-BFGS-B","bounds":bnds,"args":(cmd_impulse, step_func, cc_impulse, new_cc_step, adjust_step_scale) }
+    out_min = basinhopping(im_conv, x0=[0],
+                           minimizer_kwargs = minimizer_kwargs)
     new_cc_step = adjust_step_scale(out_min['x'], new_cc_step)
     print('scale shift {}'.format(out_min['x']))
 
