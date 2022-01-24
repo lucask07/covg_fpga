@@ -31,12 +31,16 @@ import atexit
 from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
-import h5py
-from filters.filter_tools import delayseq, butter_lowpass_filter, delayseq_interp
-from analysis.adc_data import read_plot, read_h5, peak_area
+from scipy.optimize import minimize
 import pandas as pd
 import pickle as pkl
-from analysis.clamp_data import adjust_step2
+import h5py
+from filters.filter_tools import delayseq, butter_lowpass_filter, delayseq_interp
+from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv
+from analysis.clamp_data import adjust_step2, adjust_step
+
+FS = 5e6
+SAMPLE_PERIOD = 1/FS
 #import matplotlib
 
 # matplotlib.use("TkAgg")  # or "Qt5agg" depending on you version of Qt
@@ -104,7 +108,7 @@ elif pwr_setup == "3dual":
 
 # ------ oscilloscope -----------------
 osc = open_by_name("msox_scope")
-osc.set("chan_label", '"P2"', configs={"chan": 1}) 
+osc.set("chan_label", '"P2"', configs={"chan": 1})
 osc.set("chan_label", '"CC"', configs={"chan": 3})
 osc.set("chan_label", '"Vm"', configs={"chan": 4}) # label must be in "" for the scope to accept
 osc.comm_handle.write(':DISP:LAB 1')  # turn on the labels
@@ -288,11 +292,11 @@ def get_cc_optimize(nums):
     return out
 
 
-def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000, 
+def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
 
-    # adjust the DDR settings of both DACs 
-    # quiet both DACs 
+    # adjust the DDR settings of both DACs
+    # quiet both DACs
     cc.set_data_mux("host")
     cmd_dac.set_data_mux("host")
     ddr.reset_fifo()
@@ -304,7 +308,7 @@ def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_le
     ddr.data_arrays[cmd_ch] = ddr.make_step(
         low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len) # 1.6 ms between edges
 
-    # create the cc using multiple methods 
+    # create the cc using multiple methods
     if cc_pickle_num is not None:
         cc_impulse_scale = -2600/7424
         out = get_cc_optimize(cc_pickle_num)
@@ -324,18 +328,18 @@ def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_le
             ddr.data_arrays[cc_ch] = delayseq_interp(ddr.data_arrays[cc_ch], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
 
     else: # needed so that the cmd signal can be zero with a non-zero cc signal
-        ddr.data_arrays[cc_ch] = ddr.make_step(low=dac_offset - int(cc_val), 
-                                                high=dac_offset + int(cc_val), 
+        ddr.data_arrays[cc_ch] = ddr.make_step(low=dac_offset - int(cc_val),
+                                                high=dac_offset + int(cc_val),
                                                 length=step_len) # 1.6 ms between edges
         if fc is not None:
             ddr.data_arrays[cc_ch] = butter_lowpass_filter(ddr.data_arrays[cc_ch], cutoff=fc, fs=2.5e6, order=1)
         if cc_delay !=0:
             ddr.data_arrays[cc_ch] = delayseq_interp(ddr.data_arrays[cc_ch], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
-   
-    # write channels to the DDR 
+
+    # write channels to the DDR
     g_buf = ddr.write_channels(set_ddr_read=False) # clear read, set write, etc. handled within write_channels
 
-    # reenable both DACs 
+    # reenable both DACs
     cmd_dac.set_data_mux("DDR")
     cc.set_data_mux("DDR")
     ddr.set_read()  # enable DAC playback and ADC reading
@@ -394,13 +398,11 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64, PLT_
     except OSError:
         pass
 
-    # ddr.adc_single()  #unnecessary since the read pointer is reset during DDR writes.
     ddr.set_adc_read()  # enable data into the ADC reading FIFO
     time.sleep(adc_readings*sample_rate*2)
 
 
-    # TODO: the first FIFO (or 1/2 FIFO) worth of data should be stale
-
+    # TODO: the first FIFO (or 1/2 FIFO) worth of data might be stale
     # Save ADC DDR data to a file
     with h5py.File(full_data_name, "w") as file:
         data_set = file.create_dataset("adc", (4, chunk_size), maxshape=(4, None))
@@ -429,6 +431,90 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64, PLT_
     print(f'Done with ADC reading: saved as {full_data_name}')
     return chan_data
 
+
+def tune_cc(data_dir, file_name, rf, ccomp):
+
+    PLT_DEBUG = True
+    cmd_impulse_scaling = 0x1d00
+    cc_impulse_scaling = 2600
+    idx = 0
+    # indices to measure impulse at
+
+    log_info, config_dict = clamp.configure_clamp(
+        ADC_SEL="CAL_SIG1",DAC_SEL="drive_CAL2",CCOMP=ccomp, RF1=2.1,  # feedback circuit
+        ADG_RES=rf,PClamp_CTRL=0,P1_E_CTRL=0,P1_CAL_CTRL=0,P2_E_CTRL=0,P2_CAL_CTRL=0,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,mode="voltage",EN_ipump=0,RF_1_Out=1,addr_pins_1=0b110,
+        addr_pins_2=0b000)
+
+    # cmd_scaling -- set to avoid saturation
+    set_cmd_cc(cmd_val=cmd_impulse_scaling, cc_scale=0, cc_delay=0, fc=None, step_len=16000)
+    time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
+    save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
+    cmd_impulse, t, t0 = get_impulse(data_dir, file_name.format(idx))
+
+    idx += 1
+    # cc_scaling -- set to avoid saturation (filename?)
+    set_cmd_cc(cmd_val=cmd_impulse_scaling, cc_scale=0, cc_delay=0, fc=None, step_len=16000)
+    time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
+    save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
+    cc_impulse, _,_ = get_impulse(data_dir, file_name.format(idx))
+
+    # flag warning if saturated
+    SAT_VAL = 30000
+    if any(np.abs(cmd_impulse) > SAT_VAL):
+        print(f'warning CMD impulse is over {SAT_VAL}')
+    if any(np.abs(cc_impulse) > SAT_VAL):
+        print(f'warning CC impulse is over {SAT_VAL}')
+
+    if PLT_DEBUG:
+        fig, ax = plt.subplots() # plot before normalizing by scaling so that
+        ax.plot(t,cmd_impulse, label='CMD impulse')
+        ax.plot(t,-cc_impulse, label='-CC impulse') #negate CC so its easier to compare
+
+    # create a step function
+    step_func = np.zeros(len(t))
+    step_func[t>t0] = 1
+    runt_idx = np.argmax(step_func>0.5)
+
+    # normalize impulse function
+    cmd_impulse = cmd_impulse/cmd_impulse_scaling
+    cc_impulse = cc_impulse/cc_impulse_scaling
+
+    bnds = ((-2, 2), (-5e-6, 5e-6),
+            (-2, 2), (2e3, 2.45e6), (-5e-6, 5e-6),
+            (-2, 2), (2e3, 2.45e6),(-5e-6, 5e-6),
+            (-2, 2), (2e3, 2.45e6), (-5e-6, 5e-6),
+            (-0.3, 0.3), (runt_idx-50, runt_idx+50), (runt_idx-20, runt_idx+80))
+    out_min = minimize(im_conv, x0=[0.5,0,
+                                    0.5, 100e3, 10e-6,
+                                    0.5,100e3, 0e-6,
+                                    0.5, 100e3, -10e-6,
+                                    0.1, runt_idx, runt_idx+30],
+                        args=(cmd_impulse, step_func, cc_impuse, step_func, adjust_step2), bounds=bnds, method='L-BFGS-B')
+
+    if PLT_DEBUG:
+        fig, ax = plt.subplots()
+        y = np.convolve(cmd_impulse, step_func, mode='valid') + np.convolve(cc_impulse, step_func, mode='valid')
+        t = np.linspace(0, (len(y) - 1)*SAMPLE_PERIOD, len(y))
+        ax.plot(t*1e6, y, 'b', label='CMD + CC; no tuning')
+        ax.plot(t*1e6, np.convolve(cmd_impulse, step_func, mode='valid') + \
+                np.convolve(cc_impulse, adjust_step2(out_min['x'], step_func), mode='valid'),
+                'r', label='CMD + CC; tuned')
+        ax.plot(t*1e6, np.convolve(cmd_impulse, step_func, mode='valid'), 'k', label='CMD only')
+        ax.legend()
+
+        fig, ax = plt.subplots()
+        ax.plot(t*1e6, step_func, 'k', label='CMD step')
+        ax.plot(t*1e6, adjust_step2(out_min['x'], step_func), 'm', label='CC step')
+        ax.legend()
+
+    # optimize cc function with given impulse responses (pass a given cc-creation function)
+    # adjust_step2(x, cc_func)
+    return out_min, adjust_step2(out_min['x'], step_func)
+    # tune cc function using experimental measurements -- create function
+
+
 def cc_search():
     output = pd.DataFrame()
 
@@ -442,7 +528,7 @@ def cc_search():
                 data = {}
                 file_name = f'cc_swp4_{idx}'
 
-                set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc) 
+                set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc)
                 time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
 
                 data['cc_scale'] = cc_scale
@@ -461,7 +547,7 @@ def cc_search():
                         print('retry')
                         num_tries += 1
                 if num_tries==5:
-                    raise ValueError('A very specific bad thing happened')      
+                    raise ValueError('A very specific bad thing happened')
 
                 data['peak_area'] = pa
                 data['peaks_found'] = num_found
@@ -470,9 +556,9 @@ def cc_search():
 
                 # general measure -- input measure type
                 for ch in [1,3,4]:
-                    rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch}) 
+                    rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch})
                     data[f'rise_{ch}'] = rt
-                    va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch}) 
+                    va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch})
                     data[f'amp_{ch}'] = va
 
                 # save a PNG screen-shot to host computer
@@ -489,11 +575,11 @@ def cc_search():
 
 SCOPE_SCREENSHOT = False
 
-def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000], 
+def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000],
                 ccomp_arr=[47,247,1047,4747,5900], file_name='rf_swp_{}'):
     output = pd.DataFrame()
 
-    # optimal cc parameters 
+    # optimal cc parameters
     cc_scale = -0.33
     cc_delay = 10e-6
     cc_fc = 15e3
@@ -528,12 +614,12 @@ def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000],
                     data['ccomp'] = ccomp
 
                     if cc_adj:
-                        set_cmd_cc(cmd_val = cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc,step_len=16000) 
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc,step_len=16000)
                         data['cc_scale'] = cc_scale
                         data['cc_delay'] = cc_delay
                         data['cc_fc'] = cc_fc
                     else:
-                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=0, fc=1e3, step_len=16000) 
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=0, fc=1e3, step_len=16000)
                         data['cc_scale'] = 0
                         data['cc_delay'] = 0
                         data['cc_fc'] = 1e3
@@ -543,7 +629,7 @@ def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000],
 
                     save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
                     t, adc_data = read_h5(os.path.join(data_dir, file_name.format(idx) + '.h5'), chan_list=[0])
- 
+
                     try:
                         pa, num_found = peak_area(t[64:], adc_data[0][64:])  # crop the first 64 since might be from stale FIFO
                     except:
@@ -555,9 +641,9 @@ def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000],
                     data['peaks_found'] = num_found
                     # general measure -- input measure type
                     for ch in [1,3,4]:
-                        rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch}) 
+                        rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch})
                         data[f'rise_{ch}'] = rt
-                        va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch}) 
+                        va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch})
                         data[f'amp_{ch}'] = va
 
                     if SCOPE_SCREENSHOT:
@@ -578,13 +664,13 @@ def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000],
     return output
 
 # enable only cmd or only cc to measure the step response (to get the impulse response)
-def step_responses(rf_arr=[10,33,100,332,3000,10000], 
-                    ccomp_arr=[47,247,1047,4747,5900], 
+def step_responses(rf_arr=[10,33,100,332,3000,10000],
+                    ccomp_arr=[47,247,1047,4747,5900],
                     cc_delay_arr = np.linspace(-5e-6,5e-6,16),
                     file_name='step_swp_{}'):
     output = pd.DataFrame()
 
-    # cc parameters 
+    # cc parameters
     cc_scale = 0
     cc_delay = 0
     cc_fc = 0
@@ -632,19 +718,18 @@ def step_responses(rf_arr=[10,33,100,332,3000,10000],
                             nums = None
                             cc_scale = 0
                             cc_val = 0
-                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16000, cc_val=cc_val, cc_pickle_num=nums) 
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16000, cc_val=cc_val, cc_pickle_num=nums)
                     else:
-                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16000, cc_val=cc_val) 
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16000, cc_val=cc_val)
                     data['cc_val'] = cc_val
                     data['cc_delay'] = cc_delay
                     data['cc_fc'] = cc_fc
                     data['cmd_val'] = cmd_val
 
                     time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
-
                     save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
                     t, adc_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=[0])
- 
+
                     try:
                         pa, num_found = peak_area(t[64:], adc_data[0][64:])  # crop the first 64 since might be from stale FIFO
                     except:
@@ -656,9 +741,9 @@ def step_responses(rf_arr=[10,33,100,332,3000,10000],
                     data['peaks_found'] = num_found
                     # general measure -- input measure type
                     for ch in [1,3,4]:
-                        rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch}) 
+                        rt = osc.get('meas', configs={'meas_type':'RIS', 'chan':ch})
                         data[f'rise_{ch}'] = rt
-                        va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch}) 
+                        va = osc.get('meas', configs={'meas_type':'VAMP', 'chan':ch})
                         data[f'amp_{ch}'] = va
 
                     if SCOPE_SCREENSHOT:
@@ -679,16 +764,18 @@ def step_responses(rf_arr=[10,33,100,332,3000,10000],
     return output
 
 def cc_comp():
-    
-    set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000, 
+
+    set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=[20,21])
 
     plt.plot(ddr.data_arrays[0])
     plt.plot(ddr.data_arrays[1])
 
 
+tune_cc(data_dir, 'test_tune_{}', 100, 47)
+
 """
-set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc) 
+set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc)
 save_adc_data(data_dir, file_name + '.h5', num_repeats = 2)
 t, adc_data = read_h5(os.path.join(data_dir, file_name + '.h5'), chan_list=[0])
 plt.plot(t, adc_data[0], marker = '.')
@@ -705,8 +792,8 @@ plt.close('all')
 """
 
 """
-step_responses(rf_arr=[332], 
-                    ccomp_arr=[47], 
+step_responses(rf_arr=[332],
+                    ccomp_arr=[47],
                     file_name='step_swp_delay5_{}',
                     cc_delay_arr = np.linspace(-800e-9,800e-9,16))
 

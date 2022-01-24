@@ -29,9 +29,9 @@ elif sys.platform == "win32":
     data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/{}{:02d}{:02d}')
 
 data_dir = data_dir_covg.format(2022, 1, 16)
-SAMPLE_RATE = 1 / 5e6
+SAMPLE_PERIOD = 1 / 5e6
 FS = 5e6
-
+ADC_CROP = 64
 
 def read_plot(data_dir, file_name, chan_list=[0], filter_bw=None, ax=None,
               clr='b', lbl=None, scaling = 1):
@@ -105,7 +105,7 @@ def read_h5(data_dir, file_name, chan_list=[0]):
     adc_data = {}
     with h5py.File(data_name, "r") as file:
         dset = file["adc"]
-        t = np.arange(len(dset[0, :])) * SAMPLE_RATE
+        t = np.arange(len(dset[0, :])) * SAMPLE_PERIOD
         for ch in chan_list:
             adc_data[ch] = dset[ch, :]
     return t, adc_data
@@ -203,7 +203,7 @@ def peak_area(t, data, th=5, distance=10000):
     t_peaks, idx_pk, results = find_peak(t, data, th=th, distance=distance)
     # distance of 10000 corresponds to 2 ms at 5 MSPS
     # integrate over a span of the peaks
-    span = int(200e-6/SAMPLE_RATE)
+    span = int(200e-6/SAMPLE_PERIOD)
     peak_area = np.array([])
     for ix in idx_pk:
         peak_area = np.append(peak_area, np.sum(np.abs(data[(ix-span):(ix+span)])))
@@ -231,144 +231,34 @@ def idx_timerange(t, tlow, thigh):
     return idx
 
 
-if __name__ == '__main__':
+def get_impulse(data_dir, filename, t_offset_idx=ADC_CROP, t0=6400e-6, tl_tr=(-150e-6, 200e-6),fc=None):
+    """ get the impulse of an Im trace by calculating the derivative
+    """
+    t, adc_data = read_h5(data_dir, filename.format(num) + '.h5', chan_list=[0])
+    t=t[ADC_CROP:]
+    adc_data[0]=adc_data[0][ADC_CROP:]
 
-    analysis_type =['summary_stats']
-    filename = 'cc_swp4'
-    # analysis examples
+    idx_signal = idx_timerange(t, t0 + tl_tr[0], t0 + tl_tr[1])
+    y = adc_data[0][idx_signal]
 
-    if 'im_noise' in analysis_type:
-        file_name = 'cc_swp_0.h5'
-        t, adc = read_h5(data_dir_covg.format(2022, 1, 7), file_name, [0,1])
-        ax = plot_adc(t, adc[0])
-        filt_data = butter_lowpass_filter(adc[0], 1e6, 5e6, order=5)
-        ax = plot_adc(t, filt_data)
-        filt_data = butter_lowpass_filter(adc[0], 20e3, 5e6, order=5)
-        plot_adc(t, filt_data)
+    if fc is not None:
+        y = butter_lowpass_filter(y, cutoff=fc, fs=FS, order=5)
 
-    if 'im_movie' in analysis_type:
-        import time
-        for i in range(24):
-            read_plot(data_dir, f'cc_swp_{i}.h5', filter_bw=[None])
-            plt.show()
-            plt.pause(0.01)
-            time.sleep(2)
-            plt.close('all')
+    #  the Wiener deconvolution adds noise to the denominator so that the result doesn't explode.
+    # imp_resp_w = wiener_deconvolution(y, step_func)[:(len(y)-len(step_func) + 1)]
+    # imp_resp_w = wiener_deconvolution(y, step_func)[:(248)]
 
-    if 'summary_stats' in analysis_type:
-
-        # load CSV summary as Pandas dataframe
-        csv_summary = glob.glob(os.path.join(data_dir, f'{filename}_*.csv'))[0]
-        output = pd.read_csv(csv_summary)
+    # An FFT-based deconvolution of a step response is fraught since the step response has a
+    #  low information FFT. Large at f=0 and then constant at all other frequencies.
+    #  seems better to simply take the derivative ... this gives the impulse response
+    imp_resp_d = np.gradient(y, t[1]-t[0])
+    return imp_resp_d, t[idx_signal], t0
 
 
-        # use 7e5 as lowest peak area without acquisition issue
-        min_peakarea_ok = 7e4
-        idx = output.peak_area > min_peakarea_ok
-
-        # plot trace with minimum peak area
-        min_pa = output[idx].peak_area.min()
-        min_row = output[output.peak_area == min_pa]
-        ax, adc_data, t = read_plot(data_dir, min_row.filename.item() + '.h5', chan_list=[0], filter_bw=None, ax=None, clr='b')
-        ax.set_title('Minimum peak area')
-
-        max_pa = output[idx].peak_area.max()
-        max_row = output[output.peak_area == max_pa]
-        ax, adc_data, t = read_plot(data_dir, max_row.filename.item() + '.h5', chan_list=[0], filter_bw=None, ax=None, clr='b')
-        ax.set_title('Maximum peak area')
-
-        def find_nearest(array, value):
-            array = np.asarray(array)
-            idx = (np.abs(array - value)).argmin()
-            return array[idx]
-
-        def find_closest_row(target_dict):
-
-            idx = output['peak_area'] > min_peakarea_ok
-            print(f'Length of index = {np.sum(idx)}')
-
-            for k in target_dict:
-                unq = np.unique(output[idx][k])
-                c = find_nearest(unq, target_dict[k])
-                idx = idx & (output[k] == c)
-                print(f'Length of index = {np.sum(idx)}')
-            return idx
-
-        def plot_one_vs(x_var='cc_scale', x_var_label='CC scaling', leg_var='cc_delay',
-                        other_var='cc_fc', y_var='peak_area'):
-            # vary cc_scale at constant delay and fc
-            # y-axis: peak_area
-            # x-axis: cc_scale
-            # legend: cc_delay
-            # other: cc_fc at midpoint
-            scaling = 4e-3
-
-            idx = output['peak_area'] > min_peakarea_ok
-            leg_var_unq = np.unique(output[leg_var])
-            leg_var_unq_mid = leg_var_unq[len(leg_var_unq)//2]
-
-            min_row = output[output.peak_area == min_pa]
-            other_var_val = min_row[other_var].item()
-            print(f'Found {other_var} value of {other_var_val} at minimum row')
-
-            idx_other = idx & (output[other_var] == other_var_val)
-            colors = iter(plt.cm.rainbow(np.linspace(0, 1, len(leg_var_unq))))
-            fig, ax = plt.subplots()
-            for leg_var_val in leg_var_unq:
-                idx_subset = idx_other & (output[leg_var] == leg_var_val)
-                lbl = leg_var + ' = {:0.2g}'.format(leg_var_val)
-                ax.plot(output[idx_subset][x_var], output[idx_subset][y_var]*scaling,
-                        marker='*', linestyle='None', color=next(colors), label=lbl)  # uC
-
-            ax.set_ylabel('Area of |Im| $\mu$C')
-            ax.set_xlabel(f'{x_var_label}')
-            ax.legend()
-            plt.savefig(os.path.join(data_dir, f'fig_{y_var}_vs_{x_var}'))
-
-    if 'trace_comparison' in analysis_type:
-        colors = iter(plt.cm.rainbow(np.linspace(0, 1, np.sum(idx))))
-        fn = output[idx].filename
-        cc_scale = output[idx].cc_scale
-        ax, adc_data, t = read_plot(data_dir, fn.iloc[0] + '.h5', chan_list=[0], filter_bw=None, ax=None, clr=next(colors), lbl='cc = {:.2f}'.format(cc_scale.iloc[0]))
-        for f, cc_s in zip(fn[1:], cc_scale[1:]):
-            ax, adc_data, t = read_plot(data_dir, f + '.h5', chan_list=[0], filter_bw=None, ax=ax, clr=next(colors), lbl='cc = {:.2f}'.format(cc_s),
-            scaling = 4)
-        ax.legend()
-        ax.set_xlim([1400, 3000])
-        plt.savefig(os.path.join(data_dir, 'fig_vary_ccscale'))
-
-        # vary delay at constant fc and scale
-        idx = output.peak_area > 7e5
-        cc_scale = np.unique(output.cc_scale)
-        cc_scale_mid = cc_scale[3]
-        # ('cc_scale', min_row.cc_scale.item())
-        for col in [('cc_scale', cc_scale_mid), ('cc_fc', min_row.cc_fc.item())]:
-            idx = idx & (output[col[0]] == col[1])
-
-        fig, ax = plt.subplots()
-        ax.plot(output[idx].cc_delay, output[idx].peak_area*4e-3, marker='*')  # uC
-        ax.set_ylabel('Area of |Im| $\mu$C')
-        ax.set_xlabel('CC delay')
-        plt.savefig(os.path.join(data_dir, 'fig_area_vs_ccdelay'))
-
-        colors = iter(plt.cm.rainbow(np.linspace(0, 1, np.sum(idx))))
-        fn = output[idx].filename
-        cc_delay = output[idx].cc_delay
-        ax, adc_data, t = read_plot(data_dir, fn.iloc[0] + '.h5', chan_list=[0], filter_bw=None, ax=None, clr=next(colors), lbl='cc = {:.2f}'.format(cc_delay.iloc[0]))
-        for f, cc_s in zip(fn[1:], cc_delay[1:]):
-            ax, adc_data, t = read_plot(data_dir, f + '.h5', chan_list=[0], filter_bw=None, ax=ax, clr=next(colors), lbl='delay = {:.2f}'.format(cc_s*1e6),
-            scaling = 4)
-        ax.legend()
-        ax.set_xlim([1400, 3000])
-        plt.savefig(os.path.join(data_dir, 'fig_vary_ccdelay'))
-
-
-    # read in all h5 in data_dir and determine peak-area
-    if 'plot_all_im' in analysis_type:
-        # ax, adc_data, t = read_plot(os.path.join(data_dir, f'cc_swp_{i}.h5'), filter_bw=[None])
-        h5_files = glob.glob(os.path.join(data_dir, '*.h5'))
-        pa_arr = np.array([])
-        for hf in h5_files:
-            t, adc_data = read_h5(data_dir, hf.split('/')[-1], chan_list=[0])
-            pa, num_found = peak_area(t, adc_data[0])
-            pa_arr = np.append(pa_arr, pa)
+def im_conv(x, cmd_impulse, cmd_step, cc_impulse, cc_step, adjust_func):
+    """ convolve the impulse function with a step function after adjusting the step function
+    that is applied to the cc impulse function
+    return the sum of the absolute value of the current
+    """
+    cc_step_adj = adjust_func(x, cc_step)  # adjust_step, adjust_step2
+    return np.sum(np.abs(np.convolve(cmd_impulse, cmd_step, mode='valid') + np.convolve(cc_impulse, cc_step_adj, mode='valid')))
