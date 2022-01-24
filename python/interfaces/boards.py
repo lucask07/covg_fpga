@@ -10,8 +10,9 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 from interfaces.interfaces import *
-from interfaces.interfaces import Endpoint
-from interfaces.utils import reverse_bits, test_bit
+from interfaces.interfaces import Endpoint, DDR3
+from interfaces.utils import reverse_bits, test_bit, calc_impedance
+from scipy.fft import rfftfreq
 
 # Assign I2CDAQ busses
 Endpoint.I2CDAQ_level_shifted = Endpoint.get_chip_endpoints('I2CDAQ')
@@ -416,6 +417,11 @@ class Daq:
 
     Attributes
     ----------
+    fpga : FPGA
+        The FPGA instance the DAQ board communicates with. This should be
+        initiated with init_device() outside the Daq class.
+    ddr : DDR3
+        The DDR instance used to write hardware driven signals to chips.
     TCA_0 : TCA9555
         First I/O Expander controlling DAC output gain.
     TCA_1 : TCA9555
@@ -442,6 +448,7 @@ class Daq:
                  DAC_addr_pins=0b000
                  ):
         self.fpga = fpga
+        self.ddr = DDR3(fpga=self.fpga)
         self.serial_number = None  # Will get serial code from UID chip in setup()
         # I2C
         self.TCA = TCA9555.create_chips(fpga=fpga, addr_pins=[TCA_addr_pins_0, TCA_addr_pins_1], endpoints=Endpoint.I2CDAQ_QW)
@@ -533,6 +540,118 @@ class Daq:
         gain = feedback / self.parameters["dac_resistors"]["input"]
         print(f"Expected gain of {gain}")
         return gain
+
+    def test_impedance(self, frequency, resistance, amplitude, dac80508_num=1, dac80508_chan=4, ads8686_chan='A5'):
+        """Calculate the impedance of a component that is in series with the given resistance.
+        
+        Uses DDR, DAC80508 to send input voltage, ADS8686 to read output voltage.
+        
+        Arguments
+        ---------
+        frequency : float
+            The test frequency in Hertz to use for the input voltage sine wave.
+        resistance : float
+            The resistance in Ohms of the resistor in series with the unknown impedance.
+        amplitude : float
+            The voltage amplitude of the sign wave. The sine wave will end up
+            shifted so all points are positive, but the amplitude will remain
+            the same. Because of the shift, amplitude must be 0.0-2.5V.
+        dac80508_num : int
+            The number of the DAC80508 to use. Expecting 1 or 2 matching with https://github.com/lucask07/open_covg_daq_pcb/blob/main/docs/covg_daq_v2.pdf.
+        dac80508_chan : int
+            The output channel to send the input voltage on. Expecting 0-7.
+        ads8686_chan : str
+            The input channel to receive the output voltage on. Expecting "A0"-"A7" or "B0"-"B7"
+
+        Returns
+        -------
+        numpy.complex128 : the calculated impedance value at the test frequency.
+        """
+
+        dac80508_offset = 0x8000
+
+        # --- Configure DAC80508 for DDR driven ---
+        self.DAC_gp[dac80508_num - 1].set_spi_sclk_divide(0x8)
+        self.DAC_gp[dac80508_num - 1].set_ctrl_reg(0x3218)
+        self.DAC_gp[dac80508_num - 1].set_config_bin(0x00)
+        self.DAC_gp[dac80508_num - 1].set_gain(gain=1, outputs=[4], divide_reference=False)
+        self.DAC_gp[dac80508_num - 1].set_data_mux('DDR')
+        # Change gain and reference divider for DAC80508 to get maximum precision
+        # Check (amplitude * 2) because we will shift all values up since DAC80508 cannot output negative values
+        if (amplitude * 2) <= 1.25:
+            gain = 1
+            divide_reference = True
+            voltage_range = 1.25
+        elif (amplitude * 2) <= 2.5:
+            # *2 and /2 is recommended instead of *1 and /1
+            gain = 2
+            divide_reference = True
+            voltage_range = 2.5
+        elif (amplitude * 2) <= 5:
+            gain = 2
+            divide_reference = False
+            voltage_range = 5
+        else:
+            print(f'WARNING: cannot use amplitude {amplitude}V, limiting to maximum 2.5V')
+        self.DAC_gp[dac80508_num - 1].set_gain(gain=gain, outputs=dac80508_chan, divide_reference=divide_reference)
+
+        # --- Configure ADS8686 for read on specified channel ---
+        # TODO: copy from ads8686_sine_read.py after confirming that file still works after the SPIFifoDriven change
+
+        # --- Generate input voltage signal ---
+        amplitude_code = from_voltage(voltage=amplitude, num_bits=16, voltage_range=voltage_range, with_negatives=False)
+        v_in_code, actual_freq = self.ddr.make_sine_wave(
+            amplitude=amplitude_code, frequency=frequency, offset=dac80508_offset, actual_frequency=True)
+
+        # --- Send input signal ---
+        # Last 2 bits of first array are first 2 bits of channel for DAC1
+        # Second-to-last bit of second array is last bit of channel for DAC1
+        # Same for third and fourth arrays but with DAC2
+        # dac80508_num should be 1 or 2
+
+        # Clear channel bits
+        self.ddr.data_arrays[2 * (dac80508_num - 1)] = np.bitwise_and(self.ddr.data_arrays[2 * (dac80508_num - 1)], 0x3fff)
+        self.ddr.data_arrays[2 * (dac80508_num - 1) + 1] = np.bitwise_and(self.ddr.data_arrays[2 * (dac80508_num - 1) + 1], 0x3fff)
+        # Set channel bits
+        self.ddr.data_arrays[2 * (dac80508_num - 1)] = np.bitwise_or(self.ddr.data_arrays[2 * (dac80508_num - 1)], (dac80508_chan & 0b110) << 13)
+        self.ddr.data_arrays[2 * (dac80508_num - 1) + 1] = np.bitwise_or(self.ddr.data_arrays[2 * (dac80508_num - 1) + 1], (dac80508_chan & 0b001) << 14)
+        # Last 2 arrays (of 8) are for DAC80508 1 and 2 data only
+        self.ddr.data_arrays[5 + dac80508_num] = v_in_code
+        self.ddr.write_channels()
+
+        # --- Read ouput voltage signal ---
+        # TODO: copy from ads8686_sine_read.py after confirming that file still works after the SPIFifoDriven change
+        v_out_code = v_in_code  # TODO: remove after above todo
+
+        # --- Match up signals ---
+        # TODO: how do we match up our input and output signals?
+        # Remove offset
+        v_in_code = v_in_code - dac80508_offset
+        # TODO: do we need to adjust because the ADS8686 will read in the signal, which is different from the DAC80508?
+        v_out_code = v_out_code - dac80508_offset
+
+        # --- Calculate impedance across frequencies ---
+        # Convert back to voltage
+        v_in_voltage = to_voltage(data=v_in_code, num_bits=16, voltage_range=voltage_range, use_twos_comp=False)
+        # TODO: fix below for ADS8686 use after testing
+        v_out_voltage = to_voltage(data=v_out_code, num_bits=16, voltage_range=voltage_range, use_twos_comp=False)
+        # TODO: remove below when complete; only for testing
+        v_out_voltage = [0.5 * x for x in v_out_voltage] # Should result in an impedance equal to resistance parameter
+        impedance_arr = calc_impedance(v_in=v_in_voltage, v_out=v_out_voltage, resistance=resistance)
+
+        # --- Set up x frequencies ---
+        x_freq = rfftfreq(self.ddr.parameters['sample_size'], self.ddr.parameters['update_period'])
+
+        # --- Find nearest x frequency to input frequency ---
+        desired_index = 0
+        for f in x_freq:
+            if f < actual_freq:
+                desired_index += 1
+            else:
+                break
+
+        # --- Return impedance at that frequency ---
+        return impedance_arr[desired_index]
 
     class Power:
 
