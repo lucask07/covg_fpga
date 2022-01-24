@@ -17,7 +17,7 @@ from interfaces.utils import reverse_bits, test_bit
 Endpoint.I2CDAQ_level_shifted = Endpoint.get_chip_endpoints('I2CDAQ')
 # We want the endpoints_from_defines to be the same so in_place=False to use a copy when incrementing
 Endpoint.I2CDAQ_QW = Endpoint.increment_endpoints(
-    endpoints_dict=Endpoint.endpoints_from_defines['I2CDAQ'], in_place=False)
+    endpoints_dict=Endpoint.I2CDAQ_level_shifted, in_place=False)
 
 
 class Clamp:
