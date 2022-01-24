@@ -51,8 +51,18 @@ analysis_type =['deconvolve']
 #analysis_type = ['im_noise']
 #analysis_type = ['im_vs_rf_plot']
 #analysis_type = ['rf_swp']
-#analysis_type = None
+analysis_type = ['none']
 # analysis examples
+
+def adjust_step_delay(x, cc_step_func):
+    cc_step_adj = delayseq_interp(cc_step_func, x[0], FS)
+    return cc_step_adj
+
+def adjust_step_scale(x, cc_step_func):
+    cc_step_adj = cc_step_func*x[0]
+    return cc_step_adj
+
+
 
 def adjust_step(x, cc_step_func):
     """

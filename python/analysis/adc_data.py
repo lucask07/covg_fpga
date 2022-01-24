@@ -234,9 +234,13 @@ def idx_timerange(t, tlow, thigh):
 def get_impulse(data_dir, filename, t_offset_idx=ADC_CROP, t0=6400e-6, tl_tr=(-150e-6, 200e-6),fc=None):
     """ get the impulse of an Im trace by calculating the derivative
     """
-    t, adc_data = read_h5(data_dir, filename.format(num) + '.h5', chan_list=[0])
+    t, adc_data = read_h5(data_dir, filename + '.h5', chan_list=[0])
     t=t[ADC_CROP:]
     adc_data[0]=adc_data[0][ADC_CROP:]
+
+    SAT_VAL = 30000
+    if any(np.abs(adc_data[0]) > SAT_VAL):
+        print(f'warning {filename} impulse is over {SAT_VAL}')
 
     idx_signal = idx_timerange(t, t0 + tl_tr[0], t0 + tl_tr[1])
     y = adc_data[0][idx_signal]
