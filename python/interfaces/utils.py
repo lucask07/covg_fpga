@@ -227,7 +227,7 @@ def calc_impedance(v_in, v_out, resistance):
 
     Returns
     -------
-    
+    numpy.ndarray : the array of impedances calculated.
     """
 
     current = np.subtract(v_in, v_out) / resistance
