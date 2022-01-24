@@ -51,8 +51,59 @@ analysis_type =['deconvolve']
 #analysis_type = ['im_noise']
 #analysis_type = ['im_vs_rf_plot']
 #analysis_type = ['rf_swp']
-analysis_type = None
+#analysis_type = None
 # analysis examples
+
+def adjust_step(x, cc_step_func):
+    """
+        a scale and a delay + 4 low-pass + 2 high pass + a runt
+    """
+
+    cc_step_adj = delayseq_interp(cc_step_func*x[0], x[1], FS)
+
+    for idx in range(6):
+        j=idx*3
+        if idx < 2:
+            order = 1
+            cc_step_adj += delayseq_interp(butter_lowpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
+        if idx < 4:
+            order = 2
+            cc_step_adj += delayseq_interp(butter_lowpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
+        else:
+            order = 4
+            cc_step_adj += delayseq_interp(butter_highpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
+
+    # add a runt: scale, width, location
+    runt = np.zeros(len(cc_step_adj))
+    runt[int(x[-2]):int(x[-1])] = x[-3]  # initialize guess 0.1, location of step_func start, 6 us = 30 indices
+    cc_step_adj += runt
+    return cc_step_adj
+
+def adjust_step2(x, cc_step_func):
+    """
+        a scale and a delay + 2 low-pass + 1 high pass + a runt
+    """
+    cc_step_adj = delayseq_interp(cc_step_func*x[0], x[1], FS)
+
+    for idx in range(3):
+        j=idx*3
+        if idx < 1:
+            order = 1
+            cc_step_adj += delayseq_interp(butter_lowpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
+        if idx < 2:
+            order = 4
+            cc_step_adj += delayseq_interp(butter_lowpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
+        else:
+            order = 2
+            cc_step_adj += delayseq_interp(butter_highpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
+
+    # add a runt: scale, width, location
+    runt = np.zeros(len(cc_step_adj))
+    runt[int(x[-2]):int(x[-1])] = x[-3]  # initialize guess 0.1, location of step_func start, 6 us = 30 indices
+    cc_step_adj += runt
+
+    return cc_step_adj
+
 
 if 'im_noise_v0' in analysis_type:
     file_name = 'cc_swp_0.h5'
@@ -338,49 +389,6 @@ if 'deconvolve' in analysis_type:
         alpha_cmd, step_func, step_func_fullbw = get_impulse(nums[0])
         beta_cc, _, _ = get_impulse(nums[1])
 
-        def adjust_step(x, cc_step_func):
-            cc_step_adj = delayseq_interp(cc_step_func*x[0], x[1], FS)
-
-            for idx in range(6):
-                if idx < 2:
-                    j=idx*3
-                    order = 1
-                    cc_step_adj += delayseq_interp(butter_lowpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
-                if idx < 4:
-                    order = 2
-                    cc_step_adj += delayseq_interp(butter_lowpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
-                else:
-                    order = 2
-                    cc_step_adj += delayseq_interp(butter_highpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
-
-            # add a runt: scale, width, location
-            runt = np.zeros(len(cc_step_adj))
-            runt[int(x[-2]):int(x[-1])] = x[-3]  # initialize guess 0.1, location of step_func start, 6 us = 30 indices
-            cc_step_adj += runt
-            return cc_step_adj
-
-        def adjust_step2(x, cc_step_func):
-            cc_step_adj = delayseq_interp(cc_step_func*x[0], x[1], FS)
-
-            for idx in range(3):
-                j=idx*3
-                if idx < 1:
-                    order = 1
-                    cc_step_adj += delayseq_interp(butter_lowpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
-                if idx < 2:
-                    order = 2
-                    cc_step_adj += delayseq_interp(butter_lowpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
-                else:
-                    order = 3
-                    cc_step_adj += delayseq_interp(butter_highpass_filter(cc_step_func, cutoff=x[j+3], fs=FS, order=order)*x[j+2], x[j+4], FS)
-
-            # add a runt: scale, width, location
-            runt = np.zeros(len(cc_step_adj))
-            runt[int(x[-2]):int(x[-1])] = x[-3]  # initialize guess 0.1, location of step_func start, 6 us = 30 indices
-            cc_step_adj += runt
-
-            return cc_step_adj
-
         def im_conv(x, cc_step_func):
             """ convolve the impulse function with a step function after adjusting the step function
             that is applied to the cc impulse function
@@ -408,7 +416,7 @@ if 'deconvolve' in analysis_type:
         # im_conv([0,100e3,0,100e3,0,1.3], step_func)
         # deconvolution is messy -- optimize the step_func that is convolved with beta_cc
         OPTIMIZE = False
-        HOP = True
+        HOP = False
 
         if OPTIMIZE:
             runt_idx = np.argmax(step_func_fullbw>0.5)
