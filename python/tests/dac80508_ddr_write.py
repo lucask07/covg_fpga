@@ -20,7 +20,7 @@ top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
 
 from interfaces.interfaces import DDR3, FPGA, DAC80508, AD5453
 from interfaces.boards import Daq
-from interfaces.utils import to_voltage, from_voltage, calc_impedance
+from interfaces.utils import from_voltage
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
 
@@ -105,17 +105,17 @@ sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=tar
 sdac_1_out_chan = 0
 sdac_2_out_chan = 0
 # Clear channel bits
-np.logical_and(np.full(shape=np.shape(fdac_sine), fill_value=0x3fff), fdac_sine)
-# Set channel bits
-# two_bit_pieces = [(sdac_1_out_chan & 0b011) << 14, ((sdac_1_out_chan & 0b100) | (sdac_2_out_chan & 0b001)) << 14, (sdac_2_out_chan & 0b100) << 14]
-# two_bit_list = two_bit_pieces * int(len(fdac_sine) // len(two_bit_pieces))
-# two_bit_array = np.array(two_bit_list + two_bit_list[:len(fdac_sine) - len(two_bit_list)])
-# fdac_sine = np.logical_or(fdac_sine, two_bit_array)
+np.bitwise_and(np.full(shape=np.shape(fdac_sine), fill_value=0x3fff), fdac_sine)
 
 # Load data into DDR
-for i in range(6):
-    ddr.data_arrays[i] = fdac_sine
+# Set channel bits
+ddr.data_arrays[0] = np.bitwise_or(fdac_sine, (sdac_1_out_chan & 0b110) << 13)
+ddr.data_arrays[1] = np.bitwise_or(fdac_sine, (sdac_1_out_chan & 0b001) << 14)
+ddr.data_arrays[2] = np.bitwise_or(fdac_sine, (sdac_2_out_chan & 0b110) << 13)
+ddr.data_arrays[3] = np.bitwise_or(fdac_sine, (sdac_2_out_chan & 0b001) << 14)
+for i in range(2):
+    ddr.data_arrays[i + 4] = fdac_sine
 for i in range(2):
     ddr.data_arrays[i + 6] = sdac_sine
 
-g_buf = ddr.write_channels()
+ddr.write_channels()
