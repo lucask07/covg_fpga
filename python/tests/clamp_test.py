@@ -462,8 +462,10 @@ def tune_cc(data_dir, file_name, rf, ccomp):
 
     if PLT_DEBUG:
         fig, ax = plt.subplots() # plot before normalizing by scaling so that
-        ax.plot(t,cmd_impulse, label='CMD impulse')
-        ax.plot(t,-cc_impulse, label='-CC impulse') #negate CC so its easier to compare
+        ax.plot(t, cmd_impulse, label='h_{CMD}')
+        ax.plot(t, cc_impulse, label='h_{CC}') #negate CC so its easier to compare
+        ax.set_xlim([t0-50e-6, t0+100e-6])
+        fig.savefig(os.path.join(data_dir, 'impulse_response_rf{}_cc{}_.png'.format(rf, ccomp)))
 
     # create a step function
     step_func = np.zeros(len(t))
@@ -515,15 +517,17 @@ def tune_cc(data_dir, file_name, rf, ccomp):
                 'r', label='CMD + CC; tuned')
         ax.plot(t_im*1e6, np.convolve(cmd_impulse, step_func, mode='same'), 'k', label='CMD only')
         ax.legend()
+        fig.savefig(os.path.join(data_dir, 'im_result_rf{}_cc{}_.png'.format(rf, ccomp)))
 
         fig, ax = plt.subplots()
         ax.plot(t*1e6, step_func, 'k', label='CMD step')
         ax.plot(t*1e6, new_cc_step, 'm', label='CC step')
         ax.legend()
+        fig.savefig(os.path.join(data_dir, 'step_functions_rf{}_cc{}_.png'.format(rf, ccomp)))
 
     # optimize cc function with given impulse responses (pass a given cc-creation function)
     # adjust_step2(x, cc_func)
-    return out_min, new_cc_step, out_min_dly
+    return out_min, new_cc_step, step_func, out_min_dly
     # tune cc function using experimental measurements -- create function
 
 
