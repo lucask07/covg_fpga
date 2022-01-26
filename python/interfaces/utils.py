@@ -131,7 +131,7 @@ def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
         # the method on every element in the list.
         return [to_voltage(data=x, num_bits=num_bits, voltage_range=voltage_range, use_twos_comp=use_twos_comp) for x in data]
     elif type(data) is np.ndarray:
-        return [to_voltage(data=x, num_bits=num_bits, voltage_range=voltage_range, use_twos_comp=use_twos_comp) for x in [int(k) for k in list(data)]]
+        return [to_voltage(data=int(x), num_bits=num_bits, voltage_range=voltage_range, use_twos_comp=use_twos_comp) for x in data]
     elif type(data) is int or type(data) is np.uint16:
         # Determine the voltage represented by a single bit
         bit_voltage = voltage_range / (2 ** num_bits)

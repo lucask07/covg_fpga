@@ -13,6 +13,8 @@ from interfaces.interfaces import *
 from interfaces.interfaces import Endpoint, DDR3
 from interfaces.utils import reverse_bits, test_bit, calc_impedance
 from scipy.fft import rfftfreq
+import matplotlib.pyplot as plt
+import time
 
 # Assign I2CDAQ busses
 Endpoint.I2CDAQ_level_shifted = Endpoint.get_chip_endpoints('I2CDAQ')
@@ -460,7 +462,7 @@ class Daq:
         self.DAC_gp = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
         self.DAC = AD5453.create_chips(fpga=fpga, number_of_chips=6)
         #self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
-        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)
+        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)[0]
         self.ADC = AD7961.create_chips(fpga=fpga, number_of_chips=4)
 
         self.parameters = {}
@@ -541,7 +543,7 @@ class Daq:
         print(f"Expected gain of {gain}")
         return gain
 
-    def test_impedance(self, frequency, resistance, amplitude, dac80508_num=1, dac80508_chan=4, ads8686_chan='A5'):
+    def test_impedance(self, frequency, resistance, amplitude, dac80508_num=1, dac80508_chan=4, ads8686_chan='A5', plot=False):
         """Calculate the impedance of a component that is in series with the given resistance.
         
         Uses DDR, DAC80508 to send input voltage, ADS8686 to read output voltage.
@@ -565,17 +567,17 @@ class Daq:
 
         Returns
         -------
-        numpy.complex128 : the calculated impedance value at the test frequency.
+        numpy.complex128, float : the calculated impedance, the calculated frequency that impedance was found at. 
         """
 
         dac80508_offset = 0x8000
 
         # --- Configure DAC80508 for DDR driven ---
+        # TODO: switch this from AD5453 to DDR3 method
+        self.DAC[0].set_clk_divider(divide_value=0x50)  # Need in order to set frequency of input wave correctly
         self.DAC_gp[dac80508_num - 1].set_spi_sclk_divide(0x8)
         self.DAC_gp[dac80508_num - 1].set_ctrl_reg(0x3218)
         self.DAC_gp[dac80508_num - 1].set_config_bin(0x00)
-        self.DAC_gp[dac80508_num - 1].set_gain(gain=1, outputs=[4], divide_reference=False)
-        self.DAC_gp[dac80508_num - 1].set_data_mux('DDR')
         # Change gain and reference divider for DAC80508 to get maximum precision
         # Check (amplitude * 2) because we will shift all values up since DAC80508 cannot output negative values
         if (amplitude * 2) <= 1.25:
@@ -594,9 +596,19 @@ class Daq:
         else:
             print(f'WARNING: cannot use amplitude {amplitude}V, limiting to maximum 2.5V')
         self.DAC_gp[dac80508_num - 1].set_gain(gain=gain, outputs=dac80508_chan, divide_reference=divide_reference)
+        self.DAC_gp[dac80508_num - 1].set_data_mux('DDR')
 
         # --- Configure ADS8686 for read on specified channel ---
-        # TODO: copy from ads8686_sine_read.py after confirming that file still works after the SPIFifoDriven change
+        self.ADC_gp.hw_reset(val=False)
+        self.ADC_gp.set_host_mode()
+        self.ADC_gp.setup()
+        self.ADC_gp.set_range(5)
+        self.ADC_gp.set_lpf(376)
+        ads8686_chan = ads8686_chan.upper()
+        chan_list = (ads8686_chan[1], 'FIXED') if ads8686_chan[0] == 'A' else ('FIXED', ads8686_chan[1])
+        codes = self.ADC_gp.setup_sequencer(chan_list=[chan_list])
+        self.ADC_gp.write_reg_bridge()
+        self.ADC_gp.set_fpga_mode()
 
         # --- Generate input voltage signal ---
         amplitude_code = from_voltage(voltage=amplitude, num_bits=16, voltage_range=voltage_range, with_negatives=False)
@@ -620,38 +632,58 @@ class Daq:
         self.ddr.write_channels()
 
         # --- Read ouput voltage signal ---
-        # TODO: copy from ads8686_sine_read.py after confirming that file still works after the SPIFifoDriven change
-        v_out_code = v_in_code  # TODO: remove after above todo
+        throw_away = 15
+        for i in range(throw_away):
+            v_out_code = self.ADC_gp.stream_mult(twos_comp_conv=False)['B']
 
         # --- Match up signals ---
         # TODO: how do we match up our input and output signals?
-        # Remove offset
-        v_in_code = v_in_code - dac80508_offset
-        # TODO: do we need to adjust because the ADS8686 will read in the signal, which is different from the DAC80508?
-        v_out_code = v_out_code - dac80508_offset
+
+        # Closest integer ratio of input:output voltage data indices that keeps the same time period is 99:8
+        v_out_code = v_out_code[::8]
+        v_in_code = v_in_code[::99][:len(v_out_code)]
+
+        # TODO: remove offset?
 
         # --- Calculate impedance across frequencies ---
         # Convert back to voltage
         v_in_voltage = to_voltage(data=v_in_code, num_bits=16, voltage_range=voltage_range, use_twos_comp=False)
-        # TODO: fix below for ADS8686 use after testing
-        v_out_voltage = to_voltage(data=v_out_code, num_bits=16, voltage_range=voltage_range, use_twos_comp=False)
-        # TODO: remove below when complete; only for testing
-        v_out_voltage = [0.5 * x for x in v_out_voltage] # Should result in an impedance equal to resistance parameter
+        v_out_voltage = to_voltage(data=v_out_code, num_bits=16, voltage_range=10, use_twos_comp=True)
         impedance_arr = calc_impedance(v_in=v_in_voltage, v_out=v_out_voltage, resistance=resistance)
 
         # --- Set up x frequencies ---
-        x_freq = rfftfreq(self.ddr.parameters['sample_size'], self.ddr.parameters['update_period'])
+        x_freq = rfftfreq(len(v_in_voltage), self.ddr.parameters['update_period'] * 99)
 
         # --- Find nearest x frequency to input frequency ---
-        desired_index = 0
-        for f in x_freq:
-            if f < actual_freq:
-                desired_index += 1
-            else:
-                break
+        distances_from_actual = [abs(x - actual_freq) for x in x_freq]
+        desired_index = distances_from_actual.index(min(distances_from_actual))
+        frequency_found = x_freq[desired_index]
+
+        # --- Optionally plot input and output ---
+        if plot:
+            x = [i * self.ddr.parameters['update_period'] * 99 for i in range(len(v_in_voltage))]
+
+            # First, codes
+            plt.plot(x, v_in_code, c='b', label='v_in')
+            plt.plot(x, v_out_code, c='r', label='v_out')
+            plt.legend(loc='upper left')
+            plt.title('v_in vs. v_out (codes)')
+            plt.show()
+
+            # Second, voltages
+            plt.plot(x, v_in_voltage, c='b', label='v_in')
+            plt.plot(x, v_out_voltage, c='r', label='v_out')
+            plt.legend(loc='upper left')
+            plt.title('v_in vs. v_out (voltages)')
+            plt.show()
+
+            # Third, impedance
+            plt.plot(x_freq, np.abs(impedance_arr), c='purple', label='Impedance')
+            plt.title('Impedance vs. Frequency')
+            plt.show()
 
         # --- Return impedance at that frequency ---
-        return impedance_arr[desired_index]
+        return impedance_arr[desired_index], frequency_found
 
     class Power:
 
