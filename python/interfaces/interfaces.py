@@ -377,6 +377,31 @@ class Endpoint:
         
         return endpoints_dict
 
+    @staticmethod
+    def excel_to_defines(excel_path, defines_path, sheet=0):
+        """Convert an Excel spreadsheet of endpoint definitions to Verilog.
+        
+        Arguments
+        ---------
+        excel_path : str
+            The path to the Excel spreadsheet to convert.
+        defines_path : str
+            The path to the Verilog file to create.
+        sheet : int or str
+            Optional. The int index of the sheet to read from the Excel
+            spreadsheet, or the str sheet name.
+
+        Returns
+        -------
+        str : the text written to the Verilog file.
+        """
+        
+        sheet_data = pd.read_excel(excel_path, sheet)
+        text = '\n'.join(sheet_data['Generated Line'])
+        with open(defines_path, 'w') as file:
+            file.write(text)
+        return text
+
 
 def advance_endpoints_bynum(endpoints_dict, num):
     """
