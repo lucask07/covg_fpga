@@ -270,6 +270,9 @@ module Butter_pipelined
         else if(ena < 5'h10) begin
             ena <= ena + 1'b1;
         end
+        else if(ena == 5'h10) begin
+            ena <= 4'b0;
+        end
 //    end
 //    always @ ( negedge clk)begin
         if(ena == 5'h00)begin
@@ -294,7 +297,7 @@ module Butter_pipelined
             B <= coeff_a2_section1_shadow_reg;
         end
         else if(ena == 5'h05)begin
-            sos_pipeline1 <= feedback1;
+            //sos_pipeline1 <= feedback1;
             b3mul1 <= P;
             A <= inputconv1;
             B <= coeff_b1_section1_shadow_reg;
@@ -305,6 +308,7 @@ module Butter_pipelined
             B <= coeff_scale2_shadow_reg;
         end
         else if(ena == 5'h07)begin
+            sos_pipeline1 <= feedback1;
             b2mul1 <= P;
             A <= inputconv2;
             B <= coeff_b3_section2_shadow_reg;
