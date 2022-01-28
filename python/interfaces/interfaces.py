@@ -118,6 +118,8 @@ class Endpoint:
     increment_endpoints(endpoints_dict)
         Increment all Endpoints in endpoints_dict according to their gen_bit
         and gen_address values.
+    excel_to_defines(excel_path, defines_path, sheet=0)
+        Convert an Excel spreadsheet of endpoint definitions to Verilog.
     """
 
     endpoints_from_defines = dict()
@@ -395,7 +397,7 @@ class Endpoint:
         -------
         str : the text written to the Verilog file.
         """
-        
+
         sheet_data = pd.read_excel(excel_path, sheet)
         text = '\n'.join(sheet_data['Generated Line'])
         with open(defines_path, 'w') as file:
@@ -2354,7 +2356,8 @@ class ADCDATA():
                                                data_len)
                 st += s
                 cnt = cnt + 1
-                print(cnt)
+                if self.fpga.debug:
+                    print(cnt)
             self.fpga.xem.UpdateTriggerOuts()
         if twos_comp_conv:
             data = self.convert_data(st)
@@ -2877,7 +2880,7 @@ class DDR3():
         self.data_arrays = []
         for i in range(self.parameters['channels']):
             self.data_arrays.append(np.zeros(
-                self.parameters['sample_size']).astype(np.int16))
+                self.parameters['sample_size']).astype(np.uint16))
 
         self.clear_adc_debug()
 
@@ -3090,9 +3093,8 @@ class DDR3():
 
         print('Length of buffer at the top of WriteSDRAM: ', len(buf))
         # Reset FIFOs
-        self.reset_fifo()
         self.clear_read()
-        self.clear_adc_read()
+        self.reset_fifo()
         self.set_write()
 
         print('Writing to DDR...')

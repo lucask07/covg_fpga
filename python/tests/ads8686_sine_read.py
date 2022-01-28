@@ -55,7 +55,7 @@ ads.set_host_mode()
 ads.setup()
 ads.set_range(5)
 ads.set_lpf(376)
-codes = ads.setup_sequencer(chan_list=[('FIXED', '7')])
+codes = ads.setup_sequencer(chan_list=[('FIXED', '4')])
 ads.write_reg_bridge()
 ads.set_fpga_mode()
 
@@ -81,7 +81,6 @@ def set_stop(event):
     stop = True
 fig.canvas.mpl_connect('close_event', set_stop)
 
-# ax.plot(data)
 ax.set_xlabel('Time')
 ax.set_ylabel('Voltage')
 while not stop:
