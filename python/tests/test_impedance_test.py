@@ -8,6 +8,7 @@ import os, sys
 import atexit
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 cwd = os.getcwd()
@@ -58,24 +59,28 @@ for name in ['1V8', '5V', '3V3']:
 
 # --- Set up GPIO ---
 # gpio.fpga.debug = True
-gpio.spi_debug('ds0')
+gpio.spi_debug('ds1')
 
 # --- Testing ---
-z, f = daq.test_impedance(frequency=1000.0, resistance=9843, amplitude=1.0, dac80508_num=2, dac80508_chan=7, ads8686_chan='B4', plot=True)
+ads8686_chan_a = 7
+ads8686_chan_b = 3
+z, f = daq.test_impedance(frequency=1000.0, resistance=9843, amplitude=1.0, dac80508_num=2, dac80508_chan=7, ads8686_chan_a=ads8686_chan_a, ads8686_chan_b=ads8686_chan_b, plot=False)
 print(z, f)
+print(f'{np.abs(z)}\N{ANGLE}{np.angle(z, deg=True)}\N{DEGREE SIGN}')
 
 # --- Graph incoming data ---
-row_plots = 3
-col_plots = 3
-fig, axes = plt.subplots(row_plots, col_plots)
-for i in range(row_plots):
-    for j in range(col_plots):
-        data = [to_voltage(data=int(x), num_bits=16, voltage_range=10, use_twos_comp=True) for x in daq.ADC_gp.stream_mult(twos_comp_conv=False)['B']]
-        ax = axes[i, j]
-        ax.set_xlabel('Time')
-        ax.set_ylabel('Voltage')
-        ax.plot(data[::8])
-plt.show()
+# Initial data
+# row_plots = 3
+# col_plots = 3
+# fig, axes = plt.subplots(row_plots, col_plots)
+# for i in range(row_plots):
+#     for j in range(col_plots):
+#         data = [to_voltage(data=int(x), num_bits=16, voltage_range=10, use_twos_comp=True) for x in daq.ADC_gp.stream_mult(twos_comp_conv=False)['B']]
+#         ax = axes[i, j]
+#         ax.set_xlabel('Time')
+#         ax.set_ylabel('Voltage')
+#         ax.plot(data[::8])
+# plt.show()
 
 # Continuous Graph
 plt.ion()
@@ -89,10 +94,17 @@ fig.canvas.mpl_connect('close_event', set_stop)
 ax.set_xlabel('Time')
 ax.set_ylabel('Voltage')
 while not stop:
-    data = [to_voltage(data=int(x), num_bits=16, voltage_range=10, use_twos_comp=True) for x in daq.ADC_gp.stream_mult(twos_comp_conv=False)['B']]
-    x = [len(data) + j for j in range(len(data))]
-    ax.plot(x, data, color='blue', scalex=True, scaley=False)
+    data_stream = daq.ADC_gp.stream_mult(twos_comp_conv=False)
+    v_in = to_voltage(data=data_stream['A'], num_bits=16, voltage_range=10, use_twos_comp=True)
+    v_out = to_voltage(data=data_stream['B'], num_bits=16, voltage_range=10, use_twos_comp=True)
+    x = [len(v_out) + j for j in range(len(v_out))]
+    ax.plot(x, v_in, color='blue', scalex=True, scaley=False, label='v_in')
+    ax.plot(x, v_out, color='red', scalex=True, scaley=False, label='v_out')
     ax.set_ylim(bottom=-5, top=5, auto=False)
+    ax.legend(loc='upper left')
+    ax.set_xlabel('Time (index)')
+    ax.set_ylabel('Voltage (Volts)')
+    ax.set_title(label='v_in and v_out over time')
     plt.draw()
     plt.pause(0.01)
     plt.cla()
