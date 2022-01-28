@@ -47,11 +47,13 @@ fig_dir = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/biophysical_so
 # TODO: search for optimal cc settings
 
 # analysis_type =['summary_stats', 'rf_swp']
-analysis_type =['deconvolve']
+# analysis_type =['deconvolve']
 #analysis_type = ['im_noise']
 #analysis_type = ['im_vs_rf_plot']
 #analysis_type = ['rf_swp']
-analysis_type = ['none']
+# analysis_type = ['none']
+analysis_type = ['check_impulse']
+
 # analysis examples
 
 def adjust_step_delay(x, cc_step_func):
@@ -600,3 +602,27 @@ if 'plot_all_im' in analysis_type:
         t, adc_data = read_h5(data_dir, hf.split('/')[-1], chan_list=[0])
         pa, num_found = peak_area(t, adc_data[0])
         pa_arr = np.append(pa_arr, pa)
+
+if 'check_impulse' in analysis_type:
+    data_dir = '/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp/20220125'
+    file_name = 'test_tune_rf100_ccomp47_0'
+    idx = 0
+    cmd_impulse, t, t0 = get_impulse(data_dir, file_name.format(idx))
+
+    fig,ax=plt.subplots()
+    ax.plot(t*1e6, cmd_impulse, label='h_{CMD}')
+    ax.plot(t*1e6, np.cumsum(cmd_impulse/40), label='$\Sigma_0^t h_{CMD}/40$')
+    ax.set_xlabel('t [$\mu$s]')
+    ax.set_ylabel('DN/s')
+    ax.set_xlim([6500, 6800])
+
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_dir, 'impulse_integral.png'))
+
+
+    h5_files = glob.glob(os.path.join(data_dir, '*0.h5'))
+    for hf in h5_files:
+        t, adc_data = read_h5(data_dir, hf.split('/')[-1], chan_list=[0])
+    fig,ax=plt.subplots()
+    ax.plot(t*1e6, adc_data[0], label='h_{CMD}')
