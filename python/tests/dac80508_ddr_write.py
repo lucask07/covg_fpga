@@ -26,8 +26,6 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
 # --- Variables ---
 pwr_setup = '3dual'
-num_fast_dacs = 6
-num_slow_dacs = 2
 dac80508_offset = 0x8000
 
 
@@ -61,7 +59,7 @@ for name in ['1V8', '5V', '3V3']:
 
 # --- Set up GPIO ---
 # gpio.fpga.debug = True
-gpio.spi_debug('ds0')
+gpio.spi_debug('ds1')
 
 # --- Configure for DDR read to DAC80508 ---
 for dac in [dac1, dac2]:
@@ -103,9 +101,9 @@ sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=tar
 
 # Specify output channel for DAC80508
 sdac_1_out_chan = 0
-sdac_2_out_chan = 0
+sdac_2_out_chan = 7
 # Clear channel bits
-np.bitwise_and(np.full(shape=np.shape(fdac_sine), fill_value=0x3fff), fdac_sine)
+fdac_sine = np.bitwise_and(fdac_sine, 0x3fff)
 
 # Load data into DDR
 # Set channel bits
