@@ -35,7 +35,7 @@ from scipy.optimize import minimize, basinhopping
 import pandas as pd
 import pickle as pkl
 import h5py
-from filters.filter_tools import delayseq, butter_lowpass_filter, delayseq_interp
+from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv
 from analysis.clamp_data import adjust_step2, adjust_step, adjust_step_delay, adjust_step_scale
 

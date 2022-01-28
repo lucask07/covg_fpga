@@ -231,7 +231,7 @@ def idx_timerange(t, tlow, thigh):
     return idx
 
 
-def get_impulse(data_dir, filename, t_offset_idx=ADC_CROP, t0=6400e-6, tl_tr=(-150e-6, 200e-6),fc=None):
+def get_impulse(data_dir, filename, t_offset_idx=ADC_CROP, t0=6400e-6, tl_tr=(-150e-6, 400e-6),fc=None):
     """ get the impulse of an Im trace by calculating the derivative
     """
     t, adc_data = read_h5(data_dir, filename + '.h5', chan_list=[0])
