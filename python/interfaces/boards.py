@@ -543,17 +543,17 @@ class Daq:
         print(f"Expected gain of {gain}")
         return gain
 
-    def test_impedance(self, frequency, resistance, amplitude, dac80508_num=1, dac80508_chan=4, ads8686_chan='A5', plot=False):
+    def test_impedance(self, resistance, frequency, amplitude, dac80508_num=1, dac80508_chan=4, ads8686_chan_a=7, ads8686_chan_b=3, swap_chan=False, plot=False):
         """Calculate the impedance of a component that is in series with the given resistance.
         
         Uses DDR, DAC80508 to send input voltage, ADS8686 to read output voltage.
         
         Arguments
         ---------
-        frequency : float
-            The test frequency in Hertz to use for the input voltage sine wave.
         resistance : float
             The resistance in Ohms of the resistor in series with the unknown impedance.
+        frequency : float
+            The test frequency in Hertz to use for the input voltage sine wave.
         amplitude : float
             The voltage amplitude of the sign wave. The sine wave will end up
             shifted so all points are positive, but the amplitude will remain
@@ -562,8 +562,14 @@ class Daq:
             The number of the DAC80508 to use. Expecting 1 or 2 matching with https://github.com/lucask07/open_covg_daq_pcb/blob/main/docs/covg_daq_v2.pdf.
         dac80508_chan : int
             The output channel to send the input voltage on. Expecting 0-7.
-        ads8686_chan : str
-            The input channel to receive the output voltage on. Expecting "A0"-"A7" or "B0"-"B7"
+        ads8686_chan_a : int
+            The "A" side channel of the ADS8686 to receive the input voltage on. Expecting 0-7.
+        ads8686_chan_b : int
+            The "B" side channel of the ADS8686 to receive the output voltage on. Expecting 0-7.
+        swap_chan : bool
+            If True, ads8686_chan_b receives input while ads8686_chan_a receives output. False for normal operation.
+        plot: bool
+            Whether to plot data.
 
         Returns
         -------
@@ -571,10 +577,9 @@ class Daq:
         """
 
         dac80508_offset = 0x8000
+        ads8686_update_period = 4.950495e-06
 
         # --- Configure DAC80508 for DDR driven ---
-        # TODO: switch this from AD5453 to DDR3 method
-        self.DAC[0].set_clk_divider(divide_value=0x50)  # Need in order to set frequency of input wave correctly
         self.DAC_gp[dac80508_num - 1].set_spi_sclk_divide(0x8)
         self.DAC_gp[dac80508_num - 1].set_ctrl_reg(0x3218)
         self.DAC_gp[dac80508_num - 1].set_config_bin(0x00)
@@ -597,6 +602,8 @@ class Daq:
             print(f'WARNING: cannot use amplitude {amplitude}V, limiting to maximum 2.5V')
         self.DAC_gp[dac80508_num - 1].set_gain(gain=gain, outputs=dac80508_chan, divide_reference=divide_reference)
         self.DAC_gp[dac80508_num - 1].set_data_mux('DDR')
+        # TODO: switch this from AD5453 to DDR3 method
+        self.DAC[0].set_clk_divider(divide_value=0x50)  # Need in order to set frequency of input wave correctly
 
         # --- Configure ADS8686 for read on specified channel ---
         self.ADC_gp.hw_reset(val=False)
@@ -604,8 +611,16 @@ class Daq:
         self.ADC_gp.setup()
         self.ADC_gp.set_range(5)
         self.ADC_gp.set_lpf(376)
-        ads8686_chan = ads8686_chan.upper()
-        chan_list = (ads8686_chan[1], 'FIXED') if ads8686_chan[0] == 'A' else ('FIXED', ads8686_chan[1])
+        if swap_chan is False:
+            # Normal operation: "A" side takes input, "B" side takes output
+            chan_list = (str(ads8686_chan_a), str(ads8686_chan_b))
+            input_side = 'A'
+            output_side = 'B'
+        else:
+            # Reverse operation: "B" side takes input, "A" side takes output
+            chan_list = (str(ads8686_chan_b), str(ads8686_chan_a))
+            input_side = 'B'
+            output_side = 'A'
         codes = self.ADC_gp.setup_sequencer(chan_list=[chan_list])
         self.ADC_gp.write_reg_bridge()
         self.ADC_gp.set_fpga_mode()
@@ -622,37 +637,32 @@ class Daq:
         # dac80508_num should be 1 or 2
 
         # Clear channel bits
-        self.ddr.data_arrays[2 * (dac80508_num - 1)] = np.bitwise_and(self.ddr.data_arrays[2 * (dac80508_num - 1)], 0x3fff)
-        self.ddr.data_arrays[2 * (dac80508_num - 1) + 1] = np.bitwise_and(self.ddr.data_arrays[2 * (dac80508_num - 1) + 1], 0x3fff)
+        self.ddr.data_arrays[2 * (dac80508_num - 1)] = np.bitwise_and(self.ddr.data_arrays[2 * (dac80508_num - 1)], 0x3fff).astype(np.uint16)
+        self.ddr.data_arrays[2 * (dac80508_num - 1) + 1] = np.bitwise_and(self.ddr.data_arrays[2 * (dac80508_num - 1) + 1], 0x3fff).astype(np.uint16)
         # Set channel bits
-        self.ddr.data_arrays[2 * (dac80508_num - 1)] = np.bitwise_or(self.ddr.data_arrays[2 * (dac80508_num - 1)], (dac80508_chan & 0b110) << 13)
-        self.ddr.data_arrays[2 * (dac80508_num - 1) + 1] = np.bitwise_or(self.ddr.data_arrays[2 * (dac80508_num - 1) + 1], (dac80508_chan & 0b001) << 14)
+        self.ddr.data_arrays[2 * (dac80508_num - 1)] = np.bitwise_or(self.ddr.data_arrays[2 * (dac80508_num - 1)], (dac80508_chan & 0b110) << 13).astype(np.uint16)
+        self.ddr.data_arrays[2 * (dac80508_num - 1) + 1] = np.bitwise_or(self.ddr.data_arrays[2 * (dac80508_num - 1) + 1], (dac80508_chan & 0b001) << 14).astype(np.uint16)
         # Last 2 arrays (of 8) are for DAC80508 1 and 2 data only
-        self.ddr.data_arrays[5 + dac80508_num] = v_in_code
+        self.ddr.data_arrays[5 + dac80508_num] = v_in_code.astype(np.uint16)
+        for i in self.ddr.data_arrays:
+            print(type(i[0]))
         self.ddr.write_channels()
 
-        # --- Read ouput voltage signal ---
+        # --- Read input and ouput voltage signals ---
         throw_away = 15
         for i in range(throw_away):
-            v_out_code = self.ADC_gp.stream_mult(twos_comp_conv=False)['B']
-
-        # --- Match up signals ---
-        # TODO: how do we match up our input and output signals?
-
-        # Closest integer ratio of input:output voltage data indices that keeps the same time period is 99:8
-        v_out_code = v_out_code[::8]
-        v_in_code = v_in_code[::99][:len(v_out_code)]
-
-        # TODO: remove offset?
+            data_stream = self.ADC_gp.stream_mult(twos_comp_conv=False)
+        v_in_code = data_stream[input_side]
+        v_out_code = data_stream[output_side]
 
         # --- Calculate impedance across frequencies ---
         # Convert back to voltage
-        v_in_voltage = to_voltage(data=v_in_code, num_bits=16, voltage_range=voltage_range, use_twos_comp=False)
+        v_in_voltage = to_voltage(data=v_in_code, num_bits=16, voltage_range=10, use_twos_comp=True)
         v_out_voltage = to_voltage(data=v_out_code, num_bits=16, voltage_range=10, use_twos_comp=True)
         impedance_arr = calc_impedance(v_in=v_in_voltage, v_out=v_out_voltage, resistance=resistance)
 
         # --- Set up x frequencies ---
-        x_freq = rfftfreq(len(v_in_voltage), self.ddr.parameters['update_period'] * 99)
+        x_freq = rfftfreq(len(v_in_voltage), ads8686_update_period)
 
         # --- Find nearest x frequency to input frequency ---
         distances_from_actual = [abs(x - actual_freq) for x in x_freq]
