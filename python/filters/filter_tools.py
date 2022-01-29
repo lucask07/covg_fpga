@@ -1,54 +1,12 @@
 """
 Filters: low-pass, high-pass, delays
 
-
-delayseq from here:
-https://github.com/space-physics/piradar/blob/main/piradar/delayseq.py
-with Apache2.0 license
-TODO: understand impacts of this licence
-
 """
 import numpy as np
 from numpy.fft import fft, ifftshift, ifft
 from numpy import exp, pi, arange, zeros_like, isreal
 from scipy import signal
 from scipy.interpolate import interp1d
-
-
-def delayseq(x, delay_sec: float, fs: float):
-    """ delays signal (non-integer delays) using FFT
-        frequency-dependent phase shift
-
-    Arguments
-    ---------
-    x (numpy.ndarray): input 1-D signal
-    delay_sec (float): amount to shift signal [seconds]
-    fs (float): sampling frequency [Hz]
-
-    Returns
-    -------
-    (numpy.ndarray) time-shifted signal
-    """
-
-    assert x.ndim == 1, "only 1-D signals for now"
-
-    delay_samples = delay_sec * fs
-    delay_int = round(delay_samples)
-
-    nfft = nextpow2(x.size + delay_int)
-
-    fbins = 2 * pi * ifftshift((arange(nfft) - nfft // 2)) / nfft
-
-    X = fft(x, nfft)
-    Xs = ifft(X * exp(-1j * delay_samples * fbins))
-
-    if isreal(x[0]):
-        Xs = Xs.real
-
-    xs = zeros_like(x)
-    xs[delay_int:] = Xs[delay_int : x.size]
-
-    return xs
 
 
 def delayseq_interp(x, delay_sec: float, fs: int):

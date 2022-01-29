@@ -36,7 +36,11 @@ import pandas as pd
 import pickle as pkl
 import h5py
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
+<<<<<<< HEAD
 from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv
+=======
+from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv, idx_timerange
+>>>>>>> 828ac38 (updates to clamp_test and filter_tools to measure impulse resposne)
 from analysis.clamp_data import adjust_step2, adjust_step, adjust_step_delay, adjust_step_scale
 
 FS = 5e6
@@ -292,14 +296,24 @@ def get_cc_optimize(nums):
     return out
 
 
-def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000,
-               cc_val=None, cc_pickle_num=None):
-
+def ddr_write_setup():
     # adjust the DDR settings of both DACs
     # quiet both DACs
     cc.set_data_mux("host")
     cmd_dac.set_data_mux("host")
     ddr.reset_fifo()
+
+def ddr_write_finish():
+     # reenable both DACs
+    cmd_dac.set_data_mux("DDR")
+    cc.set_data_mux("DDR")
+    ddr.set_read()  # enable DAC playback and ADC reading
+
+
+def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000,
+               cc_val=None, cc_pickle_num=None):
+
+    ddr_write_setup()
 
     dac_offset = 0x2000
     cmd_ch = 1
@@ -339,11 +353,7 @@ def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_le
     # write channels to the DDR
     g_buf = ddr.write_channels(set_ddr_read=False) # clear read, set write, etc. handled within write_channels
 
-    # reenable both DACs
-    cmd_dac.set_data_mux("DDR")
-    cc.set_data_mux("DDR")
-    ddr.set_read()  # enable DAC playback and ADC reading
-
+    ddr_write_finish()
 
 def read_adc(ddr, blk_multiples=2048):
     # block size is 2048.
@@ -432,13 +442,7 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64, PLT_
     return chan_data
 
 
-def tune_cc(data_dir, file_name, rf, ccomp):
-
-    PLT_DEBUG = True
-    cmd_impulse_scaling = 0x1d00
-    cc_impulse_scaling = 2600
-    idx = 0
-    # indices to measure impulse at
+def tune_cc(data_dir, file_name, rf, ccomp, cmd_impulse_scaling=7424, cc_impulse_scaling=2600, PLT_DEBUG=True):
 
     log_info, config_dict = clamp.configure_clamp(
         ADC_SEL="CAL_SIG1",DAC_SEL="drive_CAL2",CCOMP=ccomp, RF1=2.1,  # feedback circuit
@@ -447,24 +451,29 @@ def tune_cc(data_dir, file_name, rf, ccomp):
         FDBK=1,mode="voltage",EN_ipump=0,RF_1_Out=1,addr_pins_1=0b110,
         addr_pins_2=0b000)
 
+    idx = 0
     # cmd_scaling -- set to avoid saturation
-    set_cmd_cc(cmd_val=cmd_impulse_scaling, cc_scale=0, cc_delay=0, fc=None, step_len=16000)
+    set_cmd_cc(cmd_val=cmd_impulse_scaling, cc_scale=0, cc_delay=0, fc=None, step_len=16384)
     time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
     save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
     cmd_impulse, t, t0 = get_impulse(data_dir, file_name.format(idx))
 
     idx += 1
     # cc_scaling -- set to avoid saturation (filename?)
-    set_cmd_cc(cmd_val=0, cc_scale=0, cc_delay=0, fc=None, step_len=16000, cc_val=cc_impulse_scaling)
+    set_cmd_cc(cmd_val=0, cc_scale=0, cc_delay=0, fc=None, step_len=16384, cc_val=cc_impulse_scaling)
     time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
     save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
     cc_impulse, _,_ = get_impulse(data_dir, file_name.format(idx))
 
     if PLT_DEBUG:
         fig, ax = plt.subplots() # plot before normalizing by scaling so that
-        ax.plot(t, cmd_impulse, label='h_{CMD}')
-        ax.plot(t, cc_impulse, label='h_{CC}') #negate CC so its easier to compare
-        ax.set_xlim([t0-50e-6, t0+100e-6])
+        ax.plot( (t-t0)*1e6, cmd_impulse, marker='+', label=r'$h_{CMD}$')
+        ax.plot( (t-t0)*1e6, cc_impulse, marker='o', label=r'$h_{CC}$') 
+        ax.set_xlim([-10, +60])
+        ax.set_xlabel('t [$\mu$s]')
+        ax.set_ylabel('h(t) [DN/s]')
+        ax.legend()
+        fig.tight_layout()
         fig.savefig(os.path.join(data_dir, 'impulse_response_rf{}_cc{}_.png'.format(rf, ccomp)))
 
     # create a step function
@@ -517,17 +526,19 @@ def tune_cc(data_dir, file_name, rf, ccomp):
                 'r', label='CMD + CC; tuned')
         ax.plot(t_im*1e6, np.convolve(cmd_impulse, step_func, mode='same'), 'k', label='CMD only')
         ax.legend()
+        fig.tight_layout()
         fig.savefig(os.path.join(data_dir, 'im_result_rf{}_cc{}_.png'.format(rf, ccomp)))
 
         fig, ax = plt.subplots()
         ax.plot(t*1e6, step_func, 'k', label='CMD step')
         ax.plot(t*1e6, new_cc_step, 'm', label='CC step')
         ax.legend()
+        fig.tight_layout()
         fig.savefig(os.path.join(data_dir, 'step_functions_rf{}_cc{}_.png'.format(rf, ccomp)))
 
     # optimize cc function with given impulse responses (pass a given cc-creation function)
     # adjust_step2(x, cc_func)
-    return out_min, new_cc_step, step_func, out_min_dly
+    return out_min, new_cc_step, step_func, out_min_dly, t0
     # tune cc function using experimental measurements -- create function
 
 
@@ -630,12 +641,12 @@ def vs_rf_ccomp(rf_arr=[10,33,100,332,3000,10000],
                     data['ccomp'] = ccomp
 
                     if cc_adj:
-                        set_cmd_cc(cmd_val = cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc,step_len=16000)
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc,step_len=16384)
                         data['cc_scale'] = cc_scale
                         data['cc_delay'] = cc_delay
                         data['cc_fc'] = cc_fc
                     else:
-                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=0, fc=1e3, step_len=16000)
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=0, fc=1e3, step_len=16384)
                         data['cc_scale'] = 0
                         data['cc_delay'] = 0
                         data['cc_fc'] = 1e3
@@ -734,9 +745,9 @@ def step_responses(rf_arr=[10,33,100,332,3000,10000],
                             nums = None
                             cc_scale = 0
                             cc_val = 0
-                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16000, cc_val=cc_val, cc_pickle_num=nums)
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16384, cc_val=cc_val, cc_pickle_num=nums)
                     else:
-                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16000, cc_val=cc_val)
+                        set_cmd_cc(cmd_val = cmd_val, cc_scale=0, cc_delay=cc_delay, fc=None,step_len=16384, cc_val=cc_val)
                     data['cc_val'] = cc_val
                     data['cc_delay'] = cc_delay
                     data['cc_fc'] = cc_fc
@@ -788,7 +799,75 @@ def cc_comp():
     plt.plot(ddr.data_arrays[1])
 
 
-out_min, cc_step_func, out_min_dly = tune_cc(data_dir, 'test_tune_{}', 100, 47)
+for rf,ccomp in ([(10,47), (100,47), (332,47), (3000,4747), (10000, 4747)]):
+    # TODO: the impulse function processing needs different time ranges based on RF and ccomp. 
+    file_name = f'test_tune_rf{rf}_ccomp{ccomp}' + '_{}'
+
+    if rf <= 100:
+        scale = 7424
+        cc_scale = 2600
+        tr = 160
+    if rf == 332:
+        scale = 7424//2
+        cc_scale = 2600//2
+        tr = 160
+    if rf == 3000:
+        scale = 7424//5
+        cc_scale = 2600//5
+        tr = 600
+    if rf == 10000:
+        scale = 7424//5
+        cc_scale = 2600//5
+        tr = 600
+
+    out_min, cc_step_func, step_func, out_min_dly, t0 = tune_cc(data_dir, file_name, rf=rf, ccomp=ccomp, 
+                                                                cmd_impulse_scaling=scale, cc_impulse_scaling=cc_scale)
+
+    total_len = 16384 
+    dac_offset = 0x2000
+    cmd_ch = 1
+    cc_ch = 0
+
+    # pad left and right so that the result is the same length as original step function (find center)
+    center = np.argmax(step_func>0.5)
+    len_step = len(step_func)
+    step_func = np.pad(step_func, (total_len//2-(center), total_len//2-(len_step-center)), 'edge')
+    cc_step_func = np.pad(cc_step_func, (total_len//2-(center), total_len//2-(len_step-center)), 'edge')
+
+    # adjust steps to zero mean, scale, then add offset, convert to uint16
+    step_func = ((step_func - np.mean(step_func))*scale + dac_offset).astype(np.uint16)
+    cc_step_func = ((cc_step_func - np.mean(cc_step_func))*scale + dac_offset).astype(np.uint16) # both impulses are normalized so scale equally
+
+    # need to repeat the array -- total length of array is 256*16384
+    ddr.data_arrays[cc_ch] = np.tile(cc_step_func, 256)
+    ddr.data_arrays[cmd_ch] = np.tile(step_func, 256)
+
+    ddr_write_setup()
+    g_buf = ddr.write_channels(set_ddr_read=False) # clear read, set write, etc. handled within write_channels
+    ddr_write_finish()
+
+    idx = 2
+    time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
+    save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
+    fig,ax=plt.subplots()
+    adc_min = {}
+    for i in [0,2]:
+        t, adc_data = read_h5(data_dir, file_name.format(i) + '.h5', chan_list=[0])
+        if i == 0:
+            lbl='$I_m$: CMD only'
+        elif i == 2:
+            lbl='$I_m$: CMD + tuned CC'
+        idx = idx_timerange(t, t0-10e-6, t0+tr*1e-6)
+        ax.plot((t[idx]-t0)*1e6, adc_data[0][idx], marker = '+', label=lbl)
+        adc_min[i] = np.min(adc_data[0][idx])
+    ax.set_xlim([-10, tr])
+    ax.set_xlabel('t [$\mu$s]')
+    ax.set_ylabel('$I_m$ [DN]')
+    ax.legend()
+    ymin, ymax = ax.get_ylim()
+    ax.set_ylim([np.min([adc_min[0], adc_min[2]])-500, ymax])
+    fig.tight_layout()
+    fig.savefig(os.path.join(data_dir, 'final_comparison_rf{}_cc{}_.png'.format(rf, ccomp)))
 
 """
 set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc)
