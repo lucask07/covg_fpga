@@ -605,24 +605,58 @@ if 'plot_all_im' in analysis_type:
 
 if 'check_impulse' in analysis_type:
     data_dir = '/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp/20220125'
-    file_name = 'test_tune_rf100_ccomp47_0'
+    file_name = 'test_tune_rf100_ccomp47_{}'
+
+    tl = 6500
+    tr = 6800
+
     idx = 0
     cmd_impulse, t, t0 = get_impulse(data_dir, file_name.format(idx))
 
     fig,ax=plt.subplots()
-    ax.plot(t*1e6, cmd_impulse, label='h_{CMD}')
+    ax.plot(t*1e6, cmd_impulse, label='$h_{CMD}$')
     ax.plot(t*1e6, np.cumsum(cmd_impulse/40), label='$\Sigma_0^t h_{CMD}/40$')
     ax.set_xlabel('t [$\mu$s]')
     ax.set_ylabel('DN/s')
-    ax.set_xlim([6500, 6800])
+    ax.set_xlim([tl, tr])
 
     ax.legend()
     plt.tight_layout()
-    plt.savefig(os.path.join(fig_dir, 'impulse_integral.png'))
+    plt.savefig(os.path.join(fig_dir, 'cmd_impulse_integral.png'))
 
+    tl = 6500
+    tr = 6800
 
-    h5_files = glob.glob(os.path.join(data_dir, '*0.h5'))
-    for hf in h5_files:
-        t, adc_data = read_h5(data_dir, hf.split('/')[-1], chan_list=[0])
+    idx = 1
+    cmd_impulse, t, t0 = get_impulse(data_dir, file_name.format(idx))
+
     fig,ax=plt.subplots()
-    ax.plot(t*1e6, adc_data[0], label='h_{CMD}')
+    ax.plot(t*1e6, cmd_impulse, label='$h_{CC}$')
+    ax.plot(t*1e6, np.cumsum(cmd_impulse/40), label='$\Sigma_0^t h_{CC}/40$')
+    ax.set_xlabel('t [$\mu$s]')
+    ax.set_ylabel('DN/s')
+    ax.set_xlim([tl, tr])
+
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_dir, 'cc_impulse_integral.png'))
+
+    h5_files = glob.glob(os.path.join(data_dir, '*rf*0.h5'))
+    fig,ax=plt.subplots()
+
+    for hf in h5_files:
+        fname = hf.split('/')[-1]
+        fname = fname.replace('.h5', '')
+        rf_val = int(fname.split('_')[2].replace('rf',''))
+        cmd_impulse, t, t0 = get_impulse(data_dir, fname)
+        idx = idx_timerange(t, tl*1e-6, tr*1e-6)
+        ax.plot(t[idx]*1e6, cmd_impulse[idx], label='$h_{CMD}: ' + ' R_F={} k \Omega$'.format(rf_val))
+    ax.set_xlabel('t [$\mu$s]')
+    ax.set_ylabel('DN/s')
+    tl = 6550
+    tr = 6750
+    ax.set_xlim([tl, tr])
+
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(fig_dir, 'impulse_sweep.png'))
