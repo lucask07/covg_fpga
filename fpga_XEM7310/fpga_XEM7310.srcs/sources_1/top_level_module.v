@@ -1019,10 +1019,10 @@ module top_level_module(
             .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
             .datain_3({ads_data_valid, 15'b0, ads_data_out[31:16]}), // 
-            .datain_4({adc_valid_pulse[0], 15'b0, adc_val_reg[0][15:0]}), // data from AD7961  
-            .datain_5({adc_valid_pulse[1], 15'b0, adc_val_reg[1][15:0]}), // data from AD7961
-            .datain_6({adc_valid_pulse[2], 15'b0, adc_val_reg[2][15:0]}), // data from AD7961
-            .datain_7({adc_valid_pulse[3], 15'b0, adc_val_reg[3][15:0]}), // data from AD7961
+            .datain_4({write_en_adc_o[0], 15'b0, adc_val_reg[0][15:0]}), // data from AD7961  
+            .datain_5({write_en_adc_o[1], 15'b0, adc_val_reg[1][15:0]}), // data from AD7961
+            .datain_6({write_en_adc_o[2], 15'b0, adc_val_reg[2][15:0]}), // data from AD7961
+            .datain_7({write_en_adc_o[3], 15'b0, adc_val_reg[3][15:0]}), // data from AD7961
             .sel(ep03wire[(`AD5453_DATA_SEL_GEN_BIT + p*`AD5453_DATA_SEL_GEN_BIT_LEN) +: `AD5453_DATA_SEL_GEN_BIT_LEN]),
             .dataout({spi_data[p]})
         );

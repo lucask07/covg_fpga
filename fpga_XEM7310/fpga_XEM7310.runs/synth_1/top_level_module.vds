@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Fri Jan 14 11:10:07 2022
-# Process ID: 6224
+# Start of session at: Tue Feb  1 12:47:16 2022
+# Process ID: 5100
 # Current directory: C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
 # Command line: vivado.exe -log top_level_module.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_level_module.tcl
 # Log file: C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
@@ -27,7 +27,7 @@ Please select 'Report IP Status' from the 'Tools/Report' menu or run Tcl command
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 5112 
+INFO: Helper process launched with PID 9584 
 WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okCoreHarness.v:15361]
 WARNING: [Synth 8-2306] macro DDR3_INIT_CALIB_COMPLETE redefined [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ep_defines.v:168]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:87]
@@ -58,7 +58,7 @@ WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:117]
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:118]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:06 . Memory (MB): peak = 435.398 ; gain = 111.633
+Starting RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 436.414 ; gain = 112.098
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:92]
 	Parameter BLOCK_SIZE bound to: 512 - type: integer 
@@ -89,8 +89,8 @@ INFO: [Synth 8-6157] synthesizing module 'IBUFDS' [C:/Users/iande/Documents/Viva
 	Parameter IOSTANDARD bound to: LVDS_25 - type: string 
 INFO: [Synth 8-6155] done synthesizing module 'IBUFDS' (3#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19488]
 INFO: [Synth 8-6155] done synthesizing module 'AD7961' (4#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/AD7961.v:66]
-INFO: [Synth 8-6157] synthesizing module 'fifo_AD796x' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/fifo_AD796x_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'fifo_AD796x' (5#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/fifo_AD796x_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'fifo_AD796x' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/fifo_AD796x_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'fifo_AD796x' (5#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/fifo_AD796x_stub.v:6]
 INFO: [Synth 8-6157] synthesizing module 'GND' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
 INFO: [Synth 8-6155] done synthesizing module 'GND' (6#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
 INFO: [Synth 8-6157] synthesizing module 'LUT4' [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:25575]
@@ -151,12 +151,12 @@ INFO: [Synth 8-6157] synthesizing module 'realTimeLPF_readwrite_coeff' [C:/Users
 	Parameter INIT bound to: 5'b10010 
 	Parameter CHECK bound to: 5'b10011 
 INFO: [Synth 8-6155] done synthesizing module 'realTimeLPF_readwrite_coeff' (14#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/realTimeLPF_readwrite_coeff.v:23]
-INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/blk_mem_gen_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (15#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (15#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/blk_mem_gen_0_stub.v:6]
 WARNING: [Synth 8-689] width (32) of port connection 'addrb' does not match port width (4) of module 'blk_mem_gen_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:135]
 INFO: [Synth 8-6157] synthesizing module 'Butter_pipelined' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/dsp_filters/Butter_pipelined.v:55]
-INFO: [Synth 8-6157] synthesizing module 'mult_gen_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/mult_gen_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'mult_gen_0' (16#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/mult_gen_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'mult_gen_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/mult_gen_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'mult_gen_0' (16#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/mult_gen_0_stub.v:6]
 INFO: [Synth 8-6155] done synthesizing module 'Butter_pipelined' (17#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/dsp_filters/Butter_pipelined.v:55]
 INFO: [Synth 8-6157] synthesizing module 'LPF_data_modify_fixpt' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/LPF_data_modify_fixpt.v:28]
 WARNING: [Synth 8-3936] Found unconnected internal register 'din_temp_reg' and it is trimmed from '28' to '14' bits. [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/LPF_data_modify_fixpt.v:56]
@@ -441,10 +441,10 @@ INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Users/iande/Documents/Viv
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
 INFO: [Synth 8-6155] done synthesizing module 'IBUFGDS' (30#1) [C:/Users/iande/Documents/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (31#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_1' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/clk_wiz_1_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_1' (32#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-6224-LAPTOP-RK0H8TS5/realtime/clk_wiz_1_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (31#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_1' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/clk_wiz_1_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_1' (32#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-5100-LAPTOP-RK0H8TS5/realtime/clk_wiz_1_stub.v:5]
 INFO: [Synth 8-6157] synthesizing module 'okWireOR' [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
 	Parameter N bound to: 23 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'okWireOR' (33#1) [C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
@@ -816,7 +816,7 @@ WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[3]
 WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[2]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:10 ; elapsed = 00:00:11 . Memory (MB): peak = 549.031 ; gain = 225.266
+Finished RTL Elaboration : Time (s): cpu = 00:00:12 ; elapsed = 00:00:13 . Memory (MB): peak = 550.453 ; gain = 226.137
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -930,10 +930,10 @@ INFO: [Common 17-14] Message 'Synth 8-3295' appears 100 times and further instan
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:11 ; elapsed = 00:00:12 . Memory (MB): peak = 549.031 ; gain = 225.266
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:13 ; elapsed = 00:00:14 . Memory (MB): peak = 550.453 ; gain = 226.137
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:11 ; elapsed = 00:00:12 . Memory (MB): peak = 549.031 ; gain = 225.266
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:13 ; elapsed = 00:00:14 . Memory (MB): peak = 550.453 ; gain = 226.137
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 263 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -1027,7 +1027,7 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
   RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.104 . Memory (MB): peak = 1034.961 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.058 . Memory (MB): peak = 1039.527 ; gain = 0.000
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7961_gen[0].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7961_gen[1].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ad7961_gen[2].adc7961_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
@@ -1054,14 +1054,14 @@ WARNING: [Timing 38-316] Clock period '100.000' specified during out-of-context 
 WARNING: [Timing 38-316] Clock period '20.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[5].spi_fifo0/realTime_LPF_coeff_BRAM' at clock pin 'clka' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '100.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[5].spi_fifo0/u_Butterworth_0/mult1' at clock pin 'CLK' is different from the actual clock period '5.000', this can lead to different synthesis results.
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:50 ; elapsed = 00:00:46 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Constraint Validation : Time (s): cpu = 00:00:55 ; elapsed = 00:00:51 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:50 ; elapsed = 00:00:46 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:55 ; elapsed = 00:00:51 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -1236,7 +1236,7 @@ Applied set_property DONT_TOUCH = true for \dac_ad5453_gen[4].spi_fifo0 /u_Butte
 Applied set_property DONT_TOUCH = true for \dac_ad5453_gen[5].spi_fifo0 /u_Butterworth_0/mult1. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okHI/core0/core0/\a0/cb0 /U0/\inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:51 ; elapsed = 00:00:47 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:56 ; elapsed = 00:00:53 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-5545] ROM "clk_div" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "data_reg" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
@@ -1321,6 +1321,7 @@ INFO: [Synth 8-5587] ROM size for "wr_adr" is below threshold of ROM address wid
 INFO: [Synth 8-5587] ROM size for "wr_en" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5546] ROM "ena" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5544] ROM "coeff_scale1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b1_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b2_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
@@ -1339,6 +1340,7 @@ INFO: [Synth 8-5587] ROM size for "spi_load" is below threshold of ROM address w
 INFO: [Synth 8-5546] ROM "rd_en" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "cmd_stb" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5546] ROM "ena" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5544] ROM "coeff_scale1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b1_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b2_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
@@ -1357,6 +1359,7 @@ INFO: [Synth 8-5587] ROM size for "spi_load" is below threshold of ROM address w
 INFO: [Synth 8-5546] ROM "rd_en" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "cmd_stb" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5546] ROM "ena" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5544] ROM "coeff_scale1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b1_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b2_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
@@ -1375,6 +1378,7 @@ INFO: [Synth 8-5587] ROM size for "spi_load" is below threshold of ROM address w
 INFO: [Synth 8-5546] ROM "rd_en" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "cmd_stb" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5546] ROM "ena" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5544] ROM "coeff_scale1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b1_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b2_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
@@ -1393,6 +1397,7 @@ INFO: [Synth 8-5587] ROM size for "spi_load" is below threshold of ROM address w
 INFO: [Synth 8-5546] ROM "rd_en" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "cmd_stb" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5546] ROM "ena" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5544] ROM "coeff_scale1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b1_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b2_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
@@ -1411,6 +1416,7 @@ INFO: [Synth 8-5587] ROM size for "spi_load" is below threshold of ROM address w
 INFO: [Synth 8-5546] ROM "rd_en" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "cmd_stb" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5546] ROM "ena" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5544] ROM "coeff_scale1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b1_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b2_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
@@ -1424,10 +1430,12 @@ INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'read_
 INFO: [Synth 8-5587] ROM size for "spi_load" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5546] ROM "rd_en" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "cmd_stb" is below threshold of ROM address width. It will be mapped to LUTs
+INFO: [Synth 8-5546] ROM "ena" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'read_fifo_to_spi_cmd__parameterized6'
 INFO: [Synth 8-5587] ROM size for "spi_load" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5546] ROM "rd_en" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "cmd_stb" is below threshold of ROM address width. It will be mapped to LUTs
+INFO: [Synth 8-5546] ROM "ena" won't be mapped to RAM because it is too sparse
 ---------------------------------------------------------------------------------------------------
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
@@ -1490,7 +1498,7 @@ s_preamble_startstopwait |                             1001 | 000000000000000000
       s_payload_stopwait |                             1110 | 00000000000000000000000000100001
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'i2cController'
-INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm179B4EFEB000'
+INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm188BBE9F2100'
 ---------------------------------------------------------------------------------------------------
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
@@ -1684,7 +1692,7 @@ INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'one-hot' in module 'read_fifo_to_spi_cmd__parameterized6'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:01:00 ; elapsed = 00:00:57 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:01:06 ; elapsed = 00:01:04 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -1693,11 +1701,11 @@ Report RTL Partitions:
 +------+-----------------------+------------+----------+
 |1     |okHost__GC0            |           1|      1819|
 |2     |AD7961__GC0            |           1|       383|
-|3     |top_level_module__GCB0 |           1|     37624|
-|4     |top_level_module__GCB1 |           1|     10941|
-|5     |top_level_module__GCB2 |           1|     22481|
-|6     |top_level_module__GCB3 |           1|     21363|
-|7     |top_level_module__GCB4 |           1|     22605|
+|3     |top_level_module__GCB0 |           1|     37636|
+|4     |top_level_module__GCB1 |           1|     10953|
+|5     |top_level_module__GCB2 |           1|     22505|
+|6     |top_level_module__GCB3 |           1|     21387|
+|7     |top_level_module__GCB4 |           1|     22629|
 +------+-----------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start RTL Component Statistics 
@@ -2097,7 +2105,7 @@ INFO: [Synth 8-3886] merging instance 'dac80508_gen[0].spi_fifo1/data_converter_
 INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:38 ; elapsed = 00:02:11 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:54 ; elapsed = 00:02:31 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -2106,11 +2114,11 @@ Report RTL Partitions:
 +------+-----------------------+------------+----------+
 |1     |okHost__GC0            |           1|      1798|
 |2     |AD7961__GC0            |           4|       196|
-|3     |top_level_module__GCB0 |           1|     22918|
-|4     |top_level_module__GCB1 |           1|      6928|
-|5     |top_level_module__GCB2 |           1|     14104|
-|6     |top_level_module__GCB3 |           1|     13580|
-|7     |top_level_module__GCB4 |           1|     13710|
+|3     |top_level_module__GCB0 |           1|     22923|
+|4     |top_level_module__GCB1 |           1|      6933|
+|5     |top_level_module__GCB2 |           1|     14114|
+|6     |top_level_module__GCB3 |           1|     13590|
+|7     |top_level_module__GCB4 |           1|     13720|
 +------+-----------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start Applying XDC Timing Constraints
@@ -2124,13 +2132,13 @@ INFO: [Synth 8-5783] Moving clock source from hierarchical pin 'adc_timing/clk_i
 INFO: [Synth 8-5578] Moved timing constraint from pin 'core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst/src_arst' to pin 'core0/core0/a0/l62a5479e7989ce7f4d5507c695cc69cf_reg/Q'
 INFO: [Synth 8-5819] Moved 7 constraints on hierarchical pins to their respective driving/loading pins
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:53 ; elapsed = 00:02:28 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:02:11 ; elapsed = 00:02:49 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:02:04 ; elapsed = 00:02:39 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Timing Optimization : Time (s): cpu = 00:02:23 ; elapsed = 00:03:02 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -2139,17 +2147,17 @@ Report RTL Partitions:
 +------+-----------------------+------------+----------+
 |1     |okHost__GC0            |           1|      1796|
 |2     |AD7961__GC0            |           4|       196|
-|3     |top_level_module__GCB0 |           1|     22918|
-|4     |top_level_module__GCB1 |           1|      6928|
-|5     |top_level_module__GCB2 |           1|     14100|
-|6     |top_level_module__GCB3 |           1|     13580|
-|7     |top_level_module__GCB4 |           1|     13710|
+|3     |top_level_module__GCB0 |           1|     22923|
+|4     |top_level_module__GCB1 |           1|      6933|
+|5     |top_level_module__GCB2 |           1|     14110|
+|6     |top_level_module__GCB3 |           1|     13590|
+|7     |top_level_module__GCB4 |           1|     13720|
 +------+-----------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:02:23 ; elapsed = 00:03:18 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Technology Mapping : Time (s): cpu = 00:02:46 ; elapsed = 00:03:49 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -2183,7 +2191,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:02:32 ; elapsed = 00:03:27 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished IO Insertion : Time (s): cpu = 00:02:57 ; elapsed = 00:04:00 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -2196,7 +2204,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:02:32 ; elapsed = 00:03:27 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Renaming Generated Instances : Time (s): cpu = 00:02:58 ; elapsed = 00:04:01 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -2208,25 +2216,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:39 ; elapsed = 00:03:34 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:03:05 ; elapsed = 00:04:08 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:02:39 ; elapsed = 00:03:34 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Renaming Generated Ports : Time (s): cpu = 00:03:05 ; elapsed = 00:04:09 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:02:44 ; elapsed = 00:03:39 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Handling Custom Attributes : Time (s): cpu = 00:03:15 ; elapsed = 00:04:18 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:02:44 ; elapsed = 00:03:39 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Renaming Generated Nets : Time (s): cpu = 00:03:15 ; elapsed = 00:04:19 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -2284,11 +2292,11 @@ Report Cell Usage:
 |29    |BUFG                     |     7|
 |30    |CARRY4                   |  1644|
 |31    |DNA_PORT                 |     1|
-|32    |LUT1                     |  2736|
-|33    |LUT2                     |  3127|
-|34    |LUT3                     |  1369|
-|35    |LUT4                     |  4080|
-|36    |LUT5                     |  4549|
+|32    |LUT1                     |  2684|
+|33    |LUT2                     |  3099|
+|34    |LUT3                     |  1335|
+|35    |LUT4                     |  4078|
+|36    |LUT5                     |  4601|
 |37    |LUT6                     |  4179|
 |38    |LUT6_2                   |    50|
 |39    |MMCME2_BASE              |     1|
@@ -2302,7 +2310,7 @@ Report Cell Usage:
 |47    |SRL16E                   |     8|
 |48    |FDCE                     |  1332|
 |49    |FDPE                     |   191|
-|50    |FDRE                     | 18020|
+|50    |FDRE                     | 17956|
 |51    |FDSE                     |    48|
 |52    |IBUF                     |     8|
 |53    |IBUFDS                   |     8|
@@ -2313,11 +2321,11 @@ Report Cell Usage:
 |58    |OBUFDS                   |    12|
 +------+-------------------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:02:44 ; elapsed = 00:03:39 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Finished Writing Synthesis Report : Time (s): cpu = 00:03:15 ; elapsed = 00:04:19 . Memory (MB): peak = 1039.527 ; gain = 715.211
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 457 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:01:59 ; elapsed = 00:03:11 . Memory (MB): peak = 1034.961 ; gain = 225.266
-Synthesis Optimization Complete : Time (s): cpu = 00:02:45 ; elapsed = 00:03:41 . Memory (MB): peak = 1034.961 ; gain = 711.195
+Synthesis Optimization Runtime : Time (s): cpu = 00:02:25 ; elapsed = 00:03:48 . Memory (MB): peak = 1039.527 ; gain = 226.137
+Synthesis Optimization Complete : Time (s): cpu = 00:03:16 ; elapsed = 00:04:21 . Memory (MB): peak = 1039.527 ; gain = 715.211
 INFO: [Project 1-571] Translating synthesized netlist
 INFO: [Netlist 29-17] Analyzing 2329 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -2335,12 +2343,12 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-715 Infos, 465 Warnings, 0 Critical Warnings and 0 Errors encountered.
+723 Infos, 465 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:02:58 ; elapsed = 00:03:55 . Memory (MB): peak = 1037.406 ; gain = 713.641
+synth_design: Time (s): cpu = 00:03:30 ; elapsed = 00:04:36 . Memory (MB): peak = 1039.527 ; gain = 715.211
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/iande/Desktop/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
-write_checkpoint: Time (s): cpu = 00:00:10 ; elapsed = 00:00:07 . Memory (MB): peak = 1037.406 ; gain = 0.000
+write_checkpoint: Time (s): cpu = 00:00:12 ; elapsed = 00:00:08 . Memory (MB): peak = 1039.527 ; gain = 0.000
 INFO: [runtcl-4] Executing : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.963 . Memory (MB): peak = 1037.406 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Fri Jan 14 11:14:21 2022...
+report_utilization: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.449 . Memory (MB): peak = 1039.527 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Tue Feb  1 12:52:13 2022...
