@@ -64,7 +64,7 @@ class Register:
             for i in range(15):
                 if os.path.basename(workbook_path) == 'covg_fpga':
                     workbook_path = os.path.join(
-                        workbook_path, 'Registers.xlsx')
+                        workbook_path, 'python', 'Registers.xlsx')
                     break
                 else:
                     # If we aren't in covg_fpga, move up a folder and check again
