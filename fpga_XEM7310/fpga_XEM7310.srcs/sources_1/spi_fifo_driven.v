@@ -29,20 +29,18 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 output wire ss_0,
      output wire sclk_0,
      output wire mosi_0,
-     input wire [15:0] adc_val_0,
+     input wire [23:0] data_i,
      /*****Register Bridge and DDR Signals******/
      //input wire ep_read,
      input wire ep_write,
      input wire [31:0] ep_address,
      input wire [31:0] ep_dataout_coeff,
      //output wire [31:0] ep_datain,
-     input wire [9:0] en_period,
-     output wire clk_en_out,
-     input wire clk_en_in,
-     input wire ddr3_rst, // resets clock enable generator  
-     input wire [13:0] ddr_dat_i,
      output wire rd_en_0,
-     input wire regTrigger
+     input wire regTrigger,
+     input wire filter_sel,  // if high SPI data is from the filter. 
+     output wire [31:0] coeff_debug_out1,
+     output wire [31:0] coeff_debug_out2
     );
     
       wire cmd_stb;
@@ -65,14 +63,6 @@ module spi_fifo_driven #(parameter ADDR = 0) (
       //wire empty;
       wire writeFifo;//this signal and the one below are used to generate the write enable signal for the FIFO
       reg wr_en;//
-    
-     //General purpose clock divide - currently used as "helper" clocking module for reading form DDR3
-     general_clock_divide MIG_DDR_FIFO_RD_EN(
-         .clk(clk),  // input 
-         .rst(ddr3_rst), // input 
-         .en_period(en_period), // input [9:0]
-         .clk_en(clk_en_out)  // output 
-     );
 	 
 	 /* ---------------- ADC796x & AD5453 control ----------------*/
 	 
@@ -95,11 +85,30 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 wire [13:0] filter_out_modified;
 	 
+	 reg [23:0] spi_data; 
+	 reg data_ready_mux;
+
+     always @(*) begin
+         if (filter_sel == 1'b1) spi_data = {11'b0, filter_out_modified};
+         else spi_data = data_i;
+     end
+	 
+	 reg [15:0] filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable before input to the SPI command generator
+	 always @(posedge clk) begin
+	   filter_data_rdy[15] <= data_rdy_0;
+	   filter_data_rdy[14:0] <= filter_data_rdy[15:1];
+	 end
+	 
+     always @(*) begin
+         if (filter_sel == 1'b1) data_ready_mux = filter_data_rdy[0];
+         else data_ready_mux = data_rdy_0;
+     end
+	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
-	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(/*ddr_dat_i*/filter_out_modified), 
+	 .clk(clk), .okClk(fifoclk), .rst(rst), .int_o(int_o_0), .empty(1'b0), .adc_dat_i(spi_data), 
 	 .adr(adr_0), .cmd_stb(cmd_stb_0), .cmd_word(cmd_word_0),
-	 .rd_en(rd_en_0), .data_rdy(/*dataready*/data_rdy_0), .regDataOut(ep_dataout_coeff[15:0]), 
+	 .rd_en(rd_en_0), .data_rdy(data_ready_mux), .regDataOut(ep_dataout_coeff[15:0]), 
 	 .regWrite(ep_write), .regAddress(ep_address[7:0]), .regTrigger(regTrigger)
 	 );
 	 
@@ -117,27 +126,31 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 .bram_in(coeff_bram_in)
 	 );
 	 
+	 wire [31:0] addra_subtract;
+	 assign addra_subtract = ep_address - (32'h4+ADDR);
+	 
 	 blk_mem_gen_0 realTime_LPF_coeff_BRAM(
-	 .addra(ep_address[3:0] - (4'h4+ADDR)), .clka(fifoclk), .dina(ep_dataout_coeff), .ena(ep_write & ((ep_address>(ADDR + 8'h03)) & (ep_address<(ADDR + 8'h13)))), .wea(4'b1111),
+	 .addra(addra_subtract[3:0]), .clka(fifoclk), .dina(ep_dataout_coeff), 
+	 .ena(ep_write & ((ep_address>(ADDR + 8'h03)) & (ep_address<(ADDR + 8'h13)))), .wea(4'b1111),
 	 .addrb({27'b0, read_address}), .clkb(clk), .doutb(coeff_bram_in), .enb(read_coeff)
 	 );
 	 
 	 // Real-Time LPF
-       Butterworth u_Butterworth_0
+       Butter_pipelined u_Butterworth_0
          (
          .clk(clk),
          .clk_enable(data_rdy_0 | write_enable | write_done),
          .reset(rst),
-         .filter_in(adc_val_0),
+         .filter_in(data_i[15:0]), 
          .write_enable(write_enable),
          .write_done(write_done),
-         .write_address(write_address),
+         .write_address(write_address[3:0]),
          .coeffs_in(coeffs_in),
          .filter_out(filter_out)
+         //.coeff_debug_out1(coeff_debug_out1),
+         //.coeff_debug_out2(coeff_debug_out2)
          );
-         
-     //wire [13:0] filter_out_modified;
-     
+              
      LPF_data_modify_fixpt u_dat_mod(
      .din(filter_out), .dout(filter_out_modified)
      );
@@ -156,7 +169,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
       .wb_adr_i(adr_0[4:0]), .wb_dat_i(dat_o_0), .wb_dat_o(dat_i_0), 
       .wb_sel_i(sel_0), .wb_we_i(we_0), .wb_stb_i(stb_0), 
       .wb_cyc_i(cyc_0), .wb_ack_o(ack_0), .wb_err_o(err_0), .wb_int_o(int_o_0),
-      .ss_pad_o(ss_0), .sclk_pad_o(sclk_0), .mosi_pad_o(mosi_0), .miso_pad_i() 
+      .ss_pad_o(ss_0), .sclk_pad_o(sclk_0), .mosi_pad_o(mosi_0), .miso_pad_i(1'b0), .miso_b_pad_i(1'b0)
     );
-    
+     
 endmodule

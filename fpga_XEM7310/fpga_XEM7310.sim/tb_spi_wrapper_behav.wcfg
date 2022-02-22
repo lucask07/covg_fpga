@@ -3,211 +3,114 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="tb_dual_port_ddr_behav.wdb" id="1">
+      <db_ref path="tb_spi_top_behav.wdb" id="1">
          <top_modules>
             <top_module name="glbl" />
-            <top_module name="tb_dual_port_ddr" />
+            <top_module name="tb_spi_top" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="1000000000000fs"></ZoomEndTime>
-      <Cursor1Time time="448584203000fs"></Cursor1Time>
+      <ZoomEndTime time="684165232359fs"></ZoomEndTime>
+      <Cursor1Time time="36144578000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="233"></NameColumnWidth>
-      <ValueColumnWidth column_width="139"></ValueColumnWidth>
+      <ValueColumnWidth column_width="163"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="44" />
+   <WVObjectSize size="21" />
    <wave_markers>
       <marker time="548000000" label="" />
+      <marker time="6192500000" label="" />
       <marker time="532970000" label="" />
       <marker time="732843000" label="" />
       <marker time="3015000000" label="" />
       <marker time="4831000000" label="" />
       <marker time="375160000" label="" />
-      <marker time="6192500000" label="" />
    </wave_markers>
-   <wvobject fp_name="/tb_dual_port_ddr/clk_sys" type="logic">
-      <obj_property name="ElementShortName">clk_sys</obj_property>
-      <obj_property name="ObjectShortName">clk_sys</obj_property>
+   <wvobject fp_name="/tb_spi_top/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/clk_ddr_ui" type="logic">
-      <obj_property name="ElementShortName">clk_ddr_ui</obj_property>
-      <obj_property name="ObjectShortName">clk_ddr_ui</obj_property>
+   <wvobject fp_name="/tb_spi_top/fifoclk" type="logic">
+      <obj_property name="ElementShortName">fifoclk</obj_property>
+      <obj_property name="ObjectShortName">fifoclk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr_reset" type="logic">
-      <obj_property name="ElementShortName">ddr_reset</obj_property>
-      <obj_property name="ObjectShortName">ddr_reset</obj_property>
+   <wvobject fp_name="/tb_spi_top/rst" type="logic">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in_rd_count" type="array">
-      <obj_property name="ElementShortName">pipe_in_rd_count[6:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_in_rd_count[6:0]</obj_property>
+   <wvobject fp_name="/tb_spi_top/ep_dataout" type="array">
+      <obj_property name="ElementShortName">ep_dataout[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ep_dataout[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in_wr_count" type="array">
-      <obj_property name="ElementShortName">pipe_in_wr_count[9:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_in_wr_count[9:0]</obj_property>
+   <wvobject fp_name="/tb_spi_top/trigger" type="logic">
+      <obj_property name="ElementShortName">trigger</obj_property>
+      <obj_property name="ObjectShortName">trigger</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pi0_ep_write" type="logic">
-      <obj_property name="ElementShortName">pi0_ep_write</obj_property>
-      <obj_property name="ObjectShortName">pi0_ep_write</obj_property>
+   <wvobject fp_name="/tb_spi_top/readFifo" type="logic">
+      <obj_property name="ElementShortName">readFifo</obj_property>
+      <obj_property name="ObjectShortName">readFifo</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in_read" type="logic">
-      <obj_property name="ElementShortName">pipe_in_read</obj_property>
-      <obj_property name="ObjectShortName">pipe_in_read</obj_property>
+   <wvobject fp_name="/tb_spi_top/rstFifo" type="logic">
+      <obj_property name="ElementShortName">rstFifo</obj_property>
+      <obj_property name="ObjectShortName">rstFifo</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_read" type="logic">
-      <obj_property name="ElementShortName">pipe_in2_read</obj_property>
-      <obj_property name="ObjectShortName">pipe_in2_read</obj_property>
+   <wvobject fp_name="/tb_spi_top/ep_write" type="logic">
+      <obj_property name="ElementShortName">ep_write</obj_property>
+      <obj_property name="ObjectShortName">ep_write</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_data" type="array">
-      <obj_property name="ElementShortName">pipe_in2_data[255:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_in2_data[255:0]</obj_property>
+   <wvobject fp_name="/tb_spi_top/uut/realTime_LPF_coeff_BRAM/U0/addra" type="array">
+      <obj_property name="ElementShortName">addra[3:0]</obj_property>
+      <obj_property name="ObjectShortName">addra[3:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_rd_count" type="array">
-      <obj_property name="ElementShortName">pipe_in2_rd_count[6:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_in2_rd_count[6:0]</obj_property>
+   <wvobject fp_name="/tb_spi_top/ep_address" type="array">
+      <obj_property name="ElementShortName">ep_address[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ep_address[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_wr_count" type="array">
-      <obj_property name="ElementShortName">pipe_in2_wr_count[8:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_in2_wr_count[8:0]</obj_property>
+   <wvobject fp_name="/tb_spi_top/ep_dataout_coeff" type="array">
+      <obj_property name="ElementShortName">ep_dataout_coeff[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ep_dataout_coeff[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_valid" type="logic">
-      <obj_property name="ElementShortName">pipe_in2_valid</obj_property>
-      <obj_property name="ObjectShortName">pipe_in2_valid</obj_property>
+   <wvobject fp_name="/tb_spi_top/en_period" type="array">
+      <obj_property name="ElementShortName">en_period[9:0]</obj_property>
+      <obj_property name="ObjectShortName">en_period[9:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_full" type="logic">
-      <obj_property name="ElementShortName">pipe_in2_full</obj_property>
-      <obj_property name="ObjectShortName">pipe_in2_full</obj_property>
+   <wvobject fp_name="/tb_spi_top/ddr3_rst" type="logic">
+      <obj_property name="ElementShortName">ddr3_rst</obj_property>
+      <obj_property name="ObjectShortName">ddr3_rst</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_in2_empty" type="logic">
-      <obj_property name="ElementShortName">pipe_in2_empty</obj_property>
-      <obj_property name="ObjectShortName">pipe_in2_empty</obj_property>
+   <wvobject fp_name="/tb_spi_top/regTrigger" type="logic">
+      <obj_property name="ElementShortName">regTrigger</obj_property>
+      <obj_property name="ObjectShortName">regTrigger</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/po0_ep_datain" type="array">
-      <obj_property name="ElementShortName">po0_ep_datain[127:0]</obj_property>
-      <obj_property name="ObjectShortName">po0_ep_datain[127:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
+   <wvobject fp_name="/tb_spi_top/i" type="array">
+      <obj_property name="ElementShortName">i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">i[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/five_msps_adc_pulse" type="array">
-      <obj_property name="ElementShortName">five_msps_adc_pulse[7:0]</obj_property>
-      <obj_property name="ObjectShortName">five_msps_adc_pulse[7:0]</obj_property>
+   <wvobject fp_name="/tb_spi_top/data_rdy" type="logic">
+      <obj_property name="ElementShortName">data_rdy</obj_property>
+      <obj_property name="ObjectShortName">data_rdy</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/adc_emulator_valid" type="logic">
-      <obj_property name="ElementShortName">adc_emulator_valid</obj_property>
-      <obj_property name="ObjectShortName">adc_emulator_valid</obj_property>
+   <wvobject fp_name="/tb_spi_top/filter_in" type="array">
+      <obj_property name="ElementShortName">filter_in[15:0]</obj_property>
+      <obj_property name="ObjectShortName">filter_in[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ad5453_clk_en" type="logic">
-      <obj_property name="ElementShortName">ad5453_clk_en</obj_property>
-      <obj_property name="ObjectShortName">ad5453_clk_en</obj_property>
+   <wvobject fp_name="/tb_spi_top/uut/filter_out" type="array">
+      <obj_property name="ElementShortName">filter_out[13:0]</obj_property>
+      <obj_property name="ObjectShortName">filter_out[13:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_out_full" type="logic">
-      <obj_property name="ElementShortName">pipe_out_full</obj_property>
-      <obj_property name="ObjectShortName">pipe_out_full</obj_property>
+   <wvobject fp_name="/tb_spi_top/uut/filter_out_modified" type="array">
+      <obj_property name="ElementShortName">filter_out_modified[13:0]</obj_property>
+      <obj_property name="ObjectShortName">filter_out_modified[13:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/po2_ep_read" type="logic">
-      <obj_property name="ElementShortName">po2_ep_read</obj_property>
-      <obj_property name="ObjectShortName">po2_ep_read</obj_property>
+   <wvobject fp_name="/tb_spi_top/count_enable" type="array">
+      <obj_property name="ElementShortName">count_enable[7:0]</obj_property>
+      <obj_property name="ObjectShortName">count_enable[7:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_out_empty" type="logic">
-      <obj_property name="ElementShortName">pipe_out_empty</obj_property>
-      <obj_property name="ObjectShortName">pipe_out_empty</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_out2_write" type="logic">
-      <obj_property name="ElementShortName">pipe_out2_write</obj_property>
-      <obj_property name="ObjectShortName">pipe_out2_write</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/dac_data_valid" type="logic">
-      <obj_property name="ElementShortName">dac_data_valid</obj_property>
-      <obj_property name="ObjectShortName">dac_data_valid</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_out_rd_count" type="array">
-      <obj_property name="ElementShortName">pipe_out_rd_count[7:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_out_rd_count[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/pipe_out_wr_count" type="array">
-      <obj_property name="ElementShortName">pipe_out_wr_count[6:0]</obj_property>
-      <obj_property name="ObjectShortName">pipe_out_wr_count[6:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/app_cmd" type="array">
-      <obj_property name="ElementShortName">app_cmd[2:0]</obj_property>
-      <obj_property name="ObjectShortName">app_cmd[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/app_addr" type="array">
-      <obj_property name="ElementShortName">app_addr[29:0]</obj_property>
-      <obj_property name="ObjectShortName">app_addr[29:0]</obj_property>
-      <obj_property name="Radix">HEXRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/app_en" type="logic">
-      <obj_property name="ElementShortName">app_en</obj_property>
-      <obj_property name="ObjectShortName">app_en</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/app_rdy" type="logic">
-      <obj_property name="ElementShortName">app_rdy</obj_property>
-      <obj_property name="ObjectShortName">app_rdy</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/app_wdf_rdy" type="logic">
-      <obj_property name="ElementShortName">app_wdf_rdy</obj_property>
-      <obj_property name="ObjectShortName">app_wdf_rdy</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/app_wdf_wren" type="logic">
-      <obj_property name="ElementShortName">app_wdf_wren</obj_property>
-      <obj_property name="ObjectShortName">app_wdf_wren</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ep_read_enable" type="logic">
-      <obj_property name="ElementShortName">ep_read_enable</obj_property>
-      <obj_property name="ObjectShortName">ep_read_enable</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ep_write_enable" type="logic">
-      <obj_property name="ElementShortName">ep_write_enable</obj_property>
-      <obj_property name="ObjectShortName">ep_write_enable</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/app_rd_data" type="array">
-      <obj_property name="ElementShortName">app_rd_data[255:0]</obj_property>
-      <obj_property name="ObjectShortName">app_rd_data[255:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/app_wdf_data" type="array">
-      <obj_property name="ElementShortName">app_wdf_data[255:0]</obj_property>
-      <obj_property name="ObjectShortName">app_wdf_data[255:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/cmd_byte_addr_wr" type="array">
-      <obj_property name="ElementShortName">cmd_byte_addr_wr[29:0]</obj_property>
-      <obj_property name="ObjectShortName">cmd_byte_addr_wr[29:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/cmd_byte_addr_rd" type="array">
-      <obj_property name="ElementShortName">cmd_byte_addr_rd[29:0]</obj_property>
-      <obj_property name="ObjectShortName">cmd_byte_addr_rd[29:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/cmd_byte_addr_wr2" type="array">
-      <obj_property name="ElementShortName">cmd_byte_addr_wr2[29:0]</obj_property>
-      <obj_property name="ObjectShortName">cmd_byte_addr_wr2[29:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/cmd_byte_addr_rd2" type="array">
-      <obj_property name="ElementShortName">cmd_byte_addr_rd2[29:0]</obj_property>
-      <obj_property name="ObjectShortName">cmd_byte_addr_rd2[29:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/state" type="array">
-      <obj_property name="ElementShortName">state[31:0]</obj_property>
-      <obj_property name="ObjectShortName">state[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/ob_count" type="array">
-      <obj_property name="ElementShortName">ob_count[6:0]</obj_property>
-      <obj_property name="ObjectShortName">ob_count[6:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/ob2_count" type="array">
-      <obj_property name="ElementShortName">ob2_count[6:0]</obj_property>
-      <obj_property name="ObjectShortName">ob2_count[6:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/ib2_count" type="array">
-      <obj_property name="ElementShortName">ib2_count[6:0]</obj_property>
-      <obj_property name="ObjectShortName">ib2_count[6:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_dual_port_ddr/ddr3_tb/ib_count" type="array">
-      <obj_property name="ElementShortName">ib_count[6:0]</obj_property>
-      <obj_property name="ObjectShortName">ib_count[6:0]</obj_property>
+   <wvobject fp_name="/tb_spi_top/count" type="array">
+      <obj_property name="ElementShortName">count[7:0]</obj_property>
+      <obj_property name="ObjectShortName">count[7:0]</obj_property>
    </wvobject>
 </wave_config>

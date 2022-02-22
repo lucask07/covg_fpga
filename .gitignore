@@ -114,3 +114,16 @@
 *.pyc
 *.swp
 replace_params.py
+python/tests/testing_boards_endpoints_incrementing.py
+python/tests/unit_tests/test_defines.v
+
+########
+#For Sphinx Documentation
+########
+!*.rst
+!*.html
+!*Makefile
+!*make.bat
+!*.js
+!*objects.inv
+!*.md
