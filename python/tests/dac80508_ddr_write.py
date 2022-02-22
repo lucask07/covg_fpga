@@ -1,7 +1,10 @@
+from asyncore import write
 import os, sys
 import time
 import atexit
 import numpy as np
+from datetime import datetime
+import matplotlib.pyplot as plt
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 cwd = os.getcwd()
@@ -24,9 +27,30 @@ from interfaces.utils import from_voltage
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
 
+def cycle_power():
+    pwr.all_off()
+    for name in ['1V8', '5V', '3V3']:
+        pwr.supply_on(name)
+        time.sleep(0.05)
+
 # --- Variables ---
 pwr_setup = '3dual'
 dac80508_offset = 0x8000
+# FDAC: 1V 1KHz sine wave; SDAC: 1V 1KHz sine wave
+fdac_amp_volt = 1
+sdac_amp_volt = 1
+target_freq = 1000.0
+# Specify output channel for DAC80508
+sdac_1_out_chan = 0
+sdac_2_out_chan = 7
+# Variables for which writes to run and how many
+loop_num = 10   # Number of times to turning on, writing, turning off
+# The path for the CSV storing the speed and quality of the data write
+# DO NOT include .csv, that will be added automatically along with the date and time
+csv_file = 'dac80508_ddr_write_CSV/'
+USE_ORIGINAL = True
+USE_PAUSE = True
+USE_DOUBLE = True
 
 
 # --- Instantiations ---
@@ -52,10 +76,7 @@ atexit.register(pwr_off, [dc_pwr])
 
 
 # --- Set up FPGA ---
-pwr.all_off()
-for name in ['1V8', '5V', '3V3']:
-    pwr.supply_on(name)
-    time.sleep(0.05)
+cycle_power()
 
 # --- Set up GPIO ---
 # gpio.fpga.debug = True
@@ -66,7 +87,7 @@ for dac in [dac1, dac2]:
     dac.set_spi_sclk_divide(0x8)
     dac.set_ctrl_reg(0x3218)
     dac.set_config_bin(0x00)
-    dac.set_gain(gain=1, outputs=[4], divide_reference=False)
+    dac.set_gain(gain=1, outputs=[sdac_1_out_chan, sdac_2_out_chan], divide_reference=False)
     dac.set_data_mux('DDR')
 
 # Change DDR read clock using AD5453 chip (only one with correct endpoints for this)
@@ -85,11 +106,6 @@ ad5453.set_clk_divider(divide_value=0x50)
 # [96:111]  SDAC_1
 # [112:127] SDAC_2
 
-# FDAC: 1V 1KHz sine wave; SDAC: 1V 1KHz sine wave
-fdac_amp_volt = 1
-sdac_amp_volt = 1
-# target_freq = 12804.09731  # Required when the DDR read clock divide doesn't work
-target_freq = 1000.0
 # TODO: figure out what the voltage range should be for fdac, 3.3 is just a guess
 fdac_amp_code = from_voltage(voltage=fdac_amp_volt, num_bits=14, voltage_range=3.3, with_negatives=False)
 sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
@@ -99,9 +115,6 @@ fdac_sine, fdac_freq = ddr.make_sine_wave(amplitude=fdac_amp_code, frequency=tar
 # Data for the 2 DAC80508 "Slow DACs"
 sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq, offset=dac80508_offset)
 
-# Specify output channel for DAC80508
-sdac_1_out_chan = 0
-sdac_2_out_chan = 7
 # Clear channel bits
 fdac_sine = np.bitwise_and(fdac_sine, 0x3fff)
 
@@ -116,4 +129,87 @@ for i in range(2):
 for i in range(2):
     ddr.data_arrays[i + 6] = sdac_sine
 
-ddr.write_channels()
+# speed_out_data will be a list of tuples telling (speed of write, quality of data, type of write)
+# Speed of write is in MB/s
+# For quality of data, True is good data, False is bad data
+speed_out_data = []
+ORIGINAL = 0
+PAUSE = 1
+DOUBLE = 2
+print('Enter q to quit the loop')
+
+for i in range(loop_num):
+    print(f'--- Loop Number {i}/{loop_num} ---')
+
+    if USE_ORIGINAL is True:
+        print('-- ORIGINAL --')
+        _, speed = ddr.write_channels()
+        user_in = input('Was the output good? (y/n)')
+        if user_in == 'q':
+            break
+        speed_out_data.append((speed, user_in != 'n', ORIGINAL))
+    cycle_power()
+
+    if USE_PAUSE is True:
+        print('-- PAUSE --')
+        time.sleep(0.5)
+        _, speed = ddr.write_channels()
+        user_in = input('Was the output good? (y/n)')
+        if user_in == 'q':
+            break
+        speed_out_data.append((speed, user_in != 'n', PAUSE))
+    cycle_power()
+
+    if USE_DOUBLE is True:
+        print('-- DOUBLE --')
+        ddr.write_channels()
+        _, speed = ddr.write_channels()
+        user_in = input('Was the output good? (y/n)')
+        if user_in == 'q':
+            break
+        speed_out_data.append((speed, user_in != 'n', DOUBLE))
+    cycle_power()
+
+print('Loops complete')
+
+# Write data to CSV
+today = datetime.today()
+date = str(today.date())
+hour = str(today.hour)
+minute = str(today.minute)
+full_csv_file = csv_file + date + '_' + hour + minute + '.csv'
+csv_string = '\n'.join([','.join([str(x) for x in row]) for row in speed_out_data])
+with open(full_csv_file, 'w') as file:
+    print('Writing CSV')
+    file.write(csv_string)
+
+# Print result statistics
+print('--- Result Statistics ---')
+write_speeds = [data[0] for data in speed_out_data]
+output_qualities = [data[1] for data in speed_out_data]
+print(f'Write Speed Range: [{min(write_speeds)}:{max(write_speeds)}]')
+print(f'Mean Write Speed: {sum(write_speeds) / len(write_speeds)}')
+print(f'Good Output: {sum(output_qualities)}')
+print(f'Bad Output: {len(output_qualities) - sum(output_qualities)}')
+
+write_types = [ORIGINAL, PAUSE, DOUBLE]
+write_type_strs = ['Original', 'Pause', 'Double']
+for write_type in write_types:
+    print(f'-- {write_type_strs[write_type]} --')
+    type_specific_data = [data for data in speed_out_data if data[2] == write_type]
+    write_speeds = [data[0] for data in type_specific_data]
+    output_qualities = [data[1] for data in type_specific_data]
+    print(f'    Write Speed Range: [{min(write_speeds)}:{max(write_speeds)}]')
+    print(f'    Mean Write Speed: {sum(write_speeds) / len(write_speeds)}')
+    print(f'    Good Output: {sum(output_qualities)}')
+    print(f'    Bad Output: {len(output_qualities) - sum(output_qualities)}')
+
+# Graph scatter plot of data
+colors = ['r', 'g', 'b']
+for write_type in write_types:
+    x_speed = [data[0] for data in speed_out_data if data[2] == write_type]
+    y_quality = [data[1] for data in speed_out_data if data[2] == write_type]
+    plt.scatter(x_speed, y_quality, color=colors[write_type], label=write_type_strs[write_type])
+plt.legend()
+plt.title('Quality of Data against Write Speeds')
+plt.show()

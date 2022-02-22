@@ -3117,8 +3117,8 @@ class DDR3():
         print(f'The speed of the write was {speed_MBs} MB/s')
 
         # below prepares the HDL into read mode
-        self.reset_fifo()
         self.clear_write()
+        self.reset_fifo()
         if set_ddr_read:
             self.set_read()
         return block_pipe_return, speed_MBs
