@@ -126,3 +126,4 @@ python/tests/unit_tests/test_defines.v
 !*make.bat
 !*.js
 !*objects.inv
+!*.md
