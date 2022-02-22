@@ -322,7 +322,7 @@ class Endpoint:
                 return -1
             else:
                 print('No collisions found.')
-        
+
         # If the list and set match length, no duplicates
         return Endpoint.endpoints_from_defines
 
@@ -353,7 +353,7 @@ class Endpoint:
         endpoints_dict : dict
             The dict of Endpoints to increment.
         in_place : bool
-            If True, the dictionary given will be changed. Otherwise, a copy 
+            If True, the dictionary given will be changed. Otherwise, a copy
             of the dictionary will be made.
         """
 
@@ -376,13 +376,13 @@ class Endpoint:
             elif endpoint.gen_address:
                 # Increment the address by 1
                 endpoint.address += 1
-        
+
         return endpoints_dict
 
     @staticmethod
     def excel_to_defines(excel_path, defines_path, sheet=0):
         """Convert an Excel spreadsheet of endpoint definitions to Verilog.
-        
+
         Arguments
         ---------
         excel_path : str
@@ -711,9 +711,9 @@ class I2CController:
     @classmethod
     def create_chips(cls, fpga, addr_pins, endpoints):
         """Instantiate a number of new I2C chips.
-        
+
         The FPGA and endpoints will be the same for all instantiated chips.
-        
+
         Arguments
         ---------
         fpga : FPGA
@@ -1545,7 +1545,7 @@ class SPIController:
 
     def wb_is_ack(self):
         """Check if the Wishbone sent back a write acknowledge."""
-        
+
         pass
     #     response = self.fpga.read_wire(self.endpoints['OUT'].address)
     #     return response == SPIController.ACK
@@ -2079,7 +2079,7 @@ class DAC80508(SPIFifoDriven):
         for i in range(len(params)):
             data += params[i]*2**bit
         self.set_config_bin(data)
-    
+
     def set_gain_bin(self, data):
         """Set the gain register with a binary value.
 
@@ -2455,7 +2455,7 @@ class ADS8686(SPIController, ADCDATA):
 
     def reg_to_voltage(self, reg_val, chan_num=0):
         """Calculates the channel's voltage from the register value.
-        
+
         Uses the stored gain range. reg_val can be list of ints or int
         """
         #  TODO: setup for sequence of channels
@@ -2718,7 +2718,7 @@ class AD7961(ADCDATA):
 
     def reset_fifo(self):
         """Reset the FIFO for the ADC data.
-        
+
         One per channel.
         """
 
@@ -2727,7 +2727,7 @@ class AD7961(ADCDATA):
 
     def reset_trig(self):
         """Reset the FPGA controller for the ADC.
-        
+
         One per channel. Uses the Opal Kelly Trigger
         """
 
@@ -2824,40 +2824,44 @@ class AD7961(ADCDATA):
 
 
 class DDR3():
-    # TODO: complete class docstring
+    """DDR is striped in groups of 16 bits to 8 channels  (128 bits)
+    Out of the DDR FIFO
+    Input write is 256 bits wide.
 
-    """
-        TODO: Check and update this:
-        DDR is striped in groups of 16 bits to 8 channels  (128 bits)
-        Out of the DDR FIFO
-        Input write is 256 bits wide.
-        Output read bus is 128 bits wide.
-        Supports up to 8 channels at 16 bits each.
-        Into the DDR:
-        FIFO Write side 32 bits (PipeIn), Read side is 256 bits
-        Write: W31-W0:     t0: W31-W0 [MSB]; W63-W32, ... W255-W224
-        Out of the DDR:
-        FIFO Write: W255 - W0 : t0 W255 - W128, t1: W127 - W0
-        so:
-        channel 0: 128    + 15:128, W15-W0
-        channel 1: 128+16 + 15:144, 16*1 + 15: 16
+    Output read bus is 128 bits wide.
+    Supports up to 8 channels at 16 bits each.
 
-        The DDR is now divided into 2 buffers
-        1st buffer: function generator like data that provides data-stream to the DACs
-                      write from the host when WRITE_ENABLE is set
-                      read to the host when READ_FG_ENABLE is set ... but this is not very useful
-        2nd buffer: buffering for ADC data.
-                      ADC data writes to the DDR when READ_ENABLE is set
-                      ADC data in DDR can be read to the host when READ_ENABLE is set
+    Into the DDR:
+    FIFO Write side 32 bits (PipeIn), Read side is 256 bits
+    Write: W31-W0:     t0: W31-W0 [MSB]; W63-W32, ... W255-W224
 
-        expected operation:
-            1) at startup write pattern for DACs (note that write sets the correct status bits)
-            2)
+    Out of the DDR:
+    FIFO Write: W255 - W0 : t0 W255 - W128, t1: W127 - W0
+    so:
+    channel 0: 128    + 15:128, W15-W0
+    channel 1: 128+16 + 15:144, 16*1 + 15: 16
 
-        DDR configuration bits:
-        WRITE_ENABLE
-        READ_ENABLE
-        READ_FG_ENABLE
+    The DDR is divided into 2 buffers. Each buffer has an incoming and outgoing FIFO.
+
+    1st buffer:
+        * function generator like data that provides a data-stream to the DACs
+        * write from the host when WRITE_ENABLE is set
+        * read to the DACs when READ_ENABLE is set
+
+    2nd buffer:
+        * buffering for ADC data.
+        * ADC data writes to the DDR when READ_ENABLE is set
+        * ADC data in DDR can be read to the host when READ_FG_ENABLE is set
+
+    Expected sequence of operations:
+        1) At startup write pattern for DACs using write_channels()
+        2) set_read() # starts DAC data output to DACs via SPI and ADC data captured into DDR
+        3) set_adc_read() # allows host to read PipeOut as PipeOut is continuously filled if emptied
+
+    DDR configuration bits:
+        * WRITE_ENABLE
+        * READ_ENABLE
+        * READ_FG_ENABLE
     """
 
     def __init__(self, fpga, endpoints=None):
@@ -2886,9 +2890,11 @@ class DDR3():
 
     def set_adc_debug(self):
         """Set the ADC debug bit.
-        
+
         That bit multiplexes a counter to ADC channel 0 and bits 47:0 of the
         DAC data to ADC channels 1,2,3.
+
+        Not supported in all versions of the FPGA design.
         """
 
         self.fpga.set_wire_bit(self.endpoints['ADC_DEBUG'].address,
@@ -2896,7 +2902,7 @@ class DDR3():
 
     def clear_adc_debug(self):
         """Clear the ADC debug bit.
-        
+
         DDR ADC data will be from the ADC.
         """
         self.fpga.clear_wire_bit(self.endpoints['ADC_DEBUG'].address,
@@ -2904,7 +2910,7 @@ class DDR3():
 
     def make_flat_voltage(self, amplitude):
         """Return a constant unit16 array of value amplitude.
-        
+
         Array length based on the sample_size parameter. The conversion from
         float or int voltage to int digital (binary) code should take place
         BEFORE this function.
@@ -2918,7 +2924,7 @@ class DDR3():
         -------
             numpy.ndarray (for DDR data array)
         """
-        
+
         amplitude = np.ones(self.parameters['sample_size'])*amplitude
         amplitude = amplitude.astype(np.uint16)
         return amplitude
@@ -2965,7 +2971,7 @@ class DDR3():
         frequency : float
             Desired frequency in Hz.
         offset : int
-            Digital (binary) value offset. 
+            Digital (binary) value offset.
         actual_frequency : bool
             Decide whether closest frequency that fits an integer number of periods is used.
 
@@ -3027,10 +3033,10 @@ class DDR3():
 
     def make_step(self, low, high, length, actual_length=True, duty=50):
         """Return a step signal (square wave) to write to the DDR.
-        
+
         The conversion from float or int voltage to int digital (binary) code
         should take place BEFORE this function.
-        
+
         Arguments
         ---------
         low : int
@@ -3088,10 +3094,11 @@ class DDR3():
 
         Returns
         -------
-            int, float : length of the buffer written to the DDR (or error code if unsuccessful), speed of the write in MB/s
+            int, float : length of the buffer written to the DDR
+                         (or error code if unsuccessful), speed of the write in MB/s
         """
 
-        print('Length of buffer at the top of WriteSDRAM: ', len(buf))
+        print('Length of buffer being written to DDR [bytes]: ', len(buf))
         # Reset FIFOs
         self.clear_read()
         self.reset_fifo()
@@ -3102,7 +3109,7 @@ class DDR3():
         block_pipe_return = self.fpga.xem.WriteToBlockPipeIn(epAddr=self.endpoints['BLOCK_PIPE_IN'].address,
                                                              blockSize=self.parameters['BLOCK_SIZE'],
                                                              data=buf)
-        print(f'The length of the write is {block_pipe_return}')
+        print(f'The length of the DDR write was {block_pipe_return}')
 
         time2 = time.time()
         time3 = (time2-time1)
@@ -3170,40 +3177,45 @@ class DDR3():
             print('{} = {}'.format(k, fifo_status[k]))
 
     def set_read(self):
-        """Set DDR / FIFOs to read."""
-        
+        """Set DDR / FIFOs to read.
+           Enables DDR data going to the DACs and ADC data into DDR
+        """
+
         self.fpga.set_wire_bit(self.endpoints['READ_ENABLE'].address,
                                self.endpoints['READ_ENABLE'].bit_index_low)
 
     def clear_read(self):
-        # TODO: add method docstring
+        """Clear DDR / FIFOs to read.
+            Stops DDR data from going to the DACs and ADC data into DDR
+        """
 
         self.fpga.clear_wire_bit(self.endpoints['READ_ENABLE'].address,
                                  self.endpoints['READ_ENABLE'].bit_index_low)
 
     def set_write(self):
-        """Set DDR / FIFOs to write."""
+        """Set DDR / FIFOs to write data into DDR via Pipe.
+        """
 
         self.fpga.set_wire_bit(self.endpoints['WRITE_ENABLE'].address,
                                self.endpoints['WRITE_ENABLE'].bit_index_low)
 
     def clear_write(self):
-        # TODO: add method docstring
+        """Clear DDR / FIFOs to write data into DDR via Pipe.
+        """
 
         self.fpga.clear_wire_bit(self.endpoints['WRITE_ENABLE'].address,
                                  self.endpoints['WRITE_ENABLE'].bit_index_low)
 
     def set_adc_read(self):
-        """Set DDR / FIFOs to read."""
-
-        # TODO: fix method docstring
+        """Set DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.
+        """
         # TODO: change this name to ADC_READ_ENABLE and modify names in FPGA
         self.fpga.set_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
                                self.endpoints['FG_READ_ENABLE'].bit_index_low)
 
     def clear_adc_read(self):
-        """Set DDR / FIFOs to read."""
-        # TODO: fix method docstring
+        """Clear DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.
+        """
 
         self.fpga.clear_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
                                  self.endpoints['FG_READ_ENABLE'].bit_index_low)
@@ -3230,10 +3242,11 @@ class DDR3():
             FIFO output buffer to read. Either 'ADC' or 'FG'. 'FG' just reads
             back what is written for DACs (as function generator) so not so
             useful.
-        
+
         Returns
         -------
-        byearray, int : The data read as a bytearray, The count (or error code) read from the OpalKelly interface
+        byearray, int : The data read as a bytearray, The count (or error code)
+        read from the OpalKelly interface
         """
 
         if sample_size is None:
@@ -3246,11 +3259,8 @@ class DDR3():
         # will automatically perform multiple transfers to complete the full LENGTH
         # the length must be an integer multiple of 16 for USB3.0
         # and the length must be an Integer multiple of Block Size
+        # see https://docs.opalkelly.com/fpsdk/frontpanel-api/ section 3.3.1
 
-        # epAddr	The address of the source Pipe Out.
-        # [in]	length	The length of the transfer (in bytes).
-        # [in]	blockSize	Block size (in bytes).
-        # [in]	data	A pointer to the transfer data buffer.
         block_size = self.parameters['BLOCK_SIZE']
         # check block size
         if block_size % 16 != 0:
@@ -3280,20 +3290,17 @@ class DDR3():
 
     def set_index(self, factor, factor2=None):
         """
-        No longer used. Index is fixed to improve timing performance.
-        # Set the index value at which the DDR3 loops back
+        No longer used. Index (the DDR address that wraps-around to 0)
+        is fixed to improve timing performance.
         """
         print('Set index is no longer used. Index is fixed to: {}'.format(
             self.parameters['port1_index']))
-        # self.fpga.set_wire(self.endpoints['INDEX'].address, factor)
-        # if factor2 is not None:
-        #     self.fpga.set_wire(self.endpoints['INDEX2'].address, factor)
 
 
 # TODO: should there be a 'device' or similar class that all controllers are subclasses of?
 def disp_device(dev, reg=True):
     """Display endpoints and registers for a chip.
-    
+
     Arguments
     ---------
     dev : I2CController or SPIController or SPIFifoDriven or AD7961
