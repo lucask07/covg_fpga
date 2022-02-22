@@ -123,7 +123,7 @@ module spi_top
   assign spi_ss_sel      = wb_cyc_i & wb_stb_i & (wb_adr_i[`SPI_OFS_BITS] == `SPI_SS);
   
   // Read from registers
-  always @(wb_adr_i or rx or ctrl or divider or ss)
+  always @(wb_adr_i or rx or ctrl or divider or ss or rx_chan_b)
   begin
     case (wb_adr_i[`SPI_OFS_BITS])
 `ifdef SPI_MAX_CHAR_128

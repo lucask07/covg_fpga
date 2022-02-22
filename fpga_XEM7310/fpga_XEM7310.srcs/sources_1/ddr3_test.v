@@ -5,13 +5,14 @@
 module ddr3_test
 	(
 	input  wire          clk,
-	input  wire          [31:0] INDEX,     // TODO: make these parameters to limit timing issues? 
-	input  wire          [31:0] INDEX2,    // for the 2nd buffer 
 	(* KEEP = "TRUE" *)input  wire          reset,
 	(* KEEP = "TRUE" *)input  wire          writes_en,
 	(* KEEP = "TRUE" *)input  wire          reads_en,
 	(* KEEP = "TRUE" *)input  wire          fg_reads_en,
 	(* KEEP = "TRUE" *)input  wire          calib_done,
+	(* KEEP = "TRUE" *)input  wire          adc_addr_reset,
+	(* KEEP = "TRUE" *)input  wire          adc_addr_restart,
+	
 	//DDR Input Buffer (ib_)  // DAC function generator data -- not timing sensitive 
 	(* KEEP = "TRUE" *)output reg           ib_re,
 	(* KEEP = "TRUE" *)input  wire [255:0]  ib_data,
@@ -54,9 +55,9 @@ module ddr3_test
 	(* KEEP = "TRUE" *)output wire [31:0]   app_wdf_mask
 	);
 
-localparam FIXED_INDEX = 30'h7_ff_ff_f8;
+localparam FIXED_INDEX = 30'h7f_ff_f8;
 localparam FIXED_INDEX2 = 30'hf_ff_ff_f8;
-localparam FIXED_INDEX2_START = 30'h8000000;
+localparam FIXED_INDEX2_START = 30'h80_00_00;
 
 localparam FIFO_SIZE           = 128;  // this is the size of the 256 wide side. 1024*32 and 256*128=32678 
 localparam HALF_FIFO_SIZE      = 64;  
@@ -75,6 +76,7 @@ localparam ADDRESS_INCREMENT   = 5'd8; // UI Address is a word address. BL8 Burs
 (* KEEP = "TRUE" *)reg         read_mode;
 (* KEEP = "TRUE" *)reg         fg_read_back_mode;
 (* KEEP = "TRUE" *)reg         reset_d;
+(* KEEP = "TRUE" *)reg         adc_addr_reset_reg;
 
 assign app_wdf_mask = 16'h0000;
 
@@ -129,13 +131,20 @@ always @(posedge clk) begin
 		ob_we             <= 1'b0;
 		ib2_re             <= 1'b0;
         ob2_we             <= 1'b0;
+        if (adc_addr_reset == 1'b1) adc_addr_reset_reg <= 1'b1;
 
 		case (state)
 			s_idle: begin  // only 1 clock cycle (at 200 MHz) of overhead in going back to the idle state 
 				burst_count <= BURST_UI_WORD_COUNT-1;
+				adc_addr_reset_reg <= 1'b0;  
+				if (adc_addr_reset_reg == 1'b1) begin
+				    state <= s_idle;
+				    if (adc_addr_restart == 1'b0) cmd_byte_addr_rd2 <= FIXED_INDEX2_START; // restart 
+				    else  cmd_byte_addr_rd2 <= cmd_byte_addr_wr2; // start at current write pointer
+				end
 				// Only start writing when initialization done
 				// Check to ensure that the input buffer has enough data for a burst : 32w_1024 x 256w_128
-				if (calib_done==1 && write_mode==1 && (ib_count >= BURST_UI_WORD_COUNT)) begin // if the in-bound FIFO has enough data 
+				else if (calib_done==1 && write_mode==1 && (ib_count >= BURST_UI_WORD_COUNT)) begin // if the in-bound FIFO has enough data 
 					app_addr <= cmd_byte_addr_wr;
 					app_cmd <= 3'b000;  // change LJK 2021/11/11
 					state <= s_write_0;

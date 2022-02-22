@@ -10,8 +10,17 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 from interfaces.interfaces import *
-from interfaces.interfaces import Endpoint
-from interfaces.utils import reverse_bits
+from interfaces.interfaces import Endpoint, DDR3
+from interfaces.utils import reverse_bits, test_bit, calc_impedance
+from scipy.fft import rfftfreq
+import matplotlib.pyplot as plt
+import time
+
+# Assign I2CDAQ busses
+Endpoint.I2CDAQ_level_shifted = Endpoint.get_chip_endpoints('I2CDAQ')
+# We want the endpoints_from_defines to be the same so in_place=False to use a copy when incrementing
+Endpoint.I2CDAQ_QW = Endpoint.increment_endpoints(
+    endpoints_dict=Endpoint.I2CDAQ_level_shifted, in_place=False)
 
 
 class Clamp:
@@ -40,104 +49,28 @@ class Clamp:
                     ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
                     P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None,
                     gain=None, FDBK=None, mode=None, EN_ipump=None,
-                    RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000)
+                    RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000, dc_num=0)
         Sets the I/O Expanders according to the arguments given.
     """
 
-    def __init__(self, fpga, TCA_addr_pins_0=0b110, TCA_addr_pins_1=0b000, UID_addr_pins=0b000, DAC_addr_pins=0b000):
-        # cwd = python/interfaces/
-        # i2c_bitfile = python/i2c.bit
-        self.TCA_0 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
-        self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
-        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
-        self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDC'])
+    def __init__(self, fpga, TCA_addr_pins_0=0b110, TCA_addr_pins_1=0b000,
+                 UID_addr_pins=0b000, DAC_addr_pins=0b000, dc_num=0):
+        # dc_num is the daughter card channel number since there are 0-3 channels
+
+        self.TCA = [None, None]
+        self.TCA[0] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0,
+                              endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+        self.TCA[1] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1,
+                              endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins,
+                                  endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+        self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins,
+                            endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
         self.serial_number = None  # Will get serial code from UID chip in setup()
 
-    def init_board(self):
-        """Tests and configures the board.
-
-        Tests connectivity with each chip, configures board for Voltage Clamp
-        Feedback Loop, and gets the serial number from the UID chip.
-        """
-        # Check chips
-        # TCA_0, TCA_1
-        for register_name in [
-            # Not checking input register because it defaults to a high-impedance state so we cannot check it against something
-            'OUTPUT',
-            'POLARITY',
-            'CONFIG'
-        ]:
-            # TCA_0
-            dev_addr = self.TCA_0.parameters['ADDRESS_HEADER'] | (
-                    self.TCA_0.addr_pins << 1) | 0b1
-            read_out = self.TCA_0.i2c_read_long(dev_addr, [self.TCA_0.parameters[register_name].address], 2)[
-                1]  # Only the second byte to come back is what we want
-            default = self.TCA_0.parameters[register_name].default
-            if read_out != default:
-                print(f'TCA_0 register: {register_name} FAILED\n    '
-                      f'(read_out) {read_out} != (default) {default}')
-                return False
-
-            # TCA_1
-            dev_addr = self.TCA_1.parameters['ADDRESS_HEADER'] | (
-                    self.TCA_1.addr_pins << 1) | 0b1
-            read_out = self.TCA_1.i2c_read_long(dev_addr, [self.TCA_1.parameters[register_name].address], 2)[
-                1]  # Only the second byte to come back is what we want
-            default = self.TCA_1.parameters[register_name].default
-            if read_out != default:
-                print(f'TCA_1 register: {register_name} FAILED\n    '
-                      f'(read_out) {read_out} != (default) {default}')
-
-                return False
-
-        # Configure clamp
-        # Command for Voltage Clamp Feedback loop
-        self.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2',
-                             CCOMP=47, RF1=3, ADG_RES=10, PClamp_CTRL=1,
-                             P1_E_CTRL=1, P1_CAL_CTRL=0, P2_E_CTRL=1,
-                             P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage',
-                             EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110,
-                             addr_pins_2=0b000)
-
-        # UID
-        read = self.UID.get_manufacturer_code()
-        default = self.UID.parameters['MANUFACTURER_CODE'].default
-        if read != default:
-            print(f'UID MANUFACTURER_CODE FAILED\n    '
-                  f'(read) {read} != (default) {default}')
-            return False
-
-        read = self.UID.get_device_code()
-        default = self.UID.parameters['DEVICE_CODE'].default
-        if read != default:
-            print(f'UID DEVICE_CODE FAILED\n    '
-                  f'(read) {read} != (default) {default}')
-            return False
-
-        # DAC
-        read = self.DAC.get_id()
-        # Device and Version ID share the same default value across their combined bits
-        default = self.DAC.parameters['DEVICE_ID'].default
-        if read != default:
-            print(f'DAC ID FAILED\n    (read) {read} != (default) {default}')
-            return False
-
-        # Get serial code
-        self.serial_number = self.UID.get_serial_number()
-        print(f'Serial Code: {hex(self.serial_number)}')
-
-        return True
-
-    def configure_clamp(self, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
-                        ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
-                        P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None,
-                        gain=None, FDBK=None, mode=None, EN_ipump=None,
-                        RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000):
-        config_params = Register.get_chip_registers('clamp_configuration')
-        """Configures the board using the I/O Expanders."""
-
+        self.configs = {}
         #Dictonaries
-        ADC_SEL_dict = {  # Select the signal to output (Usually only output one signal at a time)
+        self.configs['ADC_SEL_dict'] = {  # Select the signal to output (Usually only output one signal at a time)
             'CAL_SIG1': 0b0111,
             'CAL_SIG2': 0b1011,
             'INAMP_OUT': 0b1101,
@@ -145,7 +78,8 @@ class Clamp:
             'noDrive': 0b1111,
             None: 0b0000
         }
-        DAC_SEL_dict = {  # Choose to drive/store CAL_Sig1 and CAL_Sig2
+
+        self.configs['DAC_SEL_dict'] = {  # Choose to drive/store CAL_Sig1 and CAL_Sig2
             'drive_CAL1': 0b0111,
             'drive_CAL2': 0b1011,
             'gnd_CAL2': 0b1101,
@@ -155,26 +89,18 @@ class Clamp:
             'noDrive': 0b1111,
             None: 0b0000
         }
-        CCOMP_dict = {  # Choosing the capacitor value for Compensation Switching Circuit
-            0: 0b0000,
-            4.7: 0b0001,
-            1: 0b0010,
-            5.7: 0b0011,
-            200: 0b0100,
-            204.7: 0b0101,
-            201: 0b0110,
-            205.7: 0b0111,
-            47: 0b1000,
-            51.7: 0b1001,
-            48: 0b1010,
-            52.7: 0b1011,
-            247: 0b1100,
-            251.7: 0b1101,
-            248: 0b1110,
-            252.7: 0b1111,
-            None: 0b0000
-        }
-        RF1_dict = {  # Selecting the resistor value for the feedback circuit
+
+        comp_caps = np.array([4700, 1000, 200, 47])
+        CCOMP_dict = {}
+        for i in range(16):
+            cap_val = 0
+            for bit, j in enumerate(comp_caps):
+                if test_bit(i,bit) == 0: # a zero closes the switch
+                    cap_val += comp_caps[bit]
+            CCOMP_dict[cap_val] = i
+        self.configs['CCOMP_dict'] = CCOMP_dict
+
+        self.configs['RF1_dict'] = {  # Selecting the resistor value for the feedback circuit
             0: 0b0000,
             60: 0b0001,
             30: 0b0010,
@@ -193,49 +119,49 @@ class Clamp:
             2.1: 0b1111,
             None: 0b0000
         }
-        ADG_RES_dict = {  # Select resistance acroos P2 and RF_1 (ADG)
+        self.configs['ADG_RES_dict'] = {  # Select resistance acroos P2 and RF_1 (ADG)
             'current': 0b000,
-            10: 0b001,
+            10: 0b100,
             33: 0b010,
-            100: 0b011,
-            332: 0b100,
-            '1 MEG': 0b101,
-            '3 MEG': 0b110,
-            '10 MEG': 0b111,
+            100: 0b110,
+            332: 0b001,
+            1000: 0b101,
+            3000: 0b011,
+            10000: 0b111,
             None: 0b000
         }
 
-        PClamp_CTRL_dict = {
+        self.configs['PClamp_CTRL_dict'] = {
             0: 0,
             1: 1,
             None: 0
         }
 
-        P1_E_CTRL_dict = {
+        self.configs['P1_E_CTRL_dict'] = {
             0: 0,
             1: 1,
             None: 0
         }
 
-        P1_CAL_CTRL_dict = {
+        self.configs['P1_CAL_CTRL_dict'] = {
             0: 0,
             1: 1,
             None: 0
         }
 
-        P2_E_CTRL_dict = {
+        self.configs['P2_E_CTRL_dict'] = {
             0: 0,
             1: 1,
             None: 0
         }
 
-        P2_CAL_CTRL_dict = {
+        self.configs['P2_CAL_CTRL_dict'] = {
             0: 0,
             1: 1,
             None: 0
         }
 
-        gain_dict = {  # Selecet the gain of the instrumentation AMP in ADC Driver circuit
+        self.configs['gain_dict'] = {  # Selecet the gain of the instrumentation AMP in ADC Driver circuit
             2: 0b100,
             5: 0b010,
             10: 0b001,
@@ -243,32 +169,111 @@ class Clamp:
             60: 0b101,
             63: 0b110,
             64: 0b111,
-            None: 0b000
+            1: 0b000
         }
 
-        FDBK_dict = {
+        self.configs['FDBK_dict'] = {
             0: 0,
             1: 1,
             None: 0
         }
 
-        mode_dict = {  # select the mode for the ADC driver
+        self.configs['mode_dict'] = {  # select the mode for the ADC driver
             'voltage': 0b00,
             'current': 0b11,
             None: 0b00
         }
 
-        EN_ipump_dict = {
+        self.configs['EN_ipump_dict'] = {
             0: 0,
             1: 1,
             None: 0
         }
 
-        RF_1_Out_dict = {
+        self.configs['RF_1_Out_dict'] = {
             0: 0,
             1: 1,
             None: 0
         }
+
+    def init_board(self, skip_dac=True):
+        """Tests and configures the board.
+
+        Tests connectivity with each chip, configures board for Voltage Clamp
+        Feedback Loop, and gets the serial number from the UID chip.
+        """
+        # Check chips
+        # TCA_0, TCA_1
+        for register_name in [
+            # Not checking input register because it defaults to a high-impedance state so we cannot check it against something
+            'OUTPUT',
+            'POLARITY',
+            'CONFIG'
+        ]:
+            # TCA_0
+            for ch in [0, 1]:
+                dev_addr = self.TCA[ch].ADDRESS_HEADER | (
+                        self.TCA[ch].addr_pins << 1) | 0b1
+                try:
+                    read_out = self.TCA[ch].i2c_read_long(dev_addr, [self.TCA[ch].registers[register_name].address], 2)[
+                        1]  # Only the second byte to come back is what we want
+                except:
+                    read_out = None
+                default = self.TCA[ch].registers[register_name].default
+                if read_out != default:
+                    print(f'TCA_{ch} register: {register_name} FAILED\n    '
+                          f'(read_out) {read_out} != (default) {default}')
+                    return False
+
+        # Configure clamp
+        # Command for Voltage Clamp Feedback loop
+        self.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2',
+                             CCOMP=47, RF1=3, ADG_RES=10, PClamp_CTRL=1,
+                             P1_E_CTRL=1, P1_CAL_CTRL=0, P2_E_CTRL=1,
+                             P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage',
+                             EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110,
+                             addr_pins_2=0b000)
+
+        # UID
+        read = self.UID.get_manufacturer_code()
+        default = self.UID.registers['MANUFACTURER_CODE'].default
+        if read != default:
+            print(f'UID MANUFACTURER_CODE FAILED\n    '
+                  f'(read) {read} != (default) {default}')
+            return False
+
+        read = self.UID.get_device_code()
+        default = self.UID.registers['DEVICE_CODE'].default
+        if read != default:
+            print(f'UID DEVICE_CODE FAILED\n    '
+                  f'(read) {read} != (default) {default}')
+            return False
+
+        # DAC
+        if not skip_dac:
+            read = self.DAC.get_id()
+            # Device and Version ID share the same default value across their combined bits
+            default = self.DAC.registers['DEVICE_ID'].default
+            if read != default:
+                print(
+                    f'DAC ID FAILED\n    (read) {read} != (default) {default}')
+                return False
+
+            # Get serial code
+            self.serial_number = self.UID.get_serial_number()
+            print(f'Serial Code: {hex(self.serial_number)}')
+
+        return True
+
+    def configure_clamp(self, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
+                        ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
+                        P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None,
+                        gain=None, FDBK=None, mode=None, EN_ipump=None,
+                        RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000):
+        config_params = Register.get_chip_registers('clamp_configuration')
+        """Configures the board using the I/O Expanders."""
+
+
 
         # Define configuration params for mask later
         input_params_1 = {'ADC_SEL': ADC_SEL,
@@ -279,23 +284,29 @@ class Clamp:
         # Get codes from the corresponding dictionaries
         # I/O Expander 1 (self.TCA_0)
         # Using .get so if the value is not in the dictionary it returns None
-        ADC_SEL_code = ADC_SEL_dict.get(ADC_SEL)
-        DAC_SEL_code = DAC_SEL_dict.get(DAC_SEL)
-        CCOMP_code = CCOMP_dict.get(CCOMP)
-        RF1_code = RF1_dict.get(RF1)
+        def get_dict_none_zero(d, key):
+            tmp = d.get(key)
+            if tmp is None:
+                tmp = 0
+            return tmp
+
+        ADC_SEL_code = get_dict_none_zero(self.configs['ADC_SEL_dict'], ADC_SEL)
+        DAC_SEL_code = get_dict_none_zero(self.configs['DAC_SEL_dict'], DAC_SEL)
+        CCOMP_code = get_dict_none_zero(self.configs['CCOMP_dict'], CCOMP)
+        RF1_code = get_dict_none_zero(self.configs['RF1_dict'], RF1)
 
         # I/O Expander 2 (self.TCA_1)
-        ADG_RES_code = ADG_RES_dict.get(ADG_RES)
-        PClamp_CTRL_code = PClamp_CTRL_dict.get(PClamp_CTRL)
-        P1_E_CTRL_code = P1_E_CTRL_dict.get(P1_E_CTRL)
-        P1_CAL_CTRL_code = P1_CAL_CTRL_dict.get(P1_CAL_CTRL)
-        P2_E_CTRL_code = P2_E_CTRL_dict.get(P2_E_CTRL)
-        P2_CAL_CTRL_code = P2_CAL_CTRL_dict.get(P2_CAL_CTRL)
-        gain_code = gain_dict.get(gain)
-        FDBK_code = FDBK_dict.get(FDBK)
-        mode_code = mode_dict.get(mode)
-        EN_ipump_code = EN_ipump_dict.get(EN_ipump)
-        RF_1_Out_code = RF_1_Out_dict.get(RF_1_Out)
+        ADG_RES_code = get_dict_none_zero(self.configs['ADG_RES_dict'], ADG_RES)
+        PClamp_CTRL_code = get_dict_none_zero(self.configs['PClamp_CTRL_dict'], PClamp_CTRL)
+        P1_E_CTRL_code = get_dict_none_zero(self.configs['P1_E_CTRL_dict'], P1_E_CTRL)
+        P1_CAL_CTRL_code = get_dict_none_zero(self.configs['P1_CAL_CTRL_dict'], P1_CAL_CTRL)
+        P2_E_CTRL_code = get_dict_none_zero(self.configs['P2_E_CTRL_dict'], P2_E_CTRL)
+        P2_CAL_CTRL_code = get_dict_none_zero(self.configs['P2_CAL_CTRL_dict'], P2_CAL_CTRL)
+        gain_code = get_dict_none_zero(self.configs['gain_dict'], gain)
+        FDBK_code = get_dict_none_zero(self.configs['FDBK_dict'], FDBK)
+        mode_code = get_dict_none_zero(self.configs['mode_dict'], mode)
+        EN_ipump_code = get_dict_none_zero(self.configs['EN_ipump_dict'], EN_ipump)
+        RF_1_Out_code = get_dict_none_zero(self.configs['RF_1_Out_dict'], RF_1_Out)
 
         # Assemble messages
         s0 = ''
@@ -322,7 +333,7 @@ class Clamp:
         mask1 = 0
         for key in input_params_1:
             # If the parameter was not set by the user, do not add it to the mask.
-            if input_params_1[key] == None:
+            if input_params_1[key] is None:
                 continue
             else:
                 mask1 += ((2**config_params[key].bit_width - 1)
@@ -331,7 +342,7 @@ class Clamp:
         mask2 = 0
         for key in input_params_2:
             # If the parameter was not set by the user, do not add it to the mask.
-            if input_params_2[key] == None:
+            if input_params_2[key] is None:
                 continue
             else:
                 mask2 += ((2**config_params[key].bit_width - 1)
@@ -344,20 +355,21 @@ class Clamp:
                  << 8) | reverse_bits(mask2 % 16**2)
 
         # Set pins to outputs
-        self.TCA_0.configure_pins([0x00, 0x00])
-        self.TCA_1.configure_pins([0x00, 0x00])
+        self.TCA[0].configure_pins([0x00, 0x00])
+        self.TCA[1].configure_pins([0x00, 0x00])
 
         # Write messages
-        self.TCA_0.write(message1, mask1)
-        self.TCA_1.write(message2, mask2)
+        # register_name defaults to 'OUTPUT'
+        self.TCA[0].write(message1, mask=mask1)
+        self.TCA[1].write(message2, mask=mask2)
 
         # Read messages
-        list_read1 = self.TCA_0.read()
-        list_read2 = self.TCA_1.read()
+        list_read1 = self.TCA[0].read()
+        list_read2 = self.TCA[1].read()
         read1 = (list_read1[0] << 8) | list_read1[1]
         read2 = (list_read2[0] << 8) | list_read2[1]
 
-        # making the read outputs into 16 bits so that they are easjer to analyze
+        # making the read outputs into 16 bits so that they are easier to analyze
         read1_bin = '{:016b}'.format(read1)
         read2_bin = '{:016b}'.format(read2)
 
@@ -373,7 +385,7 @@ class Clamp:
         read2_rev2 = read2_bin2[::-1]
 
         # Return configuration and code for logging or other purposes.
-        return [
+        log_string = [
             f'ADC_SEL = {ADC_SEL}',
             f'DAC_SEL = {DAC_SEL}',
             f'CCOMP = {CCOMP}',
@@ -392,6 +404,12 @@ class Clamp:
             f'Code 1 = {message1}',
             f'Code 2 = {message2}'
         ]
+        config_dict = {}
+        for i in log_string:
+            split_str = i.strip().split('=')
+            config_dict[split_str[0].strip()] = split_str[1].strip()
+
+        return log_string, config_dict
 
 
 class Daq:
@@ -401,6 +419,11 @@ class Daq:
 
     Attributes
     ----------
+    fpga : FPGA
+        The FPGA instance the DAQ board communicates with. This should be
+        initiated with init_device() outside the Daq class.
+    ddr : DDR3
+        The DDR instance used to write hardware driven signals to chips.
     TCA_0 : TCA9555
         First I/O Expander controlling DAC output gain.
     TCA_1 : TCA9555
@@ -422,22 +445,255 @@ class Daq:
     """
 
     def __init__(self, fpga, TCA_addr_pins_0=0b000,
-                             TCA_addr_pins_1=0b100,
-                             UID_addr_pins=0b000,
-                             DAC_addr_pins=0b000
-                             ):
+                 TCA_addr_pins_1=0b100,
+                 UID_addr_pins=0b000,
+                 DAC_addr_pins=0b000
+                 ):
         self.fpga = fpga
+        self.ddr = DDR3(fpga=self.fpga)
         self.serial_number = None  # Will get serial code from UID chip in setup()
         # I2C
-        self.TCA_0 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
-        self.TCA_1 = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
-        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
-        self.DAC_I2C = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
+        self.TCA = TCA9555.create_chips(fpga=fpga, addr_pins=[TCA_addr_pins_0, TCA_addr_pins_1], endpoints=Endpoint.I2CDAQ_QW)
+        self.UID = UID_24AA025UID(
+            fpga=fpga, addr_pins=UID_addr_pins, endpoints=Endpoint.I2CDAQ_QW)
+
+        # self.DAC_I2C = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins, endpoints=Endpoint.endpoints_from_defines['I2CDAQ'])
         # SPI
-        self.DAC_gp_0, self.DAC_gp_1 = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
-        self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
-        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)
-        self.ADC_0, self.ADC_1, self.ADC_2, self.ADC_3 = AD7961.create_chips(fpga=fpga, number_of_chips=4)
+        self.DAC_gp = DAC80508.create_chips(fpga=fpga, number_of_chips=2)
+        self.DAC = AD5453.create_chips(fpga=fpga, number_of_chips=6)
+        #self.DAC_0, self.DAC_1, self.DAC_2, self.DAC_3, self.DAC_4, self.DAC_5 = AD5453.create_chips(fpga=fpga, number_of_chips=6)
+        self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)[0]
+        self.ADC = AD7961.create_chips(fpga=fpga, number_of_chips=4)
+
+        self.parameters = {}
+        self.parameters["dac_gain_fs"] = {
+            15: 0xF,
+            5: 0xE,
+            2: 0xD,  # in volts full-scale
+            500: 0xB,
+            200: 0x7,
+        }  # in milli-volts full-scale
+
+        # exapander number, nibble_number
+        self.parameters["dac_expander_nibble"] = {
+            0: (0, 3),
+            1: (0, 2),
+            2: (0, 1),
+            3: (0, 0),
+            4: (1, 3),
+            5: (1, 2),
+        }
+
+        self.parameters["dac_resistors"] = {
+            "input": 49.9e3,
+            "fixed": 243e3,
+            "switched": [121e3, 37.4e3,  8.25e3, 3.24e3],
+        }
+
+    def set_dac_gain(self, dac_num, gain, bit_value=None):
+        """ set the gain of the AD5453 DACs by configuring switch TMUX6111
+        Args:
+            dac_num: desired frequency
+            gain: desired gain options are 15, 5, 2, 500, 200 (see self.parameters["dac_gain_fs"])
+            bit_value: instead of using gain dictionary directly specify
+                        bits to write to io expander (default of None)
+
+        Returns:
+            result of i2c transaction to TCA io expander
+
+        """
+        tca_ch = self.parameters["dac_expander_nibble"][dac_num][0]
+        tca_nibble = self.parameters["dac_expander_nibble"][dac_num][1]
+        if gain not in self.parameters["dac_gain_fs"].keys():
+            print(f"Error invalid gain: {gain} in set_dac_gain")
+            return -1
+        if bit_value is not None:
+            gain_val = bit_value
+        else:
+            gain_val = self.parameters["dac_gain_fs"][gain]
+        mask = 0xF << (tca_nibble * 4)
+        gain_val = (gain_val) << (tca_nibble * 4)
+        print(
+            "Setting DAC gain value = 0x{:02X} with mask = 0x{:02X}".format(
+                gain_val, mask))
+
+        return self.TCA[tca_ch].write(gain_val, mask=mask)
+
+    def predict_gain(self, bit_value):
+        """ predict the DAC gain given the bit value written to the io Expander
+            depends on the resistor values in the "dac_resistors" dictionary
+
+        Args:
+            bit_value: bits to write to io expander (default of None)
+
+
+        Returns:
+            expected gain, currently relative (float)
+            TODO: verify with measurements to have an absolute gain
+        """
+
+        feedback_inv = 1 / self.parameters["dac_resistors"]["fixed"]
+        for idx, sw_res in enumerate(self.parameters["dac_resistors"]["switched"]):
+            r = (1 / sw_res) if ((bit_value & (1 << idx)) >> idx) == 0 else 0
+            print(r)
+            print(feedback_inv)
+            feedback_inv = feedback_inv + r
+        feedback = 1 / feedback_inv
+        gain = feedback / self.parameters["dac_resistors"]["input"]
+        print(f"Expected gain of {gain}")
+        return gain
+
+    def test_impedance(self, resistance, frequency, amplitude, dac80508_num=1, dac80508_chan=4, ads8686_chan_a=7, ads8686_chan_b=3, swap_chan=False, plot=False):
+        """Calculate the impedance of a component that is in series with the given resistance.
+        
+        Uses DDR, DAC80508 to send input voltage, ADS8686 to read output voltage.
+        
+        Arguments
+        ---------
+        resistance : float
+            The resistance in Ohms of the resistor in series with the unknown impedance.
+        frequency : float
+            The test frequency in Hertz to use for the input voltage sine wave.
+        amplitude : float
+            The voltage amplitude of the sign wave. The sine wave will end up
+            shifted so all points are positive, but the amplitude will remain
+            the same. Because of the shift, amplitude must be 0.0-2.5V.
+        dac80508_num : int
+            The number of the DAC80508 to use. Expecting 1 or 2 matching with https://github.com/lucask07/open_covg_daq_pcb/blob/main/docs/covg_daq_v2.pdf.
+        dac80508_chan : int
+            The output channel to send the input voltage on. Expecting 0-7.
+        ads8686_chan_a : int
+            The "A" side channel of the ADS8686 to receive the input voltage on. Expecting 0-7.
+        ads8686_chan_b : int
+            The "B" side channel of the ADS8686 to receive the output voltage on. Expecting 0-7.
+        swap_chan : bool
+            If True, ads8686_chan_b receives input while ads8686_chan_a receives output. False for normal operation.
+        plot: bool
+            Whether to plot data.
+
+        Returns
+        -------
+        numpy.complex128, float : the calculated impedance, the calculated frequency that impedance was found at. 
+        """
+
+        dac80508_offset = 0x8000
+        ads8686_update_period = 4.950495e-06
+
+        # --- Configure DAC80508 for DDR driven ---
+        self.DAC_gp[dac80508_num - 1].set_spi_sclk_divide(0x8)
+        self.DAC_gp[dac80508_num - 1].set_ctrl_reg(0x3218)
+        self.DAC_gp[dac80508_num - 1].set_config_bin(0x00)
+        # Change gain and reference divider for DAC80508 to get maximum precision
+        # Check (amplitude * 2) because we will shift all values up since DAC80508 cannot output negative values
+        if (amplitude * 2) <= 1.25:
+            gain = 1
+            divide_reference = True
+            voltage_range = 1.25
+        elif (amplitude * 2) <= 2.5:
+            # *2 and /2 is recommended instead of *1 and /1
+            gain = 2
+            divide_reference = True
+            voltage_range = 2.5
+        elif (amplitude * 2) <= 5:
+            gain = 2
+            divide_reference = False
+            voltage_range = 5
+        else:
+            print(f'WARNING: cannot use amplitude {amplitude}V, limiting to maximum 2.5V')
+        self.DAC_gp[dac80508_num - 1].set_gain(gain=gain, outputs=dac80508_chan, divide_reference=divide_reference)
+        self.DAC_gp[dac80508_num - 1].set_data_mux('DDR')
+        # TODO: switch this from AD5453 to DDR3 method
+        self.DAC[0].set_clk_divider(divide_value=0x50)  # Need in order to set frequency of input wave correctly
+
+        # --- Configure ADS8686 for read on specified channel ---
+        self.ADC_gp.hw_reset(val=False)
+        self.ADC_gp.set_host_mode()
+        self.ADC_gp.setup()
+        self.ADC_gp.set_range(5)
+        self.ADC_gp.set_lpf(376)
+        if swap_chan is False:
+            # Normal operation: "A" side takes input, "B" side takes output
+            chan_list = (str(ads8686_chan_a), str(ads8686_chan_b))
+            input_side = 'A'
+            output_side = 'B'
+        else:
+            # Reverse operation: "B" side takes input, "A" side takes output
+            chan_list = (str(ads8686_chan_b), str(ads8686_chan_a))
+            input_side = 'B'
+            output_side = 'A'
+        codes = self.ADC_gp.setup_sequencer(chan_list=[chan_list])
+        self.ADC_gp.write_reg_bridge()
+        self.ADC_gp.set_fpga_mode()
+
+        # --- Generate input voltage signal ---
+        amplitude_code = from_voltage(voltage=amplitude, num_bits=16, voltage_range=voltage_range, with_negatives=False)
+        v_in_code, actual_freq = self.ddr.make_sine_wave(
+            amplitude=amplitude_code, frequency=frequency, offset=dac80508_offset, actual_frequency=True)
+
+        # --- Send input signal ---
+        # Last 2 bits of first array are first 2 bits of channel for DAC1
+        # Second-to-last bit of second array is last bit of channel for DAC1
+        # Same for third and fourth arrays but with DAC2
+        # dac80508_num should be 1 or 2
+
+        # Clear channel bits
+        self.ddr.data_arrays[2 * (dac80508_num - 1)] = np.bitwise_and(self.ddr.data_arrays[2 * (dac80508_num - 1)], 0x3fff).astype(np.uint16)
+        self.ddr.data_arrays[2 * (dac80508_num - 1) + 1] = np.bitwise_and(self.ddr.data_arrays[2 * (dac80508_num - 1) + 1], 0x3fff).astype(np.uint16)
+        # Set channel bits
+        self.ddr.data_arrays[2 * (dac80508_num - 1)] = np.bitwise_or(self.ddr.data_arrays[2 * (dac80508_num - 1)], (dac80508_chan & 0b110) << 13).astype(np.uint16)
+        self.ddr.data_arrays[2 * (dac80508_num - 1) + 1] = np.bitwise_or(self.ddr.data_arrays[2 * (dac80508_num - 1) + 1], (dac80508_chan & 0b001) << 14).astype(np.uint16)
+        # Last 2 arrays (of 8) are for DAC80508 1 and 2 data only
+        self.ddr.data_arrays[5 + dac80508_num] = v_in_code.astype(np.uint16)
+        for i in self.ddr.data_arrays:
+            print(type(i[0]))
+        self.ddr.write_channels()
+
+        # --- Read input and ouput voltage signals ---
+        throw_away = 15
+        for i in range(throw_away):
+            data_stream = self.ADC_gp.stream_mult(twos_comp_conv=False)
+        v_in_code = data_stream[input_side]
+        v_out_code = data_stream[output_side]
+
+        # --- Calculate impedance across frequencies ---
+        # Convert back to voltage
+        v_in_voltage = to_voltage(data=v_in_code, num_bits=16, voltage_range=10, use_twos_comp=True)
+        v_out_voltage = to_voltage(data=v_out_code, num_bits=16, voltage_range=10, use_twos_comp=True)
+        impedance_arr = calc_impedance(v_in=v_in_voltage, v_out=v_out_voltage, resistance=resistance)
+
+        # --- Set up x frequencies ---
+        x_freq = rfftfreq(len(v_in_voltage), ads8686_update_period)
+
+        # --- Find nearest x frequency to input frequency ---
+        distances_from_actual = [abs(x - actual_freq) for x in x_freq]
+        desired_index = distances_from_actual.index(min(distances_from_actual))
+        frequency_found = x_freq[desired_index]
+
+        # --- Optionally plot input and output ---
+        if plot:
+            x = [i * self.ddr.parameters['update_period'] * 99 for i in range(len(v_in_voltage))]
+
+            # First, codes
+            plt.plot(x, v_in_code, c='b', label='v_in')
+            plt.plot(x, v_out_code, c='r', label='v_out')
+            plt.legend(loc='upper left')
+            plt.title('v_in vs. v_out (codes)')
+            plt.show()
+
+            # Second, voltages
+            plt.plot(x, v_in_voltage, c='b', label='v_in')
+            plt.plot(x, v_out_voltage, c='r', label='v_out')
+            plt.legend(loc='upper left')
+            plt.title('v_in vs. v_out (voltages)')
+            plt.show()
+
+            # Third, impedance
+            plt.plot(x_freq, np.abs(impedance_arr), c='purple', label='Impedance')
+            plt.title('Impedance vs. Frequency')
+            plt.show()
+
+        # --- Return impedance at that frequency ---
+        return impedance_arr[desired_index], frequency_found
 
     class Power:
 
@@ -530,21 +786,20 @@ class Daq:
 
     class GPIO:
 
-        DEFAULT_PARAMETERS = dict(chips=
-            dict(
-            ads=0,
-            ds0=1,
-            ds1=2,
-            dfast0=3,
-            dfast1=4,
-            dfast2=5,
-            dfast3=6,
-            dfast4=7),
+        DEFAULT_PARAMETERS = dict(chips=dict(
+                ads=0,
+                ds0=1,
+                ds1=2,
+                dfast0=3,
+                dfast1=4,
+                dfast2=5,
+                dfast3=6,
+                dfast4=7),
             misc_ads=dict(
-            sdoa=0,
-            sdob=1,
-            convst=2,
-            busy=3
+                sdoa=0,
+                sdob=1,
+                convst=2,
+                busy=3
             ))
 
         def __init__(self, fpga, parameters=DEFAULT_PARAMETERS, endpoints=None, debug=False):
@@ -557,6 +812,22 @@ class Daq:
             self.debug = debug  # TODO: Turning on debug will show more output
 
         def spi_debug(self, chip):
+            """Configure the GPIO pins with SPI debug signals.
+
+            Arguments
+            ---------
+            chip : str
+                Abbreviated name of the chip to debug.
+                ads
+                ds0
+                ds1
+                dfast0
+                dfast1
+                dfast2
+                dfast3
+                dfast4
+            """
+
             if chip not in self.parameters['chips'].keys():
                 print('Incorrect chip name in spi_debug')
                 return -1
@@ -564,7 +835,8 @@ class Daq:
                 value = self.parameters['chips'][chip]
                 ep_name = spi_signal + '_DEBUG'
                 self.fpga.set_wire(self.endpoints[ep_name].address,
-                                   value<<self.endpoints[ep_name].bit_index_low,                   mask=(0b111<<self.endpoints[ep_name].bit_index_low))
+                                   value << self.endpoints[ep_name].bit_index_low,
+                                   mask=(0b111 << self.endpoints[ep_name].bit_index_low))
 
         def ads_misc(self, pin):
             if pin not in self.parameters['misc_ads'].keys():
@@ -573,5 +845,5 @@ class Daq:
             value = self.parameters['misc_ads'][pin]
             ep_name = 'ADS_CONVST_DEBUG'
             return self.fpga.set_wire(self.endpoints[ep_name].address,
-                               value<<self.endpoints[ep_name].bit_index_low,
-                               mask=(0b111<<self.endpoints[ep_name].bit_index_low))
+                                      value << self.endpoints[ep_name].bit_index_low,
+                                      mask=(0b111 << self.endpoints[ep_name].bit_index_low))

@@ -28,17 +28,14 @@ sys.path.append(interfaces_path)
 
 top_level_module_bitfile = os.path.join(
     interfaces_path, 'top_level_module.bit')
-i2c_bitfile = os.path.join(interfaces_path, 'i2c.bit')
 
 
 # Fixtures
 @pytest.fixture(scope='module')
 def dut():
-    # global top_level_module_bitfile
-    global i2c_bitfile
+    global top_level_module_bitfile
     from interfaces.interfaces import FPGA, DAC53401, Endpoint
-    # f = FPGA(bitfile=top_level_module_bitfile)
-    f = FPGA(bitfile=i2c_bitfile)
+    f = FPGA(bitfile=top_level_module_bitfile)
     assert f.init_device()
     yield DAC53401(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2CDC'), addr_pins=0b000)
     # Teardown
@@ -47,9 +44,6 @@ def dut():
 
 # Tests
 def test_get_id(dut):
-    # fake_read = dut.i2c_read_long(0b11110000, [0xc], 2)
-    # print(fake_read)
-
     # This test goes first to make sure the chip is communicating
     got = dut.get_id()
     # Device and Version ID share the same default value across their combined bits

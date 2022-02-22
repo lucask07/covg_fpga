@@ -19,17 +19,17 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum
+from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum, DDR3
 from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
 
 today = datetime.datetime.today()
-data_dir = '/Users/koer2434/Google Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}'.format(today.year,
-                                                                                                                   today.month,
-                                                                                                                   today.day)
-if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
+# data_dir = '/Users/koer2434/Google Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}'.format(today.year,
+#                                                                                                                    today.month,
+#                                                                                                                    today.day)
+# if not os.path.exists(data_dir):
+#     os.makedirs(data_dir)
 
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply()
@@ -76,14 +76,75 @@ gpio.fpga.debug = True
 gpio.spi_debug('dfast0')
 gpio.ads_misc('sdoa')  # do not care for this experiment
 
+ddr = DDR3(f)
+ddr.reset_fifo()
+
 fdac = []
 for i in range(6):
     fdac.append(AD5453(f,
                 endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
+    fdac[i].set_ctrl_reg(fdac[i].master_config)
     fdac[i].set_spi_sclk_divide()
-    fdac[i].set_data_mux('ad7961_ch0')
+    fdac[i].filter_select(operation='clear')
+    fdac[i].write(int(0))
+    fdac[i].set_data_mux('host')
     fdac[i].write_filter_coeffs()
-    # fdac[i].write(0x2000)
 
-fdac[i].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+# fdac[0].set_clk_divider()  # default value is 0xA0 (expect 1.25 MHz, getting 250 kHz, set by SPI SCLK??)
+
+# fdac[0].write(int(0))
+# fdac[0].change_filter_coeff(target='passthrough')
+# fdac[0].write_filter_coeffs()
+# fdac[0].filter_select(operation='clear')
+#
+# fdac[1].write(int(0))
+# fdac[1].change_filter_coeff(target='passthrough')
+# fdac[1].write_filter_coeffs()
+# fdac[1].filter_select(operation='clear')
+
+
+# pass through tests - ramp up from mid-scale go to mid-scale then ramp down
+# for ch in [0, 1]:
+#    for i in np.arange(0, 0xffff, step=16, dtype=np.int32):
+#        fdac[ch].write(int(i))
+
+# filter tests using host driven reads
+for ch in [0, 1]:
+    fdac[ch].filter_select(operation='set')
+    fdac[ch].change_filter_coeff(target='100kHz')  # 100 kHz does not seem to work
+    # fdac[ch].change_filter_coeff(target='500kHz')
+    # fdac[ch].change_filter_coeff(target='passthrough')
+    fdac[ch].write_filter_coeffs()
+
+for ch in [0, 1]:
+    # positive going square wave
+    # fill with midscale
+    for i in range(200):
+        fdac[ch].write(0)
+    for i in range(200):
+        # positive going step
+        fdac[ch].write(0x4000)
+    for i in range(200):
+        # negative going step
+        fdac[ch].write(0xc000)
+
+
+def host_sine(fs_over_f, total_length, amp, off):
+    print(f'Estimated time = {total_length*1e-3} [s]')  # about 1 ms per host write
+    t = np.arange(0, total_length)
+
+    return amp*np.sin(t*2*np.pi/fs_over_f) + off
+
+
+for fs_over_f in [100,40,30,20,15,12,10,9,8,7,6,5,4]:
+    x = host_sine(fs_over_f, 6000, 0x1000, 0x1000)  # with fc = 100 kHz and 2.5 MHz sample rate expect x25 to show filtering
+    for i in x:
+        fdac[0].write(int(i))
+        fdac[1].write(int(i))
+
+
+x = np.arange(1, 5000)
+for i in x:
+    for ch in [0,1,2,3,4,5]:
+        fdac[ch].write(int(0))

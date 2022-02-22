@@ -7,6 +7,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import numpy as np
+from scipy.fft import rfft
 import datetime
 
 def rev_lookup(dd, val):
@@ -111,19 +112,27 @@ def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
 
     Arguments
     ---------
-    data : int or list(int)
+    data : int or list(int) or numpy.ndarray(numpy.uint16)
         The method will return the converted version of either.
     voltage_range : int
         The total voltage range used for the data.
     use_twos_comp : bool
         True if the given data is in two's complement form, False otherwise.
+
+    Returns
+    -------
+    float or list : binary version of the voltage data in similar form data was given in
+        int -> float
+        list, numpy.ndarray -> list(float)
     """
 
     if type(data) is list:
         # If the data is given in a list, we can use our int version of
         # the method on every element in the list.
-        return [to_voltage(data=x, voltage_range=voltage_range) for x in data]
-    elif type(data) is int:
+        return [to_voltage(data=x, num_bits=num_bits, voltage_range=voltage_range, use_twos_comp=use_twos_comp) for x in data]
+    elif type(data) is np.ndarray:
+        return [to_voltage(data=int(x), num_bits=num_bits, voltage_range=voltage_range, use_twos_comp=use_twos_comp) for x in data]
+    elif type(data) is int or type(data) is np.uint16:
         # Determine the voltage represented by a single bit
         bit_voltage = voltage_range / (2 ** num_bits)
         if use_twos_comp:
@@ -131,8 +140,7 @@ def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
         else:
             return data * bit_voltage
     else:
-        print(
-            f'ERROR: wrong data type in to_voltage: type(data) = {type(data)} Expected int')
+        print(f'ERROR: wrong data type in to_voltage: type(data) = {type(data)} Expected int or list(int) or numpy.ndarray(numpy.uint16)')
         return None
 
 
@@ -145,20 +153,29 @@ def from_voltage(voltage, num_bits, voltage_range, with_negatives=False):
 
     Arguments
     ---------
-    voltage : int or list(int)
+    voltage : int or float or list(int or float) or numpy.ndarray(numpy.uint16)
         The method will return the converted version of either.
     voltage_range : int
         The total voltage range used for the voltage.
     with_negatives : bool
         True to convert the voltage with full negative at 0x0, zero at half
         scale, and full positive at full scale, False otherwise.
+
+    Returns
+    -------
+    int or float or list : voltage version of the binary data in similar form voltage was given in
+        int -> int
+        float -> int
+        list, numpy.ndarray -> list(int)
     """
 
     if type(voltage) is list:
         # If the voltage is given in a list, we can use our int version of
         # the method on every element in the list.
-        return [from_voltage(voltage=x, voltage_range=voltage_range) for x in voltage]
-    elif type(voltage) is int or type(voltage) is float:
+        return [from_voltage(voltage=x, num_bits=num_bits, voltage_range=voltage_range, with_negatives=with_negatives) for x in voltage]
+    elif type(voltage) is np.ndarray:
+        return [from_voltage(voltage=x, num_bits=num_bits, voltage_range=voltage_range, with_negatives=with_negatives) for x in [int(k) for k in list(voltage)]]
+    elif type(voltage) is int or type(voltage) is float or type(voltage) is np.uint16:
         # Determine the voltage represented by a single bit
         if with_negatives:
             if voltage < -(voltage_range / 2):
@@ -186,9 +203,35 @@ def from_voltage(voltage, num_bits, voltage_range, with_negatives=False):
         return data
     else:
         print(
-            f'ERROR: wrong voltage type in from_voltage: type(voltage) = {type(voltage)} Expected float or int')
+            f'ERROR: wrong voltage type in from_voltage: type(voltage) = {type(voltage)} Expected int, float, list(int or float), or numpy.ndarray(numpy.uint16)')
         return None
 
 
 def get_timestamp():
     return int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
+
+
+def calc_impedance(v_in, v_out, resistance):
+    """Calculate the impedance of an unknown component.
+    
+    It is assumed the voltage source is connect in series with both the resistor and the unknown component.
+
+    Arguments
+    ---------
+    v_in : list(int or float)
+        The sinusoidal voltage source in the circuit.
+    v_out : list(int or float)
+        The output voltage across the unknown component.
+    resistance : int or float
+        The resistance of the resistor in the circuit in Ohms.
+
+    Returns
+    -------
+    numpy.ndarray : the array of impedances calculated.
+    """
+
+    current = np.subtract(v_in, v_out) / resistance
+
+    impedance_calc = np.divide(rfft(v_out), rfft(current))
+    
+    return impedance_calc
