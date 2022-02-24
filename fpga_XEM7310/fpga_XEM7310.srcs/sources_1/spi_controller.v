@@ -69,12 +69,13 @@ module spi_controller #(ADDR = 0)(
     wire [3:0]read_en;
     wire [31:0] data_out;
 
+    // generates pulses to the wishbone converter (4 per clock cycle) and the convst signal needed by the ADS8686
     clock_divider #(.ADDR(ADDR)) dut(
         .clk(clk),
         .okClk(okClk), // needed to synchronize to the register bridge data. Should reset divider after loading data.  
         .rst(divider_reset),
         .clk_out(), //50% duty-cycle 
-        .pulse(pulse), // single clk period pulse 
+        .pulse(pulse), // single clk period pulse (programmable frequency)
         .convst(convst),
         .read_en(read_en),    
         .addr(addr),     // input data to program frequency 
