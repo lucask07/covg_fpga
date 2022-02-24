@@ -10,7 +10,7 @@
 // Target Devices: XEM7310
 // Tool Versions: Vivado (2018.2)
 // Description: generate timing signals for SPI reading of ADS8686
-// 
+//      TODO: allow for a pulse input so this is synchronized to the AD7961 reading. Add a mode bit. 
 // Dependencies: ok RegisterBridge as input 
 // 
 // Revision:
@@ -33,10 +33,10 @@ module clock_divider #(parameter ADDR = 0) (
     );
     
     localparam CONV_WID = 10; // 50 ns with 200 MHz clock 
-    localparam CONV_TIME = 114 - 2; // 570 ns (max) until busy falls. 
+    localparam CONV_TIME = 114 - 2; // for the ADS8686: 570 ns (max) until busy falls. 
                                     // for oversampling ratio (OSR) of 0; would extend for greater OSRs
                                     // subtract 2 for two clock cycles to load SPI controller via wishbone
-    reg [31:0] clk_div; // register to store 
+    reg [31:0] clk_div; // register to store clock divider. (nominal is 1000 for 200 kHz, could be up to 1 MSPS)
     reg [31:0] cnt;
     
     // from the OK register bridge. No benefit of reseting this. Just set be sure to set it. 

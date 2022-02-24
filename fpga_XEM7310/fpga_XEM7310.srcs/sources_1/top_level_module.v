@@ -17,11 +17,17 @@
 // Revision 0.01 - File Created
 // Additional Comments:
 //
+// 
+//  To-do: The DAC ddr data is read from a clock divider (e.g. 2.5 MSPS) 
+//   but we need to synchronize to the AD7961 
+//   the AD7961 uses a slower clock (100 MHz for timing) -- how does this impact synchronization?  -- valid out is from the fast_clk 250 MHz 
+//          can this be switched to the 200 MHz clock? 
+//   find the thread about the poor AD7961 design 
 //////////////////////////////////////////////////////////////////////////////////
 // Clocks:
 //    clk_sys  - 200 MHz system clock
 //    okClk    - 100.8 MHz host-interface clock provided by okHost
-//    fast_clk - 200 MHz (for now) clock for AD7961.v
+//    adc_clk  - 250 MHz clock for AD7961.v
 //
 //
 // Host Interface registers:
@@ -88,6 +94,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
+localparam NUM_OK_EPS = 23;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -258,15 +265,8 @@ module top_level_module(
     wire [(FADC_NUM-1):0] dco;
     wire [(FADC_NUM-1):0] adc_serial_data;
     
-	//FrontPanel (HostInterface) wires
-	wire okClk;
-	wire [112:0] okHE;
-	wire [64:0] okEH;
-	// Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
-	//TODO: better way to keep track of these
-	wire [23*65-1:0] okEHx;
 
-	//Opal Kelly wires and triggers
+	//Opal Kelly wires and triggers bussess
 	wire [31:0] ep00wire;
 	wire [31:0] ep01wire;
 	wire [31:0] ep02wire;
@@ -278,9 +278,14 @@ module top_level_module(
 	wire sys_rst;
 	assign sys_rst = (pushreset | ep40trig[`GP_SYSTEM_RESET]); 
 
+    //FrontPanel (HostInterface) wires
+    wire okClk;
+    wire [112:0] okHE;
+    wire [64:0] okEH;
+    // Adjust size of okEHx to fit the number of outgoing endpoints in your design (n*65-1:0)
+    wire [NUM_OK_EPS*65-1:0] okEHx;
 	// Adjust N to fit the number of outgoing endpoints in your design (.N(n))
-	okWireOR # (.N(23)) wireOR (okEH, okEHx); //TODO
-
+	okWireOR # (.N(NUM_OK_EPS)) wireOR (okEH, okEHx); 
 	//okHost instantiation
 	okHost okHI (.okUH(okUH), .okHU(okHU), .okUHU(okUHU), .okAA(okAA),
              .okClk(okClk), .okHE(okHE), .okEH(okEH));
@@ -293,31 +298,32 @@ module top_level_module(
     wire host_fpgab;
     assign host_fpgab = ep01wire[`ADS8686_HOST_FPGA];
     
-    //assign up = ep01wire[(`GPIO_UP_WIRE_IN+`GPIO_UP_WIRE_IN_LEN - 1):`GPIO_UP_WIRE_IN];
+    //assign up = ep01wire[(`GPIO_UP_WIRE_IN+`GPIO_UP_WIRE_IN_LEN - 1):`GPIO_UP_WIRE_IN]; //TODO: up is being used for other debug. 
     assign dn = ep01wire[(`GPIO_DOWN_WIRE_IN+`GPIO_DOWN_WIRE_IN_LEN - 1):`GPIO_DOWN_WIRE_IN];
         
-    // use GPIO with the SPI debug mux
-    //assign gpio = ep01wire[(`GPIO_3V3_WIRE_IN+`GPIO_3V3_WIRE_IN_LEN - 1):`GPIO_3V3_WIRE_IN];
+    // GPIO is used with the SPI debug mux so this is commented out.
+    //assign gpio = ep01wire[(`GPIO_3V3_WIRE_IN+`GPIO_3V3_WIRE_IN_LEN - 1):`GPIO_3V3_WIRE_IN];  
+    
+    // LVDS output 
     wire [3:0]gp_lvds_se;
     assign gp_lvds_se = ep01wire[(`GPIO_LVDS_WIRE_IN+`GPIO_LVDS_WIRE_IN_LEN - 1):`GPIO_LVDS_WIRE_IN];
 
     genvar m;
     generate
     for (m=0; m<=3; m=m+1) begin : lvds_obuf
-
-    // Single-Ended -> LVDS
-    OBUFDS
-        #(
-            .IOSTANDARD("LVDS_25"),        // Specify the output I/O standard
-            .SLEW("FAST")                  // Specify the output slew rate
-        )
-        Cnv_Out_OBUFDS
-        (
-            .O(gp_lvds_p[m]),              // Diff_p output (connect directly to top-level port)
-            .OB(gp_lvds_n[m]),             // Diff_n output (connect directly to top-level port)
-            .I(gp_lvds_se[m])              // Buffer input
-        );
-    end
+        // Single-Ended -> LVDS
+        OBUFDS
+            #(
+                .IOSTANDARD("LVDS_25"),        // Specify the output I/O standard
+                .SLEW("FAST")                  // Specify the output slew rate
+            )
+            Cnv_Out_OBUFDS
+            (
+                .O(gp_lvds_p[m]),              // Diff_p output (connect directly to top-level port)
+                .OB(gp_lvds_n[m]),             // Diff_n output (connect directly to top-level port)
+                .I(gp_lvds_se[m])              // Buffer input
+            );
+        end
     endgenerate
 
     /* ---------------- WI02 ---------------------- */
@@ -489,6 +495,7 @@ module top_level_module(
                       .ep_addr(`ADS8686_PIPE_OUT_GEN_ADDR),  .ep_read(ads_pipe_read),
                       .ep_datain(ads_fifo_data));
 
+   // Wireout of ADS8686 data for host driven SPI reads 
    reg [31:0] ads_last_read;
    always @(posedge clk_sys) begin
         if (sys_rst) begin
@@ -588,9 +595,9 @@ module top_level_module(
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
     wire ddr_data_valid; 
-    wire          ddr3_rst;// MIG/DDR3 synchronous reset
+    wire ddr3_rst;// MIG/DDR3 synchronous reset
 
-	//Clock divide - used to clock reading of data from DDR (nominal 5 MHz)
+	//Clock divide - used to clock reading of data from DDR (nominal 2.5 MHz)
      general_clock_divide MIG_DDR_FIFO_RD_EN(
          .clk(clk_sys),  // input 
          .rst(ddr3_rst), // input 
@@ -864,14 +871,19 @@ module top_level_module(
         else if (ddr_data_valid == 1'b1) adc_debug_cnt <= adc_debug_cnt + 1'b1;
     end
     
+    reg [47:0] timestamp;
+    always @(posedge clk_sys) begin
+        if (sys_rst == 1'b1) timestamp <= 1'b0;
+        else timestamp <= timestamp + 1'b1;  //32 bit is 21.7 seconds; 48 bits is 16.23 days
+    end
+
     reg [63:0] adc_ddr_data;
     reg adc_ddr_wr_en;
-    assign adc_ddr_debug = ep03wire[`DDR3_ADC_DEBUG];
     
     always @(*) begin
-        if (adc_ddr_debug == 1'b0) begin // TODO: setup adc_ddr_debug, then route signals to FIFO
+        if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin // TODO: setup adc_ddr_debug, then route signals to FIFO
             adc_ddr_data = {adc_val_reg[3][15:0], adc_val_reg[2][15:0], adc_val_reg[1][15:0], adc_val_reg[0][15:0]};
-            adc_ddr_wr_en = adc_valid_pulse[0];
+            adc_ddr_wr_en = adc_valid_pulse[0]; // Pulse to use to synchronize DACs and the ADS8686
         end
         else begin
             adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};
@@ -978,7 +990,7 @@ module top_level_module(
                  .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]), //input: state machine to init after SPI clock divider is re-programmed
                  .filter_sel(ep_wire_filtsel[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1])
                  );
-        assign ds_sdo[k] = 1'b1; // sdo for the DAC80508C is CLRB -- force to logic high
+        assign ds_sdo[k] = 1'b1; // sdo for the DAC80508C is connected to CLRB -- force to logic high
         end
     endgenerate
     /*---------------- END DAC80508 -------------------*/
@@ -995,7 +1007,7 @@ module top_level_module(
     wire [31:0] coeff_debug_out2[0:(AD5453_NUM-1)];
     
     reg [13:0] last_ddr_read[0:(AD5453_NUM-1)];
-    reg ddr_data_valid_norepeat[0:(AD5453_NUM-1)];
+    reg ddr_data_valid_norepeat[0:(AD5453_NUM-1)]; // Skip DAC update if the value is the same. Reduces digital switching noise. 
     
     genvar p;
     generate
@@ -1004,7 +1016,7 @@ module top_level_module(
         
         assign spi_host_trigger_fast_dac[p] = ep41trig[`AD5453_HOST_TRIG_GEN_BIT + p];
         
-        // don't update DDR SPI if the values don't change
+        // Skip DAC update DDR SPI if the values don't change (adds one clock cycle of latency -- 5 ns)
         always @(posedge clk_sys) begin
             if (ddr_data_valid==1'b1) last_ddr_read[p] <= po0_ep_datain[(p*16) +:14];
         end        
@@ -1027,9 +1039,8 @@ module top_level_module(
             .dataout({spi_data[p]})
         );
         
-        assign data_ready_fast_dac[p] = spi_data[p][31];
+        assign data_ready_fast_dac[p] = spi_data[p][31]; // assign MUX output MSB to the data_ready signal. 
             
-        // instantiate old top-level (but only for the AD5453 SPI)
         spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_BIT + p*19))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[p]), .mosi_0(d_sdi[p]), .sclk_0(d_sclk[p]), 
@@ -1049,21 +1060,7 @@ module top_level_module(
         end
     endgenerate
 
-    //assign up[5] = data_ready_ds[0];
-    //assign up[4] = rd_en_ds[0];
-    //assign up[3] = rd_en_0;
-    //assign up[2] = rd_en_fast_dac[0];
-    //assign up[1] = data_ready_fast_dac[0];
-    //assign up[0] = data_ready_fast_dac[1];
-    
-    // TODO: set these back up once debug is finished
-    //assign up[5] = ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + 1*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1];
-    //assign up[4] = ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + 0*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1];
-    //assign up[3] = spi_data[0][2];
-    //assign up[2] = spi_data[0][1];
-    //assign up[1] = spi_data[0][0];
-    //assign up[0] = data_ready_fast_dac[0];
-
+    // Four wire outs for debug of filter loading. TODO: generally unecessary now. 
      okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_0), .ep_datain(coeff_debug_out1[0]));
      okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_1), .ep_datain(coeff_debug_out2[0]));
      okWireOut      wo08 (.okHE(okHE), .okEH(okEHx[ 20*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_2), .ep_datain(coeff_debug_out1[1]));
