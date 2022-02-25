@@ -51,8 +51,8 @@ fig_dir = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/biophysical_so
 #analysis_type = ['im_noise']
 #analysis_type = ['im_vs_rf_plot']
 #analysis_type = ['rf_swp']
-# analysis_type = ['none']
-analysis_type = ['check_impulse']
+analysis_type = ['none']
+# analysis_type = ['check_impulse']
 
 # analysis examples
 

@@ -2343,22 +2343,30 @@ class ADCDATA():
 
     def stream_mult(self, swps=4, twos_comp_conv=True, data_len=1024):
         # TODO: add method docstring
-
+        print('ADC stream multiple')
         cnt = 0
         st = bytearray(np.asarray(np.ones(0, np.uint8)))
         self.fpga.xem.UpdateTriggerOuts()
 
-        while cnt < swps:
+        start_time = time.time()
+        timeout_time = 1*swps # seconds 
+        timeout_flg = (time.time() < (start_time + timeout_time))
+
+        while ((cnt < swps) and timeout_flg):
             # check the FIFO half-full flag
             if (self.fpga.xem.IsTriggered(self.endpoints['FIFO_HALFFULL'].address,
-                                          self.endpoints['FIFO_HALFFULL'].bit_index_low)):
+                                        self.endpoints['FIFO_HALFFULL'].bit_index_low)):
                 s, e = self.fpga.read_pipe_out(self.endpoints['PIPE_OUT'].address,
-                                               data_len)
+                                            data_len)
                 st += s
                 cnt = cnt + 1
                 if self.fpga.debug:
                     print(cnt)
             self.fpga.xem.UpdateTriggerOuts()
+            timeout_flg = (time.time() < (start_time + timeout_time))
+        if not timeout_flg:
+            print('ADC stream_mult timed out')
+            return -1
         if twos_comp_conv:
             data = self.convert_data(st)
         else:
@@ -2864,7 +2872,7 @@ class DDR3():
         * READ_FG_ENABLE
     """
 
-    def __init__(self, fpga, endpoints=None):
+    def __init__(self, fpga, endpoints=None, data_version='ADC_NO_TIMESTAMPS'):
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DDR3')
         self.fpga = fpga
@@ -2880,6 +2888,7 @@ class DDR3():
         # need to write all the way up to this stoping point otherwise the SPI output will glitch
         self.parameters['sample_size'] = int(
             (self.parameters['port1_index'] + 8)/2)
+        self.parameters['data_version'] = data_version  # sets deswizzling 
 
         self.data_arrays = []
         for i in range(self.parameters['channels']):
@@ -3287,6 +3296,61 @@ class DDR3():
             print(
                 f'The length [num of bytes] of the BlockPipeOut read is: {read_cnt}')
         return data_buf, read_cnt
+
+    def deswizzle(self, d, convert_twos=True):
+        """
+        Reorder DDR data to match the ADC channels 
+            Shift MSBytes up by 8 and combine with LSBytes 
+            Swap channels to match ADC channel numbering 
+
+        Arguments
+        ---------
+        d : array
+            array of bytes. 
+        convert_twos : Boolean
+            if true converts data to signed
+        Returns
+        -------
+        dictionary of data arrays (keys are channel numbers)
+
+        """
+        bits = 16
+        chan_data_swz = {}  # this data is swizzled
+
+        if self.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
+            for i in range(4):
+                chan_data_swz[i] = (d[(0 + i * 2) :: 8] << 0) + (d[(1 + i * 2) :: 8] << 8)
+
+            chan_data = {}
+            chan_data[0] = chan_data_swz[2]
+            chan_data[1] = chan_data_swz[3]
+            chan_data[2] = chan_data_swz[0]
+            chan_data[3] = chan_data_swz[1]
+            if convert_twos:
+                for i in range(4):
+                    chan_data[i] = twos_comp(chan_data[i], bits)
+
+        if self.parameters['data_version'] == 'TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
+            for i in range(8):
+                chan_data_swz[i] = (d[(0 + i * 2) :: 16] << 0) + (d[(1 + i * 2) :: 16] << 8)
+
+            chan_data = {}
+            chan_data[0] = chan_data_swz[2]
+            chan_data[1] = chan_data_swz[3]
+            chan_data[2] = chan_data_swz[0]
+            chan_data[3] = chan_data_swz[1]
+
+            chan_data[4] = chan_data_swz[6]
+            chan_data[5] = chan_data_swz[7]
+            chan_data[6] = chan_data_swz[5]
+            chan_data[7] = chan_data_swz[4]
+
+            if convert_twos:
+                for i in range(8):
+                    chan_data[i] = twos_comp(chan_data[i], bits)
+
+
+        return chan_data
 
     def set_index(self, factor, factor2=None):
         """
