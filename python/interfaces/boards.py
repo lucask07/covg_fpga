@@ -554,6 +554,9 @@ class Daq:
             The resistance in Ohms of the resistor in series with the unknown impedance.
         frequency : float
             The test frequency in Hertz to use for the input voltage sine wave.
+            Values below 200 Hz are not recommended because the rfftfreq
+            function will have to round significantly, resulting in larger
+            error.
         amplitude : float
             The voltage amplitude of the sign wave. The sine wave will end up
             shifted so all points are positive, but the amplitude will remain
@@ -647,6 +650,7 @@ class Daq:
         for i in self.ddr.data_arrays:
             print(type(i[0]))
         self.ddr.write_channels()
+        self.ddr.write_channels()   # Double write to ensure good output
 
         # --- Read input and ouput voltage signals ---
         throw_away = 15
