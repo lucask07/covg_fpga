@@ -70,7 +70,8 @@ AD7961 adc0
         .data_rd_rdy_o(data_rd),              // Signals that new data is available
         .data_o(data)                      // Read Data
     );
-    
+ 
+ /*
  AD7961_oneclk adc2
         (
             .m_clk_i(),
@@ -89,13 +90,13 @@ AD7961 adc0
             .data_rd_rdy_o(data_rd_2),              // Signals that new data is available
             .data_o(data_2)                      // Read Data
         );
-
+*/
 
 	// Generate clock
 	initial 
 	   sys_clk = 1'b0;
 	always 
-	   #5 sys_clk = ~sys_clk; //now 200 MHz sys clock
+	   #2.5 sys_clk = ~sys_clk; //now 200 MHz sys clock
 	
 	// Generate adc_clk
 	initial 
@@ -103,13 +104,10 @@ AD7961 adc0
 	always 
 	   #2 adc_clk = ~adc_clk;
 	   
-	always @(*) begin
-	   #1;
-	   dco_p = clk_p;
-	   dco_n = clk_n;
-	   dco_p_2 = clk_p_2;
-	   dco_n_2 = clk_n_2;
-   end
+	always @(clk_p) dco_p <= #15 clk_p;
+    always @(clk_n) dco_n <= #15 clk_n;
+	//dco_p_2 = clk_p_2;
+	//dco_n_2 = clk_n_2;
 
 	initial begin
 		// Initialize Inputs

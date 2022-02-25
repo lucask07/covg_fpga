@@ -205,17 +205,6 @@ module top_level_module(
 	.locked(adc_pll_locked)
 	);
 
-    // Clk wizard for generating timing clock (100 M) for ADC
-	wire adc_timing_clk;
-    wire adc_timing_pll_locked;
-
-	clk_wiz_1 adc_timing(
-		.clk_in1(clk_sys), //in at 200 MHz
-        .reset(ep40trig[`AD7961_TIMING_PLL_RESET]),
-        .clk_out1(adc_timing_clk), //out at 100 MHz
-        .locked(adc_timing_pll_locked)
-	);
-
 	wire [(FADC_NUM-1):0] adc_sync_rst;
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
     wire [(FADC_NUM-1):0]write_en_adc_o;
@@ -385,7 +374,7 @@ module top_level_module(
                                     .ep_addr(`I2C_TRIG_IN), .ep_clk(clk_sys), .ep_trigger(ep41trig));
 
     okTriggerIn trigIn42 (.okHE(okHE),
-                                .ep_addr(`ADC_TIMING_TRIG_IN), .ep_clk(adc_timing_clk), .ep_trigger(ep42trig));
+                                .ep_addr(`ADC_TIMING_TRIG_IN), .ep_clk(clk_sys), .ep_trigger(ep42trig)); //TODO: this could be moved to In41 since there is no longer a seperate 100 MHz clock
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
 	// okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 
@@ -519,12 +508,12 @@ module top_level_module(
     for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7961_gen
 
         sync_reset ad7961_sync_reset(
-            adc_timing_clk,
+            clk_sys,
             ep01wire[`AD7961_WIRE_RESET_GEN_BIT+i],
             adc_sync_rst[i]);
 
         AD7961 adc7961 (
-        .m_clk_i(adc_timing_clk),       // 100 MHz Clock, used for timing
+        .m_clk_i(clk_sys),       // 200 MHz system clock used for timing
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
         //.reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
         // Must reset all synchronously so that all data can go into the same FIFO
@@ -548,8 +537,7 @@ module top_level_module(
 
         fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports; write depth 4096, read depth 2048
           .rst(ep42trig[`AD7961_FIFO_RESET_GEN_BIT + i]),
-          //.wr_clk(adc_timing_clk),
-          .wr_clk(adc_clk),
+          .wr_clk(clk_sys),
           .rd_clk(okClk),
           .din({adc_val[i]}),         // Bus [15:0] (from ADC)
           .wr_en(write_en_adc_o[i]),// from ADC
@@ -565,32 +553,15 @@ module top_level_module(
           //pipeOut for data from AD7961
           okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(5+i)*65 +: 65]),
                     .ep_addr(`AD7961_PIPE_OUT_GEN_ADDR + i), .ep_read(adc_pipe_ep_read[i]),
-                    .ep_datain(adc_pipe_ep_datain[i]));
-                    
-         // reduce adc rate by x2 (5 MHz to 2.5 MHz)
-            
-            always @(posedge clk_sys) begin
-                if (sys_rst == 1'b1) adc_valid_cnt[i] <= 1'b0;
-                else if ( (adc_valid_cnt[i] == 1'b1) & (write_en_adc_o[i] == 1'b1)) adc_valid_cnt[i] <= 1'b0;
-                else if ( (adc_valid_cnt[i] == 1'b0) & (write_en_adc_o[i] == 1'b1)) adc_valid_cnt[i] <= 1'b1;
-            end         
-            
-            always @(posedge clk_sys) begin
-                if ( (adc_valid_cnt[i] == 1'b1) & (write_en_adc_o[i] == 1'b1)) adc_valid_pulse[i] <= 1'b1;
-                else adc_valid_pulse[i] <= 1'b0;
-            end
-            
-            always @(posedge clk_sys) begin // TODO: filter / average 2 samples
-                adc_val_reg[i] <= adc_val[i];
-            end
+                    .ep_datain(adc_pipe_ep_datain[i])); 
      end
      endgenerate
 
-    //assign sma[0] = dco[0]; //J17, MC2-77
-    //assign sma[1] = adc_serial_data[0]; //J16
+    assign sma[0] = dco[0]; //J17, MC2-77
+    assign sma[1] = write_en_adc_o[0]; //J16
     
-    assign sma[0] = 1'b0; //J17, MC2-77
-    assign sma[1] = 1'b0; //J16
+    //assign sma[0] = 1'b0; //J17, MC2-77
+    //assign sma[1] = 1'b0; //J16
  
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
@@ -659,7 +630,7 @@ module top_level_module(
      wire         pipe_in2_read;
      wire [255:0] pipe_in2_data;
      wire [6:0]   pipe_in2_rd_count;
-     wire [8:0]   pipe_in2_wr_count;
+     wire [7:0]   pipe_in2_wr_count;
      wire         pipe_in2_valid;
      wire         pipe_in2_full;
      wire         pipe_in2_empty;
@@ -873,17 +844,17 @@ module top_level_module(
     
     reg [47:0] timestamp;
     always @(posedge clk_sys) begin
-        if (sys_rst == 1'b1) timestamp <= 1'b0;
+        if (sys_rst == 1'b1) timestamp <= 48'b0;
         else timestamp <= timestamp + 1'b1;  //32 bit is 21.7 seconds; 48 bits is 16.23 days
     end
 
-    reg [63:0] adc_ddr_data;
+    reg [127:0] adc_ddr_data;
     reg adc_ddr_wr_en;
     
     always @(*) begin
         if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin // TODO: setup adc_ddr_debug, then route signals to FIFO
-            adc_ddr_data = {adc_val_reg[3][15:0], adc_val_reg[2][15:0], adc_val_reg[1][15:0], adc_val_reg[0][15:0]};
-            adc_ddr_wr_en = adc_valid_pulse[0]; // Pulse to use to synchronize DACs and the ADS8686
+            adc_ddr_data = {16'haa55, timestamp, adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+            adc_ddr_wr_en = write_en_adc_o[0]; // Pulse to use to synchronize DACs and the ADS8686
         end
         else begin
             adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};
@@ -903,7 +874,7 @@ module top_level_module(
          .empty(pipe_in2_empty),
          .valid(pipe_in2_valid),  //output 
          .rd_data_count(pipe_in2_rd_count), // Bus [6 : 0]  //128 available for reading (by DDR)
-         .wr_data_count(pipe_in2_wr_count)); // Bus [8 : 0] //1024 available for writing 
+         .wr_data_count(pipe_in2_wr_count)); // Bus [7 : 0] //256 available for writing 
 
     // DDR: read from DDR and 1) output data to DACs and 2) output data to host through BTPipeOut
 

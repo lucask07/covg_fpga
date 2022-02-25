@@ -3,114 +3,99 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="tb_spi_top_behav.wdb" id="1">
+      <db_ref path="tb_ad7961_behav.wdb" id="1">
          <top_modules>
             <top_module name="glbl" />
-            <top_module name="tb_spi_top" />
+            <top_module name="tb_ad7961" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="684165232359fs"></ZoomEndTime>
-      <Cursor1Time time="36144578000fs"></Cursor1Time>
+      <ZoomStartTime time="408500000fs"></ZoomStartTime>
+      <ZoomEndTime time="997500001fs"></ZoomEndTime>
+      <Cursor1Time time="627500000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="233"></NameColumnWidth>
-      <ValueColumnWidth column_width="163"></ValueColumnWidth>
+      <ValueColumnWidth column_width="155"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="21" />
+   <WVObjectSize size="17" />
    <wave_markers>
-      <marker time="548000000" label="" />
       <marker time="6192500000" label="" />
-      <marker time="532970000" label="" />
-      <marker time="732843000" label="" />
       <marker time="3015000000" label="" />
       <marker time="4831000000" label="" />
       <marker time="375160000" label="" />
+      <marker time="590500000" label="" />
+      <marker time="602500000" label="" />
+      <marker time="802500000" label="" />
    </wave_markers>
-   <wvobject fp_name="/tb_spi_top/clk" type="logic">
-      <obj_property name="ElementShortName">clk</obj_property>
-      <obj_property name="ObjectShortName">clk</obj_property>
+   <wvobject fp_name="/tb_ad7961/sys_clk" type="logic">
+      <obj_property name="ElementShortName">sys_clk</obj_property>
+      <obj_property name="ObjectShortName">sys_clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/fifoclk" type="logic">
-      <obj_property name="ElementShortName">fifoclk</obj_property>
-      <obj_property name="ObjectShortName">fifoclk</obj_property>
+   <wvobject fp_name="/tb_ad7961/adc_clk" type="logic">
+      <obj_property name="ElementShortName">adc_clk</obj_property>
+      <obj_property name="ObjectShortName">adc_clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/rst" type="logic">
-      <obj_property name="ElementShortName">rst</obj_property>
-      <obj_property name="ObjectShortName">rst</obj_property>
+   <wvobject fp_name="/tb_ad7961/reset_n" type="logic">
+      <obj_property name="ElementShortName">reset_n</obj_property>
+      <obj_property name="ObjectShortName">reset_n</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_dataout" type="array">
-      <obj_property name="ElementShortName">ep_dataout[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ep_dataout[31:0]</obj_property>
+   <wvobject fp_name="/tb_ad7961/d_p" type="logic">
+      <obj_property name="ElementShortName">d_p</obj_property>
+      <obj_property name="ObjectShortName">d_p</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/trigger" type="logic">
-      <obj_property name="ElementShortName">trigger</obj_property>
-      <obj_property name="ObjectShortName">trigger</obj_property>
+   <wvobject fp_name="/tb_ad7961/d_n" type="logic">
+      <obj_property name="ElementShortName">d_n</obj_property>
+      <obj_property name="ObjectShortName">d_n</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/readFifo" type="logic">
-      <obj_property name="ElementShortName">readFifo</obj_property>
-      <obj_property name="ObjectShortName">readFifo</obj_property>
+   <wvobject fp_name="/tb_ad7961/dco_p" type="logic">
+      <obj_property name="ElementShortName">dco_p</obj_property>
+      <obj_property name="ObjectShortName">dco_p</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/rstFifo" type="logic">
-      <obj_property name="ElementShortName">rstFifo</obj_property>
-      <obj_property name="ObjectShortName">rstFifo</obj_property>
+   <wvobject fp_name="/tb_ad7961/dco_n" type="logic">
+      <obj_property name="ElementShortName">dco_n</obj_property>
+      <obj_property name="ObjectShortName">dco_n</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_write" type="logic">
-      <obj_property name="ElementShortName">ep_write</obj_property>
-      <obj_property name="ObjectShortName">ep_write</obj_property>
+   <wvobject fp_name="/tb_ad7961/cnv_p" type="logic">
+      <obj_property name="ElementShortName">cnv_p</obj_property>
+      <obj_property name="ObjectShortName">cnv_p</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/realTime_LPF_coeff_BRAM/U0/addra" type="array">
-      <obj_property name="ElementShortName">addra[3:0]</obj_property>
-      <obj_property name="ObjectShortName">addra[3:0]</obj_property>
+   <wvobject fp_name="/tb_ad7961/cnv_n" type="logic">
+      <obj_property name="ElementShortName">cnv_n</obj_property>
+      <obj_property name="ObjectShortName">cnv_n</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_address" type="array">
-      <obj_property name="ElementShortName">ep_address[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ep_address[31:0]</obj_property>
+   <wvobject fp_name="/tb_ad7961/clk_p" type="logic">
+      <obj_property name="ElementShortName">clk_p</obj_property>
+      <obj_property name="ObjectShortName">clk_p</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_dataout_coeff" type="array">
-      <obj_property name="ElementShortName">ep_dataout_coeff[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ep_dataout_coeff[31:0]</obj_property>
+   <wvobject fp_name="/tb_ad7961/clk_n" type="logic">
+      <obj_property name="ElementShortName">clk_n</obj_property>
+      <obj_property name="ObjectShortName">clk_n</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/en_period" type="array">
-      <obj_property name="ElementShortName">en_period[9:0]</obj_property>
-      <obj_property name="ObjectShortName">en_period[9:0]</obj_property>
+   <wvobject fp_name="/tb_ad7961/data_rd" type="logic">
+      <obj_property name="ElementShortName">data_rd</obj_property>
+      <obj_property name="ObjectShortName">data_rd</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ddr3_rst" type="logic">
-      <obj_property name="ElementShortName">ddr3_rst</obj_property>
-      <obj_property name="ObjectShortName">ddr3_rst</obj_property>
+   <wvobject fp_name="/tb_ad7961/data" type="array">
+      <obj_property name="ElementShortName">data[15:0]</obj_property>
+      <obj_property name="ObjectShortName">data[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/regTrigger" type="logic">
-      <obj_property name="ElementShortName">regTrigger</obj_property>
-      <obj_property name="ObjectShortName">regTrigger</obj_property>
+   <wvobject fp_name="/tb_ad7961/adc0/data_rd_rdy_o" type="logic">
+      <obj_property name="ElementShortName">data_rd_rdy_o</obj_property>
+      <obj_property name="ObjectShortName">data_rd_rdy_o</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/i" type="array">
-      <obj_property name="ElementShortName">i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">i[31:0]</obj_property>
+   <wvobject fp_name="/tb_ad7961/adc0/adc_tcyc_cnt" type="array">
+      <obj_property name="ElementShortName">adc_tcyc_cnt[31:0]</obj_property>
+      <obj_property name="ObjectShortName">adc_tcyc_cnt[31:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/data_rdy" type="logic">
-      <obj_property name="ElementShortName">data_rdy</obj_property>
-      <obj_property name="ObjectShortName">data_rdy</obj_property>
+   <wvobject fp_name="/tb_ad7961/adc0/sclk_cnt" type="array">
+      <obj_property name="ElementShortName">sclk_cnt[4:0]</obj_property>
+      <obj_property name="ObjectShortName">sclk_cnt[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/filter_in" type="array">
-      <obj_property name="ElementShortName">filter_in[15:0]</obj_property>
-      <obj_property name="ObjectShortName">filter_in[15:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/filter_out" type="array">
-      <obj_property name="ElementShortName">filter_out[13:0]</obj_property>
-      <obj_property name="ObjectShortName">filter_out[13:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/filter_out_modified" type="array">
-      <obj_property name="ElementShortName">filter_out_modified[13:0]</obj_property>
-      <obj_property name="ObjectShortName">filter_out_modified[13:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/count_enable" type="array">
-      <obj_property name="ElementShortName">count_enable[7:0]</obj_property>
-      <obj_property name="ObjectShortName">count_enable[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/count" type="array">
-      <obj_property name="ElementShortName">count[7:0]</obj_property>
-      <obj_property name="ObjectShortName">count[7:0]</obj_property>
+   <wvobject fp_name="/tb_ad7961/adc0/sclk_echo_cnt" type="array">
+      <obj_property name="ElementShortName">sclk_echo_cnt[4:0]</obj_property>
+      <obj_property name="ObjectShortName">sclk_echo_cnt[4:0]</obj_property>
    </wvobject>
 </wave_config>

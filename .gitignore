@@ -120,10 +120,10 @@ python/tests/unit_tests/test_defines.v
 ########
 #For Sphinx Documentation
 ########
-!*.rst
-!*.html
-!*Makefile
-!*make.bat
-!*.js
-!*objects.inv
-!*.md
+!docs/*.rst
+!docs/*.html
+!docs/*Makefile
+!docs/*make.bat
+!docs/*.js
+!docs/*objects.inv
+!docs/*.md
