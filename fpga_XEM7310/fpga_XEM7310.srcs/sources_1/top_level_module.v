@@ -629,14 +629,14 @@ module top_level_module(
      wire         pipe_out_write;
      wire [255:0] pipe_out_data;
      wire [7:0]   pipe_out_rd_count;
-     wire [6:0]   pipe_out_wr_count;
+     wire [7:0]   pipe_out_wr_count;
      wire         pipe_out_full;
      wire         pipe_out_empty;
      reg          pipe_out_ready;
 
      wire         pipe_in2_read;
      wire [255:0] pipe_in2_data;
-     wire [6:0]   pipe_in2_rd_count;
+     wire [7:0]   pipe_in2_rd_count;
      wire [7:0]   pipe_in2_wr_count;
      wire         pipe_in2_valid;
      wire         pipe_in2_full;
@@ -864,7 +864,7 @@ module top_level_module(
     reg [127:0] adc_ddr_data;
     reg adc_ddr_wr_en;
     
-    always @(*) begin
+    always @(*) begin // will be a case on cycle cnt 
         if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin // TODO: setup adc_ddr_debug, then route signals to FIFO
             adc_ddr_data = {16'haa55, timestamp_snapshot, adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
             adc_ddr_wr_en = write_en_adc_o[0]; // Pulse to use to synchronize DACs and the ADS8686
@@ -875,7 +875,8 @@ module top_level_module(
         end
     end
 
-     fifo_w64_512_r256_128_1 adc_to_ddr_fifo (  //ADC data input, output to DDR
+     //fifo_w64_512_r256_128_1 adc_to_ddr_fifo (  //ADC data input, output to DDR
+     fifo_w128_256_r256_128 adc_to_ddr_fifo (  //ADC data input, output to DDR
          .rst(ddr3_rst),
          .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
