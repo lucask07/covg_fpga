@@ -205,7 +205,7 @@ module top_level_module(
 	.locked(adc_pll_locked)
 	);
 
-	wire [(FADC_NUM-1):0] adc_sync_rst;
+	wire adc_sync_rst;
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
     wire [(FADC_NUM-1):0]write_en_adc_o;
     wire [15:0] adc_val[0:(FADC_NUM-1)];
@@ -221,7 +221,7 @@ module top_level_module(
 	assign led[3] = ~adc_fifo_halffull[1];
 	assign led[4] = ~adc_fifo_full[1];
 	assign led[5] = ~ep40trig[`AD7961_PLL_RESET];
-	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i]);
+	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst);
     assign led[7] = 1'b0;
 
     // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
@@ -502,22 +502,29 @@ module top_level_module(
     reg adc_valid_cnt[0:(FADC_NUM-1)];
     reg adc_valid_pulse[0:(FADC_NUM-1)];
     reg [15:0] adc_val_reg[0:(FADC_NUM-1)];
+    wire [31:0] adc_tcyc_cnt; // timing counter (clocked at 200 MHz)
+	
+    sync_reset ad7961_sync_reset(
+        .clk(clk_sys),
+        .async_reset(ep01wire[`AD7961_WIRE_RESET_GEN_BIT]),
+        .sync_reset(adc_sync_rst)
+        );
+	
+	AD7961_timing adc7961_timing (
+	    .m_clk_i(clk_sys),                    // 200 MHz timing clk (was 100 MHz Clock, used for timing)
+        .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+0] | adc_sync_rst)),                  // Reset signal, active low
+        .adc_tcyc_cnt(adc_tcyc_cnt)
+	);
 	
 	genvar i;
     generate
     for (i=0; i<=(FADC_NUM-1); i=i+1) begin : ad7961_gen
 
-        sync_reset ad7961_sync_reset(
-            clk_sys,
-            ep01wire[`AD7961_WIRE_RESET_GEN_BIT+i],
-            adc_sync_rst[i]);
-
         AD7961 adc7961 (
-        .m_clk_i(clk_sys),       // 200 MHz system clock used for timing
+        .adc_tcyc_cnt(adc_tcyc_cnt),    // 200 MHz counter used for timing
         .fast_clk_i(adc_clk),           // Maximum 260 MHz Clock, used for serial transfer
-        //.reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst[i])),// Reset signal active low: both Python signals are active high due to inversion
         // Must reset all synchronously so that all data can go into the same FIFO
-        .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+0] | adc_sync_rst[0])),// Reset signal active low: both Python signals are active high due to inversion
+        .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+0] | adc_sync_rst)),// Reset signal active low: both Python signals are active high due to inversion
         .en_i(),                // Enable pins input  LJK: assigned to en_o within module (serve no purpose)
         .d_pos_i(a_d_p[i]),                    // Data Ii, Positive Pair
         .d_neg_i(a_d_n[i]),                    // Data In, Negative Pair
@@ -848,12 +855,18 @@ module top_level_module(
         else timestamp <= timestamp + 1'b1;  //32 bit is 21.7 seconds; 48 bits is 16.23 days
     end
 
+    reg [47:0] timestamp_snapshot;
+    always @(posedge clk_sys) begin
+        if (sys_rst == 1'b1) timestamp_snapshot <= 48'b0;
+        else if (adc_ddr_wr_en == 1'b1) timestamp_snapshot <= timestamp;
+    end
+
     reg [127:0] adc_ddr_data;
     reg adc_ddr_wr_en;
     
     always @(*) begin
         if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin // TODO: setup adc_ddr_debug, then route signals to FIFO
-            adc_ddr_data = {16'haa55, timestamp, adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+            adc_ddr_data = {16'haa55, timestamp_snapshot, adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
             adc_ddr_wr_en = write_en_adc_o[0]; // Pulse to use to synchronize DACs and the ADS8686
         end
         else begin

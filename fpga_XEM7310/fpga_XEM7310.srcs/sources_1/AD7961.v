@@ -38,12 +38,15 @@
 // MODULE NAME : AD7961   
 // AUTHOR : atofan       
 // AUTHOR'S EMAIL : alexandru.tofan@analog.com
+// Modified: Lucas Koerner 
 // -----------------------------------------------------------------------------
 // SVN REVISION: 468
 // -----------------------------------------------------------------------------
 // KEYWORDS : AD7961
 // -----------------------------------------------------------------------------
-// PURPOSE : Driver for the AD7961, 16-Bit, 5 MSPS PulSAR Differential ADC
+// PURPOSE : Timing block for the AD7961, 16-Bit, 5 MSPS PulSAR Differential ADC
+//           so that multiple AD7961s can be synchronized and so timing 
+//           is controlled by 
 // -----------------------------------------------------------------------------
 // REUSE ISSUES        
 // Reset Strategy      : Active low reset signal
@@ -65,7 +68,7 @@
 //------------------------------------------------------------------------------
 module AD7961
     (
-        input wire          m_clk_i,                    // 100 MHz Clock, used for tiing
+        input wire  [31:0]  adc_tcyc_cnt,               // derived from 200 MHz timing clk (was 100 MHz Clock, used for timing)
         input wire          fast_clk_i,                 // Maximum 300 MHz Clock, used for serial transfer
         input wire          reset_n_i,                  // Reset signal, active low
         input wire  [ 3:0]  en_i,                       // Enable pins input
@@ -88,11 +91,6 @@ module AD7961
 //------------------------------------------------------------------------------
 //----------- Local Parameters -------------------------------------------------
 //------------------------------------------------------------------------------
-// FPGA Clock Frequency
-parameter real          FPGA_CLOCK_FREQ         = 200;
-// Conversion signal generation
-parameter real          TCYC                    = 0.200;
-parameter       [31:0]  ADC_CYC_CNT             = FPGA_CLOCK_FREQ * TCYC - 1;
 
 // Serial Interface
 parameter               SERIAL_IDLE_STATE       = 3'b001;
@@ -102,7 +100,6 @@ parameter               SERIAL_DONE_STATE       = 3'b100;
 //------------------------------------------------------------------------------
 //----------- Registers Declarations -------------------------------------------
 //------------------------------------------------------------------------------ 
-reg  [31:0]  adc_tcyc_cnt;
 reg  [ 2:0]  serial_present_state;
 reg  [ 2:0]  serial_next_state;
 reg  [ 4:0]  sclk_cnt;
@@ -139,27 +136,6 @@ assign data_rd_rdy_o    = ((serial_read_done_s == 1'b1) && (adc_tcyc_cnt == 32'd
 assign cnv_s            = (adc_tcyc_cnt > 32'd34) ? 1'b1 : 1'b0;
 assign tmsb_done_s      = (adc_tcyc_cnt == 32'd36) ? 1'b1 : 1'b0;
 assign buffer_reset_s   = (adc_tcyc_cnt == 32'd4) ? 1'b1 : 1'b0;
-
-
-// Update conversion timing counters 
-always @(posedge m_clk_i)
-begin
-    if(reset_n_i == 1'b0)
-    begin
-        adc_tcyc_cnt <= ADC_CYC_CNT;
-    end
-    else
-    begin
-        if(adc_tcyc_cnt != 32'd0)
-        begin
-            adc_tcyc_cnt <= adc_tcyc_cnt - 32'd1;
-        end
-        else
-        begin
-            adc_tcyc_cnt <= ADC_CYC_CNT; 
-        end
-    end
-end 
 
 // State Switch Logic
 always @(serial_present_state, tmsb_done_s, sclk_cnt, sclk_echo_cnt)
