@@ -135,7 +135,7 @@ assign tmsb_done_s      = (adc_tcyc_cnt == 32'd18) ? 1'b1 : 1'b0;
 assign buffer_reset_s   = (adc_tcyc_cnt == 32'd2) ? 1'b1 : 1'b0;
 */
 // Timing parameters with 200 MHz timing clock 
-assign data_rd_rdy_o    = ((serial_read_done_s == 1'b1) && (adc_tcyc_cnt == 32'd22)) ? 1'b1 : 1'b0; 
+assign data_rd_rdy_o    = ((serial_read_done_s == 1'b1) && (adc_tcyc_cnt == 32'd20)) ? 1'b1 : 1'b0; // experienced issues (every other sample) when this was 32'd22
 assign cnv_s            = (adc_tcyc_cnt > 32'd34) ? 1'b1 : 1'b0;
 assign tmsb_done_s      = (adc_tcyc_cnt == 32'd36) ? 1'b1 : 1'b0;
 assign buffer_reset_s   = (adc_tcyc_cnt == 32'd4) ? 1'b1 : 1'b0;
