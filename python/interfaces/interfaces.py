@@ -2888,7 +2888,7 @@ class DDR3():
         # need to write all the way up to this stoping point otherwise the SPI output will glitch
         self.parameters['sample_size'] = int(
             (self.parameters['port1_index'] + 8)/2)
-        self.parameters['data_version'] = data_version  # sets deswizzling 
+        self.parameters['data_version'] = data_version  # sets deswizzling mode
 
         self.data_arrays = []
         for i in range(self.parameters['channels']):
@@ -3329,28 +3329,38 @@ class DDR3():
             if convert_twos:
                 for i in range(4):
                     chan_data[i] = twos_comp(chan_data[i], bits)
+            
+            return chan_data
 
         if self.parameters['data_version'] == 'TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
             for i in range(8):
                 chan_data_swz[i] = (d[(0 + i * 2) :: 16] << 0) + (d[(1 + i * 2) :: 16] << 8)
 
             chan_data = {}
-            chan_data[0] = chan_data_swz[2]
-            chan_data[1] = chan_data_swz[3]
-            chan_data[2] = chan_data_swz[0]
-            chan_data[3] = chan_data_swz[1]
+            chan_data[0] = chan_data_swz[6]            
+            chan_data[1] = chan_data_swz[7]            
+            chan_data[2] = chan_data_swz[5]
+            chan_data[3] = chan_data_swz[4]
 
-            chan_data[4] = chan_data_swz[6]
-            chan_data[5] = chan_data_swz[7]
-            chan_data[6] = chan_data_swz[5]
-            chan_data[7] = chan_data_swz[4]
+            chan_data[4] = chan_data_swz[2]
+            chan_data[5] = chan_data_swz[3]
+            chan_data[6] = chan_data_swz[0]
+            chan_data[7] = chan_data_swz[1]
+
+            # channel 1 was put into 5. -> 7 into 1 
+            
+            # channel 2 got 10 (slow timestamp?)
+            # channel 3 got negative number -21931: 0xaa55 
+            # channel 0 got fast time stamp 
 
             if convert_twos:
-                for i in range(8):
+                for i in range(4):
                     chan_data[i] = twos_comp(chan_data[i], bits)
 
+            timestamp = (chan_data[4] + (chan_data[5]<<16) + (chan_data[6]<<32))
+            constant = chan_data[7]
 
-        return chan_data
+            return chan_data, timestamp, constant
 
     def set_index(self, factor, factor2=None):
         """

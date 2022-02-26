@@ -250,8 +250,9 @@ daq.DAC_gp[1].write_voltage(2.36, 7)
 
 cmd_dac = daq.DAC[1]  # DAC channel 0 is connected to dc clamp ch 0 CMD signal
 cc = daq.DAC[0]
-# ddr = DDR3(f, data_version='TIMESTAMPS')
-ddr = DDR3(f, data_version='ADC_NO_TIMESTAMPS')
+ddr = DDR3(f, data_version='TIMESTAMPS')
+# ddr = DDR3(f, data_version='ADC_NO_TIMESTAMPS')
+NUM_CHAN = 8
 
 
 def ddr_write_setup():
@@ -281,7 +282,6 @@ def read_adc(ddr, blk_multiples=2048):
 def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64, 
                     PLT_ADC=False, scaling=1, ylabel='DN', ax=None):
 
-    NUM_CHAN = 4
     # Continuous Graph
     if PLT_ADC:
         plt.ion()
@@ -312,7 +312,13 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64,
         data_set = file.create_dataset("adc", (NUM_CHAN, chunk_size), maxshape=(NUM_CHAN, None))
         while repeat < num_repeats:
             d, bytes_read_error = read_adc(ddr, blk_multiples)
-            chan_data = ddr.deswizzle(d)
+            if ddr.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':
+                chan_data = ddr.deswizzle(d)
+                timestamp = np.nan
+                constant = np.nan
+            elif ddr.parameters['data_version'] == 'TIMESTAMPS':
+                chan_data, timestamp, constant = ddr.deswizzle(d)
+
             if NUM_CHAN==4:
                 chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
 
@@ -338,9 +344,9 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64,
                 data_set.resize(data_set.shape[1] + chunk_size, axis=1)
 
     print(f'Done with ADC reading: saved as {full_data_name}')
-    return chan_data
+    return chan_data, timestamp, constant
 
-CHAN_UNDER_TEST = 1
+CHAN_UNDER_TEST = 0
 output = pd.DataFrame()
 data = {}
 file_name = 'test'
@@ -357,16 +363,19 @@ ddr_write_setup()
 # don't need to write anything
 ddr_write_finish()
 
-save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
-t, adc_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=[CHAN_UNDER_TEST])
+chan_data, timestamp, constant = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
 
-crop_start = 1024 
-fig,ax=plt.subplots()
-t = t[crop_start:]
-y = adc_data[CHAN_UNDER_TEST][crop_start:]
-ax.plot(t*1e6, y, marker = '+')
+for CHAN_UNDER_TEST in range(8):
+    t, adc_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=[CHAN_UNDER_TEST])
 
-ffreq, famp, max_freq = calc_fft(y, 1/(t[1]-t[0]))
-print(f'Frequency of maximum amplitude {max_freq} [Hz]')
-rms = np.std(y)
-print(f'RMS amplitude: {rms}, peak amplitude: {rms*1.414}')
+    crop_start = 1024 
+    fig,ax=plt.subplots()
+    t = t[crop_start:]
+    y = adc_data[CHAN_UNDER_TEST][crop_start:]
+    ax.plot(t*1e6, y, marker = '+')
+    ax.set_title(f'Chan #: {CHAN_UNDER_TEST}')
+
+    ffreq, famp, max_freq = calc_fft(y, 1/(t[1]-t[0]))
+    print(f'Frequency of maximum amplitude {max_freq} [Hz]')
+    rms = np.std(y)
+    print(f'RMS amplitude: {rms}, peak amplitude: {rms*1.414}')

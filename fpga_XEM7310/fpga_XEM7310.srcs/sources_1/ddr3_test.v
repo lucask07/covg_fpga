@@ -22,12 +22,12 @@ module ddr3_test
 	//DDR Output Buffer (ob_)  // DAC function generator data out to SPI controller -- must ensure this FIFO doesn't empty 
 	(* KEEP = "TRUE" *)output reg           ob_we,
 	(* KEEP = "TRUE" *)output reg  [255:0]  ob_data,
-	(* KEEP = "TRUE" *)input  wire [6:0]    ob_count,
+	(* KEEP = "TRUE" *)input  wire [7:0]    ob_count,
 	(* KEEP = "TRUE" *)input  wire          ob_full,
     //DDR Input Buffer #2 (ib2_)  // ADC data -- must ensure this FIFO doesn't fill 
     (* KEEP = "TRUE" *)output reg           ib2_re,
     (* KEEP = "TRUE" *)input  wire [255:0]  ib2_data,
-    (* KEEP = "TRUE" *)input  wire [6:0]    ib2_count,
+    (* KEEP = "TRUE" *)input  wire [7:0]    ib2_count,
     (* KEEP = "TRUE" *)input  wire          ib2_valid,
     (* KEEP = "TRUE" *)input  wire          ib2_empty,
     //DDR Output Buffer #2 (ob2_)  // 
@@ -59,8 +59,8 @@ localparam FIXED_INDEX = 30'h7f_ff_f8;
 localparam FIXED_INDEX2 = 30'hf_ff_ff_f8;
 localparam FIXED_INDEX2_START = 30'h80_00_00;
 
-localparam FIFO_SIZE           = 128;  // this is the size of the 256 wide side. 1024*32 and 256*128=32678 
-localparam HALF_FIFO_SIZE      = 64;  
+localparam OUTGOING_PIPE_FIFO_SIZE           = 128;  // this is the size of the 256 wide side. 1024*32 and 256*128=32678 
+localparam HALF_FIFO_SIZE      = 128;  // ADC data to DDR; and DAC data from DDR
 
 localparam BURST_UI_WORD_COUNT = 2'd1; //(WORD_SIZE*BURST_MODE/UI_SIZE) = BURST_UI_WORD_COUNT : 32*8/256 = 1  // burst per address value 
 localparam ADDRESS_INCREMENT   = 5'd8; // UI Address is a word address. BL8 Burst Mode = 8.
@@ -150,20 +150,20 @@ always @(posedge clk) begin
 					state <= s_write_0;
 					// Check to ensure that the output buffer has enough space for a burst
 				end 
-				// 256w_128 (DDR write) x 128w_256 (read) 
+				// 256w_128 (DDR write) x 128w_256 (read) [Prevent from emptying]
 				else if (calib_done==1 && ((read_mode==1 && (ob_count < (HALF_FIFO_SIZE)) )) ) begin  // changed to ensure not always serviced 
 					app_addr <= cmd_byte_addr_rd;
 					app_cmd <= 3'b001; // change LJK 2021/11/11
 					state <= s_read_0;
 				end
-				// w64_512_x r256_128 (to DDR)
+				// w128_256_r256_128 (to DDR)  [ADC data to DDR - prevent from filling]
                 else if (calib_done==1 && read_mode==1 && (ib2_count >= HALF_FIFO_SIZE)  ) begin  // changed to ensure not always serviced 
                     app_addr <= cmd_byte_addr_wr2;
                     app_cmd <= 3'b000;  // change LJK 2021/11/11
                     state <= s_write2_0;
                 end
                 // w256_128 (from DDR)  r32_1024 (to OpalKelly)
-                else if (calib_done==1 && fg_read_back_mode==1 && (ob2_count<(FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
+                else if (calib_done==1 && fg_read_back_mode==1 && (ob2_count<(OUTGOING_PIPE_FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
                     app_addr <= cmd_byte_addr_rd2;
                     app_cmd <= 3'b001; // change LJK 2021/11/11
                     state <= s_read2_0;
