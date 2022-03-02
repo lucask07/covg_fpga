@@ -61,7 +61,8 @@ module AD7961_timing
     (
         input wire          m_clk_i,                    // 200 MHz timing clk (was 100 MHz Clock, used for timing)
         input wire          reset_n_i,                  // Reset signal, active low
-        output reg [31:0] adc_tcyc_cnt
+        output reg [31:0] adc_tcyc_cnt,
+        output reg [4:0] cycle_cnt
     );
 
 //------------------------------------------------------------------------------
@@ -72,9 +73,10 @@ parameter real          FPGA_CLOCK_FREQ         = 200;
 // Conversion signal generation
 parameter real          TCYC                    = 0.200;
 parameter       [31:0]  ADC_CYC_CNT             = FPGA_CLOCK_FREQ * TCYC - 1;
+parameter       [4:0]   CYCLE_CNT = 9;
  
 
-// Update conversion timing counters 
+// Update conversion timing counters (this counter is then used by the AD7961 module)
 always @(posedge m_clk_i)
 begin
     if(reset_n_i == 1'b0)
@@ -93,5 +95,19 @@ begin
         end
     end
 end 
+
+// slower cycle counter 
+always @(posedge m_clk_i)
+begin
+    if(reset_n_i == 1'b0) cycle_cnt <= CYCLE_CNT;
+    else
+    begin
+        if(adc_tcyc_cnt == 32'd0)
+        begin
+            if (cycle_cnt != 5'd0) cycle_cnt <= cycle_cnt - 5'd1;
+            else cycle_cnt <= CYCLE_CNT;
+        end
+    end
+end
 
 endmodule
