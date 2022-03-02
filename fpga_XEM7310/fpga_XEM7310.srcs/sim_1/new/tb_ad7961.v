@@ -26,7 +26,7 @@ module tb_ad7961;
 //----------- Module Declaration -----------------------------------------------
 //------------------------------------------------------------------------------
 
-reg sys_clk;
+reg clk_sys;
 reg adc_clk; 
 reg reset_n;
 
@@ -51,10 +51,12 @@ wire data_rd;
 wire [15:0] data;
 wire data_rd_2;
 wire [15:0] data_2;
+wire [31:0] adc_tcyc_cnt;
+wire [4:0] cycle_cnt;
 
 AD7961 adc0
     (
-        .m_clk_i(sys_clk),                    // 100 MHz Clock, used for tiing
+        .adc_tcyc_cnt(adc_tcyc_cnt),          // counter for timing 
         .fast_clk_i(adc_clk),                 // Maximum 300 MHz Clock, used for serial transfer
         .reset_n_i(reset_n),                  // Reset signal, active low
         .en_i(),                       // Enable pins input
@@ -71,6 +73,13 @@ AD7961 adc0
         .data_o(data)                      // Read Data
     );
  
+AD7961_timing adc7961_timing (
+    .m_clk_i(clk_sys),                    // 200 MHz timing clk (was 100 MHz Clock, used for timing)
+    .reset_n_i(reset_n),                  // Reset signal, active low
+    .adc_tcyc_cnt(adc_tcyc_cnt),
+    .cycle_cnt(cycle_cnt)
+);
+
  /*
  AD7961_oneclk adc2
         (
@@ -94,9 +103,9 @@ AD7961 adc0
 
 	// Generate clock
 	initial 
-	   sys_clk = 1'b0;
+	   clk_sys = 1'b0;
 	always 
-	   #2.5 sys_clk = ~sys_clk; //now 200 MHz sys clock
+	   #2.5 clk_sys = ~clk_sys; //now 200 MHz sys clock
 	
 	// Generate adc_clk
 	initial 

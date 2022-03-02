@@ -219,7 +219,7 @@ for i in range(6):
     daq.DAC[i].set_spi_sclk_divide()
     daq.DAC[i].filter_select(operation="clear")
     daq.DAC[i].write(int(0))
-    daq.DAC[i].set_data_mux("host")
+    daq.DAC[i].set_data_mux("DDR")
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 500)  # 500 mV full-scale
@@ -291,6 +291,7 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64,
         ax.set_xlabel("Time")
         ax.set_ylabel(ylabel)
     chunk_size = int(ddr.parameters["BLOCK_SIZE"] * blk_multiples / (NUM_CHAN*2))  # readings per ADC
+    print(f'Anticipated chunk size {chunk_size}')
     repeat = 0
     adc_readings = chunk_size*num_repeats
 
@@ -315,9 +316,10 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64,
             if ddr.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':
                 chan_data = ddr.deswizzle(d)
                 timestamp = np.nan
-                constant = np.nan
+                read_check = np.nan
+                dac_data = np.nan
             elif ddr.parameters['data_version'] == 'TIMESTAMPS':
-                chan_data, timestamp, constant = ddr.deswizzle(d)
+                chan_data, timestamp, read_check, dac_data = ddr.deswizzle(d)
 
             if NUM_CHAN==4:
                 chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
@@ -335,6 +337,8 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64,
 
             repeat += 1
             if repeat == 0:
+                #chunk_size = np.size(chan_data[0])
+                print(f'Chunk size by chan data size {chunk_size}')
                 data_set[:] = chan_stack
             else:
                 data_set[:, -chunk_size:] = chan_stack
@@ -343,8 +347,22 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64,
                     ax_hdl[0].remove()
                 data_set.resize(data_set.shape[1] + chunk_size, axis=1)
 
+
     print(f'Done with ADC reading: saved as {full_data_name}')
-    return chan_data, timestamp, constant
+    return chan_data, timestamp, read_check, dac_data
+
+for i in range(6):
+    ddr.data_arrays[i] = ddr.make_ramp(start=2**10 + 64*i,
+                                       stop=2**14-1,
+                                       step=1)
+
+#ddr.data_arrays[0] = ddr.make_flat_voltage(256)
+#ddr.data_arrays[1] = ddr.make_flat_voltage(512)
+
+ddr_write_setup()
+g_buf = ddr.write_channels()
+ddr_write_finish()
+
 
 CHAN_UNDER_TEST = 0
 output = pd.DataFrame()
@@ -363,7 +381,8 @@ ddr_write_setup()
 # don't need to write anything
 ddr_write_finish()
 
-chan_data, timestamp, constant = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
+chan_data, timestamp, read_check, dac_data = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4,
+                                                            blk_multiples=40)
 
 for CHAN_UNDER_TEST in range(8):
     t, adc_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=[CHAN_UNDER_TEST])

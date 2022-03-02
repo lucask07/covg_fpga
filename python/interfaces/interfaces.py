@@ -3347,20 +3347,48 @@ class DDR3():
             chan_data[6] = chan_data_swz[0]
             chan_data[7] = chan_data_swz[1]
 
-            # channel 1 was put into 5. -> 7 into 1 
-            
-            # channel 2 got 10 (slow timestamp?)
-            # channel 3 got negative number -21931: 0xaa55 
-            # channel 0 got fast time stamp 
+            # locate the constant value of 0xaa55 and then 0x28ab
+            # and then offset so that value is in the 3rd position and crop to multiple of 10 
+            c_val_idx = np.nonzero((chan_data[7][:-1] == 0xaa55) & ((chan_data[7][1:] == 0x28ab)))[0][0]
+            print(f'c_val_idx = {c_val_idx}')
+            # get offset and crop length 
+            total_length = np.size(chan_data[7])
+            #crop = (c_val_idx - 3) % 10
+            #for i in range(8):
+            #    chan_data[i] = chan_data[i][crop: -((total_length-crop)%10)]                
 
             if convert_twos:
                 for i in range(4):
                     chan_data[i] = twos_comp(chan_data[i], bits)
 
-            timestamp = (chan_data[4] + (chan_data[5]<<16) + (chan_data[6]<<32))
-            constant = chan_data[7]
+            
+            lsb = chan_data[6][0::5]
+            mid_b = (chan_data[6][0::5]<<16)
+            msb = (chan_data[7][2::5]<<32)
+            t_len = np.size(msb)
+            timestamp = (lsb[0:(t_len-1)] + mid_b[0:(t_len-1)] + msb[0:(t_len-1)])
 
-            return chan_data, timestamp, constant
+            read_check = {}
+            read_check[0] = chan_data[7][3::10]
+            read_check[1] = chan_data[7][4::5]
+            read_check[2] = chan_data[7][8::10]
+
+            dac_data = {}
+            dac_data[0] = chan_data[4][0::2]
+            dac_data[1] = chan_data[4][1::2]
+            dac_data[2] = chan_data[5][0::2]
+            dac_data[3] = chan_data[5][1::2]
+            # dac channels 4,5 are available but not every sample
+
+            constant_values = {0: 0xaa55, 1: 0x28ab, 2: 0x77bb}
+            for i in range(2):
+                if not np.all(read_check[i] == constant_values[i]):
+                    print(f'Error in constant value: {constant_values[i]} ')
+                    print(f'Number of errors: {np.sum(read_check[i] != constant_values[i])}')
+            unq_time_intervals = np.unique(np.diff(timestamp))
+            print(f'Timestamp from {(timestamp[1] - timestamp[0])*5e-9} [s]')
+
+            return chan_data, timestamp, read_check, dac_data
 
     def set_index(self, factor, factor2=None):
         """

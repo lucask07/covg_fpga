@@ -503,7 +503,8 @@ module top_level_module(
     reg adc_valid_pulse[0:(FADC_NUM-1)];
     reg [15:0] adc_val_reg[0:(FADC_NUM-1)];
     wire [31:0] adc_tcyc_cnt; // timing counter (clocked at 200 MHz)
-	
+    wire [4:0] cycle_cnt;     // counter (9 - 0) for what data goes into DDR
+
     sync_reset ad7961_sync_reset(
         .clk(clk_sys),
         .async_reset(ep01wire[`AD7961_WIRE_RESET_GEN_BIT]),
@@ -513,7 +514,8 @@ module top_level_module(
 	AD7961_timing adc7961_timing (
 	    .m_clk_i(clk_sys),                    // 200 MHz timing clk (was 100 MHz Clock, used for timing)
         .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+0] | adc_sync_rst)),                  // Reset signal, active low
-        .adc_tcyc_cnt(adc_tcyc_cnt)
+        .adc_tcyc_cnt(adc_tcyc_cnt),
+        .cycle_cnt(cycle_cnt)
 	);
 	
 	genvar i;
@@ -858,15 +860,31 @@ module top_level_module(
     reg [47:0] timestamp_snapshot;
     always @(posedge clk_sys) begin
         if (sys_rst == 1'b1) timestamp_snapshot <= 48'b0;
-        else if (adc_ddr_wr_en == 1'b1) timestamp_snapshot <= timestamp;
+        else if (adc_ddr_wr_en == 1'b1 & ((cycle_cnt == 4'd5) | (cycle_cnt == 4'd0)) ) timestamp_snapshot <= timestamp;
     end
 
     reg [127:0] adc_ddr_data;
     reg adc_ddr_wr_en;
     
-    always @(*) begin // will be a case on cycle cnt 
-        if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin // TODO: setup adc_ddr_debug, then route signals to FIFO
-            adc_ddr_data = {16'haa55, timestamp_snapshot, adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+    wire [23:0] dac_val_out[0:(AD5453_NUM-1)]; //for AD5453 data 
+
+    always @(*) begin 
+        if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin 
+            case (cycle_cnt)
+                4'd9:    adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd8:    adc_ddr_data = {ads_last_read[31:16],      timestamp_snapshot[31:16], dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd7:    adc_ddr_data = {timestamp_snapshot[47:32], dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd6:    adc_ddr_data = {16'haa55,                  dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd5:    adc_ddr_data = {16'h28ab,                  dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+
+                4'd4:    adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd3:    adc_ddr_data = {ads_last_read[31:16],      timestamp_snapshot[31:16], dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd2:    adc_ddr_data = {timestamp_snapshot[47:32], dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd1:    adc_ddr_data = {16'h77bb,                  dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd0:    adc_ddr_data = {16'h28ab,                  dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                
+                default: adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+            endcase 
             adc_ddr_wr_en = write_en_adc_o[0]; // Pulse to use to synchronize DACs and the ADS8686
         end
         else begin
@@ -875,13 +893,19 @@ module top_level_module(
         end
     end
 
-     //fifo_w64_512_r256_128_1 adc_to_ddr_fifo (  //ADC data input, output to DDR
-     fifo_w128_256_r256_128 adc_to_ddr_fifo (  //ADC data input, output to DDR
+    // synchronize the OpalKelly wire in DDR3_READ_ENABLE with the cycle count so data always starts at cycle cnt of 9
+    reg adc_ddr_wr_en_slow;
+    always @(posedge clk_sys) begin
+        if (ddr3_rst == 1'b1) adc_ddr_wr_en_slow <= 1'b0;
+        else if ((adc_ddr_wr_en == 1'b1) & (cycle_cnt == 4'd0)) adc_ddr_wr_en_slow <= ep03wire[`DDR3_READ_ENABLE];
+    end
+
+     fifo_w128_512_r256_256 adc_to_ddr_fifo (  //ADC data input, output to DDR
          .rst(ddr3_rst),
          .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
          .din(adc_ddr_data),
-         .wr_en(adc_ddr_wr_en & ep03wire[`DDR3_READ_ENABLE]), //
+         .wr_en(adc_ddr_wr_en & adc_ddr_wr_en_slow), //
          .rd_en(pipe_in2_read),
          .dout(pipe_in2_data), // Bus [255 : 0] - to DDR 
          .full(pipe_in2_full),
@@ -892,7 +916,7 @@ module top_level_module(
 
     // DDR: read from DDR and 1) output data to DACs and 2) output data to host through BTPipeOut
 
-     fifo_w256_128_r128_256_1 ddr_to_dac_fifo_ddr ( //Data in from DDR -> Output to DACs 
+     fifo_w256_256_r128_512 ddr_to_dac_fifo_ddr ( //Data in from DDR -> Output to DACs 
          .rst(ddr3_rst), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys),
@@ -973,7 +997,8 @@ module top_level_module(
                  // All DAC80508 output channels have the form {0b1, number_output_channel}
                  .rd_en_0(rd_en_ds[k]),   //out: debug of state machine
                  .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]), //input: state machine to init after SPI clock divider is re-programmed
-                 .filter_sel(ep_wire_filtsel[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1])
+                 .filter_sel(ep_wire_filtsel[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1]),
+                 .dac_val_out()
                  );
         assign ds_sdo[k] = 1'b1; // sdo for the DAC80508C is connected to CLRB -- force to logic high
         end
@@ -993,7 +1018,7 @@ module top_level_module(
     
     reg [13:0] last_ddr_read[0:(AD5453_NUM-1)];
     reg ddr_data_valid_norepeat[0:(AD5453_NUM-1)]; // Skip DAC update if the value is the same. Reduces digital switching noise. 
-    
+        
     genvar p;
     generate
     for (p=0; p<=(AD5453_NUM-1); p=p+1) begin : dac_ad5453_gen
@@ -1040,7 +1065,8 @@ module top_level_module(
                  .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + p]), //input  -- sends state machine to init. Use for after updates via register bridge.
                  .filter_sel(ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + p*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1]),
                  .coeff_debug_out1(coeff_debug_out1[p]),
-                 .coeff_debug_out2(coeff_debug_out2[p])
+                 .coeff_debug_out2(coeff_debug_out2[p]),
+                 .dac_val_out(dac_val_out[p])
                  );
         end
     endgenerate

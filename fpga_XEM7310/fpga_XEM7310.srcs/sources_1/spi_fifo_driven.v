@@ -40,7 +40,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire regTrigger,
      input wire filter_sel,  // if high SPI data is from the filter. 
      output wire [31:0] coeff_debug_out1,
-     output wire [31:0] coeff_debug_out2
+     output wire [31:0] coeff_debug_out2,
+     output reg [23:0] dac_val_out
     );
     
       wire cmd_stb;
@@ -103,6 +104,11 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          if (filter_sel == 1'b1) data_ready_mux = filter_data_rdy[0];
          else data_ready_mux = data_rdy_0;
      end
+	 
+	 always @(posedge clk) begin
+	    if (rst == 1'b1) dac_val_out <= 24'd0;
+        else if (data_ready_mux == 1'b1) dac_val_out <= spi_data;
+	 end
 	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
