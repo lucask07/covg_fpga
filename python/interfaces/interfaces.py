@@ -2867,9 +2867,10 @@ class DDR3():
         3) set_adc_read() # allows host to read PipeOut as PipeOut is continuously filled if emptied
 
     DDR configuration bits:
-        * WRITE_ENABLE
-        * READ_ENABLE
-        * READ_FG_ENABLE
+        * DAC_WRITE_ENABLE
+        * DAC_READ_ENABLE 
+        * ADC_WRITE_ENABLE 
+        * ADC_TRANSFER_ENABLE
     """
 
     def __init__(self, fpga, endpoints=None, data_version='ADC_NO_TIMESTAMPS'):
@@ -3108,10 +3109,9 @@ class DDR3():
         """
 
         print('Length of buffer being written to DDR [bytes]: ', len(buf))
-        # Reset FIFOs
-        self.clear_read()
+        self.clear_dac_read()
         self.reset_fifo()
-        self.set_write()
+        self.set_dac_write()
 
         print('Writing to DDR...')
         time1 = time.time()
@@ -3127,9 +3127,10 @@ class DDR3():
 
         # below prepares the HDL into read mode
         self.reset_fifo()
-        self.clear_write()
+        self.clear_dac_write()
         if set_ddr_read:
-            self.set_read()
+            self.set_dac_read()
+            self.set_adc_read()
         return block_pipe_return, speed_MBs
 
     def reset_fifo(self):
@@ -3185,49 +3186,62 @@ class DDR3():
         for k in fifo_status:
             print('{} = {}'.format(k, fifo_status[k]))
 
-    def set_read(self):
+    def set_dac_read(self):
         """Set DDR / FIFOs to read.
            Enables DDR data going to the DACs and ADC data into DDR
         """
 
-        self.fpga.set_wire_bit(self.endpoints['READ_ENABLE'].address,
-                               self.endpoints['READ_ENABLE'].bit_index_low)
+        self.fpga.set_wire_bit(self.endpoints['DAC_READ_ENABLE'].address,
+                               self.endpoints['DAC_READ_ENABLE'].bit_index_low)
 
-    def clear_read(self):
+    def clear_dac_read(self):
         """Clear DDR / FIFOs to read.
             Stops DDR data from going to the DACs and ADC data into DDR
         """
 
-        self.fpga.clear_wire_bit(self.endpoints['READ_ENABLE'].address,
-                                 self.endpoints['READ_ENABLE'].bit_index_low)
+        self.fpga.clear_wire_bit(self.endpoints['DAC_READ_ENABLE'].address,
+                                 self.endpoints['DAC_READ_ENABLE'].bit_index_low)
 
-    def set_write(self):
+    def set_dac_write(self):
         """Set DDR / FIFOs to write data into DDR via Pipe.
         """
 
-        self.fpga.set_wire_bit(self.endpoints['WRITE_ENABLE'].address,
-                               self.endpoints['WRITE_ENABLE'].bit_index_low)
+        self.fpga.set_wire_bit(self.endpoints['DAC_WRITE_ENABLE'].address,
+                               self.endpoints['DAC_WRITE_ENABLE'].bit_index_low)
 
-    def clear_write(self):
+    def clear_dac_write(self):
         """Clear DDR / FIFOs to write data into DDR via Pipe.
         """
 
-        self.fpga.clear_wire_bit(self.endpoints['WRITE_ENABLE'].address,
-                                 self.endpoints['WRITE_ENABLE'].bit_index_low)
+        self.fpga.clear_wire_bit(self.endpoints['DAC_WRITE_ENABLE'].address,
+                                 self.endpoints['DAC_WRITE_ENABLE'].bit_index_low)
+
+    def set_adc_write(self):
+        """Set DDR / FIFOs to write ADC data into DDR.
+        """
+
+        self.fpga.set_wire_bit(self.endpoints['ADC_WRITE_ENABLE'].address,
+                               self.endpoints['ADC_WRITE_ENABLE'].bit_index_low)
+
+    def clear_adc_write(self):
+        """Clear DDR / FIFOs to write ADC data into DDR.
+        """
+
+        self.fpga.clear_wire_bit(self.endpoints['ADC_WRITE_ENABLE'].address,
+                                 self.endpoints['ADC_WRITE_ENABLE'].bit_index_low)
 
     def set_adc_read(self):
         """Set DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.
         """
-        # TODO: change this name to ADC_READ_ENABLE and modify names in FPGA
-        self.fpga.set_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
-                               self.endpoints['FG_READ_ENABLE'].bit_index_low)
+        self.fpga.set_wire_bit(self.endpoints['ADC_TRANSFER_ENABLE'].address,
+                               self.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
 
     def clear_adc_read(self):
         """Clear DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.
         """
 
-        self.fpga.clear_wire_bit(self.endpoints['FG_READ_ENABLE'].address,
-                                 self.endpoints['FG_READ_ENABLE'].bit_index_low)
+        self.fpga.clear_wire_bit(self.endpoints['ADC_TRANSFER_ENABLE'].address,
+                                 self.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
 
     def adc_single(self):
         """Set ADC read address to the ADC write address.

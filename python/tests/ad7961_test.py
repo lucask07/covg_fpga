@@ -266,7 +266,8 @@ def ddr_write_finish():
      # reenable both DACs
     cmd_dac.set_data_mux("DDR")
     cc.set_data_mux("DDR")
-    ddr.set_read()  # enable DAC playback and ADC reading
+    ddr.set_dac_read()  # enable DAC playback and ADC reading
+    ddr.set_adc_write()
 
 def read_adc(ddr, blk_multiples=2048):
     # block size is 2048.
@@ -353,7 +354,7 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 40,
     print(f'Done with ADC reading: saved as {full_data_name}')
     return chan_data, timestamp, read_check, dac_data
 
-for i in range(6):
+for i in range(7):
     ddr.data_arrays[i] = ddr.make_ramp(start=2**10 + 64*i,
                                        stop=2**14-1,
                                        step=1)
@@ -365,24 +366,16 @@ ddr_write_setup()
 g_buf = ddr.write_channels()
 ddr_write_finish()
 
-
 CHAN_UNDER_TEST = 0
 output = pd.DataFrame()
 data = {}
 file_name = 'test'
 data['filename'] = file_name
 output = output.append(data, ignore_index=True)
-                
 
 print(output.head())
 output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 idx = 0
-
-# required to setup DDR 
-ddr.clear_read()
-ddr_write_setup()
-# don't need to write anything
-ddr_write_finish()
 
 chan_data, timestamp, read_check, dac_data = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 24,
                                                             blk_multiples=40) # blk multiples multiple of 10
