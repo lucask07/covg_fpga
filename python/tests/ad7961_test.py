@@ -279,7 +279,7 @@ def read_adc(ddr, blk_multiples=2048):
     return d, bytes_read_error
 
 
-def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64, 
+def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 40, 
                     PLT_ADC=False, scaling=1, ylabel='DN', ax=None):
 
     # Continuous Graph
@@ -303,6 +303,8 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64,
     except OSError:
         pass
 
+    # TODO: decouple ADC read enable and the DAC read enable 
+    # ddr.reset_fifo()
     ddr.set_adc_read()  # enable data into the ADC reading FIFO
     time.sleep(adc_readings*SAMPLE_PERIOD*2)
 
@@ -377,12 +379,13 @@ output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 idx = 0
 
 # required to setup DDR 
+ddr.clear_read()
 ddr_write_setup()
 # don't need to write anything
 ddr_write_finish()
 
-chan_data, timestamp, read_check, dac_data = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4,
-                                                            blk_multiples=40)
+chan_data, timestamp, read_check, dac_data = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 24,
+                                                            blk_multiples=40) # blk multiples multiple of 10
 
 for CHAN_UNDER_TEST in range(8):
     t, adc_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=[CHAN_UNDER_TEST])

@@ -3351,8 +3351,10 @@ class DDR3():
             # and then offset so that value is in the 3rd position and crop to multiple of 10 
             c_val_idx = np.nonzero((chan_data[7][:-1] == 0xaa55) & ((chan_data[7][1:] == 0x28ab)))[0][0]
             print(f'c_val_idx = {c_val_idx}')
+            
             # get offset and crop length 
             total_length = np.size(chan_data[7])
+            
             #crop = (c_val_idx - 3) % 10
             #for i in range(8):
             #    chan_data[i] = chan_data[i][crop: -((total_length-crop)%10)]                
@@ -3363,7 +3365,7 @@ class DDR3():
 
             
             lsb = chan_data[6][0::5]
-            mid_b = (chan_data[6][0::5]<<16)
+            mid_b = (chan_data[6][1::5]<<16)
             msb = (chan_data[7][2::5]<<32)
             t_len = np.size(msb)
             timestamp = (lsb[0:(t_len-1)] + mid_b[0:(t_len-1)] + msb[0:(t_len-1)])
@@ -3386,7 +3388,9 @@ class DDR3():
                     print(f'Error in constant value: {constant_values[i]} ')
                     print(f'Number of errors: {np.sum(read_check[i] != constant_values[i])}')
             unq_time_intervals = np.unique(np.diff(timestamp))
-            print(f'Timestamp from {(timestamp[1] - timestamp[0])*5e-9} [s]')
+            # print(f'Timestamp spacing {(timestamp[1] - timestamp[0])*5e-9} [s]')
+            if np.size(unq_time_intervals):
+                print('Warning: Multiple time intervals')
 
             return chan_data, timestamp, read_check, dac_data
 
