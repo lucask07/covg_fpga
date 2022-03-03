@@ -736,9 +736,10 @@ module top_level_module(
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
          .reset              (ddr3_rst | ep43trig[`DDR3_UI_RESET]),
-         .reads_en           (ep03wire[`DDR3_READ_ENABLE]),
-         .writes_en          (ep03wire[`DDR3_WRITE_ENABLE]),
-         .fg_reads_en        (ep03wire[`DDR3_FG_READ_ENABLE]),
+         .write1_en          (ep03wire[`DDR3_DAC_WRITE_ENABLE]),
+         .read1_en           (ep03wire[`DDR3_DAC_READ_ENABLE]),
+         .write2_en          (ep03wire[`DDR3_ADC_WRITE_ENABLE]),
+         .read2_en           (ep03wire[`DDR3_ADC_TRANSFER_ENABLE]),
          .calib_done         (init_calib_complete),
          
          .adc_addr_reset (ep43trig[`DDR3_ADC_ADDR_RESET]),
@@ -893,15 +894,22 @@ module top_level_module(
         end
     end
 
-    // synchronize the OpalKelly wire in DDR3_READ_ENABLE with the cycle count so data always starts at cycle cnt of 9
-    reg adc_ddr_wr_en_slow;
+    // synchronize the OpalKelly wire in DDR3_READ_ENABLE signals with the cycle count so data always starts at cycle cnt of 9
+    reg adc_ddr_wr_en_slow;    
     always @(posedge clk_sys) begin
         if (ddr3_rst == 1'b1) adc_ddr_wr_en_slow <= 1'b0;
-        else if ((adc_ddr_wr_en == 1'b1) & (cycle_cnt == 4'd0)) adc_ddr_wr_en_slow <= ep03wire[`DDR3_READ_ENABLE];
+        else if ((adc_ddr_wr_en == 1'b1) & (cycle_cnt == 4'd0)) adc_ddr_wr_en_slow <= ep03wire[`DDR3_ADC_WRITE_ENABLE];
     end
-
+    
+    // TODO: timing may change so that adc_ddr_wr_en is not the starting pulse
+    reg dac_ddr_read_en_slow;    
+    always @(posedge clk_sys) begin
+        if (ddr3_rst == 1'b1) dac_ddr_read_en_slow <= 1'b0;
+        else if ((adc_ddr_wr_en == 1'b1) & (cycle_cnt == 4'd0)) dac_ddr_read_en_slow <= ep03wire[`DDR3_DAC_READ_ENABLE];
+    end
+    
      fifo_w128_512_r256_256 adc_to_ddr_fifo (  //ADC data input, output to DDR
-         .rst(ddr3_rst),
+         .rst(ddr3_rst), // supports asynchronous reset 
          .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
          .din(adc_ddr_data),
@@ -922,7 +930,7 @@ module top_level_module(
          .rd_clk(clk_sys),
          .din(pipe_out_data), // Bus [255 : 0] -- from DDR 
          .wr_en(pipe_out_write),
-         .rd_en(rd_en_0 & ep03wire[`DDR3_READ_ENABLE]),
+         .rd_en(rd_en_0 & dac_ddr_read_en_slow),
          .dout(po0_ep_datain), // Bus [127 : 0]
          .full(pipe_out_full),
          .empty(pipe_out_empty),
@@ -930,7 +938,7 @@ module top_level_module(
          .rd_data_count(pipe_out_rd_count), // Bus [7 : 0]
          .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
 
-     fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (  // Output ADC data from DDR -> input data of ADCs to PipeOut
+     fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (  // Output ADC data from DDR to PipeOut (does not need to be syncrhonized with cycle cnt)
          .rst(ddr3_rst), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(okClk),
@@ -943,7 +951,6 @@ module top_level_module(
          .valid(),  //output
          .rd_data_count(pipe_out2_rd_count), // Bus [9 : 0]
          .wr_data_count(pipe_out2_wr_count)); // Bus [6 : 0]
-
     /* ------------------ END DDR3 ------------------- */
     
     /*---------------- DAC80508 -------------------*/

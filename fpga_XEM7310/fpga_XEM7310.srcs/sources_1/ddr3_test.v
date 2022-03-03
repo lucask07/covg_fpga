@@ -6,9 +6,10 @@ module ddr3_test
 	(
 	input  wire          clk,
 	(* KEEP = "TRUE" *)input  wire          reset,
-	(* KEEP = "TRUE" *)input  wire          writes_en,
-	(* KEEP = "TRUE" *)input  wire          reads_en,
-	(* KEEP = "TRUE" *)input  wire          fg_reads_en,
+	(* KEEP = "TRUE" *)input  wire          write1_en,
+	(* KEEP = "TRUE" *)input  wire          read1_en,
+	(* KEEP = "TRUE" *)input  wire          write2_en,
+	(* KEEP = "TRUE" *)input  wire          read2_en,
 	(* KEEP = "TRUE" *)input  wire          calib_done,
 	(* KEEP = "TRUE" *)input  wire          adc_addr_reset,
 	(* KEEP = "TRUE" *)input  wire          adc_addr_restart,
@@ -72,17 +73,19 @@ localparam ADDRESS_INCREMENT   = 5'd8; // UI Address is a word address. BL8 Burs
 
 (* KEEP = "TRUE" *)reg  [1:0]  burst_count;
 
-(* KEEP = "TRUE" *)reg         write_mode;
-(* KEEP = "TRUE" *)reg         read_mode;
-(* KEEP = "TRUE" *)reg         fg_read_back_mode;
+(* KEEP = "TRUE" *)reg         write1_mode;
+(* KEEP = "TRUE" *)reg         read1_mode;
+(* KEEP = "TRUE" *)reg         write2_mode;
+(* KEEP = "TRUE" *)reg         read2_mode;
 (* KEEP = "TRUE" *)reg         reset_d;
 (* KEEP = "TRUE" *)reg         adc_addr_reset_reg;
 
 assign app_wdf_mask = 16'h0000;
 
-always @(posedge clk) write_mode <= writes_en;
-always @(posedge clk) read_mode <= reads_en;
-always @(posedge clk) fg_read_back_mode <= fg_reads_en; // use for ADC read-back 
+always @(posedge clk) write1_mode <= write1_en;
+always @(posedge clk) read1_mode <= read1_en;
+always @(posedge clk) write2_mode <= write2_en;
+always @(posedge clk) read2_mode <= read2_en;
 always @(posedge clk) reset_d <= reset;
 
 
@@ -143,29 +146,29 @@ always @(posedge clk) begin
 				    else  cmd_byte_addr_rd2 <= cmd_byte_addr_wr2; // start at current write pointer
 				end
 				// Only start writing when initialization done
-				// Check to ensure that the input buffer has enough data for a burst : 32w_1024 x 256w_128
-				else if (calib_done==1 && write_mode==1 && (ib_count >= BURST_UI_WORD_COUNT)) begin // if the in-bound FIFO has enough data 
+				// Check to ensure that the input buffer has enough data for a burst : 32w_1024 x 256w_128 : DDR3_DAC_WRITE_ENABLE
+				else if (calib_done==1 && write1_mode==1 && (ib_count >= BURST_UI_WORD_COUNT)) begin // if the in-bound FIFO has enough data 
 					app_addr <= cmd_byte_addr_wr;
-					app_cmd <= 3'b000;  // change LJK 2021/11/11
+					app_cmd <= 3'b000;  
 					state <= s_write_0;
 					// Check to ensure that the output buffer has enough space for a burst
 				end 
 				// 256w_128 (DDR write) x 128w_256 (read) [Prevent from emptying]
-				else if (calib_done==1 && ((read_mode==1 && (ob_count < (HALF_FIFO_SIZE)) )) ) begin  // changed to ensure not always serviced 
+				else if (calib_done==1 && ((read1_mode==1 && (ob_count < (HALF_FIFO_SIZE)) )) ) begin  // changed to ensure not always serviced 
 					app_addr <= cmd_byte_addr_rd;
-					app_cmd <= 3'b001; // change LJK 2021/11/11
+					app_cmd <= 3'b001; 
 					state <= s_read_0;
 				end
 				// w128_256_r256_128 (to DDR)  [ADC data to DDR - prevent from filling]
-                else if (calib_done==1 && read_mode==1 && (ib2_count >= HALF_FIFO_SIZE)  ) begin  // changed to ensure not always serviced 
+                else if (calib_done==1 && write2_mode==1 && (ib2_count >= HALF_FIFO_SIZE)  ) begin  // changed to ensure not always serviced 
                     app_addr <= cmd_byte_addr_wr2;
-                    app_cmd <= 3'b000;  // change LJK 2021/11/11
+                    app_cmd <= 3'b000; 
                     state <= s_write2_0;
                 end
                 // w256_128 (from DDR)  r32_1024 (to OpalKelly)
-                else if (calib_done==1 && fg_read_back_mode==1 && (ob2_count<(OUTGOING_PIPE_FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
+                else if (calib_done==1 && read2_mode==1 && (ob2_count<(OUTGOING_PIPE_FIFO_SIZE-16-BURST_UI_WORD_COUNT) ) ) begin  // service if others don't need it
                     app_addr <= cmd_byte_addr_rd2;
-                    app_cmd <= 3'b001; // change LJK 2021/11/11
+                    app_cmd <= 3'b001; 
                     state <= s_read2_0;
                 end
 			end
