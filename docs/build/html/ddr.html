@@ -1,33 +1,73 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>DDR Memory Class &mdash; covgDAQ 0.0.1 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    <script src="_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" /> 
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="SPI Controller Class" href="SPIController.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="index.html" class="icon icon-home"> covgDAQ
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -35,41 +75,96 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="register.html">Register Class</a></li>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Register.html">Register Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Endpoint.html">Endpoint Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">DDR Memory Class</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">covgDAQ</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
       <li>DDR Memory Class</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
             <a href="_sources/DDR.rst.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="module-interfaces.interfaces">
-<span id="ddr-memory-class"></span><h1>DDR Memory Class<a class="headerlink" href="#module-interfaces.interfaces" title="Permalink to this headline"></a></h1>
+            
+  <div class="section" id="ddr-memory-class">
+<h1>DDR Memory Class<a class="headerlink" href="#ddr-memory-class" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">DDR3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">DDR3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3" title="Permalink to this definition">¶</a></dt>
 <dd><p>DDR is striped in groups of 16 bits to 8 channels  (128 bits)
 Out of the DDR FIFO
 Input write is 256 bits wide.</p>
@@ -112,40 +207,40 @@ channel 1: 128+16 + 15:144, 16*1 + 15: 16</p>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.adc_single">
-<span class="sig-name descname"><span class="pre">adc_single</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.adc_single"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.adc_single" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">adc_single</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.adc_single"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.adc_single" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set ADC read address to the ADC write address.</p>
 <p>Emulates an immediate “trigger” of an oscilloscope.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.clear_adc_debug">
-<span class="sig-name descname"><span class="pre">clear_adc_debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.clear_adc_debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.clear_adc_debug" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clear_adc_debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.clear_adc_debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.clear_adc_debug" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear the ADC debug bit.</p>
 <p>DDR ADC data will be from the ADC.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.clear_adc_read">
-<span class="sig-name descname"><span class="pre">clear_adc_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.clear_adc_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.clear_adc_read" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clear_adc_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.clear_adc_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.clear_adc_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.clear_read">
-<span class="sig-name descname"><span class="pre">clear_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.clear_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.clear_read" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clear_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.clear_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.clear_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear DDR / FIFOs to read.
 Stops DDR data from going to the DACs and ADC data into DDR</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.clear_write">
-<span class="sig-name descname"><span class="pre">clear_write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.clear_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.clear_write" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">clear_write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.clear_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.clear_write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Clear DDR / FIFOs to write data into DDR via Pipe.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.closest_frequency">
-<span class="sig-name descname"><span class="pre">closest_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.closest_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.closest_frequency" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">closest_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.closest_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.closest_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine closest frequency so the waveform evenly divides into the length of the DDR3</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -158,7 +253,7 @@ Stops DDR data from going to the DACs and ADC data into DDR</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.fifo_status">
-<span class="sig-name descname"><span class="pre">fifo_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.fifo_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.fifo_status" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fifo_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.fifo_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.fifo_status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check the empty, full, and count status of the DDR interfacing FIFOs</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -172,7 +267,7 @@ Stops DDR data from going to the DACs and ADC data into DDR</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.make_flat_voltage">
-<span class="sig-name descname"><span class="pre">make_flat_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amplitude</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.make_flat_voltage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.make_flat_voltage" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">make_flat_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amplitude</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.make_flat_voltage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.make_flat_voltage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a constant unit16 array of value amplitude.</p>
 <p>Array length based on the sample_size parameter. The conversion from
 float or int voltage to int digital (binary) code should take place
@@ -188,7 +283,7 @@ BEFORE this function.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.make_ramp">
-<span class="sig-name descname"><span class="pre">make_ramp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.make_ramp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.make_ramp" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">make_ramp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stop</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.make_ramp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.make_ramp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a ramp signal to write to the DDR.</p>
 <p>The conversion from float or int voltage to int digital (binary) code
 should take place BEFORE this function.</p>
@@ -203,7 +298,7 @@ should take place BEFORE this function.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.make_sine_wave">
-<span class="sig-name descname"><span class="pre">make_sine_wave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amplitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8192</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.make_sine_wave"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.make_sine_wave" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">make_sine_wave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">amplitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8192</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_frequency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.make_sine_wave"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.make_sine_wave" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a sine-wave array for writing to DDR.</p>
 <p>The conversion from float or int voltage to int digital (binary) code
 should take place BEFORE this function.</p>
@@ -218,7 +313,7 @@ should take place BEFORE this function.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.make_step">
-<span class="sig-name descname"><span class="pre">make_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.make_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.make_step" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">make_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">low</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">high</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actual_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.make_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.make_step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a step signal (square wave) to write to the DDR.</p>
 <p>The conversion from float or int voltage to int digital (binary) code
 should take place BEFORE this function.</p>
@@ -233,13 +328,13 @@ should take place BEFORE this function.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.print_fifo_status">
-<span class="sig-name descname"><span class="pre">print_fifo_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fifo_status</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.print_fifo_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.print_fifo_status" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">print_fifo_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fifo_status</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.print_fifo_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.print_fifo_status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the FIFO status dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.read_adc">
-<span class="sig-name descname"><span class="pre">read_adc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ADC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DEBUG_PRINT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.read_adc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.read_adc" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">read_adc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ADC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DEBUG_PRINT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.read_adc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.read_adc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read ADC data.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -253,13 +348,13 @@ should take place BEFORE this function.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.reset_fifo">
-<span class="sig-name descname"><span class="pre">reset_fifo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.reset_fifo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.reset_fifo" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">reset_fifo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.reset_fifo"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.reset_fifo" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset both FIFOs and DDR Mig and DDR address pointers.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.set_adc_debug">
-<span class="sig-name descname"><span class="pre">set_adc_debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_adc_debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_adc_debug" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_adc_debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_adc_debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_adc_debug" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the ADC debug bit.</p>
 <p>That bit multiplexes a counter to ADC channel 0 and bits 47:0 of the
 DAC data to ADC channels 1,2,3.</p>
@@ -268,33 +363,33 @@ DAC data to ADC channels 1,2,3.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.set_adc_read">
-<span class="sig-name descname"><span class="pre">set_adc_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_adc_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_adc_read" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_adc_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_adc_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_adc_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.set_index">
-<span class="sig-name descname"><span class="pre">set_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_index" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">factor2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_index"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>No longer used. Index (the DDR address that wraps-around to 0)
 is fixed to improve timing performance.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.set_read">
-<span class="sig-name descname"><span class="pre">set_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_read" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set DDR / FIFOs to read.
 Enables DDR data going to the DACs and ADC data into DDR</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.set_write">
-<span class="sig-name descname"><span class="pre">set_write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_write" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_write</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.set_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.set_write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set DDR / FIFOs to write data into DDR via Pipe.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.write">
-<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_ddr_read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.write" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_ddr_read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a bytearray to the DDR3.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -308,40 +403,59 @@ Enables DDR data going to the DACs and ADC data into DDR</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.write_channels">
-<span class="sig-name descname"><span class="pre">write_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_ddr_read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.write_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.write_channels" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">write_channels</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">set_ddr_read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.write_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.write_channels" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write the channels as striped data to the DDR.</p>
 </dd></dl>
 
 </dd></dl>
 
-</section>
+</div>
 
 
            </div>
+           
           </div>
           <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="SPIController.html" class="btn btn-neutral float-left" title="SPI Controller Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.</p>
-  </div>
+    <p>
+        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

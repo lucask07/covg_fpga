@@ -31,11 +31,6 @@ class Register:
         Index of the LSB in the register.
     bit_width : int
         Width of the register in bits.
-
-    Methods
-    -------
-    get_chip_registers(sheet, workbook_path=None)
-        Returns a dictionary of Registers from a page in an Excel spreadsheet.
     """
 
     def __init__(self, address, default, bit_index_high, bit_index_low, bit_width):
@@ -108,18 +103,6 @@ class Endpoint:
         Whether to increment the bits when incrementing the endpoint.
     gen_address : bool
         Whether to increment the address when incrementing the endpoint.
-
-    Methods
-    -------
-    update_endpoints_from_defines(ep_defines_path=None)
-        Return and store Endpoints in ep_defines.v in endpoints_from_defines.
-    get_chip_endpoints(chip_name)
-        Return the dictionary of Endpoints for a specific chip or group.
-    increment_endpoints(endpoints_dict)
-        Increment all Endpoints in endpoints_dict according to their gen_bit
-        and gen_address values.
-    excel_to_defines(excel_path, defines_path, sheet=0)
-        Convert an Excel spreadsheet of endpoint definitions to Verilog.
     """
 
     endpoints_from_defines = dict()
@@ -443,11 +426,6 @@ class FPGA:
         Opal Kelly API connection to the FPGA.
     device_info : ok.okTDeviceInfo
         General information about the FPGA.
-
-    Methods
-    -------
-    init_device()
-        Initialize the FPGA for use.
     """
 
     # TODO: change to complete bitfile when Verilog is combined
@@ -681,23 +659,6 @@ class I2CController:
         FPGA instance this controller uses to communicate.
     endpoints : dict
         Endpoints on the FPGA this controller uses to communicate.
-
-    Methods
-    -------
-    create_chips(cls, fpga, addr_pins, endpoints)
-        Class method. Instantiate a number of new I2C chips.
-    i2c_configure(data_length, starts, stops, preamble)
-        Configure the buffer for the next transmission.
-    i2c_transmit(data, data_length)
-        Send data along the SCL and SDA lines.
-    i2c_receive(data_length, results='wire')
-        Take in data from the SCL and SDA lines.
-    i2c_write_long(devAddr, regAddr, data_length, data)
-        Send a write command with given data to regAddr on devAddr.
-    i2c_read_long(devAddr, regAddr, data_length)
-        Read data_length bytes from regAddr on devAddr.
-    reset_device()
-        Reset the I2C controller using an OK TriggerIn.
     """
 
     I2C_MAX_TIMEOUT_MS = 50
@@ -936,15 +897,6 @@ class TCA9555(I2CController):
     addr_pins : int
         3 LSBs of the 7-bit device address formed alongside the address header
         used to differentiate between different instances of the TCA9555 chip.
-
-    Methods
-    -------
-    configure_pins(data)
-        Configure the chip's pins as inputs (1's) or outputs (0's).
-    write(data, register_name='OUTPUT', mask=0xffff)
-        Write 2 bytes of data to the pins.
-    read(register_name="INPUT")
-        Read 2 bytes of data from the pins.
     """
 
     ADDRESS_HEADER = 0b0100_0000
@@ -1004,19 +956,6 @@ class UID_24AA025UID(I2CController):
     addr_pins : int
         3 LSBs of the 7-bit device address formed alongside the address header
         used to differentiate between different instances of the TCA9555 chip.
-
-    Methods
-    -------
-    write(data, word_address=0x00, num_bytes=None)
-        Write data into memory at word_address.
-    read(word_address=0x00, words_read=1)
-        Return words_read words of data from memory at word_address.
-    get_serial_number()
-        Return the unique 32-serial number stored in memory on the chip.
-    get_manufacturer_code()
-        Return the chip's manufacturer code.
-    get_device_code()
-        Return the chip's device code.
     """
 
     ADDRESS_HEADER = 0b10100000
@@ -1112,47 +1051,6 @@ class DAC53401(I2CController):
     addr_pins : int
         3 LSBs of the 7-bit device address formed alongside the address header
         used to differentiate between different instances of the TCA9555 chip.
-
-    Methods
-    -------
-    write(data, register_name='DAC_DATA')
-        Write data to any register on the chip.
-    read(register_name='DAC_DATA')
-        Return data from any register on the chip.
-    write_voltage(voltage)
-        Write a voltage output from the DAC.
-    enable_internal_reference()
-        Enable the DAC's internal reference.
-    set_gain(gain)
-        Set the DAC's output gain value.
-    get_gain()
-        Return the DAC's current output gain value.
-    config_func(function_name)
-        Configure the function generator.
-    start_func()
-        Start function generation.
-    stop_func()
-        Stop function generation.
-    config_margins(margin_high=None, margin_low=None)
-        Configure margin high and low values.
-    config_step(step)
-        Configure the number of bits to step through.
-    config_rate(rate)
-        Configure the rate to step through each bit.
-    reset()
-        Reset the chip using a software reset.
-    lock()
-        Lock the registers of the device so they cannot be changed.
-    unlock()
-        Unlock the registers of the device so they can be changed again.
-    power_up()
-        Power up the DAC output.
-    power_down_10k()
-        Power down the DAC output to 10K ohms.
-    power_down_high_impedance()
-        Power down the DAC output to high impedance (default).
-    get_id()
-        Return the device ID and version ID as one integer.
     """
 
     ADDRESS_HEADER = 0b10010000
@@ -1425,39 +1323,6 @@ class SPIController:
         Value of the CTRL register in the Wishbone.
     registers : dict
         Name-Register pairs for the internal registers of the Wishbone.
-
-    Methods
-    -------
-    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)
-        Class method. Instantiate a number of new chips.
-    wb_send_cmd(command)
-        Send a command to the Wishbone.
-    wb_set_address(address)
-        Set the address of the register we interact with in the Wishbone.
-    wb_write(data)
-        Write up to 30 bytes of data to the currently selected register.
-    wb_read()
-        Return the data stored in the currently selected register.
-    wb_go()
-        Initiate a SPI transmission.
-    select_slave(slave_address)
-        Select a slave device.
-    set_divider(divider)
-        Set the value of the Wishbone's DIVIDER register.
-    set_frequency(frequency)
-        Set the frequency of SCL.
-    write(data, register=0)
-        Write data on the SCL and SDA lines.
-    read(register=0)
-        Return data from the selected data receive register.
-    configure_master_bin(data)
-        Set the value of the Wishbone's CTRL register directly.
-    configure_master(ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0)
-        Set the Wishbone's CTRL register using several arguments.
-    get_master_configuration()
-        Return the current configuration of CTRL register.
-    reset_master()
-        Reset the Wishbone Master and SPI Core.
     """
 
     WB_SET_ADDRESS = 0x80000000  # These 3 are from the SPI core manual
@@ -1764,23 +1629,6 @@ class SPIFifoDriven():
         Name to select value dictionary for source data MUX.
     current_data_mux : str
         Name of the current MUX data source.
-
-    Methods
-    -------
-    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)
-        Class method. Instantiate a number of new chips.
-    filter_select(operation='set')
-        Set whether SPI data comes from filter ('set') or direct ('clear').
-    set_data_mux(source)
-        Configure the MUX that routes data source to the SPI output.
-    set_clk_divider(divide_value)
-        Set clock divider to configure rate of SPI updates.
-    set_ctrl_reg(reg_value)
-        Configures the SPI Wishbone control register over the registerBridge.
-    set_spi_sclk_divide(divide_value)
-        Configures the SPI Wishbone clock divider register over the registerBridge.
-    write(data)
-        Host write 24 bits of data ot the chip over SPI.
     """
 
     default_data_mux = {
@@ -1964,25 +1812,6 @@ class DAC80508(SPIFifoDriven):
         Name-Register pairs for the internal registers of the DAC80508.
     data_mux : dict
         Matches data source names in the MUX to their select values.
-
-    Methods
-    -------
-    write_chip_reg(register_name, data, mask=0xffff)
-        Write to any register on the chip.
-    write_voltage(voltage, outputs=[0, 1, 2, 3, 4, 5, 6, 7], auto_gain=False)
-        Write the voltage to the outputs of the DAC.
-    set_config_bin(data, mask=0xffff)
-        Set the configuration register with a binary number.
-    set_config(ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0,
-               DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0,
-               DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0)
-        Set the configuration register using keyword arguments.
-    set_gain_bin(data, mask=0x01ff)
-        Set the gain register with a binary value.
-    set_gain(data, mask=0x01ff)
-        Set the gain value.
-    reset()
-        Soft reset the chip.
     """
 
     WRITE_OPERATION = 0x000000
@@ -2594,12 +2423,8 @@ class AD7961(ADCDATA):
     configures FPGA internal resets
     configures chip specific and global enables
     Formats data returned from the wire out
-
-    Methods
-    -------
-    create_chips(fpga, number_of_chips, endpoints=None)
-        Static method. Instantiate a given number of new chips.
     """
+    # TODO: add Attributes to docstring
 
     # the AD7961 does not have internal registers -- just OK endpoints
 
@@ -2863,6 +2688,7 @@ class DDR3():
         * READ_ENABLE
         * READ_FG_ENABLE
     """
+    # TODO: add Attributes to docstring
 
     def __init__(self, fpga, endpoints=None):
         if endpoints is None:

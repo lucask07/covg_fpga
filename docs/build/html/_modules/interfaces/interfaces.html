@@ -1,32 +1,72 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>interfaces.interfaces &mdash; covgDAQ 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../../index.html" class="icon icon-home"> covgDAQ
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -34,36 +74,89 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../register.html">Register Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Register.html">Register Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Endpoint.html">Endpoint Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../SPIController.html">SPI Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DDR.html">DDR Memory Class</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">covgDAQ</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
           <li><a href="../index.html">Module code</a> &raquo;</li>
+        
       <li>interfaces.interfaces</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   <h1>Source code for interfaces.interfaces</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Module for configuring OpalKelly XEM7310</span>
 <span class="sd">and use it as an I2C controller, SPI controller, and Serial LVDS controller.</span>
@@ -83,7 +176,7 @@
 <span class="kn">import</span> <span class="nn">copy</span>
 
 
-<div class="viewcode-block" id="Register"><a class="viewcode-back" href="../../register.html#interfaces.interfaces.Register">[docs]</a><span class="k">class</span> <span class="nc">Register</span><span class="p">:</span>
+<div class="viewcode-block" id="Register"><a class="viewcode-back" href="../../Register.html#interfaces.interfaces.Register">[docs]</a><span class="k">class</span> <span class="nc">Register</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for internal registers on a device.</span>
 
 <span class="sd">    Attributes</span>
@@ -98,11 +191,6 @@
 <span class="sd">        Index of the LSB in the register.</span>
 <span class="sd">    bit_width : int</span>
 <span class="sd">        Width of the register in bits.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    get_chip_registers(sheet, workbook_path=None)</span>
-<span class="sd">        Returns a dictionary of Registers from a page in an Excel spreadsheet.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">bit_index_high</span><span class="p">,</span> <span class="n">bit_index_low</span><span class="p">,</span> <span class="n">bit_width</span><span class="p">):</span>
@@ -121,7 +209,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="Register.get_chip_registers"><a class="viewcode-back" href="../../register.html#interfaces.interfaces.Register.get_chip_registers">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Register.get_chip_registers"><a class="viewcode-back" href="../../Register.html#interfaces.interfaces.Register.get_chip_registers">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_chip_registers</span><span class="p">(</span><span class="n">sheet</span><span class="p">,</span> <span class="n">workbook_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a dictionary of Registers from a page in an Excel spreadsheet.&quot;&quot;&quot;</span>
 
@@ -151,7 +239,7 @@
         <span class="k">return</span> <span class="n">reg_dict</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">Endpoint</span><span class="p">:</span>
+<div class="viewcode-block" id="Endpoint"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint">[docs]</a><span class="k">class</span> <span class="nc">Endpoint</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for Opal Kelly endpoints on the FPGA.</span>
 
 <span class="sd">    Attributes</span>
@@ -175,18 +263,6 @@
 <span class="sd">        Whether to increment the bits when incrementing the endpoint.</span>
 <span class="sd">    gen_address : bool</span>
 <span class="sd">        Whether to increment the address when incrementing the endpoint.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    update_endpoints_from_defines(ep_defines_path=None)</span>
-<span class="sd">        Return and store Endpoints in ep_defines.v in endpoints_from_defines.</span>
-<span class="sd">    get_chip_endpoints(chip_name)</span>
-<span class="sd">        Return the dictionary of Endpoints for a specific chip or group.</span>
-<span class="sd">    increment_endpoints(endpoints_dict)</span>
-<span class="sd">        Increment all Endpoints in endpoints_dict according to their gen_bit</span>
-<span class="sd">        and gen_address values.</span>
-<span class="sd">    excel_to_defines(excel_path, defines_path, sheet=0)</span>
-<span class="sd">        Convert an Excel spreadsheet of endpoint definitions to Verilog.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">endpoints_from_defines</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -216,7 +292,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Endpoint.update_endpoints_from_defines"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.update_endpoints_from_defines">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">update_endpoints_from_defines</span><span class="p">(</span><span class="n">ep_defines_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store and return a dictionary of Endpoints for each chip in ep_defines.v.</span>
 
@@ -391,9 +467,9 @@
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No collisions found.&#39;</span><span class="p">)</span>
 
         <span class="c1"># If the list and set match length, no duplicates</span>
-        <span class="k">return</span> <span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span>
+        <span class="k">return</span> <span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Endpoint.get_chip_endpoints"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.get_chip_endpoints">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_chip_endpoints</span><span class="p">(</span><span class="n">chip_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a copy of the dictionary of Endpoints for a specific chip or group.&quot;&quot;&quot;</span>
 
@@ -406,9 +482,9 @@
         <span class="c1"># endpoints affected by the increment, only future instantiations.</span>
         <span class="c1"># Using deepcopy() ensures that any dictionaries inside the dictionary</span>
         <span class="c1"># we copy also get copied, not left as references.</span>
-        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">chip_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">chip_name</span><span class="p">))</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Endpoint.increment_endpoints"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.increment_endpoints">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">increment_endpoints</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Increment all Endpoints in endpoints_dict.</span>
 
@@ -444,9 +520,9 @@
                 <span class="c1"># Increment the address by 1</span>
                 <span class="n">endpoint</span><span class="o">.</span><span class="n">address</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">return</span> <span class="n">endpoints_dict</span>
+        <span class="k">return</span> <span class="n">endpoints_dict</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Endpoint.excel_to_defines"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.excel_to_defines">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">excel_to_defines</span><span class="p">(</span><span class="n">excel_path</span><span class="p">,</span> <span class="n">defines_path</span><span class="p">,</span> <span class="n">sheet</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert an Excel spreadsheet of endpoint definitions to Verilog.</span>
 
@@ -469,7 +545,7 @@
         <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sheet_data</span><span class="p">[</span><span class="s1">&#39;Generated Line&#39;</span><span class="p">])</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">defines_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">text</span>
+        <span class="k">return</span> <span class="n">text</span></div></div>
 
 
 <span class="k">def</span> <span class="nf">advance_endpoints_bynum</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
@@ -510,11 +586,6 @@
 <span class="sd">        Opal Kelly API connection to the FPGA.</span>
 <span class="sd">    device_info : ok.okTDeviceInfo</span>
 <span class="sd">        General information about the FPGA.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    init_device()</span>
-<span class="sd">        Initialize the FPGA for use.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># TODO: change to complete bitfile when Verilog is combined</span>
@@ -748,23 +819,6 @@
 <span class="sd">        FPGA instance this controller uses to communicate.</span>
 <span class="sd">    endpoints : dict</span>
 <span class="sd">        Endpoints on the FPGA this controller uses to communicate.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    create_chips(cls, fpga, addr_pins, endpoints)</span>
-<span class="sd">        Class method. Instantiate a number of new I2C chips.</span>
-<span class="sd">    i2c_configure(data_length, starts, stops, preamble)</span>
-<span class="sd">        Configure the buffer for the next transmission.</span>
-<span class="sd">    i2c_transmit(data, data_length)</span>
-<span class="sd">        Send data along the SCL and SDA lines.</span>
-<span class="sd">    i2c_receive(data_length, results=&#39;wire&#39;)</span>
-<span class="sd">        Take in data from the SCL and SDA lines.</span>
-<span class="sd">    i2c_write_long(devAddr, regAddr, data_length, data)</span>
-<span class="sd">        Send a write command with given data to regAddr on devAddr.</span>
-<span class="sd">    i2c_read_long(devAddr, regAddr, data_length)</span>
-<span class="sd">        Read data_length bytes from regAddr on devAddr.</span>
-<span class="sd">    reset_device()</span>
-<span class="sd">        Reset the I2C controller using an OK TriggerIn.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">I2C_MAX_TIMEOUT_MS</span> <span class="o">=</span> <span class="mi">50</span>
@@ -1003,15 +1057,6 @@
 <span class="sd">    addr_pins : int</span>
 <span class="sd">        3 LSBs of the 7-bit device address formed alongside the address header</span>
 <span class="sd">        used to differentiate between different instances of the TCA9555 chip.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    configure_pins(data)</span>
-<span class="sd">        Configure the chip&#39;s pins as inputs (1&#39;s) or outputs (0&#39;s).</span>
-<span class="sd">    write(data, register_name=&#39;OUTPUT&#39;, mask=0xffff)</span>
-<span class="sd">        Write 2 bytes of data to the pins.</span>
-<span class="sd">    read(register_name=&quot;INPUT&quot;)</span>
-<span class="sd">        Read 2 bytes of data from the pins.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ADDRESS_HEADER</span> <span class="o">=</span> <span class="mb">0b0100_0000</span>
@@ -1071,19 +1116,6 @@
 <span class="sd">    addr_pins : int</span>
 <span class="sd">        3 LSBs of the 7-bit device address formed alongside the address header</span>
 <span class="sd">        used to differentiate between different instances of the TCA9555 chip.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    write(data, word_address=0x00, num_bytes=None)</span>
-<span class="sd">        Write data into memory at word_address.</span>
-<span class="sd">    read(word_address=0x00, words_read=1)</span>
-<span class="sd">        Return words_read words of data from memory at word_address.</span>
-<span class="sd">    get_serial_number()</span>
-<span class="sd">        Return the unique 32-serial number stored in memory on the chip.</span>
-<span class="sd">    get_manufacturer_code()</span>
-<span class="sd">        Return the chip&#39;s manufacturer code.</span>
-<span class="sd">    get_device_code()</span>
-<span class="sd">        Return the chip&#39;s device code.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ADDRESS_HEADER</span> <span class="o">=</span> <span class="mb">0b10100000</span>
@@ -1179,47 +1211,6 @@
 <span class="sd">    addr_pins : int</span>
 <span class="sd">        3 LSBs of the 7-bit device address formed alongside the address header</span>
 <span class="sd">        used to differentiate between different instances of the TCA9555 chip.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    write(data, register_name=&#39;DAC_DATA&#39;)</span>
-<span class="sd">        Write data to any register on the chip.</span>
-<span class="sd">    read(register_name=&#39;DAC_DATA&#39;)</span>
-<span class="sd">        Return data from any register on the chip.</span>
-<span class="sd">    write_voltage(voltage)</span>
-<span class="sd">        Write a voltage output from the DAC.</span>
-<span class="sd">    enable_internal_reference()</span>
-<span class="sd">        Enable the DAC&#39;s internal reference.</span>
-<span class="sd">    set_gain(gain)</span>
-<span class="sd">        Set the DAC&#39;s output gain value.</span>
-<span class="sd">    get_gain()</span>
-<span class="sd">        Return the DAC&#39;s current output gain value.</span>
-<span class="sd">    config_func(function_name)</span>
-<span class="sd">        Configure the function generator.</span>
-<span class="sd">    start_func()</span>
-<span class="sd">        Start function generation.</span>
-<span class="sd">    stop_func()</span>
-<span class="sd">        Stop function generation.</span>
-<span class="sd">    config_margins(margin_high=None, margin_low=None)</span>
-<span class="sd">        Configure margin high and low values.</span>
-<span class="sd">    config_step(step)</span>
-<span class="sd">        Configure the number of bits to step through.</span>
-<span class="sd">    config_rate(rate)</span>
-<span class="sd">        Configure the rate to step through each bit.</span>
-<span class="sd">    reset()</span>
-<span class="sd">        Reset the chip using a software reset.</span>
-<span class="sd">    lock()</span>
-<span class="sd">        Lock the registers of the device so they cannot be changed.</span>
-<span class="sd">    unlock()</span>
-<span class="sd">        Unlock the registers of the device so they can be changed again.</span>
-<span class="sd">    power_up()</span>
-<span class="sd">        Power up the DAC output.</span>
-<span class="sd">    power_down_10k()</span>
-<span class="sd">        Power down the DAC output to 10K ohms.</span>
-<span class="sd">    power_down_high_impedance()</span>
-<span class="sd">        Power down the DAC output to high impedance (default).</span>
-<span class="sd">    get_id()</span>
-<span class="sd">        Return the device ID and version ID as one integer.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ADDRESS_HEADER</span> <span class="o">=</span> <span class="mb">0b10010000</span>
@@ -1492,39 +1483,6 @@
 <span class="sd">        Value of the CTRL register in the Wishbone.</span>
 <span class="sd">    registers : dict</span>
 <span class="sd">        Name-Register pairs for the internal registers of the Wishbone.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)</span>
-<span class="sd">        Class method. Instantiate a number of new chips.</span>
-<span class="sd">    wb_send_cmd(command)</span>
-<span class="sd">        Send a command to the Wishbone.</span>
-<span class="sd">    wb_set_address(address)</span>
-<span class="sd">        Set the address of the register we interact with in the Wishbone.</span>
-<span class="sd">    wb_write(data)</span>
-<span class="sd">        Write up to 30 bytes of data to the currently selected register.</span>
-<span class="sd">    wb_read()</span>
-<span class="sd">        Return the data stored in the currently selected register.</span>
-<span class="sd">    wb_go()</span>
-<span class="sd">        Initiate a SPI transmission.</span>
-<span class="sd">    select_slave(slave_address)</span>
-<span class="sd">        Select a slave device.</span>
-<span class="sd">    set_divider(divider)</span>
-<span class="sd">        Set the value of the Wishbone&#39;s DIVIDER register.</span>
-<span class="sd">    set_frequency(frequency)</span>
-<span class="sd">        Set the frequency of SCL.</span>
-<span class="sd">    write(data, register=0)</span>
-<span class="sd">        Write data on the SCL and SDA lines.</span>
-<span class="sd">    read(register=0)</span>
-<span class="sd">        Return data from the selected data receive register.</span>
-<span class="sd">    configure_master_bin(data)</span>
-<span class="sd">        Set the value of the Wishbone&#39;s CTRL register directly.</span>
-<span class="sd">    configure_master(ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0)</span>
-<span class="sd">        Set the Wishbone&#39;s CTRL register using several arguments.</span>
-<span class="sd">    get_master_configuration()</span>
-<span class="sd">        Return the current configuration of CTRL register.</span>
-<span class="sd">    reset_master()</span>
-<span class="sd">        Reset the Wishbone Master and SPI Core.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">WB_SET_ADDRESS</span> <span class="o">=</span> <span class="mh">0x80000000</span>  <span class="c1"># These 3 are from the SPI core manual</span>
@@ -1831,23 +1789,6 @@
 <span class="sd">        Name to select value dictionary for source data MUX.</span>
 <span class="sd">    current_data_mux : str</span>
 <span class="sd">        Name of the current MUX data source.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)</span>
-<span class="sd">        Class method. Instantiate a number of new chips.</span>
-<span class="sd">    filter_select(operation=&#39;set&#39;)</span>
-<span class="sd">        Set whether SPI data comes from filter (&#39;set&#39;) or direct (&#39;clear&#39;).</span>
-<span class="sd">    set_data_mux(source)</span>
-<span class="sd">        Configure the MUX that routes data source to the SPI output.</span>
-<span class="sd">    set_clk_divider(divide_value)</span>
-<span class="sd">        Set clock divider to configure rate of SPI updates.</span>
-<span class="sd">    set_ctrl_reg(reg_value)</span>
-<span class="sd">        Configures the SPI Wishbone control register over the registerBridge.</span>
-<span class="sd">    set_spi_sclk_divide(divide_value)</span>
-<span class="sd">        Configures the SPI Wishbone clock divider register over the registerBridge.</span>
-<span class="sd">    write(data)</span>
-<span class="sd">        Host write 24 bits of data ot the chip over SPI.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">default_data_mux</span> <span class="o">=</span> <span class="p">{</span>
@@ -2031,25 +1972,6 @@
 <span class="sd">        Name-Register pairs for the internal registers of the DAC80508.</span>
 <span class="sd">    data_mux : dict</span>
 <span class="sd">        Matches data source names in the MUX to their select values.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    write_chip_reg(register_name, data, mask=0xffff)</span>
-<span class="sd">        Write to any register on the chip.</span>
-<span class="sd">    write_voltage(voltage, outputs=[0, 1, 2, 3, 4, 5, 6, 7], auto_gain=False)</span>
-<span class="sd">        Write the voltage to the outputs of the DAC.</span>
-<span class="sd">    set_config_bin(data, mask=0xffff)</span>
-<span class="sd">        Set the configuration register with a binary number.</span>
-<span class="sd">    set_config(ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0,</span>
-<span class="sd">               DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0,</span>
-<span class="sd">               DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0)</span>
-<span class="sd">        Set the configuration register using keyword arguments.</span>
-<span class="sd">    set_gain_bin(data, mask=0x01ff)</span>
-<span class="sd">        Set the gain register with a binary value.</span>
-<span class="sd">    set_gain(data, mask=0x01ff)</span>
-<span class="sd">        Set the gain value.</span>
-<span class="sd">    reset()</span>
-<span class="sd">        Soft reset the chip.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">WRITE_OPERATION</span> <span class="o">=</span> <span class="mh">0x000000</span>
@@ -2661,12 +2583,8 @@
 <span class="sd">    configures FPGA internal resets</span>
 <span class="sd">    configures chip specific and global enables</span>
 <span class="sd">    Formats data returned from the wire out</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    create_chips(fpga, number_of_chips, endpoints=None)</span>
-<span class="sd">        Static method. Instantiate a given number of new chips.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: add Attributes to docstring</span>
 
     <span class="c1"># the AD7961 does not have internal registers -- just OK endpoints</span>
 
@@ -2930,6 +2848,7 @@
 <span class="sd">        * READ_ENABLE</span>
 <span class="sd">        * READ_FG_ENABLE</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: add Attributes to docstring</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -3184,8 +3103,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The speed of the write was </span><span class="si">{</span><span class="n">speed_MBs</span><span class="si">}</span><span class="s1"> MB/s&#39;</span><span class="p">)</span>
 
         <span class="c1"># below prepares the HDL into read mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_fifo</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear_write</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_fifo</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">set_ddr_read</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_read</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">block_pipe_return</span><span class="p">,</span> <span class="n">speed_MBs</span></div>
@@ -3391,30 +3310,46 @@
 </pre></div>
 
            </div>
+           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.</p>
-  </div>
+    <p>
+        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>
