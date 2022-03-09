@@ -138,7 +138,7 @@ module top_level_module(
     output wire ads_sclk,
     output wire ads_sdi,
     input  wire ads_sdoa,
-    input  wire ads_sdob, // TODO: not yet connected
+    input  wire ads_sdob, 
     output wire ads_convst,
     output wire ads_resetb,
     input wire ads_busy,  // TODO: not yet connected
@@ -337,9 +337,11 @@ module top_level_module(
 
      assign ads_resetb = ep02wire[`ADS8686_RESET];
 
-     wire [31:0]  ep03wire;
+      wire [31:0]  ep03wire;
       okWireIn       wi03 (.okHE(okHE),                             .ep_addr(`DDR3_RESET_READ_WRITE_ENABLE), .ep_dataout(ep03wire));
-      //okWireIn       wi04 (.okHE(okHE),                             .ep_addr(`DDR3_INDEX), .ep_dataout(INDEX));
+     
+      wire [31:0] ep_wire_filtsel;  //also includes DDR FIFO reset signals
+      okWireIn wi_filt_sel (.okHE(okHE), .ep_addr(`FILTER_SEL_WIRE_IN), .ep_dataout(ep_wire_filtsel));
      
        wire [31:0] ep20wire;
        okWireOut      wo20 (.okHE(okHE), .okEH(okEHx[ 11*65 +: 65 ]), .ep_addr(`DDR3_INIT_CALIB_COMPLETE), .ep_datain(ep20wire));
@@ -374,7 +376,7 @@ module top_level_module(
                                     .ep_addr(`I2C_TRIG_IN), .ep_clk(clk_sys), .ep_trigger(ep41trig));
 
     okTriggerIn trigIn42 (.okHE(okHE),
-                                .ep_addr(`ADC_TIMING_TRIG_IN), .ep_clk(clk_sys), .ep_trigger(ep42trig)); //TODO: this could be moved to In41 since there is no longer a seperate 100 MHz clock
+                                .ep_addr(`ADC_TIMING_TRIG_IN), .ep_clk(clk_sys), .ep_trigger(ep42trig)); 
 	//wire to hold the value of the last word written to the FIFO (to help with debugging/observation)
 	// okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 
@@ -569,18 +571,14 @@ module top_level_module(
     assign sma[0] = dco[0]; //J17, MC2-77
     assign sma[1] = write_en_adc_o[0]; //J16
     
-    //assign sma[0] = 1'b0; //J17, MC2-77
-    //assign sma[1] = 1'b0; //J16
- 
     /* --------------- SPI clock generator ----------- */
     wire rd_en_0;
     wire ddr_data_valid; 
-    wire ddr3_rst;// MIG/DDR3 synchronous reset
 
 	//Clock divide - used to clock reading of data from DDR (nominal 2.5 MHz)
      general_clock_divide MIG_DDR_FIFO_RD_EN(
          .clk(clk_sys),  // input 
-         .rst(ddr3_rst), // input 
+         .rst(ep42trig[`DDR3_DAC_CLK_RESET]), // input 
          .en_period(en_period), // input [9:0]  //TODO: need way to disable 
          .clk_en(rd_en_0)  // output : ddr read enable
      );
@@ -660,18 +658,11 @@ module top_level_module(
      wire [31:0] INDEX;
      wire [31:0] INDEX2;
      
-     wire          ddr3_rst;// MIG/DDR3 synchronous reset
      wire [127:0]  po0_ep_datain;// MIG/DDR3 FIFO data out to DACs 
      
      wire         po2_ep_read;
      wire [31:0]  po2_ep_datain;// MIG/DDR3 ADC FIFO data out
      wire [31:0]  adc_data_cnt; // count of ADC words in DDR
-
-     reset_synchronizer u_MIG_sync_rst( //TODO: move this to a trigger in
-     .clk(clk_sys),
-     .async_rst(ep03wire[`DDR3_RESET]),
-     .sync_rst(ddr3_rst)
-     );
 
      //MIG Infrastructure Reset
      reg [31:0] rst_cnt;
@@ -735,7 +726,7 @@ module top_level_module(
      // OK MIG DDR3 Testbench Instatiation
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
-         .reset              (ddr3_rst | ep43trig[`DDR3_UI_RESET]),
+         .reset              (ep43trig[`DDR3_UI_RESET]),
          .write1_en          (ep03wire[`DDR3_DAC_WRITE_ENABLE]),
          .read1_en           (ep03wire[`DDR3_DAC_READ_ENABLE]),
          .write2_en          (ep03wire[`DDR3_ADC_WRITE_ENABLE]),
@@ -833,7 +824,7 @@ module top_level_module(
       okBTPipeOut    po2  (.okHE(okHE), .okEH(okEHx[ 22*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_OUT), .ep_read(po2_ep_read),   .ep_blockstrobe(), .ep_datain(po2_ep_datain[31:0]),   .ep_ready(pipe_out2_ready));
  
       fifo_w32_1024_r256_128 fg_pipein_fifo (  // Function generator data from the host via pi0 
-          .rst(ddr3_rst),
+          .rst(ep_wire_filtsel[`DDR3_FIFO_DAC_IN_RST]),
           .wr_clk(okClk),
           .rd_clk(clk_ddr_ui),
           .din(pi0_ep_dataout), // Bus [31 : 0]
@@ -897,19 +888,19 @@ module top_level_module(
     // synchronize the OpalKelly wire in DDR3_READ_ENABLE signals with the cycle count so data always starts at cycle cnt of 9
     reg adc_ddr_wr_en_slow;    
     always @(posedge clk_sys) begin
-        if (ddr3_rst == 1'b1) adc_ddr_wr_en_slow <= 1'b0;
+        if (ep_wire_filtsel[`DDR3_FIFO_ADC_IN_RST] == 1'b1) adc_ddr_wr_en_slow <= 1'b0;
         else if ((adc_ddr_wr_en == 1'b1) & (cycle_cnt == 4'd0)) adc_ddr_wr_en_slow <= ep03wire[`DDR3_ADC_WRITE_ENABLE];
     end
     
     // TODO: timing may change so that adc_ddr_wr_en is not the starting pulse
     reg dac_ddr_read_en_slow;    
     always @(posedge clk_sys) begin
-        if (ddr3_rst == 1'b1) dac_ddr_read_en_slow <= 1'b0;
+        if (ep_wire_filtsel[`DDR3_FIFO_DAC_READ_RST] == 1'b1) dac_ddr_read_en_slow <= 1'b0;
         else if ((adc_ddr_wr_en == 1'b1) & (cycle_cnt == 4'd0)) dac_ddr_read_en_slow <= ep03wire[`DDR3_DAC_READ_ENABLE];
     end
     
      fifo_w128_512_r256_256 adc_to_ddr_fifo (  //ADC data input, output to DDR
-         .rst(ddr3_rst), // supports asynchronous reset 
+         .rst(ep_wire_filtsel[`DDR3_FIFO_ADC_IN_RST]), // supports asynchronous reset -- asserted for at least three clock cycles of slowest clock
          .wr_clk(clk_sys),
          .rd_clk(clk_ddr_ui),
          .din(adc_ddr_data),
@@ -925,7 +916,7 @@ module top_level_module(
     // DDR: read from DDR and 1) output data to DACs and 2) output data to host through BTPipeOut
 
      fifo_w256_256_r128_512 ddr_to_dac_fifo_ddr ( //Data in from DDR -> Output to DACs 
-         .rst(ddr3_rst), // supports asynchronous reset 
+         .rst(ep_wire_filtsel[`DDR3_FIFO_DAC_READ_RST]), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(clk_sys),
          .din(pipe_out_data), // Bus [255 : 0] -- from DDR 
@@ -939,7 +930,7 @@ module top_level_module(
          .wr_data_count(pipe_out_wr_count)); // Bus [6 : 0]
 
      fifo_w256_128_r32_1024 okPipeOut_fifo_ddr2 (  // Output ADC data from DDR to PipeOut (does not need to be syncrhonized with cycle cnt)
-         .rst(ddr3_rst), // supports asynchronous reset 
+         .rst(ep_wire_filtsel[`DDR3_FIFO_ADC_TRANSFER_RST]), // supports asynchronous reset 
          .wr_clk(clk_ddr_ui),
          .rd_clk(okClk),
          .din(pipe_out2_data), // Bus [255 : 0] -- from DDR 
@@ -959,9 +950,6 @@ module top_level_module(
     wire [(DAC80508_NUM - 1):0] rd_en_ds;
     wire [(DAC80508_NUM - 1):0] data_ready_ds;
     wire [(DAC80508_NUM - 1):0] spi_host_trigger_ds; 
-    
-    wire [31:0] ep_wire_filtsel;
-    okWireIn wi_filt_sel (.okHE(okHE), .ep_addr(`FILTER_SEL_WIRE_IN), .ep_dataout(ep_wire_filtsel));
     
     genvar k;
     generate

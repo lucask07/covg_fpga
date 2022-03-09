@@ -217,12 +217,15 @@ daq.TCA[1].configure_pins([0, 0])
 for i in range(6):
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
-    daq.DAC[i].filter_select(operation="clear")
+    daq.DAC[i].filter_select(operation="set")
     daq.DAC[i].write(int(0))
     daq.DAC[i].set_data_mux("DDR")
-    daq.DAC[i].change_filter_coeff(target="passthru")
+    daq.DAC[i].change_filter_coeff(target="500kHz")
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 500)  # 500 mV full-scale
+
+daq.DAC[2].set_data_mux("ad7961_ch1")
+daq.DAC[2].filter_select(operation="set")
 
 # 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
 daq.DAC[0].set_clk_divider(divide_value=0x50)
@@ -260,7 +263,10 @@ def ddr_write_setup():
     # quiet both DACs
     cc.set_data_mux("host")
     cmd_dac.set_data_mux("host")
-    ddr.reset_fifo()
+    ddr.clear_dac_read()
+    ddr.clear_adc_write()
+    ddr.reset_fifo(name='ALL')
+    ddr.reset_mig_interface()
 
 def ddr_write_finish():
      # reenable both DACs
@@ -304,8 +310,6 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 40,
     except OSError:
         pass
 
-    # TODO: decouple ADC read enable and the DAC read enable 
-    # ddr.reset_fifo()
     ddr.set_adc_read()  # enable data into the ADC reading FIFO
     time.sleep(adc_readings*SAMPLE_PERIOD*2)
 
@@ -355,9 +359,12 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 40,
     return chan_data, timestamp, read_check, dac_data
 
 for i in range(7):
-    ddr.data_arrays[i] = ddr.make_ramp(start=2**10 + 64*i,
-                                       stop=2**14-1,
-                                       step=1)
+    # ddr.data_arrays[i] = ddr.make_ramp(start=2**10 + 64*i,
+    #                                    stop=2**14-1,
+    #                                    step=1)
+    ddr.data_arrays[i] = ddr.make_step(low=2**7 + 64*i,
+                                       high=2**13,
+                                       length=200)
 
 #ddr.data_arrays[0] = ddr.make_flat_voltage(256)
 #ddr.data_arrays[1] = ddr.make_flat_voltage(512)
@@ -377,7 +384,23 @@ print(output.head())
 output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 idx = 0
 
-chan_data, timestamp, read_check, dac_data = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 24,
+REPEAT = True
+PAUSE = False
+if REPEAT:
+    ddr.clear_adc_read()
+    ddr.clear_adc_write()
+
+    ddr.reset_fifo(name='ADC_IN')
+    ddr.reset_fifo(name='ADC_TRANSFER')
+    ddr.reset_mig_interface()
+
+    ddr.set_adc_write()
+    time.sleep(0.01)
+
+if PAUSE:
+    time.sleep(0.01)
+
+chan_data, timestamp, read_check, dac_data = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 8,
                                                             blk_multiples=40) # blk multiples multiple of 10
 
 for CHAN_UNDER_TEST in range(8):

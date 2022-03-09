@@ -2868,8 +2868,8 @@ class DDR3():
 
     DDR configuration bits:
         * DAC_WRITE_ENABLE
-        * DAC_READ_ENABLE 
-        * ADC_WRITE_ENABLE 
+        * DAC_READ_ENABLE
+        * ADC_WRITE_ENABLE
         * ADC_TRANSFER_ENABLE
     """
 
@@ -3110,7 +3110,7 @@ class DDR3():
 
         print('Length of buffer being written to DDR [bytes]: ', len(buf))
         self.clear_dac_read()
-        self.reset_fifo()
+        self.reset_fifo(name='DAC_IN')
         self.set_dac_write()
 
         print('Writing to DDR...')
@@ -3126,23 +3126,15 @@ class DDR3():
         print(f'The speed of the write was {speed_MBs} MB/s')
 
         # below prepares the HDL into read mode
-        self.reset_fifo()
         self.clear_dac_write()
         if set_ddr_read:
             self.set_dac_read()
             self.set_adc_read()
         return block_pipe_return, speed_MBs
 
-    def reset_fifo(self):
-        """Reset both FIFOs and DDR Mig and DDR address pointers."""
-
-        # TODO: convert to trigger, split resets? This is synchronized on the FPGA
-        # TODO: important! the rst_ddr_ui is not connected on the FPGA
-
-        self.fpga.set_wire_bit(self.endpoints['RESET'].address,
-                               self.endpoints['RESET'].bit_index_low)
-        self.fpga.clear_wire_bit(self.endpoints['RESET'].address,
-                                 self.endpoints['RESET'].bit_index_low)
+    def reset_mig_interface(self):
+        """Reset interface to MIG (DDR address pointers)"""
+        self.fpga.send_trig(self.endpoints['UI_RESET'])
 
     def fifo_status(self):
         """Check the empty, full, and count status of the DDR interfacing FIFOs
@@ -3187,7 +3179,7 @@ class DDR3():
             print('{} = {}'.format(k, fifo_status[k]))
 
     def set_dac_read(self):
-        """Set DDR / FIFOs to read.
+        """Set DDR / FIFOs read enable.
            Enables DDR data going to the DACs and ADC data into DDR
         """
 
@@ -3195,7 +3187,7 @@ class DDR3():
                                self.endpoints['DAC_READ_ENABLE'].bit_index_low)
 
     def clear_dac_read(self):
-        """Clear DDR / FIFOs to read.
+        """Clear DDR / FIFOs read enable.
             Stops DDR data from going to the DACs and ADC data into DDR
         """
 
@@ -3203,45 +3195,68 @@ class DDR3():
                                  self.endpoints['DAC_READ_ENABLE'].bit_index_low)
 
     def set_dac_write(self):
-        """Set DDR / FIFOs to write data into DDR via Pipe.
+        """Set DDR / FIFOs write enable into DDR via Pipe.
         """
 
         self.fpga.set_wire_bit(self.endpoints['DAC_WRITE_ENABLE'].address,
                                self.endpoints['DAC_WRITE_ENABLE'].bit_index_low)
 
     def clear_dac_write(self):
-        """Clear DDR / FIFOs to write data into DDR via Pipe.
+        """Clear DDR / FIFOs write enable into DDR via Pipe.
         """
 
         self.fpga.clear_wire_bit(self.endpoints['DAC_WRITE_ENABLE'].address,
                                  self.endpoints['DAC_WRITE_ENABLE'].bit_index_low)
 
     def set_adc_write(self):
-        """Set DDR / FIFOs to write ADC data into DDR.
+        """Set DDR / FIFOs write enable ADC data into DDR.
         """
 
         self.fpga.set_wire_bit(self.endpoints['ADC_WRITE_ENABLE'].address,
                                self.endpoints['ADC_WRITE_ENABLE'].bit_index_low)
 
     def clear_adc_write(self):
-        """Clear DDR / FIFOs to write ADC data into DDR.
+        """Clear DDR / FIFOs write enable ADC data into DDR.
         """
 
         self.fpga.clear_wire_bit(self.endpoints['ADC_WRITE_ENABLE'].address,
                                  self.endpoints['ADC_WRITE_ENABLE'].bit_index_low)
 
     def set_adc_read(self):
-        """Set DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.
+        """Set DDR / FIFO read enable DDR data from the ADCs out via a PipeOut.
         """
         self.fpga.set_wire_bit(self.endpoints['ADC_TRANSFER_ENABLE'].address,
                                self.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
 
     def clear_adc_read(self):
-        """Clear DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.
+        """Clear DDR / FIFO read enable DDR data from the ADCs out via a PipeOut.
         """
 
         self.fpga.clear_wire_bit(self.endpoints['ADC_TRANSFER_ENABLE'].address,
                                  self.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
+
+    def reset_fifo(self, name):
+        """Reset FIFO interfaces to DDR .
+        """
+        fifo_reset_names = ['DAC_IN', 'DAC_READ', 'ADC_IN', 'ADC_TRANSFER']
+        if (name not in fifo_reset_names) and (not name == 'ALL'):
+            print(f'DDR3 FIFO reset name of {name} is not in list of {fifo_reset_names}')
+
+        else:
+            if name == 'ALL':
+                for name_tmp in fifo_reset_names:
+                    ep_name = 'FIFO_' + name_tmp + '_RST'
+                    self.fpga.set_wire_bit(self.endpoints[ep_name].address,
+                                            self.endpoints[ep_name].bit_index_low)
+                    self.fpga.clear_wire_bit(self.endpoints[ep_name].address,
+                                            self.endpoints[ep_name].bit_index_low)
+            else:
+                ep_name = 'FIFO_' + name + '_RST'
+                self.fpga.set_wire_bit(self.endpoints[ep_name].address,
+                                        self.endpoints[ep_name].bit_index_low)
+                self.fpga.clear_wire_bit(self.endpoints[ep_name].address,
+                                        self.endpoints[ep_name].bit_index_low)
+
 
     def adc_single(self):
         """Set ADC read address to the ADC write address.
@@ -3362,17 +3377,12 @@ class DDR3():
             chan_data[7] = chan_data_swz[1]
 
             # locate the constant value of 0xaa55 and then 0x28ab
-            # and then offset so that value is in the 3rd position and crop to multiple of 10 
+            # and ensure this is in the 3rd position
             c_val_idx = np.nonzero((chan_data[7][:-1] == 0xaa55) & ((chan_data[7][1:] == 0x28ab)))[0][0]
-            print(f'c_val_idx = {c_val_idx}')
+            if c_val_idx != 3:
+                print('Warning!!')
+                print(f'DDR read constant value is at position = {c_val_idx}; expected 3')
             
-            # get offset and crop length 
-            total_length = np.size(chan_data[7])
-            
-            #crop = (c_val_idx - 3) % 10
-            #for i in range(8):
-            #    chan_data[i] = chan_data[i][crop: -((total_length-crop)%10)]                
-
             if convert_twos:
                 for i in range(4):
                     chan_data[i] = twos_comp(chan_data[i], bits)
@@ -3403,7 +3413,7 @@ class DDR3():
                     print(f'Number of errors: {np.sum(read_check[i] != constant_values[i])}')
             unq_time_intervals = np.unique(np.diff(timestamp))
             # print(f'Timestamp spacing {(timestamp[1] - timestamp[0])*5e-9} [s]')
-            if np.size(unq_time_intervals):
+            if np.size(unq_time_intervals) > 1:
                 print('Warning: Multiple time intervals')
 
             return chan_data, timestamp, read_check, dac_data
