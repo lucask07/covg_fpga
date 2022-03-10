@@ -860,6 +860,8 @@ class I2CController:
     def i2c_read_long(self, devAddr, regAddr, data_length):
         """Read data_length bytes from regAddr on devAddr.
 
+        Arguments
+        ---------
         devAddr : 8 bit address (don't set the read bit (LSB) since this is done in this function)
         regAddr:  written to device (this is a list and must be even if length 1)
         data_length : number of bytes expected to receive
@@ -1563,12 +1565,20 @@ class SPIController:
     def configure_master(self, ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0):
         """Set the Wishbone's CTRL register using several arguments.
 
-        ASS: Automatic Slave Select
-        IE: Set interrupt output active after a transfer is finished
-        LSB: Send LSB first
-        Tx_NEG: Change output signal on falling edge of SCLK
-        Rx_NEG: Latch input signal on falling edge of SCLK
-        CHAR_LEN: Number of bits transmitted per transfer (up to 64).
+        Arguments
+        ---------
+        ASS : bool or int
+            Automatic Slave Select
+        IE : bool or int
+            Set interrupt output active after a transfer is finished
+        LSB : bool or int
+            Send LSB first
+        Tx_NEG : bool or int
+            Change output signal on falling edge of SCLK
+        Rx_NEG : bool or int
+            Latch input signal on falling edge of SCLK
+        CHAR_LEN : bool or int
+            Number of bits transmitted per transfer (up to 64).
         """
 
         params = {'ASS': ASS, 'IE': IE, 'LSB': LSB,
