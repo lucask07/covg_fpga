@@ -42,8 +42,8 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="DDR Memory Class" href="DDR.html" />
-    <link rel="prev" title="Endpoint Class" href="Endpoint.html" /> 
+    <link rel="next" title="SPI FIFO Driven Controller Class" href="SPIFifoDriven.html" />
+    <link rel="prev" title="I2C Controller Class" href="I2CController.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -92,7 +92,10 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Register.html">Register Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Endpoint.html">Endpoint Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FPGA.html">FPGA Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="I2CController.html">I2C Controller Class</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">SPI Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DDR.html">DDR Memory Class</a></li>
 </ul>
 
@@ -193,12 +196,6 @@
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.configure_master">
 <span class="sig-name descname"><span class="pre">configure_master</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ASS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LSB</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tx_NEG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rx_NEG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CHAR_LEN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.configure_master"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.configure_master" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the Wishbone’s CTRL register using several arguments.</p>
-<p>ASS: Automatic Slave Select
-IE: Set interrupt output active after a transfer is finished
-LSB: Send LSB first
-Tx_NEG: Change output signal on falling edge of SCLK
-Rx_NEG: Latch input signal on falling edge of SCLK
-CHAR_LEN: Number of bits transmitted per transfer (up to 64).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -328,8 +325,8 @@ reformat to 34 bits.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="DDR.html" class="btn btn-neutral float-right" title="DDR Memory Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="Endpoint.html" class="btn btn-neutral float-left" title="Endpoint Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="SPIFifoDriven.html" class="btn btn-neutral float-right" title="SPI FIFO Driven Controller Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="I2CController.html" class="btn btn-neutral float-left" title="I2C Controller Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

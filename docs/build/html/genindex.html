@@ -90,7 +90,10 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="Register.html">Register Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Endpoint.html">Endpoint Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FPGA.html">FPGA Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="I2CController.html">I2C Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DDR.html">DDR Memory Class</a></li>
 </ul>
 
@@ -172,6 +175,7 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#W"><strong>W</strong></a>
  
@@ -191,7 +195,11 @@
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.clear_adc_read">clear_adc_read() (interfaces.interfaces.DDR3 method)</a>
 </li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.clear_endpoint">clear_endpoint() (interfaces.interfaces.FPGA method)</a>
+</li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.clear_read">clear_read() (interfaces.interfaces.DDR3 method)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.clear_wire_bit">clear_wire_bit() (interfaces.interfaces.FPGA method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.clear_write">clear_write() (interfaces.interfaces.DDR3 method)</a>
 </li>
@@ -203,8 +211,14 @@
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.configure_master_bin">configure_master_bin() (interfaces.interfaces.SPIController method)</a>
 </li>
-      <li><a href="SPIController.html#interfaces.interfaces.SPIController.create_chips">create_chips() (interfaces.interfaces.SPIController class method)</a>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController.create_chips">create_chips() (interfaces.interfaces.I2CController class method)</a>
+
+      <ul>
+        <li><a href="SPIController.html#interfaces.interfaces.SPIController.create_chips">(interfaces.interfaces.SPIController class method)</a>
 </li>
+        <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.create_chips">(interfaces.interfaces.SPIFifoDriven class method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
@@ -234,11 +248,19 @@
       <li><a href="DDR.html#interfaces.interfaces.DDR3.fifo_status">fifo_status() (interfaces.interfaces.DDR3 method)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.filter_select">filter_select() (interfaces.interfaces.SPIFifoDriven method)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA">FPGA (class in interfaces.interfaces)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.get_available_endpoints">get_available_endpoints() (interfaces.interfaces.FPGA method)</a>
+</li>
       <li><a href="Endpoint.html#interfaces.interfaces.Endpoint.get_chip_endpoints">get_chip_endpoints() (interfaces.interfaces.Endpoint static method)</a>
 </li>
   </ul></td>
@@ -247,16 +269,32 @@
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.get_master_configuration">get_master_configuration() (interfaces.interfaces.SPIController method)</a>
 </li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.get_time">get_time() (interfaces.interfaces.FPGA method)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="Endpoint.html#interfaces.interfaces.Endpoint.increment_endpoints">increment_endpoints() (interfaces.interfaces.Endpoint static method)</a>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController.i2c_configure">i2c_configure() (interfaces.interfaces.I2CController method)</a>
+</li>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController.i2c_read_long">i2c_read_long() (interfaces.interfaces.I2CController method)</a>
+</li>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController.i2c_receive">i2c_receive() (interfaces.interfaces.I2CController method)</a>
+</li>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController.i2c_transmit">i2c_transmit() (interfaces.interfaces.I2CController method)</a>
+</li>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController.i2c_write_long">i2c_write_long() (interfaces.interfaces.I2CController method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController">I2CController (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="Endpoint.html#interfaces.interfaces.Endpoint.increment_endpoints">increment_endpoints() (interfaces.interfaces.Endpoint static method)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.init_device">init_device() (interfaces.interfaces.FPGA method)</a>
+</li>
       <li>
     interfaces.interfaces
 
@@ -305,9 +343,19 @@
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.read_adc">read_adc() (interfaces.interfaces.DDR3 method)</a>
 </li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_ep">read_ep() (interfaces.interfaces.FPGA method)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_pipe_out">read_pipe_out() (interfaces.interfaces.FPGA method)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_wire">read_wire() (interfaces.interfaces.FPGA method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_wire_bit">read_wire_bit() (interfaces.interfaces.FPGA method)</a>
+</li>
       <li><a href="Register.html#interfaces.interfaces.Register">Register (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController.reset_device">reset_device() (interfaces.interfaces.I2CController method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.reset_fifo">reset_fifo() (interfaces.interfaces.DDR3 method)</a>
 </li>
@@ -321,11 +369,21 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.select_slave">select_slave() (interfaces.interfaces.SPIController method)</a>
 </li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.send_trig">send_trig() (interfaces.interfaces.FPGA method)</a>
+</li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.set_adc_debug">set_adc_debug() (interfaces.interfaces.DDR3 method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.set_adc_read">set_adc_read() (interfaces.interfaces.DDR3 method)</a>
 </li>
+      <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_clk_divider">set_clk_divider() (interfaces.interfaces.SPIFifoDriven method)</a>
+</li>
+      <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_ctrl_reg">set_ctrl_reg() (interfaces.interfaces.SPIFifoDriven method)</a>
+</li>
+      <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_data_mux">set_data_mux() (interfaces.interfaces.SPIFifoDriven method)</a>
+</li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.set_divider">set_divider() (interfaces.interfaces.SPIController method)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.set_endpoint">set_endpoint() (interfaces.interfaces.FPGA method)</a>
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.set_fpga_mode">set_fpga_mode() (interfaces.interfaces.SPIController method)</a>
 </li>
@@ -339,9 +397,29 @@
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.set_read">set_read() (interfaces.interfaces.DDR3 method)</a>
 </li>
+      <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_spi_sclk_divide">set_spi_sclk_divide() (interfaces.interfaces.SPIFifoDriven method)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.set_wire">set_wire() (interfaces.interfaces.FPGA method)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.set_wire_bit">set_wire_bit() (interfaces.interfaces.FPGA method)</a>
+</li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.set_write">set_write() (interfaces.interfaces.DDR3 method)</a>
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController">SPIController (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven">SPIFifoDriven (class in interfaces.interfaces)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.toggle_high">toggle_high() (interfaces.interfaces.FPGA method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.toggle_low">toggle_low() (interfaces.interfaces.FPGA method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -365,16 +443,18 @@
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.wb_send_cmd">wb_send_cmd() (interfaces.interfaces.SPIController method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.wb_set_address">wb_set_address() (interfaces.interfaces.SPIController method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.wb_write">wb_write() (interfaces.interfaces.SPIController method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.write">write() (interfaces.interfaces.DDR3 method)</a>
 
       <ul>
         <li><a href="SPIController.html#interfaces.interfaces.SPIController.write">(interfaces.interfaces.SPIController method)</a>
+</li>
+        <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.write">(interfaces.interfaces.SPIFifoDriven method)</a>
 </li>
       </ul></li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.write_channels">write_channels() (interfaces.interfaces.DDR3 method)</a>

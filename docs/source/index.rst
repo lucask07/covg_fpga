@@ -12,7 +12,10 @@ Welcome to covgDAQ's documentation!
 
    Register
    Endpoint
+   FPGA
+   I2CController
    SPIController
+   SPIFifoDriven
    DDR
 
 
