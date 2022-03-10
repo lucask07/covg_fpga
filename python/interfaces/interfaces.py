@@ -331,8 +331,8 @@ class Endpoint:
         Use each Endpoint's gen_bit and gen_addr values to determine whether to
         increment bits and addresses, respectively.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         endpoints_dict : dict
             The dict of Endpoints to increment.
         in_place : bool
@@ -366,8 +366,8 @@ class Endpoint:
     def excel_to_defines(excel_path, defines_path, sheet=0):
         """Convert an Excel spreadsheet of endpoint definitions to Verilog.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         excel_path : str
             The path to the Excel spreadsheet to convert.
         defines_path : str
@@ -675,8 +675,8 @@ class I2CController:
 
         The FPGA and endpoints will be the same for all instantiated chips.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         fpga : FPGA
             The fpga instance for the chip to connect with.
         addr_pins : list
@@ -860,11 +860,14 @@ class I2CController:
     def i2c_read_long(self, devAddr, regAddr, data_length):
         """Read data_length bytes from regAddr on devAddr.
 
-        Arguments
-        ---------
-        devAddr : 8 bit address (don't set the read bit (LSB) since this is done in this function)
-        regAddr:  written to device (this is a list and must be even if length 1)
-        data_length : number of bytes expected to receive
+        Parameters
+        ----------
+        devAddr : int
+            8 bit address (don't set the read bit (LSB) since this is done in this function)
+        regAddr : int
+            Written to device (this is a list and must be even if length 1)
+        data_length : int
+            Number of bytes expected to receive
         """
 
         preamble = [devAddr & 0xfe] + regAddr + [devAddr | 0x01]
@@ -1565,8 +1568,8 @@ class SPIController:
     def configure_master(self, ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0):
         """Set the Wishbone's CTRL register using several arguments.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         ASS : bool or int
             Automatic Slave Select
         IE : bool or int
@@ -1733,8 +1736,8 @@ class SPIFifoDriven():
     def set_data_mux(self, source):
         """Configure the MUX that routes data source to the SPI output.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         source : str
             See SPIFifoDriven.data_mux dict for options and conversion.
         """
@@ -1856,8 +1859,8 @@ class DAC80508(SPIFifoDriven):
     def write_voltage(self, voltage, outputs=[0, 1, 2, 3, 4, 5, 6, 7], auto_gain=False):
         """Write the voltage to the outputs of the DAC.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         voltage : int or float
             The decimal voltage to write. This will be rounded to a
             representable binary value.
@@ -1934,8 +1937,8 @@ class DAC80508(SPIFifoDriven):
     def set_gain(self, gain, outputs=[0, 1, 2, 3, 4, 5, 6, 7], divide_reference=False):
         """Set the gain and reference divider.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         gain : int
             The gain for the outputs. 1 or 2.
         ouptuts : int or list(int)
@@ -2340,8 +2343,8 @@ class ADS8686(SPIController, ADCDATA):
     def setup_sequencer(self, chan_list=[('FIXED', 'FIXED'), ('0', 'FIXED')], voltage_range=5, lpf=376):
         """Start the sequencer looping through the given channels.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         chan_list : list
             Ordered list of channel pairs (A, B) to loop through. Options below.
                 [0-7]
@@ -2574,7 +2577,7 @@ class AD7961(ADCDATA):
 
         Uses the Opal Kelly WireIn (the trigger can't hold the reset).
 
-        Arguments:
+        Parameters
         -----------
         value : int
             value = 1 is reset
@@ -2751,8 +2754,8 @@ class DDR3():
         float or int voltage to int digital (binary) code should take place
         BEFORE this function.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         amplitude: int
             Digital (binary) value of the flat voltage
 
@@ -2768,8 +2771,8 @@ class DDR3():
     def closest_frequency(self, freq):
         """Determine closest frequency so the waveform evenly divides into the length of the DDR3
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         freq : float
             Desired frequency
 
@@ -2800,8 +2803,8 @@ class DDR3():
         The conversion from float or int voltage to int digital (binary) code
         should take place BEFORE this function.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         amplitude : int
             Digital (binary) value of the sine wave.
         frequency : float
@@ -2838,8 +2841,8 @@ class DDR3():
         The conversion from float or int voltage to int digital (binary) code
         should take place BEFORE this function.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         start : int
             Digital (binary) value to start the ramp at
         stop : int
@@ -2873,8 +2876,8 @@ class DDR3():
         The conversion from float or int voltage to int digital (binary) code
         should take place BEFORE this function.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         low : int
             Digital (binary) code for the low value of the step.
         high : int
@@ -2923,8 +2926,8 @@ class DDR3():
     def write(self, buf, set_ddr_read=True):
         """Write a bytearray to the DDR3.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         buf : bytearray
             bytearray to write to the DDR
 
@@ -3003,8 +3006,8 @@ class DDR3():
     def print_fifo_status(self, fifo_status):
         """Print the FIFO status dictionary.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         fifo_status : dict
             Dictionary of fifo status.
         """
@@ -3070,8 +3073,8 @@ class DDR3():
     def read_adc(self, sample_size=None, source='ADC', DEBUG_PRINT=False):
         """Read ADC data.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         sample_size : int
             Length of read in bytes. If none uses DDR parameter 'sample_size.'
         source : str
@@ -3137,8 +3140,8 @@ class DDR3():
 def disp_device(dev, reg=True):
     """Display endpoints and registers for a chip.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     dev : I2CController or SPIController or SPIFifoDriven or AD7961
         Chip instance to display information for.
     reg : bool

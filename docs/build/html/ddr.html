@@ -246,8 +246,14 @@ Stops DDR data from going to the DACs and ADC data into DDR</p>
 <span class="sig-name descname"><span class="pre">closest_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">freq</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.closest_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.closest_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine closest frequency so the waveform evenly divides into the length of the DDR3</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>freq</strong><span class="classifier">float</span></dt><dd><p>Desired frequency</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>float</strong><span class="classifier">The closest possible frequency</span></dt><dd></dd>
 </dl>
 </dd>
@@ -276,8 +282,14 @@ Stops DDR data from going to the DACs and ADC data into DDR</p>
 float or int voltage to int digital (binary) code should take place
 BEFORE this function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>amplitude: int</strong></dt><dd><p>Digital (binary) value of the flat voltage</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt>numpy.ndarray (for DDR data array)</dt><dd></dd>
 </dl>
 </dd>
@@ -291,8 +303,18 @@ BEFORE this function.</p>
 <p>The conversion from float or int voltage to int digital (binary) code
 should take place BEFORE this function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>start</strong><span class="classifier">int</span></dt><dd><p>Digital (binary) value to start the ramp at</p>
+</dd>
+<dt><strong>stop</strong><span class="classifier">int</span></dt><dd><p>Digital (binary) value to stop the ramp at</p>
+</dd>
+<dt><strong>step</strong><span class="classifier">int</span></dt><dd><p>Digital (binary) code to step by</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>numpy.ndarray</strong><span class="classifier">for DDR data array</span></dt><dd></dd>
 </dl>
 </dd>
@@ -306,8 +328,20 @@ should take place BEFORE this function.</p>
 <p>The conversion from float or int voltage to int digital (binary) code
 should take place BEFORE this function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>amplitude</strong><span class="classifier">int</span></dt><dd><p>Digital (binary) value of the sine wave.</p>
+</dd>
+<dt><strong>frequency</strong><span class="classifier">float</span></dt><dd><p>Desired frequency in Hz.</p>
+</dd>
+<dt><strong>offset</strong><span class="classifier">int</span></dt><dd><p>Digital (binary) value offset.</p>
+</dd>
+<dt><strong>actual_frequency</strong><span class="classifier">bool</span></dt><dd><p>Decide whether closest frequency that fits an integer number of periods is used.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>numpy.ndarray, float</strong><span class="classifier">for DDR data array, actual frequeny used</span></dt><dd></dd>
 </dl>
 </dd>
@@ -321,8 +355,22 @@ should take place BEFORE this function.</p>
 <p>The conversion from float or int voltage to int digital (binary) code
 should take place BEFORE this function.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>low</strong><span class="classifier">int</span></dt><dd><p>Digital (binary) code for the low value of the step.</p>
+</dd>
+<dt><strong>high</strong><span class="classifier">int</span></dt><dd><p>Digital (binary) code for the high value of the step.</p>
+</dd>
+<dt><strong>length</strong><span class="classifier">TODO add type for length</span></dt><dd><p>TODO add description for length</p>
+</dd>
+<dt><strong>actual_length</strong><span class="classifier">bool</span></dt><dd><p>TODO add description for actual_length</p>
+</dd>
+<dt><strong>duty</strong><span class="classifier">int or float</span></dt><dd><p>Duty cycle percentage. Enter as a percentage [0.0, 100.0].</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>numpy.ndarray</strong><span class="classifier">for DDR data array</span></dt><dd></dd>
 </dl>
 </dd>
@@ -333,6 +381,14 @@ should take place BEFORE this function.</p>
 <dt class="sig sig-object py" id="interfaces.interfaces.DDR3.print_fifo_status">
 <span class="sig-name descname"><span class="pre">print_fifo_status</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fifo_status</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.print_fifo_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.print_fifo_status" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print the FIFO status dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>fifo_status</strong><span class="classifier">dict</span></dt><dd><p>Dictionary of fifo status.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -340,8 +396,18 @@ should take place BEFORE this function.</p>
 <span class="sig-name descname"><span class="pre">read_adc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ADC'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DEBUG_PRINT</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.read_adc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.read_adc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read ADC data.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>sample_size</strong><span class="classifier">int</span></dt><dd><p>Length of read in bytes. If none uses DDR parameter ‘sample_size.’</p>
+</dd>
+<dt><strong>source</strong><span class="classifier">str</span></dt><dd><p>FIFO output buffer to read. Either ‘ADC’ or ‘FG’. ‘FG’ just reads
+back what is written for DACs (as function generator) so not so
+useful.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>byearray, int</strong><span class="classifier">The data read as a bytearray, The count (or error code)</span></dt><dd></dd>
 <dt>read from the OpalKelly interface</dt><dd></dd>
 </dl>
@@ -395,8 +461,14 @@ Enables DDR data going to the DACs and ADC data into DDR</p>
 <span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buf</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">set_ddr_read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DDR3.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DDR3.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a bytearray to the DDR3.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>buf</strong><span class="classifier">bytearray</span></dt><dd><p>bytearray to write to the DDR</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>int, float</strong><span class="classifier">length of the buffer written to the DDR</span></dt><dd><p>(or error code if unsuccessful), speed of the write in MB/s</p>
 </dd>
 </dl>

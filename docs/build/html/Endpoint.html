@@ -200,8 +200,19 @@ of endpoint names to Endpoint objects, starts empty.</p>
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">excel_to_defines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">excel_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defines_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sheet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#Endpoint.excel_to_defines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.Endpoint.excel_to_defines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an Excel spreadsheet of endpoint definitions to Verilog.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>excel_path</strong><span class="classifier">str</span></dt><dd><p>The path to the Excel spreadsheet to convert.</p>
+</dd>
+<dt><strong>defines_path</strong><span class="classifier">str</span></dt><dd><p>The path to the Verilog file to create.</p>
+</dd>
+<dt><strong>sheet</strong><span class="classifier">int or str</span></dt><dd><p>Optional. The int index of the sheet to read from the Excel
+spreadsheet, or the str sheet name.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt><strong>str</strong><span class="classifier">the text written to the Verilog file.</span></dt><dd></dd>
 </dl>
 </dd>
@@ -220,6 +231,17 @@ of endpoint names to Endpoint objects, starts empty.</p>
 <dd><p>Increment all Endpoints in endpoints_dict.</p>
 <p>Use each Endpoint’s gen_bit and gen_addr values to determine whether to
 increment bits and addresses, respectively.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>endpoints_dict</strong><span class="classifier">dict</span></dt><dd><p>The dict of Endpoints to increment.</p>
+</dd>
+<dt><strong>in_place</strong><span class="classifier">bool</span></dt><dd><p>If True, the dictionary given will be changed. Otherwise, a copy
+of the dictionary will be made.</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">

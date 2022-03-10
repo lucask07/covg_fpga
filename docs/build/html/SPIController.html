@@ -196,6 +196,24 @@
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.configure_master">
 <span class="sig-name descname"><span class="pre">configure_master</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ASS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LSB</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tx_NEG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rx_NEG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CHAR_LEN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.configure_master"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.configure_master" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the Wishbone’s CTRL register using several arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ASS</strong><span class="classifier">bool or int</span></dt><dd><p>Automatic Slave Select</p>
+</dd>
+<dt><strong>IE</strong><span class="classifier">bool or int</span></dt><dd><p>Set interrupt output active after a transfer is finished</p>
+</dd>
+<dt><strong>LSB</strong><span class="classifier">bool or int</span></dt><dd><p>Send LSB first</p>
+</dd>
+<dt><strong>Tx_NEG</strong><span class="classifier">bool or int</span></dt><dd><p>Change output signal on falling edge of SCLK</p>
+</dd>
+<dt><strong>Rx_NEG</strong><span class="classifier">bool or int</span></dt><dd><p>Latch input signal on falling edge of SCLK</p>
+</dd>
+<dt><strong>CHAR_LEN</strong><span class="classifier">bool or int</span></dt><dd><p>Number of bits transmitted per transfer (up to 64).</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
