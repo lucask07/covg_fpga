@@ -190,8 +190,16 @@
 <dd><p>Instantiate a number of new I2C chips.</p>
 <p>The FPGA and endpoints will be the same for all instantiated chips.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
+<dt><strong>fpga</strong><span class="classifier">FPGA</span></dt><dd><p>The fpga instance for the chip to connect with.</p>
+</dd>
+<dt><strong>addr_pins</strong><span class="classifier">list</span></dt><dd><p>The list of addr_pins assigned to the new chips.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
 <dt>list</dt><dd><p>A list of the newly instantiated chips in the same order addr_pins was given in.</p>
 </dd>
 </dl>
@@ -209,6 +217,18 @@
 <dt class="sig sig-object py" id="interfaces.interfaces.I2CController.i2c_read_long">
 <span class="sig-name descname"><span class="pre">i2c_read_long</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">devAddr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">regAddr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_length</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#I2CController.i2c_read_long"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.I2CController.i2c_read_long" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read data_length bytes from regAddr on devAddr.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>devAddr</strong><span class="classifier">int</span></dt><dd><p>8 bit address (don’t set the read bit (LSB) since this is done in this function)</p>
+</dd>
+<dt><strong>regAddr</strong><span class="classifier">int</span></dt><dd><p>Written to device (this is a list and must be even if length 1)</p>
+</dd>
+<dt><strong>data_length</strong><span class="classifier">int</span></dt><dd><p>Number of bytes expected to receive</p>
+</dd>
+</dl>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
