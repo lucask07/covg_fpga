@@ -572,19 +572,32 @@ module top_level_module(
     assign sma[1] = write_en_adc_o[0]; //J16
     
     /* --------------- SPI clock generator ----------- */
-    wire rd_en_0;
+    reg ddr_dac_rd_en;
     wire ddr_data_valid; 
 
-	//Clock divide - used to clock reading of data from DDR (nominal 2.5 MHz)
+    // pulse at 2.5 MHz for reading DAC ddr data. Syncrhonize to the 7961_timing module
+    always @(posedge clk_sys) begin
+        if (cycle_cnt[0] == 1'b0) begin // even value 
+            if (adc_tcyc_cnt == 32'd20) ddr_dac_rd_en <= 1'b1;  //TODO is 18 best (sync'd with adc_wr_en optimal?); this is one #more behind due to the register
+            else ddr_dac_rd_en <= 1'b0;
+        end
+        else ddr_dac_rd_en <= 1'b0;
+    end
+    
+	//Clock divide - used to clock reading of data from DDR (nominal 2.5 MHz) 
+     /* 
      general_clock_divide MIG_DDR_FIFO_RD_EN(
          .clk(clk_sys),  // input 
          .rst(ep42trig[`DDR3_DAC_CLK_RESET]), // input 
          .en_period(en_period), // input [9:0]  //TODO: need way to disable 
          .clk_en(rd_en_0)  // output : ddr read enable
      );
-
+    */ 
+    
     /* --------------- DDR3 ---------------------------*/
     wire [31:0] ep43trig;
+    wire          clk_ddr_ui;
+
     okTriggerIn trigIn43 (.okHE(okHE),
                             .ep_addr(`DDR_RESET_ADDR_TRIG), .ep_clk(clk_ddr_ui), .ep_trigger(ep43trig));
 
@@ -614,7 +627,6 @@ module top_level_module(
      wire          app_wdf_rdy;
      wire          app_wdf_wren;
 
-     wire          clk_ddr_ui;
      wire          rst_ddr_ui;
 
      wire         pipe_in_read;
@@ -807,7 +819,7 @@ module top_level_module(
      assign up[1] = pipe_out2_data[0]; // pipe_out2_empty; // pipe_out_ready;
      assign up[2] = pipe_out2_data[15]; //pipe_in2_full;
      assign up[3] = pipe_out2_data[255]; //pipe_in2_full; // po0_ep_read;
-     assign up[4] = rd_en_0;
+     assign up[4] = ddr_dac_rd_en;
      assign up[5] = ddr_data_valid;
      
      //assign sma[0] = pipe_in2_valid; //adc_data_cnt > 8; // pipe_in2_read;
@@ -859,6 +871,7 @@ module top_level_module(
     reg adc_ddr_wr_en;
     
     wire [23:0] dac_val_out[0:(AD5453_NUM-1)]; //for AD5453 data 
+    wire dac_val_out_ready[0:(AD5453_NUM-1)]; //for AD5453 data 
 
     always @(*) begin 
         if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin 
@@ -921,7 +934,7 @@ module top_level_module(
          .rd_clk(clk_sys),
          .din(pipe_out_data), // Bus [255 : 0] -- from DDR 
          .wr_en(pipe_out_write),
-         .rd_en(rd_en_0 & dac_ddr_read_en_slow),
+         .rd_en(ddr_dac_rd_en & dac_ddr_read_en_slow),
          .dout(po0_ep_datain), // Bus [127 : 0]
          .full(pipe_out_full),
          .empty(pipe_out_empty),
@@ -993,7 +1006,8 @@ module top_level_module(
                  .rd_en_0(rd_en_ds[k]),   //out: debug of state machine
                  .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]), //input: state machine to init after SPI clock divider is re-programmed
                  .filter_sel(ep_wire_filtsel[(`DAC80508_FILTER_SEL_GEN_BIT + k*`DAC80508_FILTER_SEL_GEN_BIT_LEN) +: 1]),
-                 .dac_val_out()
+                 .dac_val_out(),
+                 .data_out_ready()
                  );
         assign ds_sdo[k] = 1'b1; // sdo for the DAC80508C is connected to CLRB -- force to logic high
         end
@@ -1013,7 +1027,7 @@ module top_level_module(
     
     reg [13:0] last_ddr_read[0:(AD5453_NUM-1)];
     reg ddr_data_valid_norepeat[0:(AD5453_NUM-1)]; // Skip DAC update if the value is the same. Reduces digital switching noise. 
-        
+    
     genvar p;
     generate
     for (p=0; p<=(AD5453_NUM-1); p=p+1) begin : dac_ad5453_gen
@@ -1058,16 +1072,17 @@ module top_level_module(
 
                  .rd_en_0(rd_en_fast_dac[p]),   //out: debug only 
                  .regTrigger(ep40trig[`AD5453_REG_TRIG_GEN_BIT + p]), //input  -- sends state machine to init. Use for after updates via register bridge.
-                 .filter_sel(ep_wire_filtsel[(`AD5453_FILTER_SEL_GEN_BIT + p*`AD5453_FILTER_SEL_GEN_BIT_LEN) +: 1]),
+                 .filter_sel(ep_wire_filtsel[`AD5453_FILTER_SEL_GEN_BIT + p]),
                  .coeff_debug_out1(coeff_debug_out1[p]),
                  .coeff_debug_out2(coeff_debug_out2[p]),
-                 .dac_val_out(dac_val_out[p])
+                 .dac_val_out(dac_val_out[p]),
+                 .data_out_ready(dac_val_out_ready[p])
                  );
         end
     endgenerate
 
     // Four wire outs for debug of filter loading. TODO: generally unecessary now. 
-     okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_0), .ep_datain(coeff_debug_out1[0]));
+     okWireOut      wo06 (.okHE(okHE), .okEH(okEHx[ 18*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_0), .ep_datain(ep_wire_filtsel));
      okWireOut      wo07 (.okHE(okHE), .okEH(okEHx[ 19*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_1), .ep_datain(coeff_debug_out2[0]));
      okWireOut      wo08 (.okHE(okHE), .okEH(okEHx[ 20*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_2), .ep_datain(coeff_debug_out1[1]));
      okWireOut      wo09 (.okHE(okHE), .okEH(okEHx[ 21*65 +: 65 ]), .ep_addr(`AD5453_COEFF_DEBUG_3), .ep_datain(coeff_debug_out2[1]));
