@@ -41,7 +41,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire filter_sel,  // if high SPI data is from the filter. 
      output wire [31:0] coeff_debug_out1,
      output wire [31:0] coeff_debug_out2,
-     output reg [23:0] dac_val_out
+     output reg [23:0] dac_val_out,
+     output reg data_out_ready
     );
     
       wire cmd_stb;
@@ -94,14 +95,15 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          else spi_data = data_i;
      end
 	 
-	 reg [15:0] filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable before input to the SPI command generator
-	 always @(posedge clk) begin
-	   filter_data_rdy[15] <= data_rdy_0;
-	   filter_data_rdy[14:0] <= filter_data_rdy[15:1];
-	 end
+//	 reg [15:0] filter_data_rdy; // filter output data is registered when clk_enable is =1. Need a one-cycle delay for the data to be stable before input to the SPI command generator
+//	 always @(posedge clk) begin
+//	   filter_data_rdy[15] <= data_rdy_0;
+//	   filter_data_rdy[14:0] <= filter_data_rdy[15:1];
+//	 end
 	 
+	 wire filter_data_rdy;
      always @(*) begin
-         if (filter_sel == 1'b1) data_ready_mux = filter_data_rdy[0];
+         if (filter_sel == 1'b1) data_ready_mux = filter_data_rdy;
          else data_ready_mux = data_rdy_0;
      end
 	 
@@ -109,6 +111,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	    if (rst == 1'b1) dac_val_out <= 24'd0;
         else if (data_ready_mux == 1'b1) dac_val_out <= spi_data;
 	 end
+	 
+     always @(posedge clk) begin
+        if (rst == 1'b1) data_out_ready <= 1'b0;
+        else if (data_ready_mux == 1'b1) data_out_ready <= 1'b1;
+        else data_out_ready <= 1'b0;
+     end
 	 
 	 //State machine/controller for reading a FIFO with data and initiating SPI transfers to AD5453
 	 read_fifo_to_spi_cmd #(.ADDR(ADDR)) data_converter_0(
@@ -145,19 +153,20 @@ module spi_fifo_driven #(parameter ADDR = 0) (
        Butter_pipelined u_Butterworth_0
          (
          .clk(clk),
-         .clk_enable(data_rdy_0 | write_enable | write_done),
+         .clk_enable(data_rdy_0 | write_enable | write_done),  // input data is registered when clk_enable is high 
          .reset(rst),
          .filter_in(data_i[15:0]), 
          .write_enable(write_enable),
          .write_done(write_done),
          .write_address(write_address[3:0]),
          .coeffs_in(coeffs_in),
-         .filter_out(filter_out)
+         .filter_out(filter_out),
+         .data_ready(filter_data_rdy)
          //.coeff_debug_out1(coeff_debug_out1),
          //.coeff_debug_out2(coeff_debug_out2)
          );
               
-     LPF_data_modify_fixpt u_dat_mod(
+     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
      .din(filter_out), .dout(filter_out_modified)
      );
 	 

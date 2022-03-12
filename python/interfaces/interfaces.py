@@ -3406,6 +3406,10 @@ class DDR3():
             dac_data[3] = chan_data[5][1::2]
             # dac channels 4,5 are available but not every sample
 
+            ads = {}
+            ads['A'] = chan_data[7][0::5]
+            ads['B'] = chan_data[7][1::5]
+
             constant_values = {0: 0xaa55, 1: 0x28ab, 2: 0x77bb}
             for i in range(2):
                 if not np.all(read_check[i] == constant_values[i]):
@@ -3416,7 +3420,7 @@ class DDR3():
             if np.size(unq_time_intervals) > 1:
                 print('Warning: Multiple time intervals')
 
-            return chan_data, timestamp, read_check, dac_data
+            return chan_data, timestamp, read_check, dac_data, ads
 
     def set_index(self, factor, factor2=None):
         """

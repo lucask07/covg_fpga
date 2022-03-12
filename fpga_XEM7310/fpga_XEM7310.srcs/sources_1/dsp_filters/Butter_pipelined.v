@@ -62,7 +62,8 @@ module Butter_pipelined
                 write_done,
                 write_address,
                 coeffs_in,
-                filter_out
+                filter_out,
+                data_ready
                 );
 
   input   clk; 
@@ -74,6 +75,7 @@ module Butter_pipelined
   input   [3:0] write_address; //ufix4
   input   signed [31:0] coeffs_in; //sfix32
   output  signed [13:0] filter_out; //sfix14_En12
+  output  reg data_ready;
 
 ////////////////////////////////////////////////////////////////
 //Module Architecture: Butter_pipelined
@@ -244,7 +246,7 @@ module Butter_pipelined
     
     mult_gen_0 mult1(.CLK(clk), .A(A), .B(B), .P(P));
     
-    always @ ( negedge clk)begin
+    always @ ( posedge clk)begin //TODO: why is this negative edge driven? 
         if(reset == 1'b1)begin
             A <= 1'b0;
             B <= 1'b0;
@@ -267,12 +269,12 @@ module Butter_pipelined
         else if(clk_enable == 1'b1)begin
             ena <= 4'b0;
         end
-        else if(ena < 5'h10) begin
+        else if(ena < 5'h11) begin //LJK increase to 'h11
             ena <= ena + 1'b1;
         end
-        else if(ena == 5'h10) begin
-            ena <= 4'b0;
-        end
+        //else if(ena == 5'h11) begin
+        //    ena <= 4'b0;
+        //end
 //    end
 //    always @ ( negedge clk)begin
         if(ena == 5'h00)begin
@@ -653,11 +655,24 @@ module Butter_pipelined
         output_register <= 0;
       end
       else begin
-        if (clk_enable == 1'b1) begin
+        if (ena == 5'h11) begin
           output_register <= output_typeconvert;
         end
       end
     end // Output_Register_process
+
+  always @ ( posedge clk)
+    begin: Output_Ready_process
+      if (reset == 1'b1) begin
+        data_ready <= 1'b0;
+      end
+      else begin
+        if (ena == 5'h11) begin
+          data_ready <= 1'b1;
+        end
+        else data_ready <= 1'b0;
+      end
+    end // Output_Ready_process
 
   // Assignment Statements
   assign filter_out = output_register;

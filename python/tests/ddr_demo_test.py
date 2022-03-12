@@ -240,8 +240,6 @@ for i in [0,1,2,3,4,5]:
         #daq.DAC[i].filter_select(operation="clear")
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 500)  # 500 mV full-scale
-    print('Checking filter settings')
-    daq.DAC[0].read_coeff_debug()
 
 # 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
 daq.DAC[0].set_clk_divider(divide_value=0x50)
@@ -274,7 +272,6 @@ NUM_CHAN = 8
 
 def ddr_write_setup():
     # adjust the DDR settings of both DACs
-    # quiet both DACs
     ddr.clear_dac_read()
     ddr.clear_adc_write()
     ddr.reset_fifo(name='ALL')

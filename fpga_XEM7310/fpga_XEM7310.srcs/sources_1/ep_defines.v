@@ -76,7 +76,7 @@
 `define DDR3_ADC_WRITE_ENABLE 30 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_ADC_TRANSFER_ENABLE 31 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
-`define FILTER_SEL_WIRE_IN 8'h0d // bit_width=32
+`define FILTER_SEL_WIRE_IN 8'h11 // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define AD5453_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define DAC80508_FILTER_SEL_GEN_BIT 6 // address=FILTER_SEL_WIRE_IN bit_width=1
