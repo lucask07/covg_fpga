@@ -653,7 +653,7 @@ class Daq:
         self.ddr.write_channels()   # Double write to ensure good output
 
         # --- Read input and ouput voltage signals ---
-        throw_away = 15
+        throw_away = 15     # TODO: remove this
         for i in range(throw_away):
             data_stream = self.ADC_gp.stream_mult(twos_comp_conv=False)
         v_in_code = data_stream[input_side]

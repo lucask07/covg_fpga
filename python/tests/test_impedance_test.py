@@ -64,7 +64,7 @@ gpio.spi_debug('ds1')
 # --- Testing ---
 ads8686_chan_a = 7
 ads8686_chan_b = 3
-z, f = daq.test_impedance(frequency=200.0, resistance=9843, amplitude=1.0, dac80508_num=2, dac80508_chan=7, ads8686_chan_a=ads8686_chan_a, ads8686_chan_b=ads8686_chan_b, plot=False)
+z, f = daq.test_impedance(frequency=200.0, resistance=9843, amplitude=1.0, dac80508_num=1, dac80508_chan=7, ads8686_chan_a=ads8686_chan_a, ads8686_chan_b=ads8686_chan_b, plot=False)
 print(z, f)
 print(f'{np.abs(z)}\N{ANGLE}{np.angle(z, deg=True)}\N{DEGREE SIGN}')
 
