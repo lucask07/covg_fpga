@@ -446,7 +446,7 @@ module top_level_module(
     spi_controller #(.ADDR(`ADS8686_REGBRIDGE_OFFSET)) uut(
                        .clk(clk_sys),
                        .reset(sys_rst),
-                       .divider_reset(ep40trig[`ADS8686_CLK_DIV_RESET]),
+                       .divider_reset(ep42trig[`AD7961_RESET_GEN_BIT]), //NOTE: to synchronize to the AD7961_timing module share reset signal. TODO: check the phase alignment remains consistent
                        .dac_val(ads_wire_in),
                        .dac_convert_trigger(ep40trig[`ADS8686_WB_CONVERT]), // trigger wishbone transfers
                        .host_fpgab(host_fpgab), // if 1 host driven commands; if 0
@@ -546,21 +546,6 @@ module top_level_module(
         .adc_serial_data(adc_serial_data[i])        
         );
 
-        fifo_AD796x adc7961_fifo (//32 bit wide read and 16 bit wide write ports; write depth 4096, read depth 2048
-          .rst(ep42trig[`AD7961_FIFO_RESET_GEN_BIT + i]),
-          .wr_clk(clk_sys),
-          .rd_clk(okClk),
-          .din({adc_val[i]}),         // Bus [15:0] (from ADC)
-          .wr_en(write_en_adc_o[i]),// from ADC
-          .rd_en(adc_pipe_ep_read[i]),      // from OKHost
-          .dout(adc_pipe_ep_datain[i]),     // Bus [31:0] (to OKHost)
-          .full(adc_fifo_full[i]),     // status
-          .empty(adc_fifo_empty[i]),   // status
-          .prog_full(adc_fifo_halffull[i]),  // half-full flag (2048 which is based off of the write depth)        
-          .wr_rst_busy(),
-          .rd_rst_busy()          
-          );//status
-
           //pipeOut for data from AD7961
           okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(5+i)*65 +: 65]),
                     .ep_addr(`AD7961_PIPE_OUT_GEN_ADDR + i), .ep_read(adc_pipe_ep_read[i]),
@@ -573,6 +558,7 @@ module top_level_module(
     
     /* --------------- SPI clock generator ----------- */
     reg ddr_dac_rd_en;
+    reg ads_rd_en;
     wire ddr_data_valid; 
 
     // pulse at 2.5 MHz for reading DAC ddr data. Syncrhonize to the 7961_timing module
@@ -583,17 +569,7 @@ module top_level_module(
         end
         else ddr_dac_rd_en <= 1'b0;
     end
-    
-	//Clock divide - used to clock reading of data from DDR (nominal 2.5 MHz) 
-     /* 
-     general_clock_divide MIG_DDR_FIFO_RD_EN(
-         .clk(clk_sys),  // input 
-         .rst(ep42trig[`DDR3_DAC_CLK_RESET]), // input 
-         .en_period(en_period), // input [9:0]  //TODO: need way to disable 
-         .clk_en(rd_en_0)  // output : ddr read enable
-     );
-    */ 
-    
+
     /* --------------- DDR3 ---------------------------*/
     wire [31:0] ep43trig;
     wire          clk_ddr_ui;
@@ -821,10 +797,6 @@ module top_level_module(
      assign up[3] = pipe_out2_data[255]; //pipe_in2_full; // po0_ep_read;
      assign up[4] = ddr_dac_rd_en;
      assign up[5] = ddr_data_valid;
-     
-     //assign sma[0] = pipe_in2_valid; //adc_data_cnt > 8; // pipe_in2_read;
-     //assign sma[1] = pipe_in2_data[0]; //adc_data_cnt < 2;
-
       
       okWireOut      wo03 (.okHE(okHE), .okEH(okEHx[ 12*65 +: 65 ]), .ep_addr(`DDR3_ADC_DATA_CNT), .ep_datain(adc_data_cnt));
       okBTPipeIn     pi0  (.okHE(okHE), .okEH(okEHx[ 13*65 +: 65 ]), .ep_addr(`DDR3_BLOCK_PIPE_IN), .ep_write(pi0_ep_write), .ep_blockstrobe(), .ep_dataout(pi0_ep_dataout), .ep_ready(pipe_in_ready));
@@ -996,12 +968,11 @@ module top_level_module(
                  .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
                  .data_rdy_0(data_ready_ds[k]), 
                  .data_i(ds_spi_data[k][23:0]), 
-                 // register bridge //TODO: add address increment based on generate k
+                 // register bridge 
                  .ep_write(regWrite),           //input wire 
                  .ep_address(regAddress),       //input wire [31:0] 
                  .ep_dataout_coeff(regDataOut), //input wire [31:0] (TODO: name is confusing}. Output from OKRegisterBridge
-                  /*.ep_datain(regDataIn),*/
-                 
+
                  // All DAC80508 output channels have the form {0b1, number_output_channel}
                  .rd_en_0(rd_en_ds[k]),   //out: debug of state machine
                  .regTrigger(ep40trig[`DAC80508_REG_TRIG_GEN_BIT + k]), //input: state machine to init after SPI clock divider is re-programmed
@@ -1045,11 +1016,10 @@ module top_level_module(
         end
                 
         mux8to1_32wide spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
-            //.datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
-            .datain_0({ddr_data_valid_norepeat[p], 17'b0, last_ddr_read[p]}),
+            .datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
             .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
-            .datain_3({ads_data_valid, 15'b0, ads_data_out[31:16]}), // 
+            .datain_3({ddr_data_valid_norepeat[p], 17'b0, last_ddr_read[p]}), // 
             .datain_4({write_en_adc_o[0], 15'b0, adc_val[0][15:0]}), // data from AD7961  
             .datain_5({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961
             .datain_6({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961
@@ -1136,7 +1106,7 @@ module top_level_module(
     okWireOut wo_i2c_aux (.okHE(okHE), .okEH(okEHx[ 16*65 +: 65 ]), .ep_addr(`I2CDAQ_WIRE_OUT_GEN_ADDR),
                     .ep_datain({i2c_aux_memdout[1], i2c_aux_memdout[0]}));
 
-		// level shifted I2C bus
+    // level shifted I2C bus
     i2cController i2c_controller_4 (
         .clk (clk_sys),
         .reset (ep41trig[`I2CDAQ_RESET_GEN_BIT + 0]),

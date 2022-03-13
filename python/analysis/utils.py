@@ -46,7 +46,7 @@ def calc_fft(data, FS, plot=True):
 
     if plot:
         fig, ax = plt.subplots()
-        ax.loglog(freq[:N//2], 2.0/N * np.abs(yf[:N//2]))
+        ax.loglog(freq[:N//2], 2.0/N * np.abs(yf[:N//2]), marker='.')
         ax.set_xlabel('f [Hz]')
         ax.set_ylabel('|A|')
 
