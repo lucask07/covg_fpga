@@ -107,7 +107,7 @@ def read_h5(data_dir, file_name, chan_list=[0]):
         dset = file["adc"]
         t = np.arange(len(dset[0, :])) * SAMPLE_PERIOD
         for ch in chan_list:
-            adc_data[ch] = dset[ch, :]
+            adc_data[ch] = dset[ch, :].astype(np.uint16)
     return t, adc_data
 
 

@@ -1787,7 +1787,7 @@ class SPIFifoDriven():
         'DDR': 0,
         'host': 1,
         'ads8686_chA': 2,
-        'ads8686_chB': 3,
+        'DDR_norepeat': 3,  # does not send an update if the DDR data is the same. Reduces digital switching noise on the SPI bus
         'ad7961_ch0': 4,
         'ad7961_ch1': 5,
         'ad7961_ch2': 6,
@@ -1985,12 +1985,23 @@ class DAC80508(SPIFifoDriven):
         Soft reset the chip.
     """
 
+    default_data_mux = {
+        'DDR': 0,
+        'host': 1,
+        'ads8686_chA': 2,
+        'ads8686_chB': 3,  # different for the AD5453
+        'ad7961_ch0': 4,
+        'ad7961_ch1': 5,
+        'ad7961_ch2': 6,
+        'ad7961_ch3': 7,
+    }
+
     WRITE_OPERATION = 0x000000
     READ_OPERATION = 0x800000
 
     registers = Register.get_chip_registers('DAC80508')
 
-    def __init__(self, fpga, master_config=0x3218, endpoints=None, data_mux=SPIFifoDriven.default_data_mux):
+    def __init__(self, fpga, master_config=0x3218, endpoints=None, data_mux=default_data_mux):
         # master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE
         if endpoints is None:
             endpoints = Endpoint.get_chip_endpoints('DAC80508')
@@ -2735,8 +2746,8 @@ class AD7961(ADCDATA):
 
     def reset_trig(self):
         """Reset the FPGA controller for the ADC.
-
-        One per channel. Uses the Opal Kelly Trigger
+        Common to synchronize timing 
+            (resets ad7961_timing module AND the ads8686 timing) 
         """
 
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['RESET'].address,
@@ -3359,8 +3370,6 @@ class DDR3():
                 for i in range(4):
                     chan_data[i] = twos_comp(chan_data[i], bits)
             
-            return chan_data
-
         if self.parameters['data_version'] == 'TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
             for i in range(8):
                 chan_data_swz[i] = (d[(0 + i * 2) :: 16] << 0) + (d[(1 + i * 2) :: 16] << 8)
@@ -3376,6 +3385,19 @@ class DDR3():
             chan_data[6] = chan_data_swz[0]
             chan_data[7] = chan_data_swz[1]
 
+        return chan_data
+
+
+    def data_to_names(self, chan_data):
+
+        if self.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
+            adc_data = chan_data
+            timestamp = np.nan
+            read_check = np.nan
+            dac_data = np.nan
+            ads = np.nan
+
+        if self.parameters['data_version'] == 'TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
             # locate the constant value of 0xaa55 and then 0x28ab
             # and ensure this is in the 3rd position
             c_val_idx = np.nonzero((chan_data[7][:-1] == 0xaa55) & ((chan_data[7][1:] == 0x28ab)))[0][0]
@@ -3383,14 +3405,13 @@ class DDR3():
                 print('Warning!!')
                 print(f'DDR read constant value is at position = {c_val_idx}; expected 3')
             
-            if convert_twos:
-                for i in range(4):
-                    chan_data[i] = twos_comp(chan_data[i], bits)
-
+            adc_data = {}
+            for i in range(4):
+                adc_data[i] = twos_comp(chan_data[i], 16)
             
-            lsb = chan_data[6][0::5]
-            mid_b = (chan_data[6][1::5]<<16)
-            msb = (chan_data[7][2::5]<<32)
+            lsb = chan_data[6][0::5].astype(np.uint64)
+            mid_b = ((chan_data[6][1::5].astype(np.uint64))<<16)
+            msb = ((chan_data[7][2::5].astype(np.uint64))<<32)
             t_len = np.size(msb)
             timestamp = (lsb[0:(t_len-1)] + mid_b[0:(t_len-1)] + msb[0:(t_len-1)])
 
@@ -3407,8 +3428,8 @@ class DDR3():
             # dac channels 4,5 are available but not every sample
 
             ads = {}
-            ads['A'] = chan_data[7][0::5]
-            ads['B'] = chan_data[7][1::5]
+            ads['A'] = twos_comp(chan_data[7][0::5], 16)
+            ads['B'] = twos_comp(chan_data[7][1::5], 16)
 
             constant_values = {0: 0xaa55, 1: 0x28ab, 2: 0x77bb}
             for i in range(2):
@@ -3420,7 +3441,7 @@ class DDR3():
             if np.size(unq_time_intervals) > 1:
                 print('Warning: Multiple time intervals')
 
-            return chan_data, timestamp, read_check, dac_data, ads
+            return adc_data, timestamp, read_check, dac_data, ads
 
     def set_index(self, factor, factor2=None):
         """
