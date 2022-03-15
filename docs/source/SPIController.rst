@@ -6,3 +6,4 @@ SPI Controller Class
 
 .. autoclass:: SPIController
    :members: 
+

@@ -5,3 +5,4 @@ Register Class
 
 .. autoclass:: Register
    :members:
+
