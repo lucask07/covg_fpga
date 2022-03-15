@@ -76,7 +76,6 @@ module Butter_pipelined
   input   signed [31:0] coeffs_in; //sfix32
   output  signed [13:0] filter_out; //sfix14_En12
   output  reg data_ready;
-
 ////////////////////////////////////////////////////////////////
 //Module Architecture: Butter_pipelined
 ////////////////////////////////////////////////////////////////
@@ -240,17 +239,19 @@ module Butter_pipelined
     
     //Shared Multiplier
     reg [4:0] ena;
+    reg done;
     reg [15:0] A;
     reg [31:0] B;
     wire [47:0] P;
     
     mult_gen_0 mult1(.CLK(clk), .A(A), .B(B), .P(P));
     
-    always @ ( posedge clk)begin //TODO: why is this negative edge driven? 
+    always @ ( posedge clk)begin
         if(reset == 1'b1)begin
             A <= 1'b0;
             B <= 1'b0;
             ena <= 4'b0;
+            done <= 1'b0;
             mul_temp <= 47'b0;
             a2mul1 <= 47'b0;
             a3mul1 <= 47'b0;
@@ -268,13 +269,18 @@ module Butter_pipelined
         end
         else if(clk_enable == 1'b1)begin
             ena <= 4'b0;
+            done <= 1'b0;
         end
-        else if(ena < 5'h11) begin //LJK increase to 'h11
+        else if(ena < 5'h12) begin
             ena <= ena + 1'b1;
         end
-        //else if(ena == 5'h11) begin
-        //    ena <= 4'b0;
-        //end
+//        else if(ena == 5'h10 && done == 1'b0) begin
+//            ena <= 4'b0;
+//            done <= 1'b1;
+//        end
+        else begin
+            ena <= ena;
+        end
 //    end
 //    always @ ( negedge clk)begin
         if(ena == 5'h00)begin
@@ -294,62 +300,79 @@ module Butter_pipelined
             B <= coeff_b2_section1_shadow_reg;
         end
         else if(ena == 5'h04)begin//wait four cycles to grab mult output since mult has 4 pipeline stages
-            mul_temp <= P;
+            //mul_temp <= P;
             A <= feedback1;
             B <= coeff_a2_section1_shadow_reg;
         end
         else if(ena == 5'h05)begin
             //sos_pipeline1 <= feedback1;
-            b3mul1 <= P;
+            mul_temp <= P;
+            //b3mul1 <= P;
             A <= inputconv1;
             B <= coeff_b1_section1_shadow_reg;
         end
         else if(ena == 5'h06)begin
-            a3mul1 <= P;
+            sos_pipeline1 <= feedback1;
+            b3mul1 <= P;
+            //a3mul1 <= P;
             A <= sos_pipeline1;
             B <= coeff_scale2_shadow_reg;
         end
         else if(ena == 5'h07)begin
-            sos_pipeline1 <= feedback1;
-            b2mul1 <= P;
+            a3mul1 <= P;
+            //sos_pipeline1 <= feedback1;
+            //b2mul1 <= P;
             A <= inputconv2;
             B <= coeff_b3_section2_shadow_reg;
         end
         else if(ena == 5'h08)begin
-            a2mul1 <= P;
+            //sos_pipeline1 <= feedback1;
+            b2mul1 <= P;
+            //a2mul1 <= P;
             A <= feedback2;
             B <= coeff_a3_section2_shadow_reg;
         end
         else if(ena == 5'h09)begin
-            b1mul1 <= P;
+            a2mul1 <= P;
+            //b1mul1 <= P;
             A <= inputconv2;
             B <= coeff_b2_section2_shadow_reg;
         end
         else if(ena == 5'h0a)begin
-            mul_temp_1 <= P;
+            b1mul1 <= P;
+            //mul_temp_1 <= P;
             A <= feedback2;
             B <= coeff_a2_section2_shadow_reg;
         end
         else if(ena == 5'h0b)begin
-            b3mul2 <= P;
+            mul_temp_1 <= P;
+            //b3mul2 <= P;
             A <= inputconv2;
             B <= coeff_b1_section2_shadow_reg;
         end
         else if(ena == 5'h0c)begin
-            a3mul2 <= P;
+            b3mul2 <= P;
+            //a3mul2 <= P;
             A <= feedback2;
             B <= coeff_scale3_shadow_reg;
         end
         else if(ena == 5'h0d)begin
-            b2mul2 <= P;
+            a3mul2 <= P;
+            //b2mul2 <= P;
         end
         else if(ena == 5'h0e)begin
-            a2mul2 <= P;
+            b2mul2 <= P;
+            //a2mul2 <= P;
         end
         else if(ena == 5'h0f)begin
-            b1mul2 <= P;
+            a2mul2 <= P;
+            //b1mul2 <= P;
         end
         else if(ena == 5'h10)begin
+            b1mul2 <= P;
+            //mul_temp_2 <= P;
+        end
+        else if(ena == 5'h11)begin
             mul_temp_2 <= P;
         end
     end
@@ -649,32 +672,33 @@ module Butter_pipelined
 
   assign output_typeconvert = scale3;
 
-  always @ ( posedge clk)
-    begin: Output_Register_process
-      if (reset == 1'b1) begin
-        output_register <= 0;
-      end
-      else begin
-        if (ena == 5'h11) begin
-          output_register <= output_typeconvert;
-        end
-      end
-    end // Output_Register_process
 
-  always @ ( posedge clk)
-    begin: Output_Ready_process
-      if (reset == 1'b1) begin
-        data_ready <= 1'b0;
-      end
-      else begin
-        if (ena == 5'h11) begin
-          data_ready <= 1'b1;
+    always @ ( posedge clk)
+      begin: Output_Register_process
+        if (reset == 1'b1) begin
+          output_register <= 0;
         end
-        else data_ready <= 1'b0;
-      end
-    end // Output_Ready_process
-
-  // Assignment Statements
-  assign filter_out = output_register;
-endmodule  // Butter_pipelined
+        else begin
+          if (ena == 5'h12) begin
+            output_register <= output_typeconvert;
+          end
+        end
+      end // Output_Register_process
+  
+    always @ ( posedge clk)
+      begin: Output_Ready_process
+        if (reset == 1'b1) begin
+          data_ready <= 1'b0;
+        end
+        else begin
+          if (ena == 5'h12) begin
+            data_ready <= 1'b1;
+          end
+          else data_ready <= 1'b0;
+        end
+      end // Output_Ready_process
+  
+    // Assignment Statements
+    assign filter_out = output_register;
+  endmodule  // Butter_pipelined
 
