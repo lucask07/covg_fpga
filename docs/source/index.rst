@@ -7,13 +7,18 @@ Welcome to covgDAQ's documentation!
 ===================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    Register
    Endpoint
+   FPGA
+   I2CController
    SPIController
+   SPIFifoDriven
    DDR
+   register_index_guide
+   endpoint_definitions_guide
 
 
 

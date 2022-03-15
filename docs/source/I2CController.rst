@@ -1,9 +1,9 @@
-Endpoint Class 
+I2C Controller Class 
 ========================================================
 
 .. module:: interfaces.interfaces
    :noindex:
 
-.. autoclass:: Endpoint
+.. autoclass:: I2CController
    :members: 
 
