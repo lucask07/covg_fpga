@@ -1,19 +1,15 @@
 """
-Test of AD7961 and DDR transfer of this data 
-Function generator connected to one channel specified in the script
+This code demonstrates DDR reading and writing. 
+Works in a mode with two DDR input buffers and two DDR output buffers. 
 
-With Sine Wave for verification check:
-1) DN vs. voltage 
-2) Frequency 
+Data loaded into DDR for playback (port 1):
+* AD5453 DAC and DAC80508 
 
-With Step function check:
-1) DN vs. voltage 
-2) Frequency 
-3) Noise away from edges 
-
-Realtime plots and maximum record length 
-
-1) check timestamps 
+Data buffered into and then read from DDR (port 2):
+ * AD7961 @ 5 MSPS
+ * output data to DAC AD5453 (allows for filter tests) @ 2.5 MSPS
+ * ADS8686 data @ 1 MSPS
+ * Timestamp (clock at 200 MHz)
 
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
@@ -54,10 +50,6 @@ from analysis.utils import calc_fft
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 dac80508_offset = 0x8000
-
-#import matplotlib
-
-# matplotlib.use("TkAgg")  # or "Qt5agg" depending on you version of Qt
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -229,10 +221,11 @@ for i in [0,1,2,3,4,5]:
     daq.set_dac_gain(i, 500)  # 500 mV full-scale
 
 # 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
-daq.DAC[0].set_clk_divider(divide_value=0x50)
+daq.DAC[0].set_clk_divider(divide_value=0x50) #TODO: this is no longer used. All timing is from one module
 print('Checking filter settings')
 daq.DAC[0].read_coeff_debug()
 
+# configure the ADS8686
 ads.hw_reset(val=False)
 ads.set_host_mode()
 ads.setup()
@@ -266,84 +259,6 @@ def ddr_write_finish():
      # reenable both DACs
     ddr.set_dac_read()  # enable DAC playback and ADC reading
     ddr.set_adc_write()
-
-def read_adc(ddr, blk_multiples=2048):
-
-    t, bytes_read_error = ddr.read_adc(  # just reads from the block pipe out
-        sample_size=ddr.parameters["BLOCK_SIZE"] * blk_multiples
-    )
-    d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
-    print(f'Bytes read: {bytes_read_error}')
-    return d, bytes_read_error
-
-
-def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 40, 
-                    PLT_ADC=False, scaling=1, ylabel='DN', ax=None):
-
-    # Continuous Graph
-    if PLT_ADC:
-        plt.ion() # setup plot
-        if ax is None:
-            fig, ax = plt.subplots()
-        ax.set_xlabel("Time")
-        ax.set_ylabel(ylabel)
-    chunk_size = int(ddr.parameters["BLOCK_SIZE"] * blk_multiples / (NUM_CHAN*2))  # readings per ADC
-    print(f'Anticipated chunk size {chunk_size}')
-    repeat = 0
-    adc_readings = chunk_size*num_repeats
-
-    print(f'Reading {adc_readings*2/1024} kB per ADC channel for a total of {adc_readings*SAMPLE_PERIOD*1000} ms of data')
-
-    full_data_name = os.path.join(data_dir, file_name)
-    try:
-        os.remove(full_data_name)
-    except OSError:
-        pass
-
-    ddr.set_adc_read()  # enable data into the ADC reading FIFO
-    time.sleep(adc_readings*SAMPLE_PERIOD*2)
-
-    # Save ADC DDR data to a file
-    with h5py.File(full_data_name, "w") as file:
-        data_set = file.create_dataset("adc", (NUM_CHAN, chunk_size), maxshape=(NUM_CHAN, None))
-        while repeat < num_repeats:
-            d, bytes_read_error = read_adc(ddr, blk_multiples)
-            if ddr.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':
-                chan_data = ddr.deswizzle(d)
-                # adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data)
-
-            elif ddr.parameters['data_version'] == 'TIMESTAMPS':
-                chan_data = ddr.deswizzle(d)
-                # adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data)
-
-            if NUM_CHAN==4:
-                chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
-
-            if NUM_CHAN==8:
-                chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3],
-                                        chan_data[4], chan_data[5], chan_data[6], chan_data[7]))
-            if PLT_ADC:
-                if repeat == 0:
-                    t = np.arange(len(chan_data[1])) * SAMPLE_PERIOD
-                ax_hdl = ax.plot(t, chan_data[0]*scaling, color="blue", scalex=True, scaley=False)
-                ax.set_ylim(bottom=-(2 ** 15)*scaling, top= (2 ** 15)*scaling, auto=False)
-                plt.draw()
-                plt.pause(0.001)
-
-            repeat += 1
-            if repeat == 0:
-                print(f'Chunk size by chan data size {chunk_size}')
-                data_set[:] = chan_stack
-            else:
-                data_set[:, -chunk_size:] = chan_stack
-            if repeat < num_repeats:
-                if PLT_ADC:
-                    ax_hdl[0].remove()
-                data_set.resize(data_set.shape[1] + chunk_size, axis=1)
-
-
-    print(f'Done with ADC reading: saved as {full_data_name}')
-    return chan_data
 
 for i in range(7):
     ddr.data_arrays[i], fdac_freq = ddr.make_sine_wave(0x800, 5e3,
@@ -392,7 +307,6 @@ output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 idx = 0
 
 REPEAT = True
-PAUSE = False
 if REPEAT:
     ddr.clear_adc_read()
     ddr.clear_adc_write()
@@ -404,13 +318,13 @@ if REPEAT:
     ddr.set_adc_write()
     time.sleep(0.01)
 
-chan_data_one_repeat = save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 8,
+chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 8,
                           blk_multiples=40) # blk multiples multiple of 10
 
 _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
 
 # Long data sequence -- entire file 
-adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data)
+adc_data, timestamp, dac_data, ads = ddr.data_to_names(chan_data)
 
 # Shorter data sequence, just one of the repeats
 # adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
