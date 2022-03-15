@@ -1,11 +1,9 @@
 SPI Controller Class 
 ========================================================
 
-Write Markdown here
-
 .. module:: interfaces.interfaces
+   :noindex:
 
-.. autoclass:: SPIController     
+.. autoclass:: SPIController
    :members: 
-
 

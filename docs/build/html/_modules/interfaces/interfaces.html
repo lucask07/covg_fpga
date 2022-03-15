@@ -1,32 +1,72 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>interfaces.interfaces &mdash; covgDAQ 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="../../index.html" class="icon icon-home"> covgDAQ
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -34,36 +74,92 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../register.html">Register Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Register.html">Register Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Endpoint.html">Endpoint Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../FPGA.html">FPGA Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../I2CController.html">I2C Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../SPIController.html">SPI Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../DDR.html">DDR Memory Class</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">covgDAQ</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
           <li><a href="../index.html">Module code</a> &raquo;</li>
+        
       <li>interfaces.interfaces</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
+            
   <h1>Source code for interfaces.interfaces</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Module for configuring OpalKelly XEM7310</span>
 <span class="sd">and use it as an I2C controller, SPI controller, and Serial LVDS controller.</span>
@@ -83,7 +179,7 @@
 <span class="kn">import</span> <span class="nn">copy</span>
 
 
-<div class="viewcode-block" id="Register"><a class="viewcode-back" href="../../register.html#interfaces.interfaces.Register">[docs]</a><span class="k">class</span> <span class="nc">Register</span><span class="p">:</span>
+<div class="viewcode-block" id="Register"><a class="viewcode-back" href="../../Register.html#interfaces.interfaces.Register">[docs]</a><span class="k">class</span> <span class="nc">Register</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for internal registers on a device.</span>
 
 <span class="sd">    Attributes</span>
@@ -98,11 +194,6 @@
 <span class="sd">        Index of the LSB in the register.</span>
 <span class="sd">    bit_width : int</span>
 <span class="sd">        Width of the register in bits.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    get_chip_registers(sheet, workbook_path=None)</span>
-<span class="sd">        Returns a dictionary of Registers from a page in an Excel spreadsheet.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">default</span><span class="p">,</span> <span class="n">bit_index_high</span><span class="p">,</span> <span class="n">bit_index_low</span><span class="p">,</span> <span class="n">bit_width</span><span class="p">):</span>
@@ -121,7 +212,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="Register.get_chip_registers"><a class="viewcode-back" href="../../register.html#interfaces.interfaces.Register.get_chip_registers">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Register.get_chip_registers"><a class="viewcode-back" href="../../Register.html#interfaces.interfaces.Register.get_chip_registers">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_chip_registers</span><span class="p">(</span><span class="n">sheet</span><span class="p">,</span> <span class="n">workbook_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a dictionary of Registers from a page in an Excel spreadsheet.&quot;&quot;&quot;</span>
 
@@ -151,7 +242,7 @@
         <span class="k">return</span> <span class="n">reg_dict</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">Endpoint</span><span class="p">:</span>
+<div class="viewcode-block" id="Endpoint"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint">[docs]</a><span class="k">class</span> <span class="nc">Endpoint</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for Opal Kelly endpoints on the FPGA.</span>
 
 <span class="sd">    Attributes</span>
@@ -175,18 +266,6 @@
 <span class="sd">        Whether to increment the bits when incrementing the endpoint.</span>
 <span class="sd">    gen_address : bool</span>
 <span class="sd">        Whether to increment the address when incrementing the endpoint.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    update_endpoints_from_defines(ep_defines_path=None)</span>
-<span class="sd">        Return and store Endpoints in ep_defines.v in endpoints_from_defines.</span>
-<span class="sd">    get_chip_endpoints(chip_name)</span>
-<span class="sd">        Return the dictionary of Endpoints for a specific chip or group.</span>
-<span class="sd">    increment_endpoints(endpoints_dict)</span>
-<span class="sd">        Increment all Endpoints in endpoints_dict according to their gen_bit</span>
-<span class="sd">        and gen_address values.</span>
-<span class="sd">    excel_to_defines(excel_path, defines_path, sheet=0)</span>
-<span class="sd">        Convert an Excel spreadsheet of endpoint definitions to Verilog.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">endpoints_from_defines</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -216,7 +295,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">False</span>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Endpoint.update_endpoints_from_defines"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.update_endpoints_from_defines">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">update_endpoints_from_defines</span><span class="p">(</span><span class="n">ep_defines_path</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Store and return a dictionary of Endpoints for each chip in ep_defines.v.</span>
 
@@ -391,9 +470,9 @@
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;No collisions found.&#39;</span><span class="p">)</span>
 
         <span class="c1"># If the list and set match length, no duplicates</span>
-        <span class="k">return</span> <span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span>
+        <span class="k">return</span> <span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Endpoint.get_chip_endpoints"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.get_chip_endpoints">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">get_chip_endpoints</span><span class="p">(</span><span class="n">chip_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a copy of the dictionary of Endpoints for a specific chip or group.&quot;&quot;&quot;</span>
 
@@ -406,17 +485,17 @@
         <span class="c1"># endpoints affected by the increment, only future instantiations.</span>
         <span class="c1"># Using deepcopy() ensures that any dictionaries inside the dictionary</span>
         <span class="c1"># we copy also get copied, not left as references.</span>
-        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">chip_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">chip_name</span><span class="p">))</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Endpoint.increment_endpoints"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.increment_endpoints">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">increment_endpoints</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Increment all Endpoints in endpoints_dict.</span>
 
 <span class="sd">        Use each Endpoint&#39;s gen_bit and gen_addr values to determine whether to</span>
 <span class="sd">        increment bits and addresses, respectively.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        endpoints_dict : dict</span>
 <span class="sd">            The dict of Endpoints to increment.</span>
 <span class="sd">        in_place : bool</span>
@@ -444,14 +523,14 @@
                 <span class="c1"># Increment the address by 1</span>
                 <span class="n">endpoint</span><span class="o">.</span><span class="n">address</span> <span class="o">+=</span> <span class="mi">1</span>
 
-        <span class="k">return</span> <span class="n">endpoints_dict</span>
+        <span class="k">return</span> <span class="n">endpoints_dict</span></div>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Endpoint.excel_to_defines"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.excel_to_defines">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">excel_to_defines</span><span class="p">(</span><span class="n">excel_path</span><span class="p">,</span> <span class="n">defines_path</span><span class="p">,</span> <span class="n">sheet</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert an Excel spreadsheet of endpoint definitions to Verilog.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        excel_path : str</span>
 <span class="sd">            The path to the Excel spreadsheet to convert.</span>
 <span class="sd">        defines_path : str</span>
@@ -469,7 +548,7 @@
         <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sheet_data</span><span class="p">[</span><span class="s1">&#39;Generated Line&#39;</span><span class="p">])</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">defines_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">text</span>
+        <span class="k">return</span> <span class="n">text</span></div></div>
 
 
 <span class="k">def</span> <span class="nf">advance_endpoints_bynum</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
@@ -499,7 +578,7 @@
 <span class="c1"># and other FPGA specific functions.</span>
 
 
-<span class="k">class</span> <span class="nc">FPGA</span><span class="p">:</span>
+<div class="viewcode-block" id="FPGA"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA">[docs]</a><span class="k">class</span> <span class="nc">FPGA</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for the Opal Kelly FPGA itself.</span>
 
 <span class="sd">    Attributes</span>
@@ -510,11 +589,6 @@
 <span class="sd">        Opal Kelly API connection to the FPGA.</span>
 <span class="sd">    device_info : ok.okTDeviceInfo</span>
 <span class="sd">        General information about the FPGA.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    init_device()</span>
-<span class="sd">        Initialize the FPGA for use.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># TODO: change to complete bitfile when Verilog is combined</span>
@@ -527,7 +601,7 @@
         <span class="c1"># I don&#39;t know why, but uncommenting this makes things fail</span>
         <span class="k">return</span>
 
-    <span class="k">def</span> <span class="nf">init_device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.init_device"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.init_device">[docs]</a>    <span class="k">def</span> <span class="nf">init_device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Initialize the FPGA for use and print device information.</span>
 
 <span class="sd">        Connect to the FPGA and load the bitfile. Return False on any errors.</span>
@@ -570,9 +644,9 @@
             <span class="k">return</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FrontPanel support is available.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
 
-    <span class="k">def</span> <span class="nf">read_pipe_out</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">data_len</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.read_pipe_out"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.read_pipe_out">[docs]</a>    <span class="k">def</span> <span class="nf">read_pipe_out</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">data_len</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the filled buffer and error code after reading an OK PipeOut.</span>
 <span class="sd">            data_len is length in bytes (must be multiple of 16)</span>
 <span class="sd">            returns: bytearray; error code</span>
@@ -583,24 +657,24 @@
 
         <span class="k">if</span> <span class="p">(</span><span class="n">e</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">):</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Error code </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">buf</span><span class="p">,</span> <span class="n">e</span>
+        <span class="k">return</span> <span class="n">buf</span><span class="p">,</span> <span class="n">e</span></div>
 
-    <span class="k">def</span> <span class="nf">set_wire</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.set_wire"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.set_wire">[docs]</a>    <span class="k">def</span> <span class="nf">set_wire</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="mh">0xFFFFFFFF</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the error code after setting an OK WireIn value.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;set_wire(address=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">address</span><span class="p">)</span><span class="si">}</span><span class="s1">, value=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s1">, mask=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
         <span class="n">error_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">SetWireInValue</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span>
-        <span class="k">return</span> <span class="n">error_code</span>
+        <span class="k">return</span> <span class="n">error_code</span></div>
 
-    <span class="k">def</span> <span class="nf">read_wire</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.read_wire"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.read_wire">[docs]</a>    <span class="k">def</span> <span class="nf">read_wire</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the read data after reading an OK WireOut.&quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireOuts</span><span class="p">()</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">GetWireOutValue</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">GetWireOutValue</span><span class="p">(</span><span class="n">address</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.set_endpoint"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.set_endpoint">[docs]</a>    <span class="k">def</span> <span class="nf">set_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set all bits in an Endpoint high.&quot;&quot;&quot;</span>
 
         <span class="n">mask</span> <span class="o">=</span> <span class="n">gen_mask</span><span class="p">(</span>
@@ -609,9 +683,9 @@
             <span class="nb">print</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;set_endpoint(address=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">)</span><span class="si">}</span><span class="s1">, value=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="si">}</span><span class="s1">, mask=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">SetWireInValue</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>  <span class="c1"># set</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">clear_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.clear_endpoint"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.clear_endpoint">[docs]</a>    <span class="k">def</span> <span class="nf">clear_endpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set all bits in an Endpoint low.&quot;&quot;&quot;</span>
 
         <span class="n">mask</span> <span class="o">=</span> <span class="n">gen_mask</span><span class="p">(</span>
@@ -620,9 +694,9 @@
             <span class="nb">print</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;clear_endpoint(address=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">)</span><span class="si">}</span><span class="s1">, value=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s1">, mask=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">SetWireInValue</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="mh">0x0000</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>  <span class="c1"># clear</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">toggle_low</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.toggle_low"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.toggle_low">[docs]</a>    <span class="k">def</span> <span class="nf">toggle_low</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Toggle all bits in an Endpoint low then back to high.&quot;&quot;&quot;</span>
 
         <span class="n">mask</span> <span class="o">=</span> <span class="n">gen_mask</span><span class="p">(</span>
@@ -631,9 +705,9 @@
             <span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="mh">0x0000</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>  <span class="c1"># toggle low</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">SetWireInValue</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>   <span class="c1"># back high</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">toggle_high</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.toggle_high"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.toggle_high">[docs]</a>    <span class="k">def</span> <span class="nf">toggle_high</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Toggle all bits in an Endpoint high then back to low.&quot;&quot;&quot;</span>
 
         <span class="n">mask</span> <span class="o">=</span> <span class="n">gen_mask</span><span class="p">(</span>
@@ -641,9 +715,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">SetWireInValue</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">mask</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>  <span class="c1"># toggle high</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">SetWireInValue</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="mh">0x0000</span><span class="p">,</span> <span class="n">mask</span><span class="p">)</span>   <span class="c1"># back low</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireIns</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">send_trig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.send_trig"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.send_trig">[docs]</a>    <span class="k">def</span> <span class="nf">send_trig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the error code after activating an OK TriggerIn Endpoint.</span>
 
 <span class="sd">        Expects a single bit, not yet implement for multiple bits and will only</span>
@@ -651,29 +725,29 @@
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># print(f&#39;send_trig(address={hex(ep_bit.address)},bit={ep_bit.bit_index_low})&#39;)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">ep_bit</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">ep_bit</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">read_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.read_ep"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.read_ep">[docs]</a>    <span class="k">def</span> <span class="nf">read_ep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ep_bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the error code after reading an OK WireOut Endpoint.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateWireOuts</span><span class="p">()</span>
         <span class="n">read_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">GetWireOutValue</span><span class="p">(</span><span class="n">ep_bit</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">read_out</span>
+        <span class="k">return</span> <span class="n">read_out</span></div>
 
     <span class="c1"># def get_pll_freq(self, output):</span>
     <span class="c1">#     f = self.pll.GetOutputFrequency(output)</span>
     <span class="c1">#     print(&#39;Pll f = {} [MHz]&#39;.format(f))</span>
     <span class="c1">#     return f</span>
 
-    <span class="k">def</span> <span class="nf">get_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.get_time"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.get_time">[docs]</a>    <span class="k">def</span> <span class="nf">get_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the total time from the FPGA since initializing the bitfile.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">send_trig</span><span class="p">(</span><span class="n">Endpoint</span><span class="p">(</span><span class="mh">0x40</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">low_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_wire</span><span class="p">(</span><span class="mh">0x25</span><span class="p">)</span>
         <span class="n">high_end</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_wire</span><span class="p">(</span><span class="mh">0x26</span><span class="p">)</span>
         <span class="n">total_time</span> <span class="o">=</span> <span class="p">(</span><span class="n">high_end</span> <span class="o">&lt;&lt;</span> <span class="mi">32</span> <span class="o">|</span> <span class="n">low_end</span><span class="p">)</span>
         <span class="n">total_time</span> <span class="o">/=</span> <span class="mi">200000000</span>
-        <span class="k">return</span> <span class="n">total_time</span>
+        <span class="k">return</span> <span class="n">total_time</span></div>
 
-    <span class="k">def</span> <span class="nf">get_available_endpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.get_available_endpoints"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.get_available_endpoints">[docs]</a>    <span class="k">def</span> <span class="nf">get_available_endpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return a list of available OK endpoints.&quot;&quot;&quot;</span>
 
         <span class="c1"># PipeIns (Includes Block-Throttled) [0x80:0x9F] return ??? if the endpoint is not there</span>
@@ -711,31 +785,31 @@
                 <span class="n">pipe_outs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">hex</span><span class="p">(</span><span class="n">offset</span> <span class="o">+</span> <span class="mh">0xa0</span><span class="p">))</span>
 
         <span class="n">available_endpoints</span> <span class="o">=</span> <span class="p">[</span><span class="n">pipe_ins</span><span class="p">,</span> <span class="n">pipe_outs</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">available_endpoints</span>
+        <span class="k">return</span> <span class="n">available_endpoints</span></div>
 
-    <span class="k">def</span> <span class="nf">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.set_wire_bit"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.set_wire_bit">[docs]</a>    <span class="k">def</span> <span class="nf">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set a single bit to 1 in a OpalKelly wire in.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;set_wire_bit(address=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">address</span><span class="p">)</span><span class="si">}</span><span class="s1">,value=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">)</span><span class="si">}</span><span class="s1">,mask=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_wire</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_wire</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.clear_wire_bit"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.clear_wire_bit">[docs]</a>    <span class="k">def</span> <span class="nf">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Clear a single bit to 0 in a OpalKelly wire in.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s1">&#39;clear_wire_bit(address=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="n">address</span><span class="p">)</span><span class="si">}</span><span class="s1">,value=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">)</span><span class="si">}</span><span class="s1">,mask=</span><span class="si">{</span><span class="nb">hex</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_wire</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_wire</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">read_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bit</span><span class="p">):</span>
+<div class="viewcode-block" id="FPGA.read_wire_bit"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA.read_wire_bit">[docs]</a>    <span class="k">def</span> <span class="nf">read_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">bit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read a single bit in a OpalKelly wire in.&quot;&quot;&quot;</span>
         <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_wire</span><span class="p">(</span><span class="n">address</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">value</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">))</span> <span class="o">&gt;&gt;</span> <span class="n">bit</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">value</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">bit</span><span class="p">))</span> <span class="o">&gt;&gt;</span> <span class="n">bit</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">I2CController</span><span class="p">:</span>
+<div class="viewcode-block" id="I2CController"><a class="viewcode-back" href="../../I2CController.html#interfaces.interfaces.I2CController">[docs]</a><span class="k">class</span> <span class="nc">I2CController</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for controllers on the FPGA using I2C protocol.</span>
 
 <span class="sd">    Attributes</span>
@@ -748,23 +822,6 @@
 <span class="sd">        FPGA instance this controller uses to communicate.</span>
 <span class="sd">    endpoints : dict</span>
 <span class="sd">        Endpoints on the FPGA this controller uses to communicate.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    create_chips(cls, fpga, addr_pins, endpoints)</span>
-<span class="sd">        Class method. Instantiate a number of new I2C chips.</span>
-<span class="sd">    i2c_configure(data_length, starts, stops, preamble)</span>
-<span class="sd">        Configure the buffer for the next transmission.</span>
-<span class="sd">    i2c_transmit(data, data_length)</span>
-<span class="sd">        Send data along the SCL and SDA lines.</span>
-<span class="sd">    i2c_receive(data_length, results=&#39;wire&#39;)</span>
-<span class="sd">        Take in data from the SCL and SDA lines.</span>
-<span class="sd">    i2c_write_long(devAddr, regAddr, data_length, data)</span>
-<span class="sd">        Send a write command with given data to regAddr on devAddr.</span>
-<span class="sd">    i2c_read_long(devAddr, regAddr, data_length)</span>
-<span class="sd">        Read data_length bytes from regAddr on devAddr.</span>
-<span class="sd">    reset_device()</span>
-<span class="sd">        Reset the I2C controller using an OK TriggerIn.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">I2C_MAX_TIMEOUT_MS</span> <span class="o">=</span> <span class="mi">50</span>
@@ -775,14 +832,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">addr_pins</span> <span class="o">=</span> <span class="n">addr_pins</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span> <span class="o">=</span> <span class="n">endpoints</span>
 
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="I2CController.create_chips"><a class="viewcode-back" href="../../I2CController.html#interfaces.interfaces.I2CController.create_chips">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">create_chips</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fpga</span><span class="p">,</span> <span class="n">addr_pins</span><span class="p">,</span> <span class="n">endpoints</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Instantiate a number of new I2C chips.</span>
 
 <span class="sd">        The FPGA and endpoints will be the same for all instantiated chips.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        fpga : FPGA</span>
 <span class="sd">            The fpga instance for the chip to connect with.</span>
 <span class="sd">        addr_pins : list</span>
@@ -794,7 +851,7 @@
 <span class="sd">            A list of the newly instantiated chips in the same order addr_pins was given in.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">addr_pins</span><span class="o">=</span><span class="n">addr</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">endpoints</span><span class="p">)</span> <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">addr_pins</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">addr_pins</span><span class="o">=</span><span class="n">addr</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">endpoints</span><span class="p">)</span> <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">addr_pins</span><span class="p">]</span></div>
 
 
     <span class="c1"># STARTS - Defines the preamble bytes after which a start bit is</span>
@@ -816,7 +873,7 @@
 
     <span class="c1"># from the HDL</span>
 
-    <span class="k">def</span> <span class="nf">i2c_configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_length</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">stops</span><span class="p">,</span> <span class="n">preamble</span><span class="p">):</span>
+<div class="viewcode-block" id="I2CController.i2c_configure"><a class="viewcode-back" href="../../I2CController.html#interfaces.interfaces.I2CController.i2c_configure">[docs]</a>    <span class="k">def</span> <span class="nf">i2c_configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_length</span><span class="p">,</span> <span class="n">starts</span><span class="p">,</span> <span class="n">stops</span><span class="p">,</span> <span class="n">preamble</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure the buffer for the next transmission.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">data_length</span> <span class="o">&gt;</span> <span class="mi">7</span><span class="p">:</span>
@@ -832,9 +889,9 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">data_length</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="p">[</span><span class="s1">&#39;m_pBuf&#39;</span><span class="p">][</span><span class="mi">4</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">preamble</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="p">[</span><span class="s1">&#39;m_nDataStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">data_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="p">[</span><span class="s1">&#39;m_nDataStart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">data_length</span></div>
 
-    <span class="k">def</span> <span class="nf">i2c_transmit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data_length</span><span class="p">):</span>
+<div class="viewcode-block" id="I2CController.i2c_transmit"><a class="viewcode-back" href="../../I2CController.html#interfaces.interfaces.I2CController.i2c_transmit">[docs]</a>    <span class="k">def</span> <span class="nf">i2c_transmit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">data_length</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Send data along the SCL and SDA lines.&quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="p">[</span><span class="s1">&#39;m_pBuf&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_length</span>
@@ -866,9 +923,9 @@
                 <span class="k">return</span> <span class="kc">True</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Timeout error in transmit&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Timeout error in transmit&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">i2c_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_length</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="s1">&#39;wire&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="I2CController.i2c_receive"><a class="viewcode-back" href="../../I2CController.html#interfaces.interfaces.I2CController.i2c_receive">[docs]</a>    <span class="k">def</span> <span class="nf">i2c_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_length</span><span class="p">,</span> <span class="n">results</span><span class="o">=</span><span class="s1">&#39;wire&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Take in data from the SCL and SDA lines.&quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c</span><span class="p">[</span><span class="s1">&#39;m_pBuf&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">|=</span> <span class="mh">0x80</span>
@@ -926,7 +983,7 @@
                     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">buf</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">4</span><span class="p">])[</span><span class="mi">0</span><span class="p">:</span><span class="n">data_length</span><span class="p">]</span>
             <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Timeout Exception in Rx&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Timeout Exception in Rx&#39;</span><span class="p">)</span></div>
 
     <span class="c1"># def i2c_write8(self, devAddr, regAddr, data_length, data):</span>
 
@@ -934,14 +991,14 @@
     <span class="c1">#     self.i2c_configure(2, 0x00, 0x00, preamble)</span>
     <span class="c1">#     return self.i2c_transmit(data, data_length)</span>
 
-    <span class="k">def</span> <span class="nf">i2c_write_long</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">devAddr</span><span class="p">,</span> <span class="n">regAddr</span><span class="p">,</span> <span class="n">data_length</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="I2CController.i2c_write_long"><a class="viewcode-back" href="../../I2CController.html#interfaces.interfaces.I2CController.i2c_write_long">[docs]</a>    <span class="k">def</span> <span class="nf">i2c_write_long</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">devAddr</span><span class="p">,</span> <span class="n">regAddr</span><span class="p">,</span> <span class="n">data_length</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Send a write command with given data to regAddr on devAddr.</span>
 
 <span class="sd">        regAddr must be given in a list.&quot;&quot;&quot;</span>
 
         <span class="n">preamble</span> <span class="o">=</span> <span class="p">[</span><span class="n">devAddr</span> <span class="o">&amp;</span> <span class="mh">0xfe</span><span class="p">]</span> <span class="o">+</span> <span class="n">regAddr</span>  <span class="c1"># + data</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c_configure</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">preamble</span><span class="p">),</span> <span class="mh">0x00</span><span class="p">,</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">preamble</span><span class="p">),</span> <span class="n">preamble</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_transmit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_length</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_transmit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">data_length</span><span class="p">)</span></div>
 
     <span class="c1"># Sequence is</span>
     <span class="c1"># [START] DEV_ADDR(W) REG_ADDR [START] DEV_ADDR(R) VALUE</span>
@@ -963,12 +1020,17 @@
     <span class="c1"># Sequence is</span>
     <span class="c1"># [START] DEV_ADDR(W) REG_ADDR [START] DEV_ADDR(R) VALUE</span>
     <span class="c1"># LJK - this command does not execute OK API calls</span>
-    <span class="k">def</span> <span class="nf">i2c_read_long</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">devAddr</span><span class="p">,</span> <span class="n">regAddr</span><span class="p">,</span> <span class="n">data_length</span><span class="p">):</span>
+<div class="viewcode-block" id="I2CController.i2c_read_long"><a class="viewcode-back" href="../../I2CController.html#interfaces.interfaces.I2CController.i2c_read_long">[docs]</a>    <span class="k">def</span> <span class="nf">i2c_read_long</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">devAddr</span><span class="p">,</span> <span class="n">regAddr</span><span class="p">,</span> <span class="n">data_length</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read data_length bytes from regAddr on devAddr.</span>
 
-<span class="sd">        devAddr : 8 bit address (don&#39;t set the read bit (LSB) since this is done in this function)</span>
-<span class="sd">        regAddr:  written to device (this is a list and must be even if length 1)</span>
-<span class="sd">        data_length : number of bytes expected to receive</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        devAddr : int</span>
+<span class="sd">            8 bit address (don&#39;t set the read bit (LSB) since this is done in this function)</span>
+<span class="sd">        regAddr : int</span>
+<span class="sd">            Written to device (this is a list and must be even if length 1)</span>
+<span class="sd">        data_length : int</span>
+<span class="sd">            Number of bytes expected to receive</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">preamble</span> <span class="o">=</span> <span class="p">[</span><span class="n">devAddr</span> <span class="o">&amp;</span> <span class="mh">0xfe</span><span class="p">]</span> <span class="o">+</span> <span class="n">regAddr</span> <span class="o">+</span> <span class="p">[</span><span class="n">devAddr</span> <span class="o">|</span> <span class="mh">0x01</span><span class="p">]</span>
@@ -977,14 +1039,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c_configure</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">preamble</span><span class="p">),</span> <span class="n">start_positions</span><span class="p">,</span> <span class="mh">0x00</span><span class="p">,</span> <span class="n">preamble</span><span class="p">)</span>
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_receive</span><span class="p">(</span><span class="n">data_length</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span></div>
 
-    <span class="k">def</span> <span class="nf">reset_device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="I2CController.reset_device"><a class="viewcode-back" href="../../I2CController.html#interfaces.interfaces.I2CController.reset_device">[docs]</a>    <span class="k">def</span> <span class="nf">reset_device</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset the I2C controller using an OK TriggerIn.&quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div></div>
 
 
 <span class="k">class</span> <span class="nc">TCA9555</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
@@ -1003,15 +1065,6 @@
 <span class="sd">    addr_pins : int</span>
 <span class="sd">        3 LSBs of the 7-bit device address formed alongside the address header</span>
 <span class="sd">        used to differentiate between different instances of the TCA9555 chip.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    configure_pins(data)</span>
-<span class="sd">        Configure the chip&#39;s pins as inputs (1&#39;s) or outputs (0&#39;s).</span>
-<span class="sd">    write(data, register_name=&#39;OUTPUT&#39;, mask=0xffff)</span>
-<span class="sd">        Write 2 bytes of data to the pins.</span>
-<span class="sd">    read(register_name=&quot;INPUT&quot;)</span>
-<span class="sd">        Read 2 bytes of data from the pins.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ADDRESS_HEADER</span> <span class="o">=</span> <span class="mb">0b0100_0000</span>
@@ -1071,19 +1124,6 @@
 <span class="sd">    addr_pins : int</span>
 <span class="sd">        3 LSBs of the 7-bit device address formed alongside the address header</span>
 <span class="sd">        used to differentiate between different instances of the TCA9555 chip.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    write(data, word_address=0x00, num_bytes=None)</span>
-<span class="sd">        Write data into memory at word_address.</span>
-<span class="sd">    read(word_address=0x00, words_read=1)</span>
-<span class="sd">        Return words_read words of data from memory at word_address.</span>
-<span class="sd">    get_serial_number()</span>
-<span class="sd">        Return the unique 32-serial number stored in memory on the chip.</span>
-<span class="sd">    get_manufacturer_code()</span>
-<span class="sd">        Return the chip&#39;s manufacturer code.</span>
-<span class="sd">    get_device_code()</span>
-<span class="sd">        Return the chip&#39;s device code.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ADDRESS_HEADER</span> <span class="o">=</span> <span class="mb">0b10100000</span>
@@ -1179,47 +1219,6 @@
 <span class="sd">    addr_pins : int</span>
 <span class="sd">        3 LSBs of the 7-bit device address formed alongside the address header</span>
 <span class="sd">        used to differentiate between different instances of the TCA9555 chip.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    write(data, register_name=&#39;DAC_DATA&#39;)</span>
-<span class="sd">        Write data to any register on the chip.</span>
-<span class="sd">    read(register_name=&#39;DAC_DATA&#39;)</span>
-<span class="sd">        Return data from any register on the chip.</span>
-<span class="sd">    write_voltage(voltage)</span>
-<span class="sd">        Write a voltage output from the DAC.</span>
-<span class="sd">    enable_internal_reference()</span>
-<span class="sd">        Enable the DAC&#39;s internal reference.</span>
-<span class="sd">    set_gain(gain)</span>
-<span class="sd">        Set the DAC&#39;s output gain value.</span>
-<span class="sd">    get_gain()</span>
-<span class="sd">        Return the DAC&#39;s current output gain value.</span>
-<span class="sd">    config_func(function_name)</span>
-<span class="sd">        Configure the function generator.</span>
-<span class="sd">    start_func()</span>
-<span class="sd">        Start function generation.</span>
-<span class="sd">    stop_func()</span>
-<span class="sd">        Stop function generation.</span>
-<span class="sd">    config_margins(margin_high=None, margin_low=None)</span>
-<span class="sd">        Configure margin high and low values.</span>
-<span class="sd">    config_step(step)</span>
-<span class="sd">        Configure the number of bits to step through.</span>
-<span class="sd">    config_rate(rate)</span>
-<span class="sd">        Configure the rate to step through each bit.</span>
-<span class="sd">    reset()</span>
-<span class="sd">        Reset the chip using a software reset.</span>
-<span class="sd">    lock()</span>
-<span class="sd">        Lock the registers of the device so they cannot be changed.</span>
-<span class="sd">    unlock()</span>
-<span class="sd">        Unlock the registers of the device so they can be changed again.</span>
-<span class="sd">    power_up()</span>
-<span class="sd">        Power up the DAC output.</span>
-<span class="sd">    power_down_10k()</span>
-<span class="sd">        Power down the DAC output to 10K ohms.</span>
-<span class="sd">    power_down_high_impedance()</span>
-<span class="sd">        Power down the DAC output to high impedance (default).</span>
-<span class="sd">    get_id()</span>
-<span class="sd">        Return the device ID and version ID as one integer.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">ADDRESS_HEADER</span> <span class="o">=</span> <span class="mb">0b10010000</span>
@@ -1492,39 +1491,6 @@
 <span class="sd">        Value of the CTRL register in the Wishbone.</span>
 <span class="sd">    registers : dict</span>
 <span class="sd">        Name-Register pairs for the internal registers of the Wishbone.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)</span>
-<span class="sd">        Class method. Instantiate a number of new chips.</span>
-<span class="sd">    wb_send_cmd(command)</span>
-<span class="sd">        Send a command to the Wishbone.</span>
-<span class="sd">    wb_set_address(address)</span>
-<span class="sd">        Set the address of the register we interact with in the Wishbone.</span>
-<span class="sd">    wb_write(data)</span>
-<span class="sd">        Write up to 30 bytes of data to the currently selected register.</span>
-<span class="sd">    wb_read()</span>
-<span class="sd">        Return the data stored in the currently selected register.</span>
-<span class="sd">    wb_go()</span>
-<span class="sd">        Initiate a SPI transmission.</span>
-<span class="sd">    select_slave(slave_address)</span>
-<span class="sd">        Select a slave device.</span>
-<span class="sd">    set_divider(divider)</span>
-<span class="sd">        Set the value of the Wishbone&#39;s DIVIDER register.</span>
-<span class="sd">    set_frequency(frequency)</span>
-<span class="sd">        Set the frequency of SCL.</span>
-<span class="sd">    write(data, register=0)</span>
-<span class="sd">        Write data on the SCL and SDA lines.</span>
-<span class="sd">    read(register=0)</span>
-<span class="sd">        Return data from the selected data receive register.</span>
-<span class="sd">    configure_master_bin(data)</span>
-<span class="sd">        Set the value of the Wishbone&#39;s CTRL register directly.</span>
-<span class="sd">    configure_master(ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0)</span>
-<span class="sd">        Set the Wishbone&#39;s CTRL register using several arguments.</span>
-<span class="sd">    get_master_configuration()</span>
-<span class="sd">        Return the current configuration of CTRL register.</span>
-<span class="sd">    reset_master()</span>
-<span class="sd">        Reset the Wishbone Master and SPI Core.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">WB_SET_ADDRESS</span> <span class="o">=</span> <span class="mh">0x80000000</span>  <span class="c1"># These 3 are from the SPI core manual</span>
@@ -1765,12 +1731,20 @@
 <div class="viewcode-block" id="SPIController.configure_master"><a class="viewcode-back" href="../../SPIController.html#interfaces.interfaces.SPIController.configure_master">[docs]</a>    <span class="k">def</span> <span class="nf">configure_master</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ASS</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">IE</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">LSB</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Tx_NEG</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">Rx_NEG</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">CHAR_LEN</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the Wishbone&#39;s CTRL register using several arguments.</span>
 
-<span class="sd">        ASS: Automatic Slave Select</span>
-<span class="sd">        IE: Set interrupt output active after a transfer is finished</span>
-<span class="sd">        LSB: Send LSB first</span>
-<span class="sd">        Tx_NEG: Change output signal on falling edge of SCLK</span>
-<span class="sd">        Rx_NEG: Latch input signal on falling edge of SCLK</span>
-<span class="sd">        CHAR_LEN: Number of bits transmitted per transfer (up to 64).</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ASS : bool or int</span>
+<span class="sd">            Automatic Slave Select</span>
+<span class="sd">        IE : bool or int</span>
+<span class="sd">            Set interrupt output active after a transfer is finished</span>
+<span class="sd">        LSB : bool or int</span>
+<span class="sd">            Send LSB first</span>
+<span class="sd">        Tx_NEG : bool or int</span>
+<span class="sd">            Change output signal on falling edge of SCLK</span>
+<span class="sd">        Rx_NEG : bool or int</span>
+<span class="sd">            Latch input signal on falling edge of SCLK</span>
+<span class="sd">        CHAR_LEN : bool or int</span>
+<span class="sd">            Number of bits transmitted per transfer (up to 64).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ASS&#39;</span><span class="p">:</span> <span class="n">ASS</span><span class="p">,</span> <span class="s1">&#39;IE&#39;</span><span class="p">:</span> <span class="n">IE</span><span class="p">,</span> <span class="s1">&#39;LSB&#39;</span><span class="p">:</span> <span class="n">LSB</span><span class="p">,</span>
@@ -1814,7 +1788,7 @@
                                  <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;HOST_FPGA&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">SPIFifoDriven</span><span class="p">():</span>
+<div class="viewcode-block" id="SPIFifoDriven"><a class="viewcode-back" href="../../SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven">[docs]</a><span class="k">class</span> <span class="nc">SPIFifoDriven</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;Class for SPI controllers on the FPGA driven by a FIFO.</span>
 
 <span class="sd">    Attributes</span>
@@ -1831,23 +1805,6 @@
 <span class="sd">        Name to select value dictionary for source data MUX.</span>
 <span class="sd">    current_data_mux : str</span>
 <span class="sd">        Name of the current MUX data source.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    create_chips(cls, fpga, number_of_chips, endpoints=None, master_config=None)</span>
-<span class="sd">        Class method. Instantiate a number of new chips.</span>
-<span class="sd">    filter_select(operation=&#39;set&#39;)</span>
-<span class="sd">        Set whether SPI data comes from filter (&#39;set&#39;) or direct (&#39;clear&#39;).</span>
-<span class="sd">    set_data_mux(source)</span>
-<span class="sd">        Configure the MUX that routes data source to the SPI output.</span>
-<span class="sd">    set_clk_divider(divide_value)</span>
-<span class="sd">        Set clock divider to configure rate of SPI updates.</span>
-<span class="sd">    set_ctrl_reg(reg_value)</span>
-<span class="sd">        Configures the SPI Wishbone control register over the registerBridge.</span>
-<span class="sd">    set_spi_sclk_divide(divide_value)</span>
-<span class="sd">        Configures the SPI Wishbone clock divider register over the registerBridge.</span>
-<span class="sd">    write(data)</span>
-<span class="sd">        Host write 24 bits of data ot the chip over SPI.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">default_data_mux</span> <span class="o">=</span> <span class="p">{</span>
@@ -1872,7 +1829,7 @@
             <span class="c1"># &#39;host&#39; was not in data_mux dict</span>
             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: no &#39;host&#39; in data_mux dict&quot;</span><span class="p">)</span>
 
-    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="SPIFifoDriven.create_chips"><a class="viewcode-back" href="../../SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.create_chips">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">create_chips</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">fpga</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">master_config</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Instantiate a number of new chips.</span>
 
@@ -1922,9 +1879,9 @@
             <span class="c1"># Increment custom dictionary</span>
             <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">chips</span>
+        <span class="k">return</span> <span class="n">chips</span></div>
 
-    <span class="k">def</span> <span class="nf">filter_select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;set&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="SPIFifoDriven.filter_select"><a class="viewcode-back" href="../../SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.filter_select">[docs]</a>    <span class="k">def</span> <span class="nf">filter_select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operation</span><span class="o">=</span><span class="s1">&#39;set&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set whether SPI data comes from filter (&#39;set&#39;) or direct (&#39;clear&#39;)</span>
 
 <span class="sd">        Direct comes from the spi_fifo_driven data.</span>
@@ -1937,13 +1894,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FILTER_SEL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FILTER_SEL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Incorrect operation: </span><span class="si">{</span><span class="n">operation</span><span class="si">}</span><span class="s1"> for filter select </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Incorrect operation: </span><span class="si">{</span><span class="n">operation</span><span class="si">}</span><span class="s1"> for filter select </span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_data_mux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
+<div class="viewcode-block" id="SPIFifoDriven.set_data_mux"><a class="viewcode-back" href="../../SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_data_mux">[docs]</a>    <span class="k">def</span> <span class="nf">set_data_mux</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure the MUX that routes data source to the SPI output.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        source : str</span>
 <span class="sd">            See SPIFifoDriven.data_mux dict for options and conversion.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1959,9 +1916,9 @@
                 <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DATA_SEL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DATA_SEL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span>
                            <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_data_mux</span> <span class="o">=</span> <span class="n">source</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_data_mux</span> <span class="o">=</span> <span class="n">source</span></div>
 
-    <span class="k">def</span> <span class="nf">set_clk_divider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">divide_value</span><span class="p">):</span>
+<div class="viewcode-block" id="SPIFifoDriven.set_clk_divider"><a class="viewcode-back" href="../../SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_clk_divider">[docs]</a>    <span class="k">def</span> <span class="nf">set_clk_divider</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">divide_value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set clock divider to configure rate of SPI updates.</span>
 
 <span class="sd">        Tupdate = Tclk * divide_value</span>
@@ -1975,9 +1932,9 @@
 
         <span class="c1"># resets the SPI state machine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_ctrl_reg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_value</span><span class="p">):</span>
+<div class="viewcode-block" id="SPIFifoDriven.set_ctrl_reg"><a class="viewcode-back" href="../../SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_ctrl_reg">[docs]</a>    <span class="k">def</span> <span class="nf">set_ctrl_reg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configures the SPI Wishbone control register over the registerBridge.</span>
 
 <span class="sd">        HDL default is ctrlValue = 16&#39;h3010 (initialized in the HDL)</span>
@@ -1988,9 +1945,9 @@
         <span class="c1"># resets the SPI state machine -- needed since these registers are only</span>
         <span class="c1">#   programmed at startup of the state machine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_spi_sclk_divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">divide_value</span><span class="o">=</span><span class="mh">0x01</span><span class="p">):</span>
+<div class="viewcode-block" id="SPIFifoDriven.set_spi_sclk_divide"><a class="viewcode-back" href="../../SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_spi_sclk_divide">[docs]</a>    <span class="k">def</span> <span class="nf">set_spi_sclk_divide</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">divide_value</span><span class="o">=</span><span class="mh">0x01</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configures the SPI Wishbone clock divider register over the registerBridge.</span>
 
 <span class="sd">        HDL default is 8&#39;h13 (initialized in the HDL)</span>
@@ -2004,16 +1961,16 @@
         <span class="c1"># resets the SPI state machine -- needed since these WishBone</span>
         <span class="c1">#   registers are only programmed at startup of the state machine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;REG_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="SPIFifoDriven.write"><a class="viewcode-back" href="../../SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Host write 24 bits of data to the chip over SPI.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_data_mux</span> <span class="o">!=</span> <span class="s1">&#39;host&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_data_mux</span><span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;HOST_WIRE_IN&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;HOST_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;HOST_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;HOST_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div></div>
 
 
 <span class="k">class</span> <span class="nc">DAC80508</span><span class="p">(</span><span class="n">SPIFifoDriven</span><span class="p">):</span>
@@ -2031,25 +1988,6 @@
 <span class="sd">        Name-Register pairs for the internal registers of the DAC80508.</span>
 <span class="sd">    data_mux : dict</span>
 <span class="sd">        Matches data source names in the MUX to their select values.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    write_chip_reg(register_name, data, mask=0xffff)</span>
-<span class="sd">        Write to any register on the chip.</span>
-<span class="sd">    write_voltage(voltage, outputs=[0, 1, 2, 3, 4, 5, 6, 7], auto_gain=False)</span>
-<span class="sd">        Write the voltage to the outputs of the DAC.</span>
-<span class="sd">    set_config_bin(data, mask=0xffff)</span>
-<span class="sd">        Set the configuration register with a binary number.</span>
-<span class="sd">    set_config(ALM_SEL=0, ALM_EN=0, CRC_EN=0, FSDO=0, DSDO=0, REF_PWDWN=0,</span>
-<span class="sd">               DAC7_PWDWN=0, DAC6_PWDWN=0, DAC5_PWDWN=0, DAC4_PWDWN=0,</span>
-<span class="sd">               DAC3_PWDWN=0, DAC2_PWDWN=0, DAC1_PWDWN=0, DAC0_PWDWN=0)</span>
-<span class="sd">        Set the configuration register using keyword arguments.</span>
-<span class="sd">    set_gain_bin(data, mask=0x01ff)</span>
-<span class="sd">        Set the gain register with a binary value.</span>
-<span class="sd">    set_gain(data, mask=0x01ff)</span>
-<span class="sd">        Set the gain value.</span>
-<span class="sd">    reset()</span>
-<span class="sd">        Soft reset the chip.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">WRITE_OPERATION</span> <span class="o">=</span> <span class="mh">0x000000</span>
@@ -2084,8 +2022,8 @@
     <span class="k">def</span> <span class="nf">write_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">auto_gain</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write the voltage to the outputs of the DAC.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        voltage : int or float</span>
 <span class="sd">            The decimal voltage to write. This will be rounded to a</span>
 <span class="sd">            representable binary value.</span>
@@ -2162,8 +2100,8 @@
     <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">divide_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the gain and reference divider.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        gain : int</span>
 <span class="sd">            The gain for the outputs. 1 or 2.</span>
 <span class="sd">        ouptuts : int or list(int)</span>
@@ -2568,8 +2506,8 @@
     <span class="k">def</span> <span class="nf">setup_sequencer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chan_list</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;FIXED&#39;</span><span class="p">,</span> <span class="s1">&#39;FIXED&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;FIXED&#39;</span><span class="p">)],</span> <span class="n">voltage_range</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lpf</span><span class="o">=</span><span class="mi">376</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Start the sequencer looping through the given channels.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        chan_list : list</span>
 <span class="sd">            Ordered list of channel pairs (A, B) to loop through. Options below.</span>
 <span class="sd">                [0-7]</span>
@@ -2661,12 +2599,8 @@
 <span class="sd">    configures FPGA internal resets</span>
 <span class="sd">    configures chip specific and global enables</span>
 <span class="sd">    Formats data returned from the wire out</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    create_chips(fpga, number_of_chips, endpoints=None)</span>
-<span class="sd">        Static method. Instantiate a given number of new chips.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: add Attributes to docstring</span>
 
     <span class="c1"># the AD7961 does not have internal registers -- just OK endpoints</span>
 
@@ -2806,7 +2740,7 @@
 
 <span class="sd">        Uses the Opal Kelly WireIn (the trigger can&#39;t hold the reset).</span>
 
-<span class="sd">        Arguments:</span>
+<span class="sd">        Parameters</span>
 <span class="sd">        -----------</span>
 <span class="sd">        value : int</span>
 <span class="sd">            value = 1 is reset</span>
@@ -2930,6 +2864,7 @@
 <span class="sd">        * READ_ENABLE</span>
 <span class="sd">        * READ_FG_ENABLE</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># TODO: add Attributes to docstring</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -2982,8 +2917,8 @@
 <span class="sd">        float or int voltage to int digital (binary) code should take place</span>
 <span class="sd">        BEFORE this function.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        amplitude: int</span>
 <span class="sd">            Digital (binary) value of the flat voltage</span>
 
@@ -2999,8 +2934,8 @@
 <div class="viewcode-block" id="DDR3.closest_frequency"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.closest_frequency">[docs]</a>    <span class="k">def</span> <span class="nf">closest_frequency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freq</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Determine closest frequency so the waveform evenly divides into the length of the DDR3</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        freq : float</span>
 <span class="sd">            Desired frequency</span>
 
@@ -3031,8 +2966,8 @@
 <span class="sd">        The conversion from float or int voltage to int digital (binary) code</span>
 <span class="sd">        should take place BEFORE this function.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        amplitude : int</span>
 <span class="sd">            Digital (binary) value of the sine wave.</span>
 <span class="sd">        frequency : float</span>
@@ -3069,8 +3004,8 @@
 <span class="sd">        The conversion from float or int voltage to int digital (binary) code</span>
 <span class="sd">        should take place BEFORE this function.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        start : int</span>
 <span class="sd">            Digital (binary) value to start the ramp at</span>
 <span class="sd">        stop : int</span>
@@ -3104,8 +3039,8 @@
 <span class="sd">        The conversion from float or int voltage to int digital (binary) code</span>
 <span class="sd">        should take place BEFORE this function.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        low : int</span>
 <span class="sd">            Digital (binary) code for the low value of the step.</span>
 <span class="sd">        high : int</span>
@@ -3154,8 +3089,8 @@
 <div class="viewcode-block" id="DDR3.write"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">set_ddr_read</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write a bytearray to the DDR3.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        buf : bytearray</span>
 <span class="sd">            bytearray to write to the DDR</span>
 
@@ -3184,8 +3119,8 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The speed of the write was </span><span class="si">{</span><span class="n">speed_MBs</span><span class="si">}</span><span class="s1"> MB/s&#39;</span><span class="p">)</span>
 
         <span class="c1"># below prepares the HDL into read mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_fifo</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clear_write</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_fifo</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">set_ddr_read</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">set_read</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">block_pipe_return</span><span class="p">,</span> <span class="n">speed_MBs</span></div>
@@ -3234,8 +3169,8 @@
 <div class="viewcode-block" id="DDR3.print_fifo_status"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.print_fifo_status">[docs]</a>    <span class="k">def</span> <span class="nf">print_fifo_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fifo_status</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Print the FIFO status dictionary.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        fifo_status : dict</span>
 <span class="sd">            Dictionary of fifo status.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -3301,8 +3236,8 @@
 <div class="viewcode-block" id="DDR3.read_adc"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.read_adc">[docs]</a>    <span class="k">def</span> <span class="nf">read_adc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;ADC&#39;</span><span class="p">,</span> <span class="n">DEBUG_PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read ADC data.</span>
 
-<span class="sd">        Arguments</span>
-<span class="sd">        ---------</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
 <span class="sd">        sample_size : int</span>
 <span class="sd">            Length of read in bytes. If none uses DDR parameter &#39;sample_size.&#39;</span>
 <span class="sd">        source : str</span>
@@ -3368,8 +3303,8 @@
 <span class="k">def</span> <span class="nf">disp_device</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="n">reg</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Display endpoints and registers for a chip.</span>
 
-<span class="sd">    Arguments</span>
-<span class="sd">    ---------</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
 <span class="sd">    dev : I2CController or SPIController or SPIFifoDriven or AD7961</span>
 <span class="sd">        Chip instance to display information for.</span>
 <span class="sd">    reg : bool</span>
@@ -3391,30 +3326,46 @@
 </pre></div>
 
            </div>
+           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.</p>
-  </div>
+    <p>
+        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

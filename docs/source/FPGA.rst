@@ -1,9 +1,9 @@
-Endpoint Class 
+FPGA Class 
 ========================================================
 
 .. module:: interfaces.interfaces
    :noindex:
 
-.. autoclass:: Endpoint
+.. autoclass:: FPGA
    :members: 
 
