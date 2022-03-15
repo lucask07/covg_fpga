@@ -6,3 +6,4 @@ I2C Controller Class
 
 .. autoclass:: I2CController
    :members: 
+

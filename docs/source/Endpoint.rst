@@ -6,3 +6,4 @@ Endpoint Class
 
 .. autoclass:: Endpoint
    :members: 
+

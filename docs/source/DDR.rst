@@ -6,3 +6,4 @@ DDR Memory Class
 
 .. autoclass:: DDR3
    :members: 
+

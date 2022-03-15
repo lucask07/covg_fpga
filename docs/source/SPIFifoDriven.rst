@@ -6,3 +6,4 @@ SPI FIFO Driven Controller Class
 
 .. autoclass:: SPIFifoDriven
    :members: 
+
