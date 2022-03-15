@@ -14,7 +14,7 @@ import struct
 import time
 from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list, from_voltage, to_voltage
 import copy
-
+import h5py
 
 class Register:
     """Class for internal registers on a device.
@@ -2681,45 +2681,40 @@ class AD7961(ADCDATA):
 
 
 class DDR3():
-    """DDR is striped in groups of 16 bits to 8 channels  (128 bits)
-    Out of the DDR FIFO
-    Input write is 256 bits wide.
-
-    Output read bus is 128 bits wide.
-    Supports up to 8 channels at 16 bits each.
-
-    Into the DDR:
-    FIFO Write side 32 bits (PipeIn), Read side is 256 bits
-    Write: W31-W0:     t0: W31-W0 [MSB]; W63-W32, ... W255-W224
-
-    Out of the DDR:
-    FIFO Write: W255 - W0 : t0 W255 - W128, t1: W127 - W0
-    so:
-    channel 0: 128    + 15:128, W15-W0
-    channel 1: 128+16 + 15:144, 16*1 + 15: 16
-
+    """
     The DDR is divided into 2 buffers. Each buffer has an incoming and outgoing FIFO.
-
     1st buffer:
-        * function generator like data that provides a data-stream to the DACs
-        * write from the host when WRITE_ENABLE is set
-        * read to the DACs when READ_ENABLE is set
+        * Function generator like data that provides a data-stream to the DACs
+        * Write from the host when DAC_WRITE_ENABLE is set (clear dac read and clear adc read and write)
+        * Read to the DACs with set_dac_read()
+        * Striped into groups of 16 bits to 8 channels
+            * 6 AD5453 (14 bits each); 2 DAC80508 (16 bits each); DAC80508 channel data in the MSBs of the AD5453 stream
+        * FIFO: OpalKelly in -> out to DDR [32bits x 1024words = 4096 bytes]
+        * FIFO: DDR in -> DAC data out [out: 256bits x 256 = 8192 bytes]
 
     2nd buffer:
-        * buffering for ADC data.
-        * ADC data writes to the DDR when READ_ENABLE is set
-        * ADC data in DDR can be read to the host when READ_FG_ENABLE is set
+        * Buffering for ADC data (AD7961; ADS8686), DAC outgoing data, timestamps.
+        * ADC data writes to the DDR set_adc_write()
+        * ADC data in DDR can be read to the host with set_adc_read()
+        * The DDR througput is sufficient for 1st buffer reading while reading and writing to the 2nd buffer
+        * FIFO: OpalKelly in -> out to DDR [in: 32bits x 1024words = 4096 bytes]
+        * FIFO: DDR in -> OpalKelly out [256bits x 128 = 4096 bytes] OpalKelly block size is half this.
 
     Expected sequence of operations:
-        1) At startup write pattern for DACs using write_channels()
-        2) set_read() # starts DAC data output to DACs via SPI and ADC data captured into DDR
+        1) At startup write pattern for DACs using write_channels() [set_dac_write(), clear_dac_write() are called within write_channels()]
+        2) set_dac_read() # starts DAC data output to DACs via SPI and then set_adc_write() ADC data captured into DDR
         3) set_adc_read() # allows host to read PipeOut as PipeOut is continuously filled if emptied
+
+    ADC data ordering and saving:
+        * deswizzle()
+        * save_data()
 
     DDR configuration bits:
         * DAC_WRITE_ENABLE
         * DAC_READ_ENABLE
         * ADC_WRITE_ENABLE
         * ADC_TRANSFER_ENABLE
+    
     """
     # TODO: add Attributes to docstring
 
@@ -2733,7 +2728,10 @@ class DDR3():
                            # number of channels that the DDR is striped between (for DACs)
                            'channels': 8,
                            'update_period': 400e-9,  # 2.5 MHz -- requires SCLK ~ 50 MHZ
-                           'port1_index': 0x7f_ff_f8}
+                           'port1_index': 0x7f_ff_f8,
+                           'adc_channels': 8, # number of 2 byte chunks in DDR
+                           'adc_period': 200e-9
+                           } 
 
         # the index is the DDR address that the circular buffer stops at.
         # need to write all the way up to this stoping point otherwise the SPI output will glitch
@@ -2976,19 +2974,17 @@ class DDR3():
         print(f'The speed of the write was {speed_MBs} MB/s')
 
         # below prepares the HDL into read mode
-<<<<<<< HEAD
         self.clear_dac_write()
-=======
-        self.clear_write()
-        self.reset_fifo()
->>>>>>> 76f659ea87f5aba3153f090a6a3d90486e5ce7ae
         if set_ddr_read:
             self.set_dac_read()
             self.set_adc_read()
         return block_pipe_return, speed_MBs
 
     def reset_mig_interface(self):
-        """Reset interface to MIG (DDR address pointers)"""
+        """Reset user interface to the MIG (memory interface generator) 
+            Resets the DDR address pointers for read/write of both buffers
+            (does not reset the MIG controller)
+        """
         self.fpga.send_trig(self.endpoints['UI_RESET'])
 
     def fifo_status(self):
@@ -3124,8 +3120,8 @@ class DDR3():
         self.fpga.send_trig(self.endpoints['ADC_ADDR_RESET'])
 
 
-    def read_adc(self, sample_size=None, source='ADC', DEBUG_PRINT=False):
-        """Read ADC data.
+    def read_adc_block(self, sample_size=None, source='ADC', DEBUG_PRINT=False):
+        """Read ADC (and other) DDR data.
 
         Parameters
         ----------
@@ -3140,6 +3136,12 @@ class DDR3():
         -------
         byearray, int : The data read as a bytearray, The count (or error code)
         read from the OpalKelly interface
+
+        Block size must be a power of two from 16 to 16384
+        will automatically perform multiple transfers to complete the full LENGTH
+        the length must be an integer multiple of 16 for USB3.0
+        and the length must be an Integer multiple of Block Size
+        see https://docs.opalkelly.com/fpsdk/frontpanel-api/ section 3.3.1
         """
 
         if sample_size is None:
@@ -3147,12 +3149,6 @@ class DDR3():
             data_buf = bytearray(data)
         else:
             data_buf = bytearray(sample_size)
-
-        # Block size must be a power of two from 16 to 16384
-        # will automatically perform multiple transfers to complete the full LENGTH
-        # the length must be an integer multiple of 16 for USB3.0
-        # and the length must be an Integer multiple of Block Size
-        # see https://docs.opalkelly.com/fpsdk/frontpanel-api/ section 3.3.1
 
         block_size = self.parameters['BLOCK_SIZE']
         # check block size
@@ -3173,7 +3169,7 @@ class DDR3():
                                                           blockSize=block_size,
                                                           data=data_buf)
         else:
-            print('incorrect source in read_adc')
+            print('Incorrect source in read_adc')
             return -11, -11
 
         if DEBUG_PRINT:
@@ -3233,6 +3229,29 @@ class DDR3():
 
 
     def data_to_names(self, chan_data):
+        """
+        Put deswizzled data into dictionaries with names that match with the data sources.
+        Complete twos complement conversion where necessary
+        Check timestamps for skips 
+        And the constant values for errors
+
+        This supports 2 versions of the FPGA code:
+        'ADC_NO_TIMESTAMPS': DDR data is only the fast ADC. AD7961
+        'TIMESTAMPS': DDR data is numerous. AD7961, AD5453 out, ADS8686, timestamps, readcheck
+
+
+        Arguments
+        ---------
+        chan_data : dict of np.arrays
+            data from reading DDR (minimally processed into 2 byte containers)
+        
+        Returns
+        -------
+        dict of fast adc data (double format @ 5 MSPS)
+        np.array of timestamps
+        dict of DAC output data
+        dict of ADS8686 ADC data (double format @ 1 MSPS)
+        """
 
         if self.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
             adc_data = chan_data
@@ -3242,12 +3261,13 @@ class DDR3():
             ads = np.nan
 
         if self.parameters['data_version'] == 'TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
+            
             # locate the constant value of 0xaa55 and then 0x28ab
             # and ensure this is in the 3rd position
-            c_val_idx = np.nonzero((chan_data[7][:-1] == 0xaa55) & ((chan_data[7][1:] == 0x28ab)))[0][0]
-            if c_val_idx != 3:
-                print('Warning!!')
-                print(f'DDR read constant value is at position = {c_val_idx}; expected 3')
+            # c_val_idx = np.nonzero((chan_data[7][:-1] == 0xaa55) & ((chan_data[7][1:] == 0x28ab)))[0][0]
+            # if c_val_idx != 3:
+            #     print('Warning!!')
+            #     print(f'DDR read constant value is at position = {c_val_idx}; expected 3')
             
             adc_data = {}
             for i in range(4):
@@ -3269,23 +3289,113 @@ class DDR3():
             dac_data[1] = chan_data[4][1::2]
             dac_data[2] = chan_data[5][0::2]
             dac_data[3] = chan_data[5][1::2]
-            # dac channels 4,5 are available but not every sample
+            # dac channels 4,5 are available but not every sample. skip for now. TODO: add channels 4,5
 
             ads = {}
             ads['A'] = twos_comp(chan_data[7][0::5], 16)
             ads['B'] = twos_comp(chan_data[7][1::5], 16)
 
+            # check that the constant values are constant 
             constant_values = {0: 0xaa55, 1: 0x28ab, 2: 0x77bb}
             for i in range(2):
                 if not np.all(read_check[i] == constant_values[i]):
                     print(f'Error in constant value: {constant_values[i]} ')
                     print(f'Number of errors: {np.sum(read_check[i] != constant_values[i])}')
+
+            # check the timestamps for a skip
             unq_time_intervals = np.unique(np.diff(timestamp))
-            # print(f'Timestamp spacing {(timestamp[1] - timestamp[0])*5e-9} [s]')
             if np.size(unq_time_intervals) > 1:
                 print('Warning: Multiple time intervals')
 
-            return adc_data, timestamp, read_check, dac_data, ads
+            return adc_data, timestamp, dac_data, ads
+
+    def save_data(self, data_dir, file_name, num_repeats = 4, blk_multiples = 40):
+        """
+        read and save DDR data to an hdf file 
+
+        Arguments
+        ---------
+        data_dir : string
+            directory for data
+        file_name : string
+            filename to save data (does not append extension).
+        num_repeats : int
+            total data read is 2048 bytes * num_repeats * blk_multiples
+        blk_multiples : int 
+            number of blocks read by adc_read. adc_read is a single OpalKelly API call 
+
+        Returns
+        -------
+        dict of fast adc data (double format @ 5 MSPS)
+        np.array of timestamps
+        dict of DAC output data
+        dict of ADS8686 ADC data (double format @ 1 MSPS)
+
+        """
+        chunk_size = int(self.parameters["BLOCK_SIZE"] * blk_multiples / (self.parameters['adc_channels']*2))  # readings per ADC
+        repeat = 0
+        adc_readings = chunk_size*num_repeats
+        print(f'Anticipated chunk size {chunk_size}')
+        print(f'Reading {adc_readings*2/1024} kB per ADC channel for a total of {adc_readings*self.parameters["adc_period"]*1000} ms of data')
+
+        full_data_name = os.path.join(data_dir, file_name)
+        try:
+            os.remove(full_data_name)
+        except OSError:
+            pass
+
+        self.set_adc_read()  # enable data into the ADC reading FIFO
+        time.sleep(adc_readings*self.parameters['adc_period'])
+
+        # Save ADC DDR data to a file
+        with h5py.File(full_data_name, "w") as file:
+            data_set = file.create_dataset("adc", (self.parameters['adc_channels'], chunk_size), maxshape=(self.parameters['adc_channels'], None))
+            while repeat < num_repeats:
+                d, bytes_read_error = self.read_adc(blk_multiples)
+                if self.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':
+                    chan_data = self.deswizzle(d)
+
+                elif self.parameters['data_version'] == 'TIMESTAMPS':
+                    chan_data = self.deswizzle(d)
+
+                if self.parameters['adc_channels']==4:
+                    chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
+
+                if self.parameters['adc_channels']==8:
+                    chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3],
+                                            chan_data[4], chan_data[5], chan_data[6], chan_data[7]))
+
+                repeat += 1
+                if repeat == 0:
+                    print(f'Chunk size by chan data size {chunk_size}')
+                    data_set[:] = chan_stack
+                else:
+                    data_set[:, -chunk_size:] = chan_stack
+                if repeat < num_repeats:
+                    data_set.resize(data_set.shape[1] + chunk_size, axis=1)
+
+        print(f'Done with DDR reading: saved as {full_data_name}')
+        return chan_data
+
+
+    def read_adc(self, blk_multiples=2048):
+
+        """ 
+        read DDR data into a numpy buffer of bytes
+
+        Arguments
+        ---------
+        blk_multiples : int
+            total size of the read is blk_multiples * block_size      
+        """
+
+        t, bytes_read_error = self.read_adc_block(  # just reads from the block pipe out
+            sample_size=self.parameters["BLOCK_SIZE"] * blk_multiples
+        )
+        d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
+        print(f'Bytes read: {bytes_read_error}')
+        return d, bytes_read_error
+
 
     def set_index(self, factor, factor2=None):
         """

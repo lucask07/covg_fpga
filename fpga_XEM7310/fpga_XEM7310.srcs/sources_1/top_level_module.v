@@ -711,7 +711,7 @@ module top_level_module(
          .sys_rst                        (rst_sys_ddr)
          );
 
-     // OK MIG DDR3 Testbench Instatiation
+     // OK MIG DDR3 User interface
      ddr3_test ddr3_tb (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
          .reset              (ep43trig[`DDR3_UI_RESET]),
