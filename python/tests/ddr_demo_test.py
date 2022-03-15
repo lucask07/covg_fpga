@@ -213,8 +213,8 @@ filt_type = '500kHz'
 for i in [0,1,2,3,4,5]:
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
-    # daq.DAC[i].filter_select(operation="set")
-    daq.DAC[i].filter_select(operation="clear")
+    daq.DAC[i].filter_select(operation="set")
+    #daq.DAC[i].filter_select(operation="clear")
     # daq.DAC[i].write(int(0))
     daq.DAC[i].set_data_mux("DDR")
     if i == 0:
@@ -242,7 +242,6 @@ ads.set_lpf(376)
 codes = ads.setup_sequencer(chan_list=[('4', '4')])
 ads.write_reg_bridge(clk_div=200) # 1 MSPS update rate 
 ads.set_fpga_mode()
-
 
 # --- Configure for DDR read to DAC80508 ---
 for dac_gp_ch in [0, 1]:
@@ -412,6 +411,7 @@ _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_l
 
 # Long data sequence -- entire file 
 adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data)
+
 # Shorter data sequence, just one of the repeats
 # adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
 
@@ -420,6 +420,15 @@ t = np.arange(0,len(adc_data[0]))*1/FS
 crop_start = 0 
 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
+# ADC
+for ch in range(4):
+    fig,ax=plt.subplots()
+    y = adc_data[ch][crop_start:]
+    lbl = f'Ch{ch}'
+    ax.plot(t*1e6, y, marker = '+', label = lbl)
+    ax.legend()
+    ax.set_title('Fast ADC data')
+    ax.set_xlabel('s [us]')
 
 # DACs 
 t_dacs = t[crop_start::2]
@@ -430,6 +439,8 @@ for dac_ch in range(4):
     ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
     ax.legend()
     ax.set_title('Fast DAC data')
+    ax.set_xlabel('s [us]')
+
 
 # ADS8686
 t_ads = t[crop_start::5]
@@ -447,6 +458,10 @@ def check_fft(t, y, predicted_freq):
     rms = np.std(y)
     print(f'RMS amplitude: {rms}, peak amplitude: {rms*1.414}')
     print('-'*40)
+
+# check AD7961 channel 0. Frequency from clamp board
+print('FFT of AD7961 channel 0')
+check_fft(t, adc_data[0], fg_freq)
 
 # check AD7961 channel 1. Frequency from function generator 
 print('FFT of AD7961 channel 1')
