@@ -47,8 +47,8 @@ from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv, idx_timerange
 from analysis.utils import calc_fft
 
-FS = 5e6
-SAMPLE_PERIOD = 1/FS
+# constants 
+FS = 5e6  # sampling frequency 
 dac80508_offset = 0x8000
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
@@ -66,9 +66,11 @@ eps = Endpoint.endpoints_from_defines
 
 data_dir_base = os.path.expanduser('~')
 if sys.platform == "linux" or sys.platform == "linux2":
+    print('Linux directory not configured... Error')
     pass
 elif sys.platform == "darwin":
-    data_dir_covg = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}"
+    print('MAC directory not configured... Error')
+    pass
 elif sys.platform == "win32":
     data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
 
@@ -79,14 +81,15 @@ data_dir = data_dir_covg.format(
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
-pwr_setup = "3dual"
-dc_num = 0  # the Daughter-card channel under test. Order on board from L to R: 1,0,2,3
-
 # alternative for Python<3.9
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
 handler = logging.FileHandler("AD7961_test.log", "w", "utf-8")
 root_logger.addHandler(handler)
+
+
+pwr_setup = "3dual"
+dc_num = 0  # the Daughter-card channel under test. Order on board from L to R: 1,0,2,3
 
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
@@ -158,6 +161,7 @@ gpio.spi_debug("dfast1")
 gpio.ads_misc("sdoa")  # do not care for this experiment
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
+# TODO: could skip Clamp board setup ... but it is another source of ADC data 
 clamp = Clamp(f, dc_num=dc_num)
 clamp.init_board()
 
@@ -185,7 +189,7 @@ log_info, config_dict = clamp.configure_clamp(
     addr_pins_2=0b000,
 )
 
-# --------  Initialize ADCs  --------
+# --------  Initialize fast ADCs  --------
 for chan in [0,1,2,3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 
@@ -220,12 +224,9 @@ for i in [0,1,2,3,4,5]:
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 500)  # 500 mV full-scale
 
-# 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
-daq.DAC[0].set_clk_divider(divide_value=0x50) #TODO: this is no longer used. All timing is from one module
-print('Checking filter settings')
-daq.DAC[0].read_coeff_debug()
+# daq.DAC[0].set_clk_divider(divide_value=0x50) #TODO: this is no longer used. All timing is from one module
 
-# configure the ADS8686
+# -------- configure the ADS8686
 ads.hw_reset(val=False)
 ads.set_host_mode()
 ads.setup()
@@ -233,8 +234,9 @@ ads.set_range(5)
 ads.set_lpf(376)
 # 4B - clear sine wave set by the Slow DAC
 codes = ads.setup_sequencer(chan_list=[('4', '4')])
-ads.write_reg_bridge(clk_div=200) # 1 MSPS update rate 
+ads.write_reg_bridge(clk_div=200) # 1 MSPS update rate. Write register for SPI configuration reg. But update rate is controlled by top-level timer
 ads.set_fpga_mode()
+
 
 # --- Configure for DDR read to DAC80508 ---
 for dac_gp_ch in [0, 1]:
@@ -245,10 +247,8 @@ for dac_gp_ch in [0, 1]:
     daq.DAC_gp[dac_gp_ch].set_data_mux('DDR')
 
 ddr = DDR3(f, data_version='TIMESTAMPS')
-NUM_CHAN = 8
 
 def ddr_write_setup():
-    # adjust the DDR settings of both DACs
     ddr.clear_dac_read()
     ddr.clear_adc_write()
     ddr.reset_fifo(name='ALL')
@@ -260,17 +260,18 @@ def ddr_write_finish():
     ddr.set_dac_read()  # enable DAC playback and ADC reading
     ddr.set_adc_write()
 
+FAST_DAC_FREQ = 7e3
 for i in range(7):
-    ddr.data_arrays[i], fdac_freq = ddr.make_sine_wave(0x800, 5e3,
+    ddr.data_arrays[i], fdac_freq = ddr.make_sine_wave(0x800, FAST_DAC_FREQ,
                                         offset=0x1000)
 
-# FDAC: 1V 1KHz sine wave; SDAC: 1V 1KHz sine wave
+# ---------- configure "slow" DAC DAC80508
 sdac_amp_volt = 1
-target_freq = 12000.0
+target_freq_sdac = 12000.0
 sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
 
 # Data for the 2 DAC80508 "Slow DACs"
-sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq, offset=dac80508_offset)
+sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq_sdac, offset=dac80508_offset)
 
 # Specify output channel for DAC80508
 sdac_1_out_chan = 5
@@ -307,7 +308,7 @@ output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 idx = 0
 
 REPEAT = True
-if REPEAT:
+if REPEAT:  # to repeat data capture without rewriting the DAC data
     ddr.clear_adc_read()
     ddr.clear_adc_write()
 
@@ -318,9 +319,11 @@ if REPEAT:
     ddr.set_adc_write()
     time.sleep(0.01)
 
+# saves data to a file; returns to teh workspace the deswizzled DDR data of the last repeat
 chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 8,
                           blk_multiples=40) # blk multiples multiple of 10
 
+# to get the deswizzled data of all repeats need to read the file
 _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
 
 # Long data sequence -- entire file 
@@ -331,10 +334,10 @@ adc_data, timestamp, dac_data, ads = ddr.data_to_names(chan_data)
 
 t = np.arange(0,len(adc_data[0]))*1/FS
 
-crop_start = 0 
+crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
-# ADC
+# fast ADC. AD7961
 for ch in range(4):
     fig,ax=plt.subplots()
     y = adc_data[ch][crop_start:]
@@ -345,7 +348,7 @@ for ch in range(4):
     ax.set_xlabel('s [us]')
 
 # DACs 
-t_dacs = t[crop_start::2]
+t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
 for dac_ch in range(4):
     fig,ax=plt.subplots()
     y = dac_data[dac_ch][crop_start:]
@@ -355,16 +358,16 @@ for dac_ch in range(4):
     ax.set_title('Fast DAC data')
     ax.set_xlabel('s [us]')
 
-
-# ADS8686
-t_ads = t[crop_start::5]
+# ADS8686 
+t_ads = t[crop_start::5] # ADS8686 data is saved every fifth 5 MSPS tick
 fig,ax=plt.subplots()
 ax.plot(t_ads*1e6, ads['A'], marker = '+', label = 'ADS: A')
 ax.plot(t_ads*1e6, ads['B'], marker = '+', label = 'ADS: B')
 ax.legend()
 ax.set_xlabel('s [us]')
+ax.set_title('ADS8686 data')
 
-# Check frequency of results 
+# ----- Check frequency of results ----------
 def check_fft(t, y, predicted_freq):
     ffreq, famp, max_freq = calc_fft(y, 1/(t[1]-t[0]))
     print(f'Frequency of maximum amplitude {max_freq} [Hz]')
@@ -375,12 +378,12 @@ def check_fft(t, y, predicted_freq):
 
 # check AD7961 channel 0. Frequency from clamp board
 print('FFT of AD7961 channel 0')
-check_fft(t, adc_data[0], fg_freq)
+check_fft(t, adc_data[0], FAST_DAC_FREQ)
 
 # check AD7961 channel 1. Frequency from function generator 
 print('FFT of AD7961 channel 1')
 check_fft(t, adc_data[1], fg_freq)
 
-# check AD7961 channel 1. Frequency from function generator 
+# check ADS8686 channel B. Frequency from ADC80508
 print('FFT of ADS8686 channel B: set by slow DAC')
-check_fft(t_ads, ads['B'], sdac_freq)
+check_fft(t_ads, ads['B'], target_freq_sdac)
