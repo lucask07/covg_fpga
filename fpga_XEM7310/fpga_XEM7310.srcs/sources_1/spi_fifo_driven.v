@@ -42,7 +42,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      output wire [31:0] coeff_debug_out1,
      output wire [31:0] coeff_debug_out2,
      output reg [23:0] dac_val_out,
-     output reg data_out_ready
+     output reg data_out_ready,
+     output wire [13:0] filter_out_modified
     );
     
       wire cmd_stb;
@@ -85,7 +86,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 wire err_0;
 	 wire int_o_0;
 	 
-	 wire [13:0] filter_out_modified;
+	 //wire [13:0] filter_out_modified;
 	 
 	 reg [23:0] spi_data; 
 	 reg data_ready_mux;

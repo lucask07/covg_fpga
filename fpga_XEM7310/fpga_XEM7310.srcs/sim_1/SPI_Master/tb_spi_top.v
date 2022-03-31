@@ -47,6 +47,7 @@ module tb_spi_top;
 	wire ep_ready;
 	wire slow_pulse;
 	wire clk_en;
+	wire [13:0] filter_out_modified;
 	//
 //	wire clk_en;
 //	general_clock_divide divide(
@@ -84,7 +85,8 @@ module tb_spi_top;
 		//.en_period(en_period),
 		//.ddr3_rst(ddr3_rst),
 		//.clk_en(clk_en),
-		.regTrigger(regTrigger)
+		.regTrigger(regTrigger),
+		.filter_out_modified(filter_out_modified)
 	);
 	
 	// Generate clock
@@ -110,6 +112,7 @@ module tb_spi_top;
     end
     
     always@(posedge data_rdy)begin
+        $display("%d", filter_out_modified);
         if(count > 10'd49)begin
             count = count + 1'b1;
             //filter_in = 16'h7fff;
