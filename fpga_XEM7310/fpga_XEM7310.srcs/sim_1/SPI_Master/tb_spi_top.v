@@ -111,16 +111,24 @@ module tb_spi_top;
         end
     end
     
+    integer FileID, file;
+//     Data source for filter_in
+      initial begin
+          FileID = $fopen("filter_in.dat", "r");
+      end
+    
     always@(posedge data_rdy)begin
         $display("%d", filter_out_modified);
         if(count > 10'd49)begin
             count = count + 1'b1;
             //filter_in = 16'h7fff;
             //filter_in = 16'h4000;
-            filter_in = 16'hc000;
+            //filter_in = 16'hc000;
+            file = $fscanf(FileID, "%h\n", filter_in);
         end
         else begin
-            filter_in = 16'h0000;
+            file = $fscanf(FileID, "%h\n", filter_in);
+            //filter_in = 16'h0000;
             //filter_in = 16'hc000;
             count = count + 1'b1;
         end
@@ -363,7 +371,7 @@ module tb_spi_top;
 		#1350;
 		readFifo = 1'b0;
 		#20;
+		$fclose(FileID);
 	end
-      
 endmodule
 
