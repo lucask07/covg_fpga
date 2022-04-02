@@ -263,5 +263,14 @@
 `define DAC80508_REGBRIDGE_OFFSET_GEN_BIT 5 // address=0x0 bit_width=19
 `define AD5453_REGBRIDGE_OFFSET_GEN_BIT 43 // address=0x0 bit_width=19
 
+// FPGA test endpoints
+`define FPGATEST_STATIC_READ_WO 8'h3F // bit_width=32
+`define FPGATEST_STATIC_READ_PO 8'hBF // bit_width=32
+`define FPGATEST_LOOPED_WI 8'h1E // bit_width=32
+`define FPGATEST_LOOPED_WO 8'h3E // bit_width=32
+`define FPGATEST_TI 8'h5F // bit_width=32
+`define FPGATEST_TI_CONFIRM 8'h3D // bit_width=32
+`define FPGATEST_T0 8'h7F // bit_width=32
+
 // TODO set this up!
 // `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
