@@ -8,13 +8,13 @@ clc;
 
 Fs = 5e6;            % Sampling frequency                    
 T = 1/Fs;             % Sampling period       
-fsig = 200000;        % frequency of test sinewave
+fsig = 300000;        % frequency of test sinewave
 L = round(((1/fsig)/T))*5; %Length of Signal
 %t = (0:L-1)*T;        % Time vector
 t = (0:714)*T;        % Time vector
 
 %j = 2^15*(t>1e-5);
-j = 2^15*sin(2*pi*fsig*t);
+j = (2^15/2)*sin(2*pi*fsig*t);
 input = int16(j);
 
 figure(1);
@@ -41,16 +41,34 @@ sizeA = [Inf];
 A = fscanf(fileID, formatSpec, sizeA);
 fclose(fileID);
 
-%%
+%% Raw Vivado Simulation Results
+
 Fs = 5e6;            % Sampling frequency                    
 T = 1/Fs;             % Sampling period
-t = (0:length(A)-1)*T;        % Time vector
+t1 = (0:length(A)-1)*T;        % Time vector
 
 figure(2);
-plot(t, A); %plot with offset to center around y=0
+plot(t1, A);
 grid on;
 title('Vivado Simulation Results');
 xlabel('Time (s)');
 ylabel('Hex Code');
-xlim([0 t(length(t))]);
+xlim([0 t1(length(t1))]);
 saveas(figure(2), 'StepResponse.png');
+
+%% Overlaying Normalized Input and Normalized Output
+A_normalized = (A-8191)/8192; %normalize and cancel offset of output
+in_normalized = j/32768;
+in_normalized = in_normalized/max(in_normalized);
+A_normalized = A_normalized/max(in_normalized);
+
+figure(3);
+plot(t1, A_normalized);
+grid on;
+title('Normalized Input and Output');
+xlabel('Time (s)');
+ylabel('Hex Code');
+xlim([0 t1(length(t1))]);
+ylim([min(in_normalized) max(in_normalized)]);
+hold on;
+plot(t, in_normalized);
