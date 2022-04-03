@@ -94,7 +94,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 23;
+localparam NUM_OK_EPS = 30;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -1142,6 +1142,43 @@ module top_level_module(
 	 //module to create a one second pulse on one of the LEDs (keepAlive test)
 	 one_second_pulse out_pulse(
 	 .clk(clk_sys), .rst(sys_rst), .slow_pulse(led[0])
-	 ); 
+	 );
+	 
+	 /*---------------- FPGA test -------------------*/
+	 // Set up Endpoints
+	 reg [31:0] fpga_test_static_wo;
+	 okWireOut fpga_test_wo_0 (.okHE(okHE), .okEH(okEHx[ 23*65 +: 65 ]), .ep_addr(`FPGATEST_STATIC_READ_WO), .ep_datain(fpga_test_static_wo));
+	 
+	 reg [127:0] fpga_test_static_po;
+	 wire fpga_test_static_po_read;
+	 okPipeOut fpga_test_po_0 (.okHE(okHE), .okEH(okEHx[ 24*65 +: 65 ]), .ep_addr(`FPGATEST_STATIC_READ_PO), .ep_read(fpga_test_static_po_read), .ep_datain(fpga_test_static_po));
+	 
+	 wire [31:0] fpga_test_looped_wi;
+     wire [31:0] fpga_test_looped_wo;
+     okWireIn fpga_test_wi_0 (.okHE(okHE), .ep_addr(`FPGATEST_LOOPED_WI), .ep_dataout(fpga_test_looped_wi));
+     okWireOut fpga_test_wo_1 (.okHE(okHE), .okEH(okEHx[ 25*65 +: 65 ]), .ep_addr(`FPGATEST_LOOPED_WO), .ep_datain(fpga_test_looped_wo));
+     
+     wire fpga_test_ti;
+     reg fpga_test_ti_confirm;
+     okTriggerIn fpga_test_ti_0 (.okHE(okHE), .ep_addr(`FPGATEST_TI), .ep_clk(okClk), .ep_trigger(fpga_test_ti));
+     okWireOut fpga_test_wo_2 (.okHE(okHE), .okEH(okEHx[ 26*65 +: 65 ]), .ep_addr(`FPGATEST_TI_CONFIRM), .ep_datain(fpga_test_ti_confirm));
+     
+     wire fpga_test_to;
+     okTriggerOut fpga_test_to_0 (.okHE(okHE), .okEH(okEHx[ 27*65 +: 65 ]), .ep_addr(`FPGATEST_T0), .ep_clk(clk_sys), .ep_trigger(fpga_test_to));  // bit 0 -- not used
+	 
+	 // Assign values for static reads
+	 always @(*) begin
+	   fpga_test_static_wo = 32'd123456789;
+	   fpga_test_static_po = 128'd1234567890987654321;
+     end
+     
+     // Connect looped WireIn, WireOut
+     assign fpga_test_looped_wi = fpga_test_looped_wo;
+     
+     // Set up input trigger confirm
+     always @(posedge fpga_test_ti) fpga_test_ti_confirm = 1;
+     
+     // Set up continuous TriggerOut pulses
+     assign fpga_test_to = 1;
 
 endmodule

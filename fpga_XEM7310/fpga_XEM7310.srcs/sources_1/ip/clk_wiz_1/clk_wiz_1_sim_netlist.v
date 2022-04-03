@@ -1,10 +1,10 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-// Date        : Mon Sep 27 11:21:33 2021
-// Host        : FDC212-01 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode funcsim
-//               c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/clk_wiz_1/clk_wiz_1_sim_netlist.v
+// Date        : Tue Nov 16 16:32:02 2021
+// Host        : FDC212-00 running 64-bit major release  (build 9200)
+// Command     : write_verilog -force -mode funcsim -rename_top clk_wiz_1 -prefix
+//               clk_wiz_1_ clk_wiz_1_sim_netlist.v
 // Design      : clk_wiz_1
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -35,7 +35,6 @@ module clk_wiz_1
         .reset(reset));
 endmodule
 
-(* ORIG_REF_NAME = "clk_wiz_1_clk_wiz" *) 
 module clk_wiz_1_clk_wiz_1_clk_wiz
    (clk_out1,
     reset,
