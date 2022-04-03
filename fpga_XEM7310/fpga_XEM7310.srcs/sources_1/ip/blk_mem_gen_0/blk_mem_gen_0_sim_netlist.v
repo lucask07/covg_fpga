@@ -1,10 +1,10 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-// Date        : Fri Jul 23 12:32:50 2021
-// Host        : FDC212-01 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode funcsim
-//               C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0_sim_netlist.v
+// Date        : Tue Nov 16 16:31:15 2021
+// Host        : FDC212-00 running 64-bit major release  (build 9200)
+// Command     : write_verilog -force -mode funcsim -rename_top blk_mem_gen_0 -prefix
+//               blk_mem_gen_0_ blk_mem_gen_0_sim_netlist.v
 // Design      : blk_mem_gen_0
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
@@ -204,7 +204,6 @@ module blk_mem_gen_0
         .web(1'b0));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_generic_cstr" *) 
 module blk_mem_gen_0_blk_mem_gen_generic_cstr
    (doutb,
     clkb,
@@ -247,7 +246,6 @@ module blk_mem_gen_0_blk_mem_gen_generic_cstr
         .wea(wea));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_prim_width" *) 
 module blk_mem_gen_0_blk_mem_gen_prim_width
    (doutb,
     clkb,
@@ -290,7 +288,6 @@ module blk_mem_gen_0_blk_mem_gen_prim_width
         .wea(wea));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_prim_wrapper" *) 
 module blk_mem_gen_0_blk_mem_gen_prim_wrapper
    (doutb,
     clkb,
@@ -451,7 +448,6 @@ module blk_mem_gen_0_blk_mem_gen_prim_wrapper
         .WEBWE({wea,wea,wea,wea}));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_top" *) 
 module blk_mem_gen_0_blk_mem_gen_top
    (doutb,
     clkb,
@@ -518,7 +514,7 @@ endmodule
 (* C_USE_URAM = "0" *) (* C_WEA_WIDTH = "1" *) (* C_WEB_WIDTH = "1" *) 
 (* C_WRITE_DEPTH_A = "15" *) (* C_WRITE_DEPTH_B = "15" *) (* C_WRITE_MODE_A = "NO_CHANGE" *) 
 (* C_WRITE_MODE_B = "WRITE_FIRST" *) (* C_WRITE_WIDTH_A = "32" *) (* C_WRITE_WIDTH_B = "32" *) 
-(* C_XDEVICEFAMILY = "artix7" *) (* ORIG_REF_NAME = "blk_mem_gen_v8_4_1" *) (* downgradeipidentifiedwarnings = "yes" *) 
+(* C_XDEVICEFAMILY = "artix7" *) (* downgradeipidentifiedwarnings = "yes" *) 
 module blk_mem_gen_0_blk_mem_gen_v8_4_1
    (clka,
     rsta,
@@ -768,7 +764,6 @@ module blk_mem_gen_0_blk_mem_gen_v8_4_1
         .wea(wea));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_v8_4_1_synth" *) 
 module blk_mem_gen_0_blk_mem_gen_v8_4_1_synth
    (doutb,
     clkb,
