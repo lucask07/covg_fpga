@@ -1,74 +1,35 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>FPGA Class &mdash; covgDAQ 0.0.1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="I2C Controller Class" href="I2CController.html" />
     <link rel="prev" title="Endpoint Class" href="Endpoint.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> covgDAQ
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -76,18 +37,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Register.html">Register Class</a></li>
@@ -101,77 +51,37 @@
 <li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">covgDAQ</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>FPGA Class</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="_sources/FPGA.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="fpga-class">
-<h1>FPGA Class<a class="headerlink" href="#fpga-class" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="fpga-class">
+<h1>FPGA Class<a class="headerlink" href="#fpga-class" title="Permalink to this headline"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">FPGA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bitfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'..\\..\\fpga_test.bit'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA" title="Permalink to this definition">¶</a></dt>
-<dd><p>Class for the Opal Kelly FPGA itself.</p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">FPGA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bitfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../../fpga_test.bit'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA" title="Permalink to this definition"></a></dt>
+<dd><p>Class for the Opal Kelly FPGA itself.
+Derived from OpalKelly Python examples.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
 <dd class="field-odd"><dl class="simple">
@@ -186,31 +96,31 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.clear_endpoint">
-<span class="sig-name descname"><span class="pre">clear_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.clear_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.clear_endpoint" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">clear_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.clear_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.clear_endpoint" title="Permalink to this definition"></a></dt>
 <dd><p>Set all bits in an Endpoint low.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.clear_wire_bit">
-<span class="sig-name descname"><span class="pre">clear_wire_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.clear_wire_bit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.clear_wire_bit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">clear_wire_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.clear_wire_bit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.clear_wire_bit" title="Permalink to this definition"></a></dt>
 <dd><p>Clear a single bit to 0 in a OpalKelly wire in.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.get_available_endpoints">
-<span class="sig-name descname"><span class="pre">get_available_endpoints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.get_available_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.get_available_endpoints" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_available_endpoints</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.get_available_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.get_available_endpoints" title="Permalink to this definition"></a></dt>
 <dd><p>Return a list of available OK endpoints.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.get_time">
-<span class="sig-name descname"><span class="pre">get_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.get_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.get_time" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.get_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.get_time" title="Permalink to this definition"></a></dt>
 <dd><p>Return the total time from the FPGA since initializing the bitfile.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.init_device">
-<span class="sig-name descname"><span class="pre">init_device</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.init_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.init_device" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">init_device</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.init_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.init_device" title="Permalink to this definition"></a></dt>
 <dd><p>Initialize the FPGA for use and print device information.</p>
 <p>Connect to the FPGA and load the bitfile. Return False on any errors.
 Only run this once or the FPGA connection will fail.</p>
@@ -218,13 +128,13 @@ Only run this once or the FPGA connection will fail.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.read_ep">
-<span class="sig-name descname"><span class="pre">read_ep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.read_ep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.read_ep" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_ep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.read_ep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.read_ep" title="Permalink to this definition"></a></dt>
 <dd><p>Return the error code after reading an OK WireOut Endpoint.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.read_pipe_out">
-<span class="sig-name descname"><span class="pre">read_pipe_out</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">addr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.read_pipe_out"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.read_pipe_out" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_pipe_out</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">addr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1024</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.read_pipe_out"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.read_pipe_out" title="Permalink to this definition"></a></dt>
 <dd><p>Return the filled buffer and error code after reading an OK PipeOut.
 data_len is length in bytes (must be multiple of 16)
 returns: bytearray; error code</p>
@@ -232,19 +142,19 @@ returns: bytearray; error code</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.read_wire">
-<span class="sig-name descname"><span class="pre">read_wire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.read_wire"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.read_wire" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_wire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.read_wire"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.read_wire" title="Permalink to this definition"></a></dt>
 <dd><p>Return the read data after reading an OK WireOut.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.read_wire_bit">
-<span class="sig-name descname"><span class="pre">read_wire_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.read_wire_bit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.read_wire_bit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">read_wire_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.read_wire_bit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.read_wire_bit" title="Permalink to this definition"></a></dt>
 <dd><p>Read a single bit in a OpalKelly wire in.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.send_trig">
-<span class="sig-name descname"><span class="pre">send_trig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.send_trig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.send_trig" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">send_trig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.send_trig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.send_trig" title="Permalink to this definition"></a></dt>
 <dd><p>Return the error code after activating an OK TriggerIn Endpoint.</p>
 <p>Expects a single bit, not yet implement for multiple bits and will only
 activate the LSB if the Endpoint containts multiple bits.</p>
@@ -252,84 +162,67 @@ activate the LSB if the Endpoint containts multiple bits.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.set_endpoint">
-<span class="sig-name descname"><span class="pre">set_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.set_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.set_endpoint" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.set_endpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.set_endpoint" title="Permalink to this definition"></a></dt>
 <dd><p>Set all bits in an Endpoint high.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.set_wire">
-<span class="sig-name descname"><span class="pre">set_wire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4294967295</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.set_wire"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.set_wire" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_wire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4294967295</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.set_wire"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.set_wire" title="Permalink to this definition"></a></dt>
 <dd><p>Return the error code after setting an OK WireIn value.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.set_wire_bit">
-<span class="sig-name descname"><span class="pre">set_wire_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.set_wire_bit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.set_wire_bit" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_wire_bit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.set_wire_bit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.set_wire_bit" title="Permalink to this definition"></a></dt>
 <dd><p>Set a single bit to 1 in a OpalKelly wire in.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.toggle_high">
-<span class="sig-name descname"><span class="pre">toggle_high</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.toggle_high"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.toggle_high" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">toggle_high</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.toggle_high"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.toggle_high" title="Permalink to this definition"></a></dt>
 <dd><p>Toggle all bits in an Endpoint high then back to low.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.FPGA.toggle_low">
-<span class="sig-name descname"><span class="pre">toggle_low</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.toggle_low"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.toggle_low" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">toggle_low</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ep_bit</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#FPGA.toggle_low"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.FPGA.toggle_low" title="Permalink to this definition"></a></dt>
 <dd><p>Toggle all bits in an Endpoint low then back to high.</p>
 </dd></dl>
 
 </dd></dl>
 
-</div>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="I2CController.html" class="btn btn-neutral float-right" title="I2C Controller Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="Endpoint.html" class="btn btn-neutral float-left" title="Endpoint Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="I2CController.html" class="btn btn-neutral float-right" title="I2C Controller Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
-
-    </p>
+    <p>&#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

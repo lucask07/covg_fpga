@@ -1,73 +1,34 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" />
-  
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>Endpoint Definitions Guide &mdash; covgDAQ 0.0.1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="_static/js/theme.js"></script>
-
-    
+    <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Register Index Guide" href="register_index_guide.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="index.html" class="icon icon-home"> covgDAQ
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -75,18 +36,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Register.html">Register Class</a></li>
@@ -106,77 +56,36 @@
 </li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">covgDAQ</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
-        
       <li>Endpoint Definitions Guide</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
-          
             <a href="_sources/endpoint_definitions_guide.rst.txt" rel="nofollow"> View page source</a>
-          
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
-  <div class="section" id="endpoint-definitions-guide">
-<h1>Endpoint Definitions Guide<a class="headerlink" href="#endpoint-definitions-guide" title="Permalink to this headline">¶</a></h1>
+             
+  <section id="endpoint-definitions-guide">
+<h1>Endpoint Definitions Guide<a class="headerlink" href="#endpoint-definitions-guide" title="Permalink to this headline"></a></h1>
 <p>The endpoint definitions Verilog file, often shortened to “ep_defines.v,” defines Opal Kelly FrontPanel endpoint addresses and bits as Verilog parameters. These parameters can then be used when instantiating controllers in Verilog as well as over USB from a host using Python. For the host to use the endpoint information, it must be written according to the guide.</p>
 <p>The lines in ep_defines.v are split into two categories: addresses and bit indices.</p>
-<div class="section" id="addresses">
-<h2>Addresses<a class="headerlink" href="#addresses" title="Permalink to this headline">¶</a></h2>
+<section id="addresses">
+<h2>Addresses<a class="headerlink" href="#addresses" title="Permalink to this headline"></a></h2>
 <p>Address definitions store the address and bit width of the endpoint. The general structure is as follows.</p>
 <div class="highlight-verilog notranslate"><div class="highlight"><pre><span></span><span class="cp">`define {CHIPNAME}_{ENDPOINT_NAME}{_GEN_ADDR} 8’h{ADDRESS} </span><span class="c1">// bit_width={BIT_WIDTH }</span>
 </pre></div>
@@ -193,9 +102,9 @@
 <p>//: start of the comment part of this line. The Verilog parameter only holds the address, but the pypanel Endpoint object will also hold the bit_width, which is defined in the comment.</p>
 <p>bit_width=: the prefix for defining the bit width for pypanel.</p>
 <p>BIT_WIDTH: the decimal value of the bit width of the endpoint.</p>
-</div>
-<div class="section" id="bit-indices">
-<h2>Bit Indices<a class="headerlink" href="#bit-indices" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="bit-indices">
+<h2>Bit Indices<a class="headerlink" href="#bit-indices" title="Permalink to this headline"></a></h2>
 <p>Bit index definitions store the bit, associated address, and bit width of the endpoint. The general structure is as follows.</p>
 <div class="highlight-verilog notranslate"><div class="highlight"><pre><span></span><span class="cp">`define {CHIPNAME}_{ENDPOINT_NAME}{_GEN_BIT} {BIT} </span><span class="c1">// addr={ADDRESS} bit_width={BIT_WIDTH}</span>
 </pre></div>
@@ -213,9 +122,9 @@
 <p>ADDRESS: the address associated with the bit index for this endpoint. While the Verilog parameter will only store the bit defined in this line, the pypanel Endpoint object will also store the address and bit width defined in the comment. The address can either be a hexadecimal address value with prefix “0x” or the group and endpoint name of an address endpoint (LINK TO ADDRESS SECTION). Ex. 0x04 or GP_WIRE_IN.</p>
 <p>bit_width=: the prefix for defining the bit width for pypanel.</p>
 <p>BIT_WIDTH: the decimal value of the bit width of the endpoint. If the _GEN_BIT suffix is added, then pypanel will add this value to the lower bit index of the endpoint when incrementing a group containing this endpoint.</p>
-</div>
-<div class="section" id="file">
-<h2>File<a class="headerlink" href="#file" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="file">
+<h2>File<a class="headerlink" href="#file" title="Permalink to this headline"></a></h2>
 <p>Using the above formats, enter the endpoints each on separate lines in a Verilog file. The order of the endpoints does not matter. Endpoints can have the same name if they have different chip names. For example, “GP_WIRE_IN” and “MEM_WIRE_IN” both have the endpoint name “WIRE_IN” but have different chip names “GP” and “MEM,” which is allowed. Because pypanel uses comments to extract extra information about the endpoints, any other comments must be put on their own line, which pypanel will ignore.</p>
 <p>Alternatively, enter the information in an Excel spreadsheet copy of this template (LINK TO TEMPLATE). Each row should be a different endpoint. Each column is explained below. Check the “Generated Line” column for any possible errors, then use the Endpoint.excel_to_defines (LINK TO DOCS) method to create a Verilog file from the spreadsheet.</p>
 <p>Chip Name: CHIPNAME (LINK TO SECTION) from above.</p>
@@ -230,62 +139,45 @@
 <p>GEN_ADDR: _GEN_ADDR (LINK TO SECTION) from above. Enter True or False.</p>
 <p>Generated Name: automatically generated chip name with endpoint name. Since this is the name the “Address (hex)” column needs when referencing another endpoint, referencing this cell allows you to have any future name changes to the address endpoint reflected in the “Address (hex)” column of any endpoint referencing it.</p>
 <p>Generated Line: the line that will be written for this endpoint in the endpoint definitions Verilog file when Endpoint.excel_to_defines (LINK TO DOCS) is called.</p>
-</div>
-<div class="section" id="usage">
-<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h2>
 <p>Once your endpoint definitions file is complete, you can include the parameters you just named in your Verilog containing the Opal Kelly Endpoints themselves by adding the line below to that file. Replace “ep_defines.v” with whatever you named your endpoint definitions file.</p>
 <div class="highlight-verilog notranslate"><div class="highlight"><pre><span></span>`include “ep_defines.v”
 </pre></div>
 </div>
 <p>To retrieve the endpoints through pypanel, use the Endpoint.get_chip_endpoints (LINK TO DOCS) method.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
-           
           </div>
-          <footer>
-    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="register_index_guide.html" class="btn btn-neutral float-left" title="Register Index Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
-
-    </p>
+    <p>&#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>

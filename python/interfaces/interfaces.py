@@ -390,7 +390,7 @@ class Endpoint:
 
 def advance_endpoints_bynum(endpoints_dict, num):
     """
-    advance endpoints by a specific number; calculates based on the bit_widths
+    Advance endpoints by a specific number; calculates based on the bit_widths
     and knowing that the width of the OK interface is 32 bits.
     Just a method of an Endpoint (not a classmethod).
     Goal is to not impact future device instantiations.
@@ -417,6 +417,7 @@ def advance_endpoints_bynum(endpoints_dict, num):
 
 class FPGA:
     """Class for the Opal Kelly FPGA itself.
+    Derived from OpalKelly Python examples.
 
     Attributes
     ----------
@@ -2683,40 +2684,47 @@ class AD7961(ADCDATA):
 class DDR3():
     """
     The DDR is divided into 2 buffers. Each buffer has an incoming and outgoing FIFO.
-    1st buffer:
-        * Function generator like data that provides a data-stream to the DACs
-        * Write from the host when DAC_WRITE_ENABLE is set (clear dac read and clear adc read and write)
-        * Read to the DACs with set_dac_read()
-        * Striped into groups of 16 bits to 8 channels
-            * 6 AD5453 (14 bits each); 2 DAC80508 (16 bits each); DAC80508 channel data in the MSBs of the AD5453 stream
-        * FIFO: OpalKelly in -> out to DDR [32bits x 1024words = 4096 bytes]
-        * FIFO: DDR in -> DAC data out [out: 256bits x 256 = 8192 bytes]
 
-    2nd buffer:
-        * Buffering for ADC data (AD7961; ADS8686), DAC outgoing data, timestamps.
-        * ADC data writes to the DDR set_adc_write()
-        * ADC data in DDR can be read to the host with set_adc_read()
-        * The DDR througput is sufficient for 1st buffer reading while reading and writing to the 2nd buffer
-        * FIFO: OpalKelly in -> out to DDR [in: 32bits x 1024words = 4096 bytes]
-        * FIFO: DDR in -> OpalKelly out [256bits x 128 = 4096 bytes] OpalKelly block size is half this.
+    **1st buffer:**
 
-    Expected sequence of operations:
-        1) At startup write pattern for DACs using write_channels() [set_dac_write(), clear_dac_write() are called within write_channels()]
-        2) set_dac_read() # starts DAC data output to DACs via SPI and then set_adc_write() ADC data captured into DDR
-        3) set_adc_read() # allows host to read PipeOut as PipeOut is continuously filled if emptied
+    * Function generator like data that provides a data-stream to the DACs
+    * Write from the host when DAC_WRITE_ENABLE is set (clear dac read and clear adc read and write)
+    * Organized into groups of 16 bits to 8 channels
+    * Read to the DACs with set_dac_read
+    * 6 AD5453 (14 bits each)
+    * 2 DAC80508 (16 bits each) 
+    * DAC80508 channel data in the MSBs of the AD5453 stream
+    * FIFO: OpalKelly in -> out to DDR [32bits x 1024words = 4096 bytes]
+    * FIFO: DDR in -> DAC data out [out: 256bits x 256 = 8192 bytes]
 
-    ADC data ordering and saving:
-        * deswizzle()
-        * save_data()
+    **2nd buffer:**
 
-    DDR configuration bits:
-        * DAC_WRITE_ENABLE
-        * DAC_READ_ENABLE
-        * ADC_WRITE_ENABLE
-        * ADC_TRANSFER_ENABLE
+    * Buffering for ADC data (AD7961; ADS8686), DAC outgoing data, timestamps.
+    * ADC data writes to the DDR set_adc_write()
+    * ADC data in DDR can be read to the host with set_adc_read()
+    * The DDR througput is sufficient for 1st buffer reading while reading and writing to the 2nd buffer
+    * FIFO: OpalKelly in -> out to DDR [in: 32bits x 1024words = 4096 bytes]
+    * FIFO: DDR in -> OpalKelly out [256bits x 128 = 4096 bytes] OpalKelly block size is half this.
+
+    **Expected sequence of operations:**
+
+    1) At startup write pattern for DACs using write_channels() [set_dac_write(), clear_dac_write() are called within write_channels()]
+    2) set_dac_read() # starts DAC data output to DACs via SPI and then set_adc_write() ADC data captured into DDR
+    3) set_adc_read() # allows host to read PipeOut as PipeOut is continuously filled if emptied
+
+    **ADC data ordering and saving:**
+
+    * deswizzle()
+    * save_data()
+
+    **DDR configuration bits:**
+
+    * DAC_WRITE_ENABLE
+    * DAC_READ_ENABLE
+    * ADC_WRITE_ENABLE
+    * ADC_TRANSFER_ENABLE
     
     """
-    # TODO: add Attributes to docstring
 
     def __init__(self, fpga, endpoints=None, data_version='ADC_NO_TIMESTAMPS'):
         if endpoints is None:
@@ -2780,7 +2788,8 @@ class DDR3():
 
         Returns
         -------
-            numpy.ndarray (for DDR data array)
+            amplitude : numpy.ndarray 
+                to be assigned to DDR data array
         """
 
         amplitude = np.ones(self.parameters['sample_size'])*amplitude
@@ -2797,7 +2806,8 @@ class DDR3():
 
         Returns
         -------
-        float : The closest possible frequency
+        new_frequency : float 
+            The closest possible frequency
         """
 
         samples_per_period = (1/freq) / self.parameters['update_period']
@@ -2835,7 +2845,11 @@ class DDR3():
 
         Returns
         -------
-        numpy.ndarray, float : for DDR data array, actual frequeny used
+        ddr_seq : numpy.ndarray 
+            to be assigned to DDR data array  
+
+        frequency : float
+            actual frequency after closest_frequency
         """
 
         if (amplitude) > offset:
@@ -2871,7 +2885,8 @@ class DDR3():
 
         Returns
         -------
-        numpy.ndarray : for DDR data array
+            ddr_seq : numpy.ndarray 
+                to be assigned to DDR data array        
         """
 
         # change the stop value for integer number of cycles
@@ -2910,7 +2925,8 @@ class DDR3():
 
         Returns
         -------
-        numpy.ndarray : for DDR data array
+        ddr_seq : numpy.ndarray 
+            to be assigned to DDR data array  
         """
 
         if actual_length:
@@ -2952,8 +2968,10 @@ class DDR3():
 
         Returns
         -------
-            int, float : length of the buffer written to the DDR
-                         (or error code if unsuccessful), speed of the write in MB/s
+        block_pipe_return : int
+            length of the buffer written to the DDR (or error code if unsuccessful)
+        speed_MBs : float
+            speed of the write in MB/s
         """
 
         print('Length of buffer being written to DDR [bytes]: ', len(buf))
@@ -2981,9 +2999,9 @@ class DDR3():
         return block_pipe_return, speed_MBs
 
     def reset_mig_interface(self):
-        """Reset user interface to the MIG (memory interface generator) 
-            Resets the DDR address pointers for read/write of both buffers
-            (does not reset the MIG controller)
+        """Reset user interface to the MIG (memory interface generator). Resets
+            the DDR address pointers for read/write of both buffers 
+            (does not reset the MIG controller).
         """
         self.fpga.send_trig(self.endpoints['UI_RESET'])
 
@@ -2992,8 +3010,8 @@ class DDR3():
 
         Returns
         -------
-        dict : dictionary of fifo status ('EMPTY', 'FULL', 'ADC_DATA_COUNT')
-            for 'IN', 'OUT', and channels 1, 2
+        fifo_status : dict 
+            dictionary of fifo status ('EMPTY', 'FULL', 'ADC_DATA_COUNT') for 'IN', 'OUT', and channels 1, 2
         """
         wire_status = self.fpga.read_wire(
             self.endpoints['INIT_CALIB_COMPLETE'].address)
@@ -3030,16 +3048,16 @@ class DDR3():
             print('{} = {}'.format(k, fifo_status[k]))
 
     def set_dac_read(self):
-        """Set DDR / FIFOs read enable.
-           Enables DDR data going to the DACs and ADC data into DDR
+        """Set DDR / FIFOs read enable. Enables DDR data going to the 
+        DACs and ADC data into DDR
         """
 
         self.fpga.set_wire_bit(self.endpoints['DAC_READ_ENABLE'].address,
                                self.endpoints['DAC_READ_ENABLE'].bit_index_low)
 
     def clear_dac_read(self):
-        """Clear DDR / FIFOs read enable.
-            Stops DDR data from going to the DACs and ADC data into DDR
+        """Clear DDR / FIFOs read enable. Stops DDR data from going to 
+        the DACs and ADC data into DDR
         """
 
         self.fpga.clear_wire_bit(self.endpoints['DAC_READ_ENABLE'].address,
@@ -3121,12 +3139,18 @@ class DDR3():
 
 
     def read_adc_block(self, sample_size=None, source='ADC', DEBUG_PRINT=False):
-        """Read ADC (and other) DDR data.
+        """Read ADC (and other) DDR data. 
+        Block size must be a power of two from 16 to 16384
+        will automatically perform multiple transfers to complete the full LENGTH.
+        The length must be an integer multiple of 16 for USB3.0
+        and the length must be an Integer multiple of Block Size.
+        see https://docs.opalkelly.com/fpsdk/frontpanel-api/ section 3.3.1
 
         Parameters
         ----------
         sample_size : int
             Length of read in bytes. If none uses DDR parameter 'sample_size.'
+
         source : str
             FIFO output buffer to read. Either 'ADC' or 'FG'. 'FG' just reads
             back what is written for DACs (as function generator) so not so
@@ -3134,14 +3158,10 @@ class DDR3():
 
         Returns
         -------
-        byearray, int : The data read as a bytearray, The count (or error code)
-        read from the OpalKelly interface
-
-        Block size must be a power of two from 16 to 16384
-        will automatically perform multiple transfers to complete the full LENGTH
-        the length must be an integer multiple of 16 for USB3.0
-        and the length must be an Integer multiple of Block Size
-        see https://docs.opalkelly.com/fpsdk/frontpanel-api/ section 3.3.1
+        data_buf : byearray
+            adc data read as a bytearray
+        read_cnt : int
+            The count (or error code) read from the OpalKelly interface
         """
 
         if sample_size is None:
@@ -3178,10 +3198,8 @@ class DDR3():
         return data_buf, read_cnt
 
     def deswizzle(self, d, convert_twos=True):
-        """
-        Reorder DDR data to match the ADC channels 
-            Shift MSBytes up by 8 and combine with LSBytes 
-            Swap channels to match ADC channel numbering 
+        """Reorder DDR data to match the ADC channels. Shift MSBytes up by 8 
+        and combine with LSBytes. Swap channels to match ADC channel numbering.
 
         Arguments
         ---------
@@ -3189,9 +3207,11 @@ class DDR3():
             array of bytes. 
         convert_twos : Boolean
             if true converts data to signed
+
         Returns
         -------
-        dictionary of data arrays (keys are channel numbers)
+        chan_data : dict
+            dictionary of data arrays (keys are channel numbers)
 
         """
         bits = 16
@@ -3230,10 +3250,9 @@ class DDR3():
 
     def data_to_names(self, chan_data):
         """
-        Put deswizzled data into dictionaries with names that match with the data sources.
-        Complete twos complement conversion where necessary
-        Check timestamps for skips 
-        And the constant values for errors
+        Put deswizzled data into dictionaries with names that match with the data sources. 
+        Complete twos complement conversion where necessary. Check timestamps for skips.
+        Check the constant values for errors.
 
         This supports 2 versions of the FPGA code:
         'ADC_NO_TIMESTAMPS': DDR data is only the fast ADC. AD7961
@@ -3247,10 +3266,14 @@ class DDR3():
         
         Returns
         -------
-        dict of fast adc data (double format @ 5 MSPS)
-        np.array of timestamps
-        dict of DAC output data
-        dict of ADS8686 ADC data (double format @ 1 MSPS)
+        adc_data : dict 
+            fast adc data (double format @ 5 MSPS)
+        timestamp : np.array  
+            timestamps
+        dac_data : dict 
+            DAC output data
+        ads : dict 
+            ADS8686 ADC data (double format @ 1 MSPS)
         """
 
         if self.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
@@ -3326,10 +3349,8 @@ class DDR3():
 
         Returns
         -------
-        dict of fast adc data (double format @ 5 MSPS)
-        np.array of timestamps
-        dict of DAC output data
-        dict of ADS8686 ADC data (double format @ 1 MSPS)
+        chan_data : dict
+            dictionary of data arrays (keys are channel numbers)
 
         """
         chunk_size = int(self.parameters["BLOCK_SIZE"] * blk_multiples / (self.parameters['adc_channels']*2))  # readings per ADC
@@ -3386,7 +3407,14 @@ class DDR3():
         Arguments
         ---------
         blk_multiples : int
-            total size of the read is blk_multiples * block_size      
+            total size of the read is blk_multiples * block_size  
+
+        Returns
+        -------
+        d : bytearray
+            data as uint32    
+        bytes_read_error : int 
+            bytes read or error code          
         """
 
         t, bytes_read_error = self.read_adc_block(  # just reads from the block pipe out
@@ -3399,8 +3427,8 @@ class DDR3():
 
     def set_index(self, factor, factor2=None):
         """
-        No longer used. Index (the DDR address that wraps-around to 0)
-        is fixed to improve timing performance.
+        No longer used. Index (the DDR address that wraps-around to 0).
+        This is now fixed to improve timing performance.
         """
         print('Set index is no longer used. Index is fixed to: {}'.format(
             self.parameters['port1_index']))

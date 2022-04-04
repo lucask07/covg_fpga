@@ -1,72 +1,32 @@
-
-
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8" />
-  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
   <title>interfaces.interfaces &mdash; covgDAQ 0.0.1 documentation</title>
-  
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
-
-  
-  
-
-  
-  
-
-  
-
-  
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-    
-      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-    
-    <script type="text/javascript" src="../../_static/js/theme.js"></script>
-
-    
+    <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
 </head>
 
-<body class="wy-body-for-nav">
-
-   
+<body class="wy-body-for-nav"> 
   <div class="wy-grid-for-nav">
-    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-          
-
-          
             <a href="../../index.html" class="icon icon-home"> covgDAQ
-          
-
-          
           </a>
-
-          
-            
-            
-          
-
-          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -74,18 +34,7 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-
-          
-        </div>
-
-        
-        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-          
-            
-            
-              
-            
-            
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../Register.html">Register Class</a></li>
@@ -95,71 +44,34 @@
 <li class="toctree-l1"><a class="reference internal" href="../../SPIController.html">SPI Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../DDR.html">DDR Memory Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../register_index_guide.html">Register Index Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
 </ul>
 
-            
-          
         </div>
-        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
-
-      
-      <nav class="wy-nav-top" aria-label="top navigation">
-        
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="../../index.html">covgDAQ</a>
-        
       </nav>
 
-
       <div class="wy-nav-content">
-        
         <div class="rst-content">
-        
-          
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div role="navigation" aria-label="breadcrumbs navigation">
-
+          <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-    
       <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
-        
           <li><a href="../index.html">Module code</a> &raquo;</li>
-        
       <li>interfaces.interfaces</li>
-    
-    
       <li class="wy-breadcrumbs-aside">
-        
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-            
+             
   <h1>Source code for interfaces.interfaces</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Module for configuring OpalKelly XEM7310</span>
 <span class="sd">and use it as an I2C controller, SPI controller, and Serial LVDS controller.</span>
@@ -177,7 +89,7 @@
 <span class="kn">import</span> <span class="nn">time</span>
 <span class="kn">from</span> <span class="nn">interfaces.utils</span> <span class="kn">import</span> <span class="n">gen_mask</span><span class="p">,</span> <span class="n">twos_comp</span><span class="p">,</span> <span class="n">test_bit</span><span class="p">,</span> <span class="n">int_to_list</span><span class="p">,</span> <span class="n">from_voltage</span><span class="p">,</span> <span class="n">to_voltage</span>
 <span class="kn">import</span> <span class="nn">copy</span>
-
+<span class="kn">import</span> <span class="nn">h5py</span>
 
 <div class="viewcode-block" id="Register"><a class="viewcode-back" href="../../Register.html#interfaces.interfaces.Register">[docs]</a><span class="k">class</span> <span class="nc">Register</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for internal registers on a device.</span>
@@ -553,7 +465,7 @@
 
 <span class="k">def</span> <span class="nf">advance_endpoints_bynum</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    advance endpoints by a specific number; calculates based on the bit_widths</span>
+<span class="sd">    Advance endpoints by a specific number; calculates based on the bit_widths</span>
 <span class="sd">    and knowing that the width of the OK interface is 32 bits.</span>
 <span class="sd">    Just a method of an Endpoint (not a classmethod).</span>
 <span class="sd">    Goal is to not impact future device instantiations.</span>
@@ -580,6 +492,7 @@
 
 <div class="viewcode-block" id="FPGA"><a class="viewcode-back" href="../../FPGA.html#interfaces.interfaces.FPGA">[docs]</a><span class="k">class</span> <span class="nc">FPGA</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for the Opal Kelly FPGA itself.</span>
+<span class="sd">    Derived from OpalKelly Python examples.</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
@@ -1811,7 +1724,7 @@
         <span class="s1">&#39;DDR&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
         <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
         <span class="s1">&#39;ads8686_chA&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
-        <span class="s1">&#39;ads8686_chB&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+        <span class="s1">&#39;DDR_norepeat&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="c1"># does not send an update if the DDR data is the same. Reduces digital switching noise on the SPI bus</span>
         <span class="s1">&#39;ad7961_ch0&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
         <span class="s1">&#39;ad7961_ch1&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
         <span class="s1">&#39;ad7961_ch2&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
@@ -1990,12 +1903,23 @@
 <span class="sd">        Matches data source names in the MUX to their select values.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="n">default_data_mux</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;DDR&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;host&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="s1">&#39;ads8686_chA&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="s1">&#39;ads8686_chB&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>  <span class="c1"># different for the AD5453</span>
+        <span class="s1">&#39;ad7961_ch0&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+        <span class="s1">&#39;ad7961_ch1&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+        <span class="s1">&#39;ad7961_ch2&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+        <span class="s1">&#39;ad7961_ch3&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+    <span class="p">}</span>
+
     <span class="n">WRITE_OPERATION</span> <span class="o">=</span> <span class="mh">0x000000</span>
     <span class="n">READ_OPERATION</span> <span class="o">=</span> <span class="mh">0x800000</span>
 
     <span class="n">registers</span> <span class="o">=</span> <span class="n">Register</span><span class="o">.</span><span class="n">get_chip_registers</span><span class="p">(</span><span class="s1">&#39;DAC80508&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpga</span><span class="p">,</span> <span class="n">master_config</span><span class="o">=</span><span class="mh">0x3218</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_mux</span><span class="o">=</span><span class="n">SPIFifoDriven</span><span class="o">.</span><span class="n">default_data_mux</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpga</span><span class="p">,</span> <span class="n">master_config</span><span class="o">=</span><span class="mh">0x3218</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_mux</span><span class="o">=</span><span class="n">default_data_mux</span><span class="p">):</span>
         <span class="c1"># master_config=0x3218 Sets CHAR_LEN=24, Rx_NEG, ASS, IE</span>
         <span class="k">if</span> <span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">endpoints</span> <span class="o">=</span> <span class="n">Endpoint</span><span class="o">.</span><span class="n">get_chip_endpoints</span><span class="p">(</span><span class="s1">&#39;DAC80508&#39;</span><span class="p">)</span>
@@ -2348,22 +2272,30 @@
 
     <span class="k">def</span> <span class="nf">stream_mult</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">swps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">twos_comp_conv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">data_len</span><span class="o">=</span><span class="mi">1024</span><span class="p">):</span>
         <span class="c1"># TODO: add method docstring</span>
-
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ADC stream multiple&#39;</span><span class="p">)</span>
         <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">st</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateTriggerOuts</span><span class="p">()</span>
 
-        <span class="k">while</span> <span class="n">cnt</span> <span class="o">&lt;</span> <span class="n">swps</span><span class="p">:</span>
+        <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+        <span class="n">timeout_time</span> <span class="o">=</span> <span class="mi">1</span><span class="o">*</span><span class="n">swps</span> <span class="c1"># seconds </span>
+        <span class="n">timeout_flg</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">start_time</span> <span class="o">+</span> <span class="n">timeout_time</span><span class="p">))</span>
+
+        <span class="k">while</span> <span class="p">((</span><span class="n">cnt</span> <span class="o">&lt;</span> <span class="n">swps</span><span class="p">)</span> <span class="ow">and</span> <span class="n">timeout_flg</span><span class="p">):</span>
             <span class="c1"># check the FIFO half-full flag</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">IsTriggered</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FIFO_HALFFULL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                          <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FIFO_HALFFULL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)):</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FIFO_HALFFULL&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)):</span>
                 <span class="n">s</span><span class="p">,</span> <span class="n">e</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">read_pipe_out</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;PIPE_OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                               <span class="n">data_len</span><span class="p">)</span>
+                                            <span class="n">data_len</span><span class="p">)</span>
                 <span class="n">st</span> <span class="o">+=</span> <span class="n">s</span>
                 <span class="n">cnt</span> <span class="o">=</span> <span class="n">cnt</span> <span class="o">+</span> <span class="mi">1</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">debug</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="n">cnt</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">UpdateTriggerOuts</span><span class="p">()</span>
+            <span class="n">timeout_flg</span> <span class="o">=</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">start_time</span> <span class="o">+</span> <span class="n">timeout_time</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">timeout_flg</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;ADC stream_mult timed out&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
         <span class="k">if</span> <span class="n">twos_comp_conv</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_data</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -2728,8 +2660,8 @@
 
     <span class="k">def</span> <span class="nf">reset_trig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset the FPGA controller for the ADC.</span>
-
-<span class="sd">        One per channel. Uses the Opal Kelly Trigger</span>
+<span class="sd">        Common to synchronize timing </span>
+<span class="sd">            (resets ad7961_timing module AND the ads8686 timing) </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
@@ -2825,48 +2757,51 @@
 
 
 <div class="viewcode-block" id="DDR3"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3">[docs]</a><span class="k">class</span> <span class="nc">DDR3</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;DDR is striped in groups of 16 bits to 8 channels  (128 bits)</span>
-<span class="sd">    Out of the DDR FIFO</span>
-<span class="sd">    Input write is 256 bits wide.</span>
-
-<span class="sd">    Output read bus is 128 bits wide.</span>
-<span class="sd">    Supports up to 8 channels at 16 bits each.</span>
-
-<span class="sd">    Into the DDR:</span>
-<span class="sd">    FIFO Write side 32 bits (PipeIn), Read side is 256 bits</span>
-<span class="sd">    Write: W31-W0:     t0: W31-W0 [MSB]; W63-W32, ... W255-W224</span>
-
-<span class="sd">    Out of the DDR:</span>
-<span class="sd">    FIFO Write: W255 - W0 : t0 W255 - W128, t1: W127 - W0</span>
-<span class="sd">    so:</span>
-<span class="sd">    channel 0: 128    + 15:128, W15-W0</span>
-<span class="sd">    channel 1: 128+16 + 15:144, 16*1 + 15: 16</span>
-
+    <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    The DDR is divided into 2 buffers. Each buffer has an incoming and outgoing FIFO.</span>
 
-<span class="sd">    1st buffer:</span>
-<span class="sd">        * function generator like data that provides a data-stream to the DACs</span>
-<span class="sd">        * write from the host when WRITE_ENABLE is set</span>
-<span class="sd">        * read to the DACs when READ_ENABLE is set</span>
+<span class="sd">    **1st buffer:**</span>
 
-<span class="sd">    2nd buffer:</span>
-<span class="sd">        * buffering for ADC data.</span>
-<span class="sd">        * ADC data writes to the DDR when READ_ENABLE is set</span>
-<span class="sd">        * ADC data in DDR can be read to the host when READ_FG_ENABLE is set</span>
+<span class="sd">    * Function generator like data that provides a data-stream to the DACs</span>
+<span class="sd">    * Write from the host when DAC_WRITE_ENABLE is set (clear dac read and clear adc read and write)</span>
+<span class="sd">    * Organized into groups of 16 bits to 8 channels</span>
+<span class="sd">    * Read to the DACs with set_dac_read</span>
+<span class="sd">    * 6 AD5453 (14 bits each)</span>
+<span class="sd">    * 2 DAC80508 (16 bits each) </span>
+<span class="sd">    * DAC80508 channel data in the MSBs of the AD5453 stream</span>
+<span class="sd">    * FIFO: OpalKelly in -&gt; out to DDR [32bits x 1024words = 4096 bytes]</span>
+<span class="sd">    * FIFO: DDR in -&gt; DAC data out [out: 256bits x 256 = 8192 bytes]</span>
 
-<span class="sd">    Expected sequence of operations:</span>
-<span class="sd">        1) At startup write pattern for DACs using write_channels()</span>
-<span class="sd">        2) set_read() # starts DAC data output to DACs via SPI and ADC data captured into DDR</span>
-<span class="sd">        3) set_adc_read() # allows host to read PipeOut as PipeOut is continuously filled if emptied</span>
+<span class="sd">    **2nd buffer:**</span>
 
-<span class="sd">    DDR configuration bits:</span>
-<span class="sd">        * WRITE_ENABLE</span>
-<span class="sd">        * READ_ENABLE</span>
-<span class="sd">        * READ_FG_ENABLE</span>
+<span class="sd">    * Buffering for ADC data (AD7961; ADS8686), DAC outgoing data, timestamps.</span>
+<span class="sd">    * ADC data writes to the DDR set_adc_write()</span>
+<span class="sd">    * ADC data in DDR can be read to the host with set_adc_read()</span>
+<span class="sd">    * The DDR througput is sufficient for 1st buffer reading while reading and writing to the 2nd buffer</span>
+<span class="sd">    * FIFO: OpalKelly in -&gt; out to DDR [in: 32bits x 1024words = 4096 bytes]</span>
+<span class="sd">    * FIFO: DDR in -&gt; OpalKelly out [256bits x 128 = 4096 bytes] OpalKelly block size is half this.</span>
+
+<span class="sd">    **Expected sequence of operations:**</span>
+
+<span class="sd">    1) At startup write pattern for DACs using write_channels() [set_dac_write(), clear_dac_write() are called within write_channels()]</span>
+<span class="sd">    2) set_dac_read() # starts DAC data output to DACs via SPI and then set_adc_write() ADC data captured into DDR</span>
+<span class="sd">    3) set_adc_read() # allows host to read PipeOut as PipeOut is continuously filled if emptied</span>
+
+<span class="sd">    **ADC data ordering and saving:**</span>
+
+<span class="sd">    * deswizzle()</span>
+<span class="sd">    * save_data()</span>
+
+<span class="sd">    **DDR configuration bits:**</span>
+
+<span class="sd">    * DAC_WRITE_ENABLE</span>
+<span class="sd">    * DAC_READ_ENABLE</span>
+<span class="sd">    * ADC_WRITE_ENABLE</span>
+<span class="sd">    * ADC_TRANSFER_ENABLE</span>
+<span class="sd">    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># TODO: add Attributes to docstring</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_version</span><span class="o">=</span><span class="s1">&#39;ADC_NO_TIMESTAMPS&#39;</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">endpoints</span> <span class="o">=</span> <span class="n">Endpoint</span><span class="o">.</span><span class="n">get_chip_endpoints</span><span class="p">(</span><span class="s1">&#39;DDR3&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span> <span class="o">=</span> <span class="n">fpga</span>
@@ -2876,12 +2811,16 @@
                            <span class="c1"># number of channels that the DDR is striped between (for DACs)</span>
                            <span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
                            <span class="s1">&#39;update_period&#39;</span><span class="p">:</span> <span class="mf">400e-9</span><span class="p">,</span>  <span class="c1"># 2.5 MHz -- requires SCLK ~ 50 MHZ</span>
-                           <span class="s1">&#39;port1_index&#39;</span><span class="p">:</span> <span class="mh">0x7f_ff_f8</span><span class="p">}</span>
+                           <span class="s1">&#39;port1_index&#39;</span><span class="p">:</span> <span class="mh">0x7f_ff_f8</span><span class="p">,</span>
+                           <span class="s1">&#39;adc_channels&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="c1"># number of 2 byte chunks in DDR</span>
+                           <span class="s1">&#39;adc_period&#39;</span><span class="p">:</span> <span class="mf">200e-9</span>
+                           <span class="p">}</span> 
 
         <span class="c1"># the index is the DDR address that the circular buffer stops at.</span>
         <span class="c1"># need to write all the way up to this stoping point otherwise the SPI output will glitch</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sample_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;port1_index&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">8</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;data_version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_version</span>  <span class="c1"># sets deswizzling mode</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">data_arrays</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;channels&#39;</span><span class="p">]):</span>
@@ -2924,7 +2863,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            numpy.ndarray (for DDR data array)</span>
+<span class="sd">            amplitude : numpy.ndarray </span>
+<span class="sd">                to be assigned to DDR data array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">amplitude</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;sample_size&#39;</span><span class="p">])</span><span class="o">*</span><span class="n">amplitude</span>
@@ -2941,7 +2881,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        float : The closest possible frequency</span>
+<span class="sd">        new_frequency : float </span>
+<span class="sd">            The closest possible frequency</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">samples_per_period</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="n">freq</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;update_period&#39;</span><span class="p">]</span>
@@ -2979,7 +2920,11 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray, float : for DDR data array, actual frequeny used</span>
+<span class="sd">        ddr_seq : numpy.ndarray </span>
+<span class="sd">            to be assigned to DDR data array  </span>
+
+<span class="sd">        frequency : float</span>
+<span class="sd">            actual frequency after closest_frequency</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="n">amplitude</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">offset</span><span class="p">:</span>
@@ -3015,7 +2960,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray : for DDR data array</span>
+<span class="sd">            ddr_seq : numpy.ndarray </span>
+<span class="sd">                to be assigned to DDR data array        </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># change the stop value for integer number of cycles</span>
@@ -3054,7 +3000,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray : for DDR data array</span>
+<span class="sd">        ddr_seq : numpy.ndarray </span>
+<span class="sd">            to be assigned to DDR data array  </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">actual_length</span><span class="p">:</span>
@@ -3096,15 +3043,16 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">            int, float : length of the buffer written to the DDR</span>
-<span class="sd">                         (or error code if unsuccessful), speed of the write in MB/s</span>
+<span class="sd">        block_pipe_return : int</span>
+<span class="sd">            length of the buffer written to the DDR (or error code if unsuccessful)</span>
+<span class="sd">        speed_MBs : float</span>
+<span class="sd">            speed of the write in MB/s</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Length of buffer being written to DDR [bytes]: &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">buf</span><span class="p">))</span>
-        <span class="c1"># Reset FIFOs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear_read</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_fifo</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_write</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_dac_read</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_fifo</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;DAC_IN&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_dac_write</span><span class="p">()</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Writing to DDR...&#39;</span><span class="p">)</span>
         <span class="n">time1</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
@@ -3119,30 +3067,26 @@
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;The speed of the write was </span><span class="si">{</span><span class="n">speed_MBs</span><span class="si">}</span><span class="s1"> MB/s&#39;</span><span class="p">)</span>
 
         <span class="c1"># below prepares the HDL into read mode</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">clear_write</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_fifo</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_dac_write</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">set_ddr_read</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">set_read</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_dac_read</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_adc_read</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">block_pipe_return</span><span class="p">,</span> <span class="n">speed_MBs</span></div>
 
-<div class="viewcode-block" id="DDR3.reset_fifo"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.reset_fifo">[docs]</a>    <span class="k">def</span> <span class="nf">reset_fifo</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Reset both FIFOs and DDR Mig and DDR address pointers.&quot;&quot;&quot;</span>
-
-        <span class="c1"># TODO: convert to trigger, split resets? This is synchronized on the FPGA</span>
-        <span class="c1"># TODO: important! the rst_ddr_ui is not connected on the FPGA</span>
-
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                 <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+<div class="viewcode-block" id="DDR3.reset_mig_interface"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.reset_mig_interface">[docs]</a>    <span class="k">def</span> <span class="nf">reset_mig_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset user interface to the MIG (memory interface generator). Resets</span>
+<span class="sd">            the DDR address pointers for read/write of both buffers </span>
+<span class="sd">            (does not reset the MIG controller).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">send_trig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;UI_RESET&#39;</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="DDR3.fifo_status"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.fifo_status">[docs]</a>    <span class="k">def</span> <span class="nf">fifo_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Check the empty, full, and count status of the DDR interfacing FIFOs</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        dict : dictionary of fifo status (&#39;EMPTY&#39;, &#39;FULL&#39;, &#39;ADC_DATA_COUNT&#39;)</span>
-<span class="sd">            for &#39;IN&#39;, &#39;OUT&#39;, and channels 1, 2</span>
+<span class="sd">        fifo_status : dict </span>
+<span class="sd">            dictionary of fifo status (&#39;EMPTY&#39;, &#39;FULL&#39;, &#39;ADC_DATA_COUNT&#39;) for &#39;IN&#39;, &#39;OUT&#39;, and channels 1, 2</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">wire_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">read_wire</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;INIT_CALIB_COMPLETE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
@@ -3178,49 +3122,85 @@
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">fifo_status</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">fifo_status</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="DDR3.set_read"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.set_read">[docs]</a>    <span class="k">def</span> <span class="nf">set_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set DDR / FIFOs to read.</span>
-<span class="sd">           Enables DDR data going to the DACs and ADC data into DDR</span>
+<div class="viewcode-block" id="DDR3.set_dac_read"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.set_dac_read">[docs]</a>    <span class="k">def</span> <span class="nf">set_dac_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set DDR / FIFOs read enable. Enables DDR data going to the </span>
+<span class="sd">        DACs and ADC data into DDR</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DAC_READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DAC_READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DDR3.clear_read"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.clear_read">[docs]</a>    <span class="k">def</span> <span class="nf">clear_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Clear DDR / FIFOs to read.</span>
-<span class="sd">            Stops DDR data from going to the DACs and ADC data into DDR</span>
+<div class="viewcode-block" id="DDR3.clear_dac_read"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.clear_dac_read">[docs]</a>    <span class="k">def</span> <span class="nf">clear_dac_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clear DDR / FIFOs read enable. Stops DDR data from going to </span>
+<span class="sd">        the DACs and ADC data into DDR</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                 <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DAC_READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DAC_READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DDR3.set_write"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.set_write">[docs]</a>    <span class="k">def</span> <span class="nf">set_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set DDR / FIFOs to write data into DDR via Pipe.</span>
+<div class="viewcode-block" id="DDR3.set_dac_write"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.set_dac_write">[docs]</a>    <span class="k">def</span> <span class="nf">set_dac_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set DDR / FIFOs write enable into DDR via Pipe.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DAC_WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DAC_WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="DDR3.clear_write"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.clear_write">[docs]</a>    <span class="k">def</span> <span class="nf">clear_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Clear DDR / FIFOs to write data into DDR via Pipe.</span>
+<div class="viewcode-block" id="DDR3.clear_dac_write"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.clear_dac_write">[docs]</a>    <span class="k">def</span> <span class="nf">clear_dac_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clear DDR / FIFOs write enable into DDR via Pipe.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                 <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DAC_WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;DAC_WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DDR3.set_adc_write"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.set_adc_write">[docs]</a>    <span class="k">def</span> <span class="nf">set_adc_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set DDR / FIFOs write enable ADC data into DDR.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DDR3.clear_adc_write"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.clear_adc_write">[docs]</a>    <span class="k">def</span> <span class="nf">clear_adc_write</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Clear DDR / FIFOs write enable ADC data into DDR.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_WRITE_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DDR3.set_adc_read"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.set_adc_read">[docs]</a>    <span class="k">def</span> <span class="nf">set_adc_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.</span>
+        <span class="sd">&quot;&quot;&quot;Set DDR / FIFO read enable DDR data from the ADCs out via a PipeOut.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># TODO: change this name to ADC_READ_ENABLE and modify names in FPGA</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FG_READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FG_READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_TRANSFER_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_TRANSFER_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="DDR3.clear_adc_read"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.clear_adc_read">[docs]</a>    <span class="k">def</span> <span class="nf">clear_adc_read</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Clear DDR / FIFOs to read DDR data from the ADCs out via a PipeOut.</span>
+        <span class="sd">&quot;&quot;&quot;Clear DDR / FIFO read enable DDR data from the ADCs out via a PipeOut.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FG_READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                 <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FG_READ_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_TRANSFER_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_TRANSFER_ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DDR3.reset_fifo"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.reset_fifo">[docs]</a>    <span class="k">def</span> <span class="nf">reset_fifo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset FIFO interfaces to DDR .</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fifo_reset_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;DAC_IN&#39;</span><span class="p">,</span> <span class="s1">&#39;DAC_READ&#39;</span><span class="p">,</span> <span class="s1">&#39;ADC_IN&#39;</span><span class="p">,</span> <span class="s1">&#39;ADC_TRANSFER&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fifo_reset_names</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;DDR3 FIFO reset name of </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> is not in list of </span><span class="si">{</span><span class="n">fifo_reset_names</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;ALL&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">name_tmp</span> <span class="ow">in</span> <span class="n">fifo_reset_names</span><span class="p">:</span>
+                    <span class="n">ep_name</span> <span class="o">=</span> <span class="s1">&#39;FIFO_&#39;</span> <span class="o">+</span> <span class="n">name_tmp</span> <span class="o">+</span> <span class="s1">&#39;_RST&#39;</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="n">ep_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="n">ep_name</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="n">ep_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="n">ep_name</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ep_name</span> <span class="o">=</span> <span class="s1">&#39;FIFO_&#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;_RST&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="n">ep_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="n">ep_name</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="n">ep_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
+                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="n">ep_name</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
+
 
 <div class="viewcode-block" id="DDR3.adc_single"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.adc_single">[docs]</a>    <span class="k">def</span> <span class="nf">adc_single</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set ADC read address to the ADC write address.</span>
@@ -3233,13 +3213,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">send_trig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ADC_ADDR_RESET&#39;</span><span class="p">])</span></div>
 
 
-<div class="viewcode-block" id="DDR3.read_adc"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.read_adc">[docs]</a>    <span class="k">def</span> <span class="nf">read_adc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;ADC&#39;</span><span class="p">,</span> <span class="n">DEBUG_PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Read ADC data.</span>
+<div class="viewcode-block" id="DDR3.read_adc_block"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.read_adc_block">[docs]</a>    <span class="k">def</span> <span class="nf">read_adc_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;ADC&#39;</span><span class="p">,</span> <span class="n">DEBUG_PRINT</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read ADC (and other) DDR data. </span>
+<span class="sd">        Block size must be a power of two from 16 to 16384</span>
+<span class="sd">        will automatically perform multiple transfers to complete the full LENGTH.</span>
+<span class="sd">        The length must be an integer multiple of 16 for USB3.0</span>
+<span class="sd">        and the length must be an Integer multiple of Block Size.</span>
+<span class="sd">        see https://docs.opalkelly.com/fpsdk/frontpanel-api/ section 3.3.1</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        sample_size : int</span>
 <span class="sd">            Length of read in bytes. If none uses DDR parameter &#39;sample_size.&#39;</span>
+
 <span class="sd">        source : str</span>
 <span class="sd">            FIFO output buffer to read. Either &#39;ADC&#39; or &#39;FG&#39;. &#39;FG&#39; just reads</span>
 <span class="sd">            back what is written for DACs (as function generator) so not so</span>
@@ -3247,8 +3233,10 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        byearray, int : The data read as a bytearray, The count (or error code)</span>
-<span class="sd">        read from the OpalKelly interface</span>
+<span class="sd">        data_buf : byearray</span>
+<span class="sd">            adc data read as a bytearray</span>
+<span class="sd">        read_cnt : int</span>
+<span class="sd">            The count (or error code) read from the OpalKelly interface</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">sample_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -3256,12 +3244,6 @@
             <span class="n">data_buf</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">data_buf</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">sample_size</span><span class="p">)</span>
-
-        <span class="c1"># Block size must be a power of two from 16 to 16384</span>
-        <span class="c1"># will automatically perform multiple transfers to complete the full LENGTH</span>
-        <span class="c1"># the length must be an integer multiple of 16 for USB3.0</span>
-        <span class="c1"># and the length must be an Integer multiple of Block Size</span>
-        <span class="c1"># see https://docs.opalkelly.com/fpsdk/frontpanel-api/ section 3.3.1</span>
 
         <span class="n">block_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;BLOCK_SIZE&#39;</span><span class="p">]</span>
         <span class="c1"># check block size</span>
@@ -3282,7 +3264,7 @@
                                                           <span class="n">blockSize</span><span class="o">=</span><span class="n">block_size</span><span class="p">,</span>
                                                           <span class="n">data</span><span class="o">=</span><span class="n">data_buf</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;incorrect source in read_adc&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Incorrect source in read_adc&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="o">-</span><span class="mi">11</span><span class="p">,</span> <span class="o">-</span><span class="mi">11</span>
 
         <span class="k">if</span> <span class="n">DEBUG_PRINT</span><span class="p">:</span>
@@ -3290,10 +3272,238 @@
                 <span class="sa">f</span><span class="s1">&#39;The length [num of bytes] of the BlockPipeOut read is: </span><span class="si">{</span><span class="n">read_cnt</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">data_buf</span><span class="p">,</span> <span class="n">read_cnt</span></div>
 
+<div class="viewcode-block" id="DDR3.deswizzle"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.deswizzle">[docs]</a>    <span class="k">def</span> <span class="nf">deswizzle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">convert_twos</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reorder DDR data to match the ADC channels. Shift MSBytes up by 8 </span>
+<span class="sd">        and combine with LSBytes. Swap channels to match ADC channel numbering.</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        d : array</span>
+<span class="sd">            array of bytes. </span>
+<span class="sd">        convert_twos : Boolean</span>
+<span class="sd">            if true converts data to signed</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        chan_data : dict</span>
+<span class="sd">            dictionary of data arrays (keys are channel numbers)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="mi">16</span>
+        <span class="n">chan_data_swz</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># this data is swizzled</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;data_version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ADC_NO_TIMESTAMPS&#39;</span><span class="p">:</span>  <span class="c1"># first version of ADC data before DACs + timestamps are stored</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                <span class="n">chan_data_swz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">[(</span><span class="mi">0</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="p">::</span> <span class="mi">8</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">d</span><span class="p">[(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="p">::</span> <span class="mi">8</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span>
+
+            <span class="n">chan_data</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">convert_twos</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                    <span class="n">chan_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">twos_comp</span><span class="p">(</span><span class="n">chan_data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bits</span><span class="p">)</span>
+            
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;data_version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TIMESTAMPS&#39;</span><span class="p">:</span>  <span class="c1"># first version of ADC data before DACs + timestamps are stored</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+                <span class="n">chan_data_swz</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">d</span><span class="p">[(</span><span class="mi">0</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="p">::</span> <span class="mi">16</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">d</span><span class="p">[(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="p">::</span> <span class="mi">16</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span>
+
+            <span class="n">chan_data</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span>            
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>            
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">chan_data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data_swz</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">chan_data</span></div>
+
+
+<div class="viewcode-block" id="DDR3.data_to_names"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.data_to_names">[docs]</a>    <span class="k">def</span> <span class="nf">data_to_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chan_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Put deswizzled data into dictionaries with names that match with the data sources. </span>
+<span class="sd">        Complete twos complement conversion where necessary. Check timestamps for skips.</span>
+<span class="sd">        Check the constant values for errors.</span>
+
+<span class="sd">        This supports 2 versions of the FPGA code:</span>
+<span class="sd">        &#39;ADC_NO_TIMESTAMPS&#39;: DDR data is only the fast ADC. AD7961</span>
+<span class="sd">        &#39;TIMESTAMPS&#39;: DDR data is numerous. AD7961, AD5453 out, ADS8686, timestamps, readcheck</span>
+
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        chan_data : dict of np.arrays</span>
+<span class="sd">            data from reading DDR (minimally processed into 2 byte containers)</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        adc_data : dict </span>
+<span class="sd">            fast adc data (double format @ 5 MSPS)</span>
+<span class="sd">        timestamp : np.array  </span>
+<span class="sd">            timestamps</span>
+<span class="sd">        dac_data : dict </span>
+<span class="sd">            DAC output data</span>
+<span class="sd">        ads : dict </span>
+<span class="sd">            ADS8686 ADC data (double format @ 1 MSPS)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;data_version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ADC_NO_TIMESTAMPS&#39;</span><span class="p">:</span>  <span class="c1"># first version of ADC data before DACs + timestamps are stored</span>
+            <span class="n">adc_data</span> <span class="o">=</span> <span class="n">chan_data</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">read_check</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">dac_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">ads</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;data_version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TIMESTAMPS&#39;</span><span class="p">:</span>  <span class="c1"># first version of ADC data before DACs + timestamps are stored</span>
+            
+            <span class="c1"># locate the constant value of 0xaa55 and then 0x28ab</span>
+            <span class="c1"># and ensure this is in the 3rd position</span>
+            <span class="c1"># c_val_idx = np.nonzero((chan_data[7][:-1] == 0xaa55) &amp; ((chan_data[7][1:] == 0x28ab)))[0][0]</span>
+            <span class="c1"># if c_val_idx != 3:</span>
+            <span class="c1">#     print(&#39;Warning!!&#39;)</span>
+            <span class="c1">#     print(f&#39;DDR read constant value is at position = {c_val_idx}; expected 3&#39;)</span>
+            
+            <span class="n">adc_data</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                <span class="n">adc_data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">twos_comp</span><span class="p">(</span><span class="n">chan_data</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span>
+            
+            <span class="n">lsb</span> <span class="o">=</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">6</span><span class="p">][</span><span class="mi">0</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">)</span>
+            <span class="n">mid_b</span> <span class="o">=</span> <span class="p">((</span><span class="n">chan_data</span><span class="p">[</span><span class="mi">6</span><span class="p">][</span><span class="mi">1</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">))</span><span class="o">&lt;&lt;</span><span class="mi">16</span><span class="p">)</span>
+            <span class="n">msb</span> <span class="o">=</span> <span class="p">((</span><span class="n">chan_data</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint64</span><span class="p">))</span><span class="o">&lt;&lt;</span><span class="mi">32</span><span class="p">)</span>
+            <span class="n">t_len</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">msb</span><span class="p">)</span>
+            <span class="n">timestamp</span> <span class="o">=</span> <span class="p">(</span><span class="n">lsb</span><span class="p">[</span><span class="mi">0</span><span class="p">:(</span><span class="n">t_len</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span> <span class="o">+</span> <span class="n">mid_b</span><span class="p">[</span><span class="mi">0</span><span class="p">:(</span><span class="n">t_len</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span> <span class="o">+</span> <span class="n">msb</span><span class="p">[</span><span class="mi">0</span><span class="p">:(</span><span class="n">t_len</span><span class="o">-</span><span class="mi">1</span><span class="p">)])</span>
+
+            <span class="n">read_check</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">read_check</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="mi">3</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span>
+            <span class="n">read_check</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="mi">4</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span>
+            <span class="n">read_check</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="mi">8</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span>
+
+            <span class="n">dac_data</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">dac_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">4</span><span class="p">][</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">dac_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">4</span><span class="p">][</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">dac_data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">5</span><span class="p">][</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">dac_data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">5</span><span class="p">][</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+            <span class="c1"># dac channels 4,5 are available but not every sample. skip for now. TODO: add channels 4,5</span>
+
+            <span class="n">ads</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">ads</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">twos_comp</span><span class="p">(</span><span class="n">chan_data</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="mi">0</span><span class="p">::</span><span class="mi">5</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="n">ads</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">twos_comp</span><span class="p">(</span><span class="n">chan_data</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="mi">1</span><span class="p">::</span><span class="mi">5</span><span class="p">],</span> <span class="mi">16</span><span class="p">)</span>
+
+            <span class="c1"># check that the constant values are constant </span>
+            <span class="n">constant_values</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mh">0xaa55</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mh">0x28ab</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mh">0x77bb</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">read_check</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">constant_values</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Error in constant value: </span><span class="si">{</span><span class="n">constant_values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s1"> &#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of errors: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">read_check</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="n">constant_values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="c1"># check the timestamps for a skip</span>
+            <span class="n">unq_time_intervals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">timestamp</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">unq_time_intervals</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: Multiple time intervals&#39;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">adc_data</span><span class="p">,</span> <span class="n">timestamp</span><span class="p">,</span> <span class="n">dac_data</span><span class="p">,</span> <span class="n">ads</span></div>
+
+<div class="viewcode-block" id="DDR3.save_data"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.save_data">[docs]</a>    <span class="k">def</span> <span class="nf">save_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">num_repeats</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">blk_multiples</span> <span class="o">=</span> <span class="mi">40</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        read and save DDR data to an hdf file </span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        data_dir : string</span>
+<span class="sd">            directory for data</span>
+<span class="sd">        file_name : string</span>
+<span class="sd">            filename to save data (does not append extension).</span>
+<span class="sd">        num_repeats : int</span>
+<span class="sd">            total data read is 2048 bytes * num_repeats * blk_multiples</span>
+<span class="sd">        blk_multiples : int </span>
+<span class="sd">            number of blocks read by adc_read. adc_read is a single OpalKelly API call </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        chan_data : dict</span>
+<span class="sd">            dictionary of data arrays (keys are channel numbers)</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">chunk_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;BLOCK_SIZE&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">blk_multiples</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;adc_channels&#39;</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">))</span>  <span class="c1"># readings per ADC</span>
+        <span class="n">repeat</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">adc_readings</span> <span class="o">=</span> <span class="n">chunk_size</span><span class="o">*</span><span class="n">num_repeats</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Anticipated chunk size </span><span class="si">{</span><span class="n">chunk_size</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Reading </span><span class="si">{</span><span class="n">adc_readings</span><span class="o">*</span><span class="mi">2</span><span class="o">/</span><span class="mi">1024</span><span class="si">}</span><span class="s1"> kB per ADC channel for a total of </span><span class="si">{</span><span class="n">adc_readings</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;adc_period&quot;</span><span class="p">]</span><span class="o">*</span><span class="mi">1000</span><span class="si">}</span><span class="s1"> ms of data&#39;</span><span class="p">)</span>
+
+        <span class="n">full_data_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">full_data_name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_adc_read</span><span class="p">()</span>  <span class="c1"># enable data into the ADC reading FIFO</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">adc_readings</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;adc_period&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Save ADC DDR data to a file</span>
+        <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">full_data_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">data_set</span> <span class="o">=</span> <span class="n">file</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s2">&quot;adc&quot;</span><span class="p">,</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;adc_channels&#39;</span><span class="p">],</span> <span class="n">chunk_size</span><span class="p">),</span> <span class="n">maxshape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;adc_channels&#39;</span><span class="p">],</span> <span class="kc">None</span><span class="p">))</span>
+            <span class="k">while</span> <span class="n">repeat</span> <span class="o">&lt;</span> <span class="n">num_repeats</span><span class="p">:</span>
+                <span class="n">d</span><span class="p">,</span> <span class="n">bytes_read_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_adc</span><span class="p">(</span><span class="n">blk_multiples</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;data_version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ADC_NO_TIMESTAMPS&#39;</span><span class="p">:</span>
+                    <span class="n">chan_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deswizzle</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;data_version&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;TIMESTAMPS&#39;</span><span class="p">:</span>
+                    <span class="n">chan_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deswizzle</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;adc_channels&#39;</span><span class="p">]</span><span class="o">==</span><span class="mi">4</span><span class="p">:</span>
+                    <span class="n">chan_stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">chan_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;adc_channels&#39;</span><span class="p">]</span><span class="o">==</span><span class="mi">8</span><span class="p">:</span>
+                    <span class="n">chan_stack</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">chan_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span>
+                                            <span class="n">chan_data</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">5</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="n">chan_data</span><span class="p">[</span><span class="mi">7</span><span class="p">]))</span>
+
+                <span class="n">repeat</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">repeat</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Chunk size by chan data size </span><span class="si">{</span><span class="n">chunk_size</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">data_set</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">chan_stack</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data_set</span><span class="p">[:,</span> <span class="o">-</span><span class="n">chunk_size</span><span class="p">:]</span> <span class="o">=</span> <span class="n">chan_stack</span>
+                <span class="k">if</span> <span class="n">repeat</span> <span class="o">&lt;</span> <span class="n">num_repeats</span><span class="p">:</span>
+                    <span class="n">data_set</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">data_set</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">chunk_size</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Done with DDR reading: saved as </span><span class="si">{</span><span class="n">full_data_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chan_data</span></div>
+
+
+<div class="viewcode-block" id="DDR3.read_adc"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.read_adc">[docs]</a>    <span class="k">def</span> <span class="nf">read_adc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">blk_multiples</span><span class="o">=</span><span class="mi">2048</span><span class="p">):</span>
+
+        <span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">        read DDR data into a numpy buffer of bytes</span>
+
+<span class="sd">        Arguments</span>
+<span class="sd">        ---------</span>
+<span class="sd">        blk_multiples : int</span>
+<span class="sd">            total size of the read is blk_multiples * block_size  </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        d : bytearray</span>
+<span class="sd">            data as uint32    </span>
+<span class="sd">        bytes_read_error : int </span>
+<span class="sd">            bytes read or error code          </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">t</span><span class="p">,</span> <span class="n">bytes_read_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read_adc_block</span><span class="p">(</span>  <span class="c1"># just reads from the block pipe out</span>
+            <span class="n">sample_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;BLOCK_SIZE&quot;</span><span class="p">]</span> <span class="o">*</span> <span class="n">blk_multiples</span>
+        <span class="p">)</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frombuffer</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Bytes read: </span><span class="si">{</span><span class="n">bytes_read_error</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span><span class="p">,</span> <span class="n">bytes_read_error</span></div>
+
+
 <div class="viewcode-block" id="DDR3.set_index"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3.set_index">[docs]</a>    <span class="k">def</span> <span class="nf">set_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">factor2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        No longer used. Index (the DDR address that wraps-around to 0)</span>
-<span class="sd">        is fixed to improve timing performance.</span>
+<span class="sd">        No longer used. Index (the DDR address that wraps-around to 0).</span>
+<span class="sd">        This is now fixed to improve timing performance.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Set index is no longer used. Index is fixed to: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s1">&#39;port1_index&#39;</span><span class="p">]))</span></div></div>
@@ -3326,46 +3536,30 @@
 </pre></div>
 
            </div>
-           
           </div>
           <footer>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>
-        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
-
-    </p>
+    <p>&#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.</p>
   </div>
-    
-    
-    
-    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    
-    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
 
 </footer>
         </div>
       </div>
-
     </section>
-
   </div>
-  
-
-  <script type="text/javascript">
+  <script>
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script>
-
-  
-  
-    
-   
+  </script> 
 
 </body>
 </html>
