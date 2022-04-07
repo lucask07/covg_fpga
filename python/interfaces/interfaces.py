@@ -430,8 +430,7 @@ class FPGA:
     """
 
     # TODO: change to complete bitfile when Verilog is combined
-    def __init__(self, bitfile=os.path.join('..', '..', 'fpga_test.bit'),
-                 debug=False):
+    def __init__(self, bitfile, debug=False):
 
         self.bitfile = bitfile
         self.debug = debug
@@ -564,6 +563,24 @@ class FPGA:
 
         # print(f'send_trig(address={hex(ep_bit.address)},bit={ep_bit.bit_index_low})')
         return self.xem.ActivateTriggerIn(ep_bit.address, ep_bit.bit_index_low)
+
+    def read_trig(self, ep_bit):
+        """Read an OK TriggerOut Endpoint.
+        
+        Parameters
+        ----------
+        ep_bit : Endpoint
+            The endpoint containing the bit_index_low and address of the
+            TriggerOut to read.
+
+        Returns
+        -------
+        bool
+            Whether the TriggerOut has been triggered.
+        """
+
+        self.xem.UpdateTriggerOuts()
+        return self.xem.IsTriggered(ep_bit.address, (1 << ep_bit.bit_index_low))
 
     def read_ep(self, ep_bit):
         """Return the error code after reading an OK WireOut Endpoint."""
@@ -1567,7 +1584,7 @@ class SPIController:
         self.master_config = data
 
     def configure_master(self, ASS=0, IE=0, LSB=0, Tx_NEG=0, Rx_NEG=0, CHAR_LEN=0):
-        """Set the Wishbone's CTRL register using several arguments.
+        """Set the Wishbone's CTRL register using several parameters.
 
         Parameters
         ----------
@@ -3201,7 +3218,7 @@ class DDR3():
         """Reorder DDR data to match the ADC channels. Shift MSBytes up by 8 
         and combine with LSBytes. Swap channels to match ADC channel numbering.
 
-        Arguments
+        Parameters
         ---------
         d : array
             array of bytes. 
@@ -3259,7 +3276,7 @@ class DDR3():
         'TIMESTAMPS': DDR data is numerous. AD7961, AD5453 out, ADS8686, timestamps, readcheck
 
 
-        Arguments
+        Parameters
         ---------
         chan_data : dict of np.arrays
             data from reading DDR (minimally processed into 2 byte containers)
@@ -3336,7 +3353,7 @@ class DDR3():
         """
         read and save DDR data to an hdf file 
 
-        Arguments
+        Parameters
         ---------
         data_dir : string
             directory for data
@@ -3404,7 +3421,7 @@ class DDR3():
         """ 
         read DDR data into a numpy buffer of bytes
 
-        Arguments
+        Parameters
         ---------
         blk_multiples : int
             total size of the read is blk_multiples * block_size  
