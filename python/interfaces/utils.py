@@ -71,10 +71,20 @@ def count_bytes(num):
     return bytes
 
 
-def int_to_list(integer, num_bytes=None):
+def int_to_list(integer, byteorder='little', num_bytes=None):
     """Convert an integer into a list of integers 1 byte long.
 
-    The MSB will be at index 0 in the list.
+    Parameters
+    ----------
+    integer : int
+        The integer to convert.
+    byteorder : str
+        Either 'little' for little Endian (LSB first) or 'big' for big Endian
+        (MSB first).
+    num_bytes : int
+        The number of bytes to convert the number into. None means the
+        function will return the minimum number of bytes necessary to
+        represent the number.
     """
 
     list_int = []
@@ -100,7 +110,13 @@ def int_to_list(integer, num_bytes=None):
                 # Can append to the end because the list will be reversed in the return
                 list_int.append(0)
 
-    return list_int[::-1]
+    if byteorder == 'little':
+        return list_int
+    elif byteorder == 'big':
+        return list_int[::-1]
+    else:
+        print(f'Unknown byteorder "{byteorder}", using "little" instead')
+        return list_int
 
 
 def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
