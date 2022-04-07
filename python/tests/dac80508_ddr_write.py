@@ -41,7 +41,7 @@ fdac_amp_volt = 1
 sdac_amp_volt = 1
 target_freq = 1000.0
 # Specify output channel for DAC80508
-sdac_1_out_chan = 0
+sdac_1_out_chan = 7
 sdac_2_out_chan = 7
 # Variables for which writes to run and how many
 loop_num = 10   # Number of times to turning on, writing, turning off
