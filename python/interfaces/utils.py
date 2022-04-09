@@ -9,6 +9,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 import numpy as np
 from scipy.fft import rfft
 import datetime
+import sys
 
 def rev_lookup(dd, val):
     key = next(key for key, value in dd.items() if value == val)
@@ -251,3 +252,12 @@ def calc_impedance(v_in, v_out, resistance):
     impedance_calc = np.divide(rfft(v_out), rfft(current))
     
     return impedance_calc
+
+def get_memory_usage():
+    """Get a sorted list of the objects and their sizes."""
+
+    # These are the usual ipython objects, including this one you are creating
+    ipython_vars = ['In', 'Out', 'exit', 'quit', 'get_ipython', 'ipython_vars']
+
+    return sorted([(x, sys.getsizeof(globals().get(x))) for x in dir() if not x.startswith(
+        '_') and x not in sys.modules and x not in ipython_vars], key=lambda x: x[1], reverse=True)

@@ -588,60 +588,6 @@ class FPGA:
         read_out = self.xem.GetWireOutValue(ep_bit.address)
         return read_out
 
-    # def get_pll_freq(self, output):
-    #     f = self.pll.GetOutputFrequency(output)
-    #     print('Pll f = {} [MHz]'.format(f))
-    #     return f
-
-    def get_time(self):
-        """Return the total time from the FPGA since initializing the bitfile."""
-        self.send_trig(Endpoint(0x40, 10, 10, 1))
-        low_end = self.read_wire(0x25)
-        high_end = self.read_wire(0x26)
-        total_time = (high_end << 32 | low_end)
-        total_time /= 200000000
-        return total_time
-
-    def get_available_endpoints(self):
-        """Return a list of available OK endpoints."""
-
-        # PipeIns (Includes Block-Throttled) [0x80:0x9F] return ??? if the endpoint is not there
-        print('Gathering PipeIns...')
-        pipe_ins = []
-        for ep in range(0x80, 0x9F + 1):
-            result = self.xem.WriteToPipeIn(ep, bytearray(81920))
-            print(hex(ep), result)
-            if result == None:
-                continue
-            elif result >= 0:
-                if result is False:  # Need is because False == 0 is True
-                    continue
-                print('Appending...')
-                # Not an error, add to list
-                pipe_ins.append(hex(ep))
-
-        # PipeOuts (Includes Block-Throttled) [0xA0:0xBF] return -2 if the endpoint is not there
-        print('Gathering PipeOuts...')
-        pipe_outs = []
-        # for offset in range(0x00, 0x1f + 1):
-        for offset in range(32):
-            # buf, result = self.read_pipe_out(addr=addr, data_len=16)
-            buf, result = self.read_pipe_out(0xA0 + offset, 16)
-            print(offset, buf, result)
-            if result == None:
-                # Intermediate step to get the FPGA to do some sort of "reset"
-                self.set_wire(0, 0)
-                continue
-            elif result >= 0:
-                if result is False:  # Need is because False == 0 is True
-                    continue
-                print('Appending...')
-                # Not an error, add to list
-                pipe_outs.append(hex(offset + 0xa0))
-
-        available_endpoints = [pipe_ins, pipe_outs]
-        return available_endpoints
-
     def set_wire_bit(self, address, bit):
         """Set a single bit to 1 in a OpalKelly wire in."""
 
