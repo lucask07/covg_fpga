@@ -13,7 +13,6 @@ Lucas Koerner, koerner.lucas@stthomas.edu
 """
 
 from interfaces.boards import Daq
-from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import logging
 from interfaces.interfaces import (
     FPGA,
@@ -33,17 +32,12 @@ import sys
 from time import sleep
 import datetime
 import time
-import atexit
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle as pkl
 import h5py
-from filters.filter_tools import butter_lowpass_filter, delayseq_interp
-from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv, idx_timerange
-from analysis.utils import calc_fft
+from analysis.adc_data import read_h5
 
 # constants 
-FS = 5e6  # sampling frequency 
 dac80508_offset = 0x8000
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
@@ -79,7 +73,7 @@ if not os.path.exists(data_dir):
 # alternative for Python<3.9
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.INFO)
-handler = logging.FileHandler("AD7961_test.log", "w", "utf-8")
+handler = logging.FileHandler("DDR_test.log", "w", "utf-8")
 root_logger.addHandler(handler)
 
 
@@ -96,32 +90,20 @@ f = FPGA(
 f.init_device()
 sleep(2)
 f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset
+f.debug = True
 
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
 
 daq = Daq(f)
-ad7961s = daq.ADC
-ad7961s[0].reset_wire(1)
-
-
-# --------  Initialize fast ADCs  --------
-for chan in [0,1,2,3]:
-    ad7961s[chan].power_up_adc()  # standard sampling
-
-ad7961s[0].reset_wire(0)
-time.sleep(1)
-
-for chan in [0,1,2,3]:
-    ad7961s[chan].reset_fifo()
 
 # fast DACs
 for i in [0,1,2,3,4,5]:
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
-    daq.DAC[i].filter_select(operation="set")
+    daq.DAC[i].filter_select(operation="clear")
     daq.DAC[i].set_data_mux("DDR")
-    daq.DAC[i].write_filter_coeffs()
+    #daq.DAC[i].write_filter_coeffs()
 
 # --- Configure for DDR read to DAC80508 ---
 for dac_gp_ch in [0, 1]:
@@ -133,17 +115,16 @@ for dac_gp_ch in [0, 1]:
 ddr = DDR3(f, data_version='TIMESTAMPS')
 
 def ddr_write_setup():
+    ddr.clear_adcs_connected()
     ddr.clear_dac_read()
     ddr.clear_adc_write()
     ddr.reset_fifo(name='ALL')
     ddr.reset_mig_interface()
-    ad7961s[0].reset_trig()
 
 def ddr_write_finish():
-     # reenable both DACs
-    ddr.set_dac_read()  # enable DAC playback and ADC reading
-    ddr.set_adc_write()
+    ddr.set_adc_dac_simultaneous()  # enable DAC playback and ADC writing to DDR
 
+##### --------- configure data to load into DDR -------------------
 FAST_DAC_FREQ = 7e3
 for i in range(7):
     ddr.data_arrays[i], fdac_freq = ddr.make_sine_wave(0x800, FAST_DAC_FREQ,
@@ -153,11 +134,9 @@ for i in range(7):
 sdac_amp_volt = 1
 target_freq_sdac = 12000.0
 sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
-
-# Data for the 2 DAC80508 "Slow DACs"
 sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq_sdac, offset=dac80508_offset)
 
-# Specify output channel for DAC80508
+# Specify output channel for DAC80508 (x2)
 sdac_1_out_chan = 5
 sdac_2_out_chan = 5
 
@@ -165,7 +144,6 @@ sdac_2_out_chan = 5
 for i in range(6):
     ddr.data_arrays[i] = np.bitwise_and(ddr.data_arrays[i], 0x3fff)
 
-# Load data into DDR
 # Set channel bits
 ddr.data_arrays[0] = np.bitwise_or(ddr.data_arrays[0], (sdac_1_out_chan & 0b110) << 13)
 ddr.data_arrays[1] = np.bitwise_or(ddr.data_arrays[1], (sdac_1_out_chan & 0b001) << 14)
@@ -177,45 +155,63 @@ for i in range(2):
     ddr.data_arrays[i + 6] = sdac_sine
 
 ddr_write_setup()
-g_buf = ddr.write_channels()
+block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
+ddr.reset_mig_interface()
 ddr_write_finish()
 
-REPEAT = True
+## ----------- end with writing data to DDR -------------------
+
+REPEAT = False
 if REPEAT:  # to repeat data capture without rewriting the DAC data
     ddr.clear_adc_read()
     ddr.clear_adc_write()
+    ddr.clear_dac_read()
 
-    ddr.reset_fifo(name='ADC_IN')
-    ddr.reset_fifo(name='ADC_TRANSFER')
+    ddr.reset_fifo(name='ALL')
+
+    # alternatively to keep DAC data running only reset ADC fifos
+    # ddr.reset_fifo(name='ADC_IN')
+    # ddr.reset_fifo(name='ADC_TRANSFER')
+
     ddr.reset_mig_interface()
 
-    ddr.set_adc_write()
+    ddr_write_finish()
     time.sleep(0.01)
 
 file_name = 'test'
 idx = 0
-# saves data to a file; returns to teh workspace the deswizzled DDR data of the last repeat
+
+# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
 chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 8,
                           blk_multiples=40) # blk multiples multiple of 10
 
 # to get the deswizzled data of all repeats need to read the file
 _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
 
-# Long data sequence -- entire file 
-adc_data, timestamp, dac_data, ads = ddr.data_to_names(chan_data)
+# Long data sequence read back entire file 
+adc_data, timestamp, dac_data, ads, reading_error = ddr.data_to_names(chan_data)
 
-# Shorter data sequence, just one of the repeats
-# adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
-
-crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+print(f'DDR reading error is {reading_error}')
 
 # DACs 
+shift_write = 0
 for dac_ch in range(4):
     fig,ax=plt.subplots()
-    y = dac_data[dac_ch][crop_start:]
+    y = dac_data[dac_ch]
     lbl = f'Ch{dac_ch}'
     ax.plot(y, marker = '+', label = lbl)
+    ax.plot(np.bitwise_and(ddr.data_arrays[dac_ch], 0x3fff)[shift_write:(shift_write + len(dac_data[dac_ch]))], 
+        marker='*', label = 'DDR uploaded')
     ax.legend()
     ax.set_title('Fast DAC data')
     ax.set_xlabel('Sample #')
+
+# compare DAC channels read to DAC channels written 
+
+# need to shift half a period plus some 
+for shift_write in [0]: 
+    for dac_ch in range(4):
+        dac_write = np.bitwise_and(ddr.data_arrays[dac_ch], 0x3fff)[shift_write:(shift_write + len(dac_data[dac_ch]))]
+        num_mismatch = np.sum(dac_data[dac_ch] != dac_write)
+        print(f'DAC channel {dac_ch} has {num_mismatch} mismatches between read and write')
