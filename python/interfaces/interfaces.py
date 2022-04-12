@@ -604,6 +604,20 @@ class FPGA:
 
         return self.set_wire(address, value=0, mask=1 << bit)
 
+    def set_ep_simultaneous(self, address, bit_list, val_list):
+        """ set multiple values to the wire of a single endpoint"""
+        value = 0
+        mask = 0
+        for bit, val in zip(bit_list, val_list):
+            value = value | (val << bit)
+            mask = mask | (1 << bit)
+        if self.debug:
+            print(
+                f'Simultaneous wire write (address={hex(address)},value={hex(value)},mask={hex(mask)})')
+
+        return self.set_wire(address, value=value, mask=mask)
+
+
     def read_wire_bit(self, address, bit):
         """Read a single bit in a OpalKelly wire in."""
         value = self.read_wire(address)
@@ -3007,7 +3021,7 @@ class DDR3():
             else:
                 data[(7-i + 1)::8] = self.data_arrays[i]
 
-        print('Length of data = {}'.format(len(data)))
+        print('Length of data DDR data [2 byte words] = {}'.format(len(data)))
         return self.write(bytearray(data), set_ddr_read=set_ddr_read)
 
     def write(self, buf, set_ddr_read=True):
@@ -3135,6 +3149,20 @@ class DDR3():
 
         self.fpga.set_wire_bit(self.endpoints['ADC_WRITE_ENABLE'].address,
                                self.endpoints['ADC_WRITE_ENABLE'].bit_index_low)
+
+    def set_adc_dac_simultaneous(self):
+        """
+        Set DDR / FIFOs read enable. Enables DDR data going to the 
+        DACs and ADC data into DDR
+        """
+        bit_addr = [self.endpoints['ADC_WRITE_ENABLE'].bit_index_low, 
+                    self.endpoints['DAC_READ_ENABLE'].bit_index_low,
+                    self.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low]
+        bit_vals = [1,1,1]
+
+        self.fpga.set_ep_simultaneous(self.endpoints['ADC_WRITE_ENABLE'].address,
+                                      bit_addr, bit_vals)
+
 
     def clear_adc_write(self):
         """Clear DDR / FIFOs write enable ADC data into DDR.
@@ -3351,13 +3379,6 @@ class DDR3():
 
         if self.parameters['data_version'] == 'TIMESTAMPS':  # first version of ADC data before DACs + timestamps are stored
             
-            # locate the constant value of 0xaa55 and then 0x28ab
-            # and ensure this is in the 3rd position
-            # c_val_idx = np.nonzero((chan_data[7][:-1] == 0xaa55) & ((chan_data[7][1:] == 0x28ab)))[0][0]
-            # if c_val_idx != 3:
-            #     print('Warning!!')
-            #     print(f'DDR read constant value is at position = {c_val_idx}; expected 3')
-            
             adc_data = {}
             for i in range(4):
                 adc_data[i] = twos_comp(chan_data[i], 16)
@@ -3384,19 +3405,22 @@ class DDR3():
             ads['A'] = twos_comp(chan_data[7][0::5], 16)
             ads['B'] = twos_comp(chan_data[7][1::5], 16)
 
+            error = False
             # check that the constant values are constant 
             constant_values = {0: 0xaa55, 1: 0x28ab, 2: 0x77bb}
             for i in range(2):
                 if not np.all(read_check[i] == constant_values[i]):
                     print(f'Error in constant value: {constant_values[i]} ')
                     print(f'Number of errors: {np.sum(read_check[i] != constant_values[i])}')
+                    error = True
 
             # check the timestamps for a skip
             unq_time_intervals = np.unique(np.diff(timestamp))
             if np.size(unq_time_intervals) > 1:
                 print('Warning: Multiple time intervals')
+                error = True
 
-            return adc_data, timestamp, dac_data, ads
+            return adc_data, timestamp, dac_data, ads, error
 
     def save_data(self, data_dir, file_name, num_repeats = 4, blk_multiples = 40):
         """
@@ -3422,7 +3446,7 @@ class DDR3():
         chunk_size = int(self.parameters["BLOCK_SIZE"] * blk_multiples / (self.parameters['adc_channels']*2))  # readings per ADC
         repeat = 0
         adc_readings = chunk_size*num_repeats
-        print(f'Anticipated chunk size {chunk_size}')
+        print(f'Anticipated chunk size (readings per channel) {chunk_size}')
         print(f'Reading {adc_readings*2/1024} kB per ADC channel for a total of {adc_readings*self.parameters["adc_period"]*1000} ms of data')
 
         full_data_name = os.path.join(data_dir, file_name)
