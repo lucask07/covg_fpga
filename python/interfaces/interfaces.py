@@ -2634,14 +2634,6 @@ class AD7961(ADCDATA):
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['PLL_RESET'].address,
                                                self.endpoints['PLL_RESET'].bit_index_low)
 
-    def reset_fifo(self):
-        """Reset the FIFO for the ADC data.
-
-        One per channel.
-        """
-
-        return self.fpga.xem.ActivateTriggerIn(self.endpoints['FIFO_RESET'].address,
-                                               self.endpoints['FIFO_RESET'].bit_index_low)
 
     def reset_trig(self):
         """Reset the FPGA controller for the ADC.
@@ -3163,6 +3155,20 @@ class DDR3():
 
         self.fpga.clear_wire_bit(self.endpoints['ADC_TRANSFER_ENABLE'].address,
                                  self.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
+
+    def set_adcs_connected(self):
+        """Set that AD7961s are connected to the FPGA so that DDR3 write enable comes from 
+            the AD7961.v module.
+        """
+        self.fpga.set_wire_bit(self.endpoints['USE_ADC_READY'].address,
+                                 self.endpoints['USE_ADC_READY'].bit_index_low)
+
+    def clear_adcs_connected(self):
+        """ AD7961s are not connected to the FPGA so the DDR3 write enable signal is emulated
+            by the global_timing module.
+        """
+        self.fpga.clear_wire_bit(self.endpoints['USE_ADC_READY'].address,
+                                 self.endpoints['USE_ADC_READY'].bit_index_low)
 
     def reset_fifo(self, name):
         """Reset FIFO interfaces to DDR .
