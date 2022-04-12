@@ -9,7 +9,8 @@ module master_timing
         input wire          sys_clk,                    // 200 MHz timing clk
         input wire          reset_n_i,                  // Reset signal, active low
         output reg [31:0] adc_tcyc_cnt,
-        output reg [4:0] cycle_cnt
+        output reg [4:0] cycle_cnt,
+        output reg adc_rd_en_emulator
     );
 
 //------------------------------------------------------------------------------
@@ -40,6 +41,14 @@ begin
             adc_tcyc_cnt <= ADC_CYC_CNT; 
         end
     end
+end 
+
+// create an ADC data valid pulse for situations when the ADCs are not connector (or not powered)
+always @(posedge sys_clk)
+begin
+    if(reset_n_i == 1'b0) adc_rd_en_emulator <= 1'b0;
+    else if (adc_tcyc_cnt == 32'd17) adc_rd_en_emulator <= 1'b1;
+    else adc_rd_en_emulator <= 1'b0;
 end 
 
 // slower cycle counter 
