@@ -30,62 +30,6 @@
 //    adc_clk  - 250 MHz clock for AD7961.v
 //
 //
-// Host Interface registers:
-//
-// WireIn 0x00
-//     31:0 - data/commands to Wishbone interface -> SPI master for ADS7952
-//
-// WireIn 0x01
-//   Wire in to select what slave the SPI data is routed to
-//
-// WireIn 0x02
-//      3:0 - AD796x resets (async)
-//      7:4 - AD796x enables (individual)
-//      8 - AD796x enables (global)
-//
-// TriggerIn 0x40
-//      0 - used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
-//      1 - used as the master reset for the rest of the design
-//      2 - used as the reset for the ADS7952 FIFO
-//      3 - reset for "fast" clock pll
-//      4 - reset of adc7961_0_fifo
-//      5 - reset of adc7961_1_fifo
-//      6 - reset of adc7961_2_fifo
-//      7 - reset of adc7961_3_fifo
-//
-// WireOut 0x20
-//  31:0 - wire to hold the value of the last word written to the ADS7952 FIFO (to help with debugging/observation)
-//
-// WireOut 0x21
-//      0 - pll locked status signal
-//
-// TriggerOut 0x60
-//      0 - status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
-//      1 - status signal telling host that AD7961_0 fifo is completely full
-//      2 - status signal telling host that AD7961_0 fifo is half full
-//      3 - status signal telling host that AD7961_0 fifo is empty
-//      4 - status signal telling host that AD7961_1 fifo is completely full
-//      5 - status signal telling host that AD7961_1 fifo is half full
-//      6 - status signal telling host that AD7961_1 fifo is empty
-//      7 - status signal telling host that AD7961_2 fifo is completely full
-//      8 - status signal telling host that AD7961_2 fifo is half full
-//      9 - status signal telling host that AD7961_2 fifo is empty
-//      10 - status signal telling host that AD7961_3 fifo is completely full
-//      11 - status signal telling host that AD7961_3 fifo is half full
-//      12 - status signal telling host that AD7961_3 fifo is empty
-//
-// BTPipeOut - 0xA0
-//      31:0 - pipeOut to transfer data in bulk from the ADS7952 FIFO
-//
-// PipeOut - 0xA1
-//      31:0 - two 16 bit words of data from the AD7961[0]
-// PipeOut - 0xA2
-//      31:0 - two 16 bit words of data from the AD7961[1]
-// PipeOut - 0xA3
-//      31:0 - two 16 bit words of data from the AD7961[2]
-// PipeOut - 0xA4
-//      31:0 - two 16 bit words of data from the AD7961[3]
-//
 
 `default_nettype wire // depending on compile order this may be needed. OpalKelly says its not a problem.
 
@@ -355,19 +299,6 @@ module top_level_module(
        assign ep20wire[`DDR3_OUT2_FULL] = pipe_out2_full;
        assign ep20wire[`DDR3_OUT2_EMPTY] = pipe_out2_empty;
        assign ep20wire[`DDR3_ADC_DATA_COUNT] = adc_data_cnt;
-	//trigger to tell the wishbone signal converter/state machine that the input command is valid
-	//ep40trig[0] will be used to trigger the Wishbone formatter/state machine, telling the state machine that wi0 is valid
-	//ep40trig[1] will be used as the master reset for the rest of the design
-	//ep40trig[2] will be used as the reset for the ADS7952 FIFO
-	//ep40trig[3] will be used as the reset for the "fast" clock pll
-	//ep40trig[4] is the reset for adc7961_0_fifo
-	//ep40trig[5] is the reset for adc7961_1_fifo
-	//ep40trig[6] is the reset for adc7961_2_fifo
-	//ep40trig[7] is the reset for adc7961_3_fifo
-	//ep40trig[8] will be used to trigger the Wishbone formatter/state machine for dac_0, telling the state machine that wi0 is valid
-	//ep40trig[9] will be used to trigger the Wishbone formatter/state machine for dac_1, telling the state machine that wi0 is valid
-	//ep40trig[10] reset the programmable clock divider for the ADS8686 spi
-	//ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode
 
 	okTriggerIn trigIn40 (.okHE(okHE),
                       .ep_addr(`GP_RST_VALID_TRIG_IN), .ep_clk(clk_sys), .ep_trigger(ep40trig));
@@ -381,26 +312,8 @@ module top_level_module(
 	// okWireOut wo0 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(8'h20), .ep_datain(lastWrite));
 
     //wire to hold general status output to host
-    // https://stackoverflow.com/questions/18067571/indexing-vectors-and-arrays-with
+    // The +: syntax is explained here: https://stackoverflow.com/questions/18067571/indexing-vectors-and-arrays-with  
     okWireOut wo1 (.okHE(okHE), .okEH(okEHx[0*65 +: 65 ]), .ep_addr(`AD7961_PLL_LOCKED_WIRE_OUT), .ep_datain({30'b0, adc_timing_pll_locked, adc_pll_locked}));
-
-	//status signal (bit 0) from ADS7952 FIFO telling the host that it is half full (time to read data)
-	//bit 1 is status signal telling host that AD7961_0 fifo is completely full
-	//bit 2 is status signal telling host that AD7961_0 fifo is half full
-	//bit 3 is status signal telling host that AD7961_0 fifo is empty
-	//bit 4 is status signal telling host that AD7961_1 fifo is completely full
-    //bit 5 is status signal telling host that AD7961_1 fifo is half full
-    //bit 6 is status signal telling host that AD7961_1 fifo is empty
-    //bit 7 is status signal telling host that AD7961_2 fifo is completely full
-    //bit 8 is status signal telling host that AD7961_2 fifo is half full
-    //bit 9 is status signal telling host that AD7961_2 fifo is empty
-    //bit 10 is status signal telling host that AD7961_3 fifo is completely full
-    //bit 11 is status signal telling host that AD7961_3 fifo is half full
-    //bit 12 is status signal telling host that AD7961_3 fifo is empty
-    //bit 13 is status signal telling host that AD7S8686 fifo is completely full
-    //bit 14 is status signal telling host that AD7S8686 fifo is half full
-    //bit 15 is status signal telling host that AD7S8686 fifo is empty
-
 	//TODO: reorganize triggerout
 	wire [(I2C_DCARDS_NUM-1):0] i2c_done;
 	wire [1:0] i2c_aux_done;
@@ -513,11 +426,14 @@ module top_level_module(
         .sync_reset(adc_sync_rst)
         );
 	
-	AD7961_timing adc7961_timing (
-	    .m_clk_i(clk_sys),                    // 200 MHz timing clk (was 100 MHz Clock, used for timing)
+	wire adc_rd_en_emulator;
+	
+	global_timing Timing (
+	    .clk_sys(clk_sys),                    // 200 MHz timing clk (was 100 MHz Clock, used for timing)
         .reset_n_i(~(ep42trig[`AD7961_RESET_GEN_BIT+0] | adc_sync_rst)),                  // Reset signal, active low
         .adc_tcyc_cnt(adc_tcyc_cnt),
-        .cycle_cnt(cycle_cnt)
+        .cycle_cnt(cycle_cnt),
+        .adc_rd_en_emulator(adc_rd_en_emulator)
 	);
 	
 	genvar i;
@@ -665,7 +581,16 @@ module top_level_module(
          end
      end
 
-     // MIG User Interface instantiation
+    // --------- The DDR section is derived from OpalKelly ramtest.v provided in the FrontPanelAPI
+    // this is intended to be used on OpalKelly devices only
+    // -----------------------------------------  
+     // This sample is included for reference only.  No guarantees, either
+     // expressed or implied, are to be drawn.
+     //------------------------------------------------------------------------
+     // Copyright (c) 2005-2016 Opal Kelly Incorporated
+     
+      // MIG User Interface instantiation
+
      ddr3_256_32 u_ddr3_256_32 (
          // Memory interface ports
          .ddr3_addr                      (ddr3_addr),
@@ -712,7 +637,7 @@ module top_level_module(
          );
 
      // OK MIG DDR3 User interface
-     ddr3_test ddr3_tb (
+     ddr3_test ddr3_ui_0 (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
          .reset              (ep43trig[`DDR3_UI_RESET]),
          .write1_en          (ep03wire[`DDR3_DAC_WRITE_ENABLE]),
@@ -862,7 +787,8 @@ module top_level_module(
                 
                 default: adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
             endcase 
-            adc_ddr_wr_en = write_en_adc_o[0]; // Pulse to use to synchronize DACs and the ADS8686
+            if (ep03wire[`DDR3_USE_ADC_READY] == 1'b1) adc_ddr_wr_en = write_en_adc_o[0]; // Pulse to use to synchronize DACs and the ADS8686
+            else adc_ddr_wr_en = adc_rd_en_emulator;
         end
         else begin
             adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};

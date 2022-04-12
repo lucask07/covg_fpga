@@ -85,6 +85,7 @@
 `define DDR3_FIFO_DAC_READ_RST 9 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define DDR3_FIFO_ADC_IN_RST 10 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define DDR3_FIFO_ADC_TRANSFER_RST 11 // address=FILTER_SEL_WIRE_IN bit_width=1
+`define DDR3_USE_ADC_READY 12 // address=FILTER_SEL_WIRE_IN bit_width=1
 
 // wireIn for host driven data 
 `define AD5453_HOST_WIRE_IN_GEN_ADDR 8'h0B // bit_width=32

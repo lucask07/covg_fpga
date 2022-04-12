@@ -1,3 +1,7 @@
+// --------- The DDR section is derived from OpalKelly ramtest.v provided in the FrontPanelAPI
+// this is intended to be used on OpalKelly devices only
+// -----------------------------------------  
+// Copyright (c) 2005-2016 Opal Kelly Incorporated
 
 `timescale 1ns/1ps
 //`default_nettype none
