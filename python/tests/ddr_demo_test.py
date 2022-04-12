@@ -196,9 +196,6 @@ for chan in [0,1,2,3]:
 ad7961s[0].reset_wire(0)
 time.sleep(1)
 
-for chan in [0,1,2,3]:
-    ad7961s[chan].reset_fifo()
-
 # configure I/O expanders 
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
@@ -249,6 +246,7 @@ for dac_gp_ch in [0, 1]:
 ddr = DDR3(f, data_version='TIMESTAMPS')
 
 def ddr_write_setup():
+    ddr.set_adcs_connected()
     ddr.clear_dac_read()
     ddr.clear_adc_write()
     ddr.reset_fifo(name='ALL')
