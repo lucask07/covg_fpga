@@ -83,7 +83,7 @@ RESISTANCE = 10000  # Resistance of the known resistance in Ohms
 FREQUENCY = 200     # Desired frequency of the output sine wave in Hertz
 AMPLITUDE = 1.0     # Desired amplitude of the output sine wave in Voltz
 BITFILE_PATH = top_level_module_bitfile   # Path to top_level_module.bit
-PLOT = False        # True to create a graph of ADS8686 readings, False otherwise
+PLOT = True        # True to create a graph of ADS8686 readings, False otherwise
 
 # Other constants
 DAC80508_OFFSET = 0x8000                # DAC80508 voltage offset code for keeping sine wave positive
@@ -175,7 +175,7 @@ ddr.data_arrays[6] = v_in_code.astype(np.uint16)
 ddr.write_channels()
 ddr.write_channels()   # Double write to ensure good output
 
-# --- Read input and ouput voltage signals ---
+# # --- Read input and ouput voltage signals ---
 throw_away = 15     # TODO: remove this (and in boards.py)
 for i in range(throw_away):
     data_stream = adc.stream_mult(twos_comp_conv=False)

@@ -9,6 +9,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 import numpy as np
 from scipy.fft import rfft
 import datetime
+import sys
 
 def rev_lookup(dd, val):
     key = next(key for key, value in dd.items() if value == val)
@@ -71,10 +72,20 @@ def count_bytes(num):
     return bytes
 
 
-def int_to_list(integer, num_bytes=None):
+def int_to_list(integer, byteorder='little', num_bytes=None):
     """Convert an integer into a list of integers 1 byte long.
 
-    The MSB will be at index 0 in the list.
+    Parameters
+    ----------
+    integer : int
+        The integer to convert.
+    byteorder : str
+        Either 'little' for little Endian (LSB first) or 'big' for big Endian
+        (MSB first).
+    num_bytes : int
+        The number of bytes to convert the number into. None means the
+        function will return the minimum number of bytes necessary to
+        represent the number.
     """
 
     list_int = []
@@ -100,7 +111,13 @@ def int_to_list(integer, num_bytes=None):
                 # Can append to the end because the list will be reversed in the return
                 list_int.append(0)
 
-    return list_int[::-1]
+    if byteorder == 'little':
+        return list_int
+    elif byteorder == 'big':
+        return list_int[::-1]
+    else:
+        print(f'Unknown byteorder "{byteorder}", using "little" instead')
+        return list_int
 
 
 def to_voltage(data, num_bits, voltage_range, use_twos_comp=False):
@@ -235,3 +252,12 @@ def calc_impedance(v_in, v_out, resistance):
     impedance_calc = np.divide(rfft(v_out), rfft(current))
     
     return impedance_calc
+
+def get_memory_usage():
+    """Get a sorted list of the objects and their sizes."""
+
+    # These are the usual ipython objects, including this one you are creating
+    ipython_vars = ['In', 'Out', 'exit', 'quit', 'get_ipython', 'ipython_vars']
+
+    return sorted([(x, sys.getsizeof(globals().get(x))) for x in dir() if not x.startswith(
+        '_') and x not in sys.modules and x not in ipython_vars], key=lambda x: x[1], reverse=True)

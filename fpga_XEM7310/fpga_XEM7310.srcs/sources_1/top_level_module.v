@@ -1149,27 +1149,52 @@ module top_level_module(
 	 reg [31:0] fpga_test_static_wo;
 	 okWireOut fpga_test_wo_0 (.okHE(okHE), .okEH(okEHx[ 23*65 +: 65 ]), .ep_addr(`FPGATEST_STATIC_READ_WO), .ep_datain(fpga_test_static_wo));
 	 
-	 reg [127:0] fpga_test_static_po;
+	 reg [127:0] fpga_test_static_po = 128'd1234567890987654321;
+     reg [31:0] fpga_test_static_po_data;
 	 wire fpga_test_static_po_read;
-	 okPipeOut fpga_test_po_0 (.okHE(okHE), .okEH(okEHx[ 24*65 +: 65 ]), .ep_addr(`FPGATEST_STATIC_READ_PO), .ep_read(fpga_test_static_po_read), .ep_datain(fpga_test_static_po));
+	 okPipeOut fpga_test_po_0 (.okHE(okHE), .okEH(okEHx[ 24*65 +: 65 ]), .ep_addr(`FPGATEST_STATIC_READ_PO), .ep_read(fpga_test_static_po_read), .ep_datain(fpga_test_static_po_data));
 	 
 	 wire [31:0] fpga_test_looped_wi;
      wire [31:0] fpga_test_looped_wo;
      okWireIn fpga_test_wi_0 (.okHE(okHE), .ep_addr(`FPGATEST_LOOPED_WI), .ep_dataout(fpga_test_looped_wi));
      okWireOut fpga_test_wo_1 (.okHE(okHE), .okEH(okEHx[ 25*65 +: 65 ]), .ep_addr(`FPGATEST_LOOPED_WO), .ep_datain(fpga_test_looped_wo));
      
-     wire fpga_test_ti;
+     wire [31:0] fpga_test_ti;
      reg fpga_test_ti_confirm;
-     okTriggerIn fpga_test_ti_0 (.okHE(okHE), .ep_addr(`FPGATEST_TI), .ep_clk(okClk), .ep_trigger(fpga_test_ti));
+     okTriggerIn fpga_test_ti_0 (.okHE(okHE), .ep_addr(`FPGATEST_TI_ADDR), .ep_clk(okClk), .ep_trigger(fpga_test_ti[`FPGATEST_TI]));
      okWireOut fpga_test_wo_2 (.okHE(okHE), .okEH(okEHx[ 26*65 +: 65 ]), .ep_addr(`FPGATEST_TI_CONFIRM), .ep_datain(fpga_test_ti_confirm));
      
-     wire fpga_test_to;
-     okTriggerOut fpga_test_to_0 (.okHE(okHE), .okEH(okEHx[ 27*65 +: 65 ]), .ep_addr(`FPGATEST_T0), .ep_clk(clk_sys), .ep_trigger(fpga_test_to));  // bit 0 -- not used
+     wire [31:0] fpga_test_to;
+     okTriggerOut fpga_test_to_0 (.okHE(okHE), .okEH(okEHx[ 27*65 +: 65 ]), .ep_addr(`FPGATEST_TO_ADDR), .ep_clk(clk_sys), .ep_trigger(fpga_test_to[`FPGATEST_TO]));  // bit 0 -- not used
 	 
 	 // Assign values for static reads
 	 always @(*) begin
 	   fpga_test_static_wo = 32'd123456789;
-	   fpga_test_static_po = 128'd1234567890987654321;
+     end
+
+    reg [1:0] fpga_test_po_state;
+    reg [1:0] fpga_test_po_nextstate;
+     always @(posedge okClk) begin
+         if (fpga_test_static_po_read) begin
+           fpga_test_po_state <= fpga_test_po_nextstate;
+           case(fpga_test_po_state)
+               0 : fpga_test_static_po_data <= fpga_test_static_po[31:0];
+               1 : fpga_test_static_po_data <= fpga_test_static_po[63:32];
+               2 : fpga_test_static_po_data <= fpga_test_static_po[95:64];
+               3 : fpga_test_static_po_data <= fpga_test_static_po[127:96];
+               default : fpga_test_static_po_data <= fpga_test_static_po[31:0];
+            endcase
+       end
+     end
+
+    always @(*) begin
+         case(fpga_test_po_state)
+            0 : fpga_test_po_nextstate = 1;
+            1 : fpga_test_po_nextstate = 2;
+            2 : fpga_test_po_nextstate = 3;
+            3 : fpga_test_po_nextstate = 0;
+            default : fpga_test_po_nextstate = 0;
+         endcase
      end
      
      // Connect looped WireIn, WireOut

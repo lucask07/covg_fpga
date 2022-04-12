@@ -268,9 +268,11 @@
 `define FPGATEST_STATIC_READ_PO 8'hBF // bit_width=32
 `define FPGATEST_LOOPED_WI 8'h1E // bit_width=32
 `define FPGATEST_LOOPED_WO 8'h3E // bit_width=32
-`define FPGATEST_TI 8'h5F // bit_width=32
+`define FPGATEST_TI_ADDR 8'h5F // bit_width=32
+`define FPGATEST_TI 0 // address=FPGATEST_TI_ADDR bit_width=1
 `define FPGATEST_TI_CONFIRM 8'h3D // bit_width=32
-`define FPGATEST_T0 8'h7F // bit_width=32
+`define FPGATEST_TO_ADDR 8'h7F // bit_width=32
+`define FPGATEST_TO 0 // address=FPGATEST_TO_ADDR bit_width=1
 
 // TODO set this up!
 // `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
