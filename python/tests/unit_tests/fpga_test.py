@@ -29,7 +29,7 @@ from interfaces.interfaces import FPGA, Endpoint
 # Fixtures
 @pytest.fixture(scope='module')
 def configured_fpga() -> FPGA:
-    f = FPGA()
+    f = FPGA(bitfile=top_level_module_bitfile)
     assert f.init_device()
     yield f
     # Teardown
@@ -42,12 +42,12 @@ def test_endpoints():
 # Tests
 def test_read_pipe_out(configured_fpga: FPGA, test_endpoints: dict[str, Endpoint]):
     import numpy as np
-    from interfaces.interfaces import int_to_list
+    from interfaces.utils import int_to_list
     test_num = 1234567890987654321
-    test_list = int_to_list(test_num)
+    test_list = int_to_list(test_num, byteorder='little')
     data_len = 16
     output = bytearray(test_list + ([0] * (data_len - len(test_list))))
-    output_int = int.from_bytes(output, byteorder='big')
+    output_int = int.from_bytes(output, byteorder='little')
     read_out = configured_fpga.read_pipe_out(test_endpoints['STATIC_READ_PO'].address, data_len)[0]
     read_out_int = int.from_bytes(read_out, byteorder='little')
     assert read_out_int == output_int
@@ -73,6 +73,14 @@ def test_looped_wires_mask(configured_fpga: FPGA, test_endpoints: dict[str, Endp
 def test_send_trig(configured_fpga: FPGA, test_endpoints: dict[str, Endpoint]):
     configured_fpga.send_trig(test_endpoints['TI'])
     assert configured_fpga.read_wire(test_endpoints['TI_CONFIRM'].address) == 1
+
+
+def test_read_trig(configured_fpga: FPGA, test_endpoints: dict[str, Endpoint]):
+    # The TriggerOut in the bitfile is repeatedly triggered and should appear always triggered to the Python
+    for i in range(3):
+        assert configured_fpga.read_trig(test_endpoints['TO'])
+
+# Skipping some below
 
 
 @pytest.mark.skip(reason='Method may be unused')
