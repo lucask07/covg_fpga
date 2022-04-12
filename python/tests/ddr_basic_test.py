@@ -34,7 +34,6 @@ from time import sleep
 import datetime
 import time
 import atexit
-from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
@@ -65,7 +64,7 @@ if sys.platform == "linux" or sys.platform == "linux2":
     print('Linux directory not configured... Error')
     pass
 elif sys.platform == "darwin":
-    print('MAC directory not configured... Error')
+    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
     pass
 elif sys.platform == "win32":
     data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
@@ -83,27 +82,6 @@ root_logger.setLevel(logging.INFO)
 handler = logging.FileHandler("AD7961_test.log", "w", "utf-8")
 root_logger.addHandler(handler)
 
-pwr_setup = "3dual"
-
-# -------- power supplies -----------
-dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
-if pwr_setup == "3dual":
-    atexit.register(pwr_off, [dc_pwr])
-else:
-    atexit.register(pwr_off, [dc_pwr, dc_pwr2])
-config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
-
-# turn on the 7V
-dc_pwr.set("out_state", "ON", configs={"chan": 1})
-
-if pwr_setup != "3dual":
-    # turn on the +/-16.5 V input
-    for ch in [1, 2]:
-        dc_pwr2.set("out_state", "ON", configs={"chan": ch})
-elif pwr_setup == "3dual":
-    # turn on the +/-16.5 V input
-    for ch in [2, 3]:
-        dc_pwr.set("out_state", "ON", configs={"chan": ch})
 
 # Initialize FPGA
 f = FPGA(
@@ -126,10 +104,6 @@ daq = Daq(f)
 ad7961s = daq.ADC
 ad7961s[0].reset_wire(1)
 
-# power supply turn on via FPGA enables
-for name in ["1V8", "5V", "3V3"]:
-    #pwr.supply_on(name)
-    sleep(0.05)
 
 # --------  Initialize fast ADCs  --------
 for chan in [0,1,2,3]:
