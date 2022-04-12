@@ -851,3 +851,11 @@ class Daq:
             return self.fpga.set_wire(self.endpoints[ep_name].address,
                                       value << self.endpoints[ep_name].bit_index_low,
                                       mask=(0b111 << self.endpoints[ep_name].bit_index_low))
+
+
+class TOF:
+
+    def __init__(self, fpga):
+        self.fpga = fpga
+        # I2C
+        self.TMF = TMF8801(fpga=fpga, addr_pins=0x00, endpoints=Endpoint.I2CDAQ_QW)
