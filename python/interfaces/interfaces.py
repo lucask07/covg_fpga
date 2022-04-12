@@ -1308,6 +1308,103 @@ class DAC53401(I2CController):
         return (device_id << DAC53401.registers['DEVICE_ID'].bit_index_low) | (version_id << DAC53401.registers['VERSION_ID'].bit_index_low)
 
 
+
+
+class TMF8801(I2CController):
+    """Class for the Time-of-flight I2C device
+
+    Subclass of the I2CController class. Attributes and methods below are
+    differences in this class from I2CController only.
+
+    Attributes
+    ----------
+    ADDRESS_HEADER : int
+        7-bit device address with R/W bit space and 4 MSBs filled in specific
+        to this chip. The rest is left as 0 to be filled in later.
+    registers : dict
+        Name-Register pairs for the internal registers of the chip.
+    addr_pins : int
+        3 LSBs of the 7-bit device address formed alongside the address header
+        used to differentiate between different instances of the TCA9555 chip.
+    """
+
+    ADDRESS_HEADER = 0b0100_0001 << 1
+    registers = Register.get_chip_registers('TMF8801')
+
+
+    def write(self, data, register_name):
+        """Write data to any register on the chip."""
+
+        dev_addr = TMF8801.ADDRESS_HEADER | (self.addr_pins << 1)
+        register = TMF8801.registers[register_name]
+        data <<= register.bit_index_low
+
+        # Mask only the bits for the specified register.
+        mask = 0
+        for bit in range(register.bit_index_high, register.bit_index_low - 1, -1):
+            mask |= 0x1 << bit
+
+        # Compare with current data to mask unchanged values
+        read_out = self.read(register_name)
+        if read_out == None:
+            print('Read for masking FAILED')
+            return False
+        new_data = (data & mask) | (read_out & ~mask)
+
+        # Turn data into a list of bytes for i2c_write method
+        # Essentially round up to the closest byte
+        #number_of_bytes = (register.bit_width + 7) // 8
+        list_data = int_to_list(new_data)
+        number_of_bytes = len(list_data)
+        self.i2c_write_long(
+            dev_addr, [register.address], number_of_bytes, list_data)
+
+    def read(self, register_name):
+        """Return data from any register on the chip."""
+
+        dev_addr = TMF8801.ADDRESS_HEADER | (self.addr_pins << 1)
+        register = TMF8801.registers[register_name]
+        # Ex. 16-bit register: | Byte 1 [15:8] | Byte 0 [7:0] |
+        byte_number = register.bit_index_high // 8
+        # 16-bit register = 2 bytes, i2c_read_long starts at the MSB so we read 2 bytes to get Byte 0
+        number_of_bytes = 2 - byte_number
+        print(f'Read: {dev_addr}, reg addr {register.address}')
+        read_back_list = self.i2c_read_long(
+            dev_addr, [register.address], number_of_bytes)
+
+        # Turn the list into an integer
+        read_back_data = 0
+        if read_back_list == None:
+            return None
+        # First byte in the list is the MSB, shift and append the next byte
+        for byte in read_back_list:
+            print('Readback byte of {:02X}'.format(byte))
+            read_back_data <<= 8
+            read_back_data |= byte
+        # Get only the bits for the specified register from what was read back.
+        desired_bits = 0
+        for bit in range(register.bit_index_high, register.bit_index_low - 1, -1):
+            desired_bits += 0x1 << bit
+        desired_data = (read_back_data
+                        & desired_bits) >> register.bit_index_low
+
+        return desired_data
+
+    def power_down_high_impedance(self):
+        """Power down the DAC output to high impedance (default)."""
+
+        pass
+        # self.write(0b10, 'DAC_PDN')
+
+    def get_id(self):
+        """Return the device ID and rev ID as one integer."""
+
+        device_id = self.read('ID')
+        version_id = self.read('REVID')
+        return (device_id << TMF8801.registers['ID'].bit_index_low) | (version_id << TMF8801.registers['ID'].bit_index_low)
+
+
+
 class SPIController:
     """Class for controllers on the FPGA using SPI protocol.
 
