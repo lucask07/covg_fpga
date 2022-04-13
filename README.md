@@ -14,7 +14,7 @@ Verilog and Python for the COVG project.
 
 * The wishbone master is written by Dan Gisselquist, Gisselquist Technology LLC. (LGPL, v3) 
 
-* The DDR user interface (ddr_test.v) started with the OpalKelly DDR example provided in by the FrontPanel example RAMTester and was significantly modified to support two ports.
+* The DDR user interface (ddr_test.v) started with the OpalKelly DDR example provided in the FrontPanel example RAMTester and was significantly modified to support two ports.
 
 ### The Python code relies on wonderful open source packages such as:
 
