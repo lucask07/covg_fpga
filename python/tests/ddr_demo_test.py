@@ -255,8 +255,7 @@ def ddr_write_setup():
 
 def ddr_write_finish():
      # reenable both DACs
-    ddr.set_dac_read()  # enable DAC playback and ADC reading
-    ddr.set_adc_write()
+    ddr.set_adc_dac_simultaneous()  # enable DAC playback and ADC writing to DDR
 
 FAST_DAC_FREQ = 7e3
 for i in range(7):
@@ -292,6 +291,7 @@ for i in range(2):
 
 ddr_write_setup()
 g_buf = ddr.write_channels()
+ddr.reset_mig_interface()
 ddr_write_finish()
 
 CHAN_UNDER_TEST = 0
@@ -314,7 +314,7 @@ if REPEAT:  # to repeat data capture without rewriting the DAC data
     ddr.reset_fifo(name='ADC_TRANSFER')
     ddr.reset_mig_interface()
 
-    ddr.set_adc_write()
+    ddr_write_finish()
     time.sleep(0.01)
 
 # saves data to a file; returns to teh workspace the deswizzled DDR data of the last repeat
@@ -325,7 +325,7 @@ chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', nu
 _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
 
 # Long data sequence -- entire file 
-adc_data, timestamp, dac_data, ads = ddr.data_to_names(chan_data)
+adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
 
 # Shorter data sequence, just one of the repeats
 # adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
