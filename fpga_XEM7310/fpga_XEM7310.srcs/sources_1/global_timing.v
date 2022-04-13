@@ -47,7 +47,7 @@ end
 always @(posedge clk_sys)
 begin
     if(reset_n_i == 1'b0) adc_rd_en_emulator <= 1'b0;
-    else if (adc_tcyc_cnt == 32'd17) adc_rd_en_emulator <= 1'b1; //TODO - verify 
+    else if (adc_tcyc_cnt == 32'd19) adc_rd_en_emulator <= 1'b1; //TODO - verify 
     else adc_rd_en_emulator <= 1'b0;
 end 
 
