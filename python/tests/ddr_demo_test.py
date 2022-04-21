@@ -162,32 +162,34 @@ gpio.ads_misc("sdoa")  # do not care for this experiment
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
 # TODO: could skip Clamp board setup ... but it is another source of ADC data 
-clamp = Clamp(f, dc_num=dc_num)
-clamp.init_board()
+clamp = {}
+for dc_num in [0]:
+    clamp[dc_num] = Clamp(f, dc_num=dc_num)
+    clamp[dc_num].init_board()
 
-# configure the clamp board, settings default to None so that a setting that is not
-# included is masked and stays the same
-# TODO: configure_clamp errors out if not connected
+    # configure the clamp board, settings default to None so that a setting that is not
+    # included is masked and stays the same
+    # TODO: configure_clamp errors out if not connected
 
-log_info, config_dict = clamp.configure_clamp(
-    ADC_SEL="CAL_SIG1",
-    DAC_SEL="drive_CAL2",
-    CCOMP=47,
-    RF1=2.1,  # feedback circuit
-    ADG_RES=100,
-    PClamp_CTRL=0,
-    P1_E_CTRL=0,
-    P1_CAL_CTRL=0,
-    P2_E_CTRL=0,
-    P2_CAL_CTRL=0,
-    gain=1,  # instrumentation amplifier
-    FDBK=1,
-    mode="voltage",
-    EN_ipump=0,
-    RF_1_Out=1,
-    addr_pins_1=0b110,
-    addr_pins_2=0b000,
-)
+    log_info, config_dict = clamp[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG1",
+        DAC_SEL="drive_CAL2",
+        CCOMP=47,
+        RF1=2.1,  # feedback circuit
+        ADG_RES=100,
+        PClamp_CTRL=0,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=0,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
 
 # --------  Initialize fast ADCs  --------
 for chan in [0,1,2,3]:
