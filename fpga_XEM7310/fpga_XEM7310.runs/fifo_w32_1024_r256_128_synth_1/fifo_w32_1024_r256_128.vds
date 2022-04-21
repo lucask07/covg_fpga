@@ -2,13 +2,13 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Sat Apr  2 14:37:55 2022
-# Process ID: 12180
-# Current directory: C:/Users/stro4149/OneDrive - University of St. Thomas/Research Internship/Programs/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1
+# Start of session at: Thu Apr 21 14:45:59 2022
+# Process ID: 3288
+# Current directory: C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1
 # Command line: vivado.exe -log fifo_w32_1024_r256_128.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source fifo_w32_1024_r256_128.tcl
-# Log file: C:/Users/stro4149/OneDrive - University of St. Thomas/Research Internship/Programs/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/fifo_w32_1024_r256_128.vds
-# Journal file: C:/Users/stro4149/OneDrive - University of St. Thomas/Research Internship/Programs/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1\vivado.jou
+# Log file: C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/fifo_w32_1024_r256_128.vds
+# Journal file: C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1\vivado.jou
 #-----------------------------------------------------------
 source fifo_w32_1024_r256_128.tcl -notrace
 INFO: [IP_Flow 19-4838] Using cached IP synthesis design for IP fifo_w32_1024_r256_128, cache-ID = febe3f740f332fb5.
-INFO: [Common 17-206] Exiting Vivado at Sat Apr  2 14:38:04 2022...
+INFO: [Common 17-206] Exiting Vivado at Thu Apr 21 14:46:07 2022...
