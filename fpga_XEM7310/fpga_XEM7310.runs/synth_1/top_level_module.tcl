@@ -28,7 +28,7 @@ set_property parent.project_path C:/Users/koer2434/Documents/fpga/covg_fpga_clon
 set_property XPM_LIBRARIES {XPM_CDC XPM_MEMORY} [current_project]
 set_property default_lib xil_defaultlib [current_project]
 set_property target_language Verilog [current_project]
-set_property ip_output_repo c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.cache/ip [current_project]
+set_property ip_output_repo {c:/Users/stro4149/OneDrive - University of St. Thomas/Research Internship/Programs/covg_fpga/fpga_XEM7310/fpga_XEM7310.cache/ip} [current_project]
 set_property ip_cache_permissions {read write} [current_project]
 read_verilog {
   C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/timescale.v

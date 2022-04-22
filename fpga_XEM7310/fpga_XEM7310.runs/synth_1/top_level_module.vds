@@ -12,6 +12,9 @@
 source top_level_module.tcl -notrace
 Command: synth_design -top top_level_module -part xc7a75tfgg484-1
 Starting synth_design
+INFO: [IP_Flow 19-2162] IP 'clk_wiz_0' is locked:
+* IP file 'c:/Users/stro4149/OneDrive - University of St. Thomas/Research Internship/Programs/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.xml' for IP 'clk_wiz_0' contains stale content.
+Please select 'Report IP Status' from the 'Tools/Report' menu or run Tcl command 'report_ip_status' for more information.
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
@@ -1024,7 +1027,7 @@ Resolution: To avoid this warning, move constraints listed in [.Xil/top_level_mo
 Completed Processing XDC Constraints
 
 INFO: [Project 1-111] Unisim Transformation Summary:
-  A total of 194 instances were transformed.
+  A total of 210 instances were transformed.
   IBUFG => IBUF: 1 instances
   IBUFGDS => IBUFDS: 1 instances
   IOBUF => IOBUF (IBUF, OBUFT): 33 instances
@@ -1032,7 +1035,7 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   MMCME2_BASE => MMCME2_ADV: 1 instances
   RAM128X1S => RAM128X1S (MUXF7, RAMS64E, RAMS64E): 8 instances
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
-  RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
+  RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 112 instances
 
 Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.055 . Memory (MB): peak = 1071.305 ; gain = 0.000
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc_to_ddr_fifo' at clock pin 'wr_clk' is different from the actual clock period '5.000', this can lead to different synthesis results.
@@ -1303,6 +1306,29 @@ INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address si
 INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
 INFO: [Synth 8-5545] ROM "cnt" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "pulse" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'i2cTokenizer__parameterized0'
+INFO: [Synth 8-5546] ROM "divenable" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-5544] ROM "i2c_sdat_oen" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "i2c_sdat_oen" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5546] ROM "divenable" won't be mapped to RAM because it is too sparse
+INFO: [Synth 8-5544] ROM "i2c_sdat_oen" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "i2c_sdat_oen" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "i2c_shift_count" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'i2cController__parameterized0'
+INFO: [Synth 8-5545] ROM "twrite" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
+INFO: [Synth 8-5545] ROM "payload_length" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
+INFO: [Synth 8-5545] ROM "payload_count" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
+INFO: [Synth 8-5545] ROM "preamble_starts" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
+INFO: [Synth 8-5545] ROM "preamble_stops" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
+INFO: [Synth 8-5544] ROM "state" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
 INFO: [Synth 8-802] inferred FSM for state register 'serial_present_state_reg' in module 'AD7961'
 INFO: [Synth 8-5545] ROM "buffer_reset_s" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "tmsb_done_s" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
@@ -1409,27 +1435,13 @@ INFO: [Synth 8-5544] ROM "coeff_a2_section1_reg1" won't be mapped to Block RAM b
 INFO: [Synth 8-5544] ROM "coeff_a3_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_scale2_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
 INFO: [Synth 8-5544] ROM "coeff_b1_section2_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_b2_section2_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_b3_section2_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_a2_section2_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_a3_section2_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_scale3_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
+INFO: [Common 17-14] Message 'Synth 8-5544' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Synth 8-5546] ROM "output_register" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5546] ROM "data_ready" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'read_fifo_to_spi_cmd__parameterized4'
 INFO: [Synth 8-5587] ROM size for "spi_load" is below threshold of ROM address width. It will be mapped to LUTs
 INFO: [Synth 8-5546] ROM "rd_en" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5587] ROM size for "cmd_stb" is below threshold of ROM address width. It will be mapped to LUTs
-INFO: [Synth 8-5544] ROM "nextstate" won't be mapped to Block RAM because address size (1) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_scale1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_b1_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_b2_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_b3_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_a2_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_a3_section1_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_scale2_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Synth 8-5544] ROM "coeff_b1_section2_reg1" won't be mapped to Block RAM because address size (4) smaller than threshold (5)
-INFO: [Common 17-14] Message 'Synth 8-5544' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Synth 8-5546] ROM "output_register" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-5546] ROM "data_ready" won't be mapped to RAM because it is too sparse
 INFO: [Synth 8-802] inferred FSM for state register 'state_reg' in module 'read_fifo_to_spi_cmd__parameterized5'
@@ -1982,54 +1994,85 @@ WARNING: [Synth 8-6014] Unused sequential element Wishbone_Master_0/o_rsp_word_r
 WARNING: [Synth 8-6014] Unused sequential element i_spi_top_0/wb_dat_o_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_top.v:162]
 WARNING: [Synth 8-3936] Found unconnected internal register 'data_converter_0/adr_reg' and it is trimmed from '8' to '5' bits. [C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:200]
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[2] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[3] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[3] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[3] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[4] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[4] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[4] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[5] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[5] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[5] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[6] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[6] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[7] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[7] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[7] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[8] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[8] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[8] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[9] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[9] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[10] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[10] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[10] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[11] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[11] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[11] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[12] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[12] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[12] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[13] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[13] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[14] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[14] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[15] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[15] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[16] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[16] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[17] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[17] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[18] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[18] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[19] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[19] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[20] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[20] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[21] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[21] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[22] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[22] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[22] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[23] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[23] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[23] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[24] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[24] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[24] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[25] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[25] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[25] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[26] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[26] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[26] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[27] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[27] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[27] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[28] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[28] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[28] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[29] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[29] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[29] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[30] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[30] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[30] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_ep_to/\ep_trigger0_reg[31] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[31] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[31] )
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[31]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
@@ -2044,49 +2087,29 @@ INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Mast
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[29]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[28]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[27]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[26]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[25]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[0].spi_fifo0 /\data_converter_0/cmd_word_reg[33] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (fpga_test_ti_confirm_reg)
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_message_1/\wirehold_reg[0] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_message_0/\wirehold_reg[0] )
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[0]' (FDE) to 'fpga_test_static_po_data_reg[10]'
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[0] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[0] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo07/\wirehold_reg[0] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_message_1/\wirehold_reg[1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_message_0/\wirehold_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[1] )
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[1]' (FDE) to 'fpga_test_static_po_data_reg[3]'
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_0/\wirehold_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo07/\wirehold_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[2] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[2] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[2] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[2] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo07/\wirehold_reg[2] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[3] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[3] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_0/\wirehold_reg[3] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[3] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[3] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo07/\wirehold_reg[3] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[4] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[4] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[4] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[4] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo07/\wirehold_reg[4] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_0/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo07/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[6] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[6] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_0/\wirehold_reg[6] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[6] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[6] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo07/\wirehold_reg[6] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[7] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[7] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_0/\wirehold_reg[7] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[7] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_message_1/\wirehold_reg[2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (i2c_test_message_0/\wirehold_reg[2] )
 INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
@@ -2118,13 +2141,8 @@ WARNING: [Synth 8-6014] Unused sequential element tok/tok_wack_reg was removed. 
 INFO: [Synth 8-5546] ROM "tok/divenable" won't be mapped to RAM because it is too sparse
 WARNING: [Synth 8-6014] Unused sequential element tok/tok_wack_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cTokenizer.v:120]
 INFO: [Synth 8-5546] ROM "tok/divenable" won't be mapped to RAM because it is too sparse
-INFO: [Synth 8-5545] ROM "cycle_cnt" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
-INFO: [Synth 8-5545] ROM "adc_rd_en_emulator" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "clk_div" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "data_reg" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
-INFO: [Synth 8-5545] ROM "out_pulse/cnt" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
-INFO: [Synth 8-5545] ROM "out_pulse/pulse" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
-INFO: [Synth 8-5545] ROM "ddr_dac_rd_en" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
@@ -2187,13 +2205,14 @@ Report RTL Partitions:
 |      |RTL Partition                   |Replication |Instances |
 +------+--------------------------------+------------+----------+
 |1     |okHost__GC0                     |           1|      1796|
-|2     |top_level_module__GCB0          |           1|      8990|
-|3     |spi_fifo_driven__parameterized5 |           1|      3898|
-|4     |top_level_module__GCB2          |           1|      3940|
-|5     |top_level_module__GCB4          |           1|      7771|
-|6     |top_level_module_GT1            |           1|        82|
-|7     |partition__5__GD                |           1|        37|
-|8     |top_level_module_GT0            |           1|     15956|
+|2     |top_level_module__GCB1          |           1|      3904|
+|3     |spi_fifo_driven__parameterized4 |           1|      3892|
+|4     |top_level_module__GCB3          |           1|      7790|
+|5     |top_level_module_GT0            |           1|      6569|
+|6     |top_level_module_GT1            |           1|     19010|
+|7     |top_level_module_GT2            |           1|         4|
+|8     |top_level_module_GT3            |           1|        38|
+|9     |top_level_module_GT4            |           1|        82|
 +------+--------------------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start IO Insertion
@@ -2265,11 +2284,11 @@ Report BlackBoxes:
 |      |BlackBox name          |Instances |
 +------+-----------------------+----------+
 |1     |fifo_ADS8686           |         1|
-|2     |fifo_w256_128_r32_1024 |         1|
-|3     |fifo_w256_256_r128_512 |         1|
+|2     |ddr3_256_32            |         1|
+|3     |fifo_w32_1024_r256_128 |         1|
 |4     |fifo_w128_512_r256_256 |         1|
-|5     |fifo_w32_1024_r256_128 |         1|
-|6     |ddr3_256_32            |         1|
+|5     |fifo_w256_256_r128_512 |         1|
+|6     |fifo_w256_128_r32_1024 |         1|
 |7     |clk_wiz_0              |         1|
 |8     |blk_mem_gen_0          |         8|
 |9     |mult_gen_0             |         8|
@@ -2303,7 +2322,7 @@ Report Cell Usage:
 |22    |mult_gen_0__8          |     1|
 |23    |mult_gen_0__9          |     1|
 |24    |BUFG                   |     7|
-|25    |CARRY4                 |  1631|
+|25    |CARRY4                 |  1635|
 |26    |DNA_PORT               |     1|
 |27    |LUT1                   |  2605|
 |28    |LUT2                   |  3136|
@@ -2313,16 +2332,16 @@ Report Cell Usage:
 |32    |LUT6                   |  4285|
 |33    |LUT6_2                 |    50|
 |34    |MMCME2_BASE            |     1|
-|35    |MUXF7                  |   402|
+|35    |MUXF7                  |   419|
 |36    |RAM128X1S              |     8|
 |37    |RAM32M                 |     4|
-|38    |RAM64X1D               |    96|
+|38    |RAM64X1D               |   112|
 |39    |RAMB18E1               |     1|
 |40    |RAMB18E1_1             |     1|
 |41    |RAMB36E1               |     1|
-|42    |FDCE                   |  1369|
+|42    |FDCE                   |  1448|
 |43    |FDPE                   |   189|
-|44    |FDRE                   | 18183|
+|44    |FDRE                   | 18315|
 |45    |FDSE                   |    46|
 |46    |IBUF                   |     8|
 |47    |IBUFDS                 |     8|
@@ -2339,12 +2358,12 @@ Synthesis finished with 0 errors, 0 critical warnings and 464 warnings.
 Synthesis Optimization Runtime : Time (s): cpu = 00:01:22 ; elapsed = 00:02:11 . Memory (MB): peak = 1071.305 ; gain = 227.242
 Synthesis Optimization Complete : Time (s): cpu = 00:01:54 ; elapsed = 00:02:35 . Memory (MB): peak = 1071.305 ; gain = 725.832
 INFO: [Project 1-571] Translating synthesized netlist
-INFO: [Netlist 29-17] Analyzing 2270 Unisim elements for replacement
+INFO: [Netlist 29-17] Analyzing 2307 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
 INFO: [Project 1-111] Unisim Transformation Summary:
-  A total of 206 instances were transformed.
+  A total of 222 instances were transformed.
   IBUFG => IBUF: 1 instances
   IBUFGDS => IBUFDS: 1 instances
   IOBUF => IOBUF (IBUF, OBUFT): 45 instances
@@ -2352,10 +2371,10 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   MMCME2_BASE => MMCME2_ADV: 1 instances
   RAM128X1S => RAM128X1S (MUXF7, RAMS64E, RAMS64E): 8 instances
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
-  RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
+  RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 112 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-736 Infos, 485 Warnings, 0 Critical Warnings and 0 Errors encountered.
+751 Infos, 492 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
 synth_design: Time (s): cpu = 00:02:03 ; elapsed = 00:02:44 . Memory (MB): peak = 1071.305 ; gain = 725.832
 WARNING: [Constraints 18-5210] No constraint will be written out.
