@@ -179,6 +179,8 @@ start_step write_bitstream
 set ACTIVE_STEP write_bitstream
 set rc [catch {
   create_msg_db write_bitstream.pb
+  open_checkpoint top_level_module_routed.dcp
+  set_property webtalk.parent_dir {C:/Users/stro4149/OneDrive - University of St. Thomas/Research Internship/Programs/covg_fpga/fpga_XEM7310/fpga_XEM7310.cache/wt} [current_project]
   set_property XPM_LIBRARIES {XPM_CDC XPM_MEMORY} [current_project]
   catch { write_mem_info -force top_level_module.mmi }
   write_bitstream -force top_level_module.bit 
