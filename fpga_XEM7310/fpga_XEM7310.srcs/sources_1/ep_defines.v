@@ -264,7 +264,7 @@
 `define DAC80508_REGBRIDGE_OFFSET_GEN_BIT 5 // address=0x0 bit_width=19
 `define AD5453_REGBRIDGE_OFFSET_GEN_BIT 43 // address=0x0 bit_width=19
 
-// FPGA test endpoints
+// FPGA test Endpoints
 `define FPGATEST_STATIC_READ_WO 8'h3F // bit_width=32
 `define FPGATEST_STATIC_READ_PO 8'hBF // bit_width=32
 `define FPGATEST_LOOPED_WI 8'h1E // bit_width=32
@@ -274,6 +274,24 @@
 `define FPGATEST_TI_CONFIRM 8'h3D // bit_width=32
 `define FPGATEST_TO_ADDR 8'h7F // bit_width=32
 `define FPGATEST_TO 0 // address=FPGATEST_TO_ADDR bit_width=1
+
+// I2C test Endpoints
+`define I2CTEST_MESSAGE_0 8'h3C // bit_width=32
+`define I2CTEST_MESSAGE_1 8'h3B // bit_width=32
+`define I2CTEST_WI 8'h1D // bit_width=32
+`define I2CTEST_RESET 16 // address=I2CTEST_WI bit_width=1
+`define I2CTEST_IN 0 // address=I2CTEST_WI bit_width=16
+`define I2CTEST_WO 8'h3A // bit_width=32
+`define I2CTEST_OUT 0 // address=I2CTEST_WO bit_width=8
+`define I2CTEST_TI 8'h5E // bit_width=32
+`define I2CTEST_START 0 // address=I2CTEST_TI bit_width=1
+`define I2CTEST_MEMSTART 1 // address=I2CTEST_TI bit_width=1
+`define I2CTEST_MEMWRITE 2 // address=I2CTEST_TI bit_width=1
+`define I2CTEST_MEMREAD 3 // address=I2CTEST_TI bit_width=1
+`define I2CTEST_TO 8'h7E // bit_width=32
+`define I2CTEST_DONE 0 // address=I2CTEST_TO bit_width=1
+`define I2CTEST_CLK_CNT 0 // address=0x39 bit_width=32
+`define I2CTEST_PULL_UP_EX 0 // address=0x38 bit_width=1
 
 // TODO set this up!
 // `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=
