@@ -1,4 +1,4 @@
-set_property SRC_FILE_INFO {cfile:C:/Users/koer2434/Documents/fpga/covg_fpga_clone2/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc rfile:../../../fpga_XEM7310.srcs/constrs_1/xem7310.xdc id:1} [current_design]
+set_property SRC_FILE_INFO {cfile:{C:/Users/stro4149/OneDrive - University of St. Thomas/Research Internship/Programs/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/constrs_1/xem7310.xdc} rfile:../../../fpga_XEM7310.srcs/constrs_1/xem7310.xdc id:1} [current_design]
 set_property src_info {type:XDC file:1 line:17 export:INPUT save:INPUT read:READ} [current_design]
 set_property PACKAGE_PIN Y19 [get_ports {okHU[0]}]
 set_property src_info {type:XDC file:1 line:18 export:INPUT save:INPUT read:READ} [current_design]
