@@ -157,7 +157,6 @@ gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 # configure the SPI debug MUXs
 gpio.spi_debug("dfast1")
-# gpio.spi_debug("ds0")
 gpio.ads_misc("sdoa")  # do not care for this experiment
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
