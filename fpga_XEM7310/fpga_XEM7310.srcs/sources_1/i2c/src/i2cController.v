@@ -59,8 +59,8 @@ module i2cController(
 	
 	input  wire       memclk,
 	input  wire       memstart,
-	input  wire       memwrite,
-	input  wire       memread,
+	input  wire       memwrite, //advances the memory pointer
+	input  wire       memread,  //advances the memory pointer
 	input  wire [7:0] memdin,
 	output wire [7:0] memdout,
 	
