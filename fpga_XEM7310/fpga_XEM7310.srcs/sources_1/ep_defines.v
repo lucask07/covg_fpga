@@ -57,6 +57,8 @@
 `define I2CDAQ_WIRE_OUT_GEN_ADDR 8'h26 // bit_width=8
 `define I2CDAQ_OUT_GEN_BIT 0 // address=I2CDAQ_WIRE_OUT bit_width=8
 
+`define I2CDAQ_PIPE_OUT_GEN_ADDR 8'hAB // bit_width=32
+
 `define GPIO_DEBUG_WIRE_IN 8'h00 // bit_width=32
 `define GP_HOST_FPGAB_GPIO_WIRE_IN 8'h01 // bit_width=32
 `define GP_PWR_REG_ADC_EN_WIRE_IN 8'h02 // bit_width=32
@@ -195,6 +197,7 @@
 `define DAC80508_CLK_DIV_RESET_GEN_BIT 22 // address=I2C_TRIG_IN bit_width=1
 `define DAC80508_HOST_TRIG_GEN_BIT 23 // address=I2C_TRIG_IN bit_width=1
 `define AD5453_HOST_TRIG_GEN_BIT 24 // address=I2C_TRIG_IN bit_width=1
+`define I2CDAQ_FIFO_RESET_GEN_BIT 30 // address=I2C_TRIG_IN bit_width=1
 
 // trigger in at 0x42 -- sync to adc_timing_clk
 `define AD7961_FIFO_RESET_GEN_BIT 4 // address=ADC_TIMING_TRIG_IN bit_width=1
