@@ -290,7 +290,8 @@ if READ_HIST:
 
     tid2 = tof.TMF.read('TID')
 
-    # wait for tid2 to be different than tid -- not sure why I need to read this twice
+    # wait for tid2 to be different than tid -- not sure why we need to read this twice 
+    #   (but App note says so)
     tid3_etc = tof.TMF.read_by_addr(0x1C, num_bytes=4)     
     tid3 = tid3_etc[-1]
 
@@ -303,3 +304,21 @@ if READ_HIST:
 
         # LSB + MSB 
         hist_data[tdc] = (hist_data[tdc][0::2]) + (hist_data[tdc][1::2]<<8)
+
+
+# Need: 
+# def i2c pipe read: specify number of bytes  
+# def i2c_re_run: re run a read transaction using the data already stored in the RAM 
+#             must reset the address pointer; maybe at the end of previous or at start here 
+# def i2c_multiple_re_run: re-run multiple times 
+# def i2c_reset_pipe_fifo: reset the FIFO -- generally not needed if we read the entire buffer 
+
+# somehow have this all free-run with polling to check for when the pipe must be readout. Would need an 
+#   on-chip state machine to send the START signal (and maybe a counter for the number of start signals) 
+
+# initiate multiple i2c transaction with the number set by the depth of the FIFO. 
+#   then readout the results. 
+
+# ---- possible expansions 
+# store a few different commands in the RAM and specify the address to start at for command 2 or command 3
+#   even have this sequence of commands be something that could be programmed  

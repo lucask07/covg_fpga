@@ -14,7 +14,7 @@ order = 4;
 [sos, g] = zp2sos(z, p, k);
 sos1 = zp2sos(z, p, k);
 figure(1);
-freqz(sos1, 512, fs);
+freqz(sos1, 512, fs); % get Frequency response of digital filter
 %% Input
 Fs = 5e6;            % Sampling frequency                    
 T = 1/Fs;             % Sampling period       
@@ -68,6 +68,7 @@ newOut = fi(newOut + 8192, 0, 14, 0);
 %newOut = fi(2^12, 1, 14, 0)*newOut;
 figure(3);
 subplot(2, 1, 1);
+title('Step response after extra math')
 plot(t, newOut);
 subplot(2, 1, 2);
 plot(t, newOut2+8192);
