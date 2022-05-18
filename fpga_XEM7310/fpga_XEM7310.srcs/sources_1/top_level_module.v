@@ -38,7 +38,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 30;
+localparam NUM_OK_EPS = 31;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -1048,8 +1048,14 @@ module top_level_module(
         .i2c_sdat (ls_sda)        // inout
     );
 
-		// QW 3.3v I2C bus
-    i2cController i2c_controller_5 (
+    wire i2c_qw_po_re;
+    wire [31:0] fifo_i2c_data;
+
+	 okPipeOut i2c_qw_po (.okHE(okHE), .okEH(okEHx[ 28*65 +: 65 ]), .ep_addr(`I2CDAQ_PIPE_OUT_GEN_ADDR+1), 
+	                           .ep_read(i2c_qw_po_re), .ep_datain(fifo_i2c_data));
+
+	// QW 3.3v I2C bus (used for auxiliary I2C. e.g. TOF controller)
+    i2cController_wPipe i2c_controller_5 (
         .clk (clk_sys),
         .reset (ep41trig[`I2CDAQ_RESET_GEN_BIT + 1]),
         .start (ep41trig[`I2CDAQ_START_GEN_BIT + 1]), //trigger in
@@ -1061,7 +1067,14 @@ module top_level_module(
         .memdin (i2c_aux_memdin[1]),     //wire in
         .memdout (i2c_aux_memdout[1]),   //wire out
         .i2c_sclk (qw_scl),       // inout
-        .i2c_sdat (qw_sda)        // inout
+        .i2c_sdat (qw_sda),        // inout
+        
+        // additional for FIFO output pipe
+        .ok_clk(okClk),
+        .fifo_rst(ep41trig[`I2CDAQ_FIFO_RESET_GEN_BIT+1]),
+        .fifo_rd_en(i2c_qw_po_re),
+        .fifo_empty(),
+        .fifo_data(fifo_i2c_data)
     );
     /*---------------- End I2C -------------------*/
 

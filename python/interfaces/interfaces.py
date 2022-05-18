@@ -2152,7 +2152,12 @@ class DAC80508(SPIFifoDriven):
         return self.write_chip_reg('GAIN', data)
 
     def set_gain(self, gain, outputs=[0, 1, 2, 3, 4, 5, 6, 7], divide_reference=False):
-        """Set the gain and reference divider.
+        """Set the output gain (x1 or x2) and reference divider (VREF=2.5 V).
+            Suggested settings are: 
+            gain = 2, div_ref = /2 
+            gain = 2, div_ref = /1
+            gain = 1, div_ref = /1 (not recommended)
+            gain = 1, div_ref = /2 
 
         Parameters
         ----------

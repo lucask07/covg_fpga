@@ -1,6 +1,7 @@
 """Test of the clamp board (v1), initial bring-up for biophys society meeting
    data
 December 2021
+April 2022: modified for a 2nd daughter card to serve as voltage clamp
 
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
@@ -107,12 +108,13 @@ elif pwr_setup == "3dual":
         dc_pwr.set("out_state", "ON", configs={"chan": ch})
 
 # ------ oscilloscope -----------------
-osc = open_by_name("msox_scope")
-osc.set("chan_label", '"P2"', configs={"chan": 1})
-osc.set("chan_label", '"CC"', configs={"chan": 3})
-osc.set("chan_label", '"Vm"', configs={"chan": 4}) # label must be in "" for the scope to accept
-osc.comm_handle.write(':DISP:LAB 1')  # turn on the labels
-osc.set('chan_display', 0, configs={'chan': 2})
+if 0:
+    osc = open_by_name("msox_scope")
+    osc.set("chan_label", '"P2"', configs={"chan": 1})
+    osc.set("chan_label", '"CC"', configs={"chan": 3})
+    osc.set("chan_label", '"Vm"', configs={"chan": 4}) # label must be in "" for the scope to accept
+    osc.comm_handle.write(':DISP:LAB 1')  # turn on the labels
+    osc.set('chan_display', 0, configs={'chan': 2})
 
 # --------  function generator  --------
 fg = open_by_name("new_function_gen")
@@ -144,9 +146,7 @@ pwr.all_off()  # disable all power enables
 
 daq = Daq(f)
 ad7961s = daq.ADC
-
 ad7961s[0].reset_wire(1)
-
 
 # power supply turn on via FPGA enables
 for name in ["1V8", "5V", "3V3"]:
@@ -157,104 +157,68 @@ gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 # configure the SPI debug MUXs
 gpio.spi_debug("dfast1")
-# gpio.spi_debug("ds0")
 gpio.ads_misc("sdoa")  # do not care for this experiment
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
-clamp = Clamp(f, dc_num=dc_num)
-clamp.init_board()
+clamp = {}
+for dc_num in [0,1]:
+    clamp[dc_num] = Clamp(f, dc_num=dc_num)
+    clamp[dc_num].init_board()
 
-# configure the clamp board, settings default to None so that a setting that is not
-# included is masked and stays the same
-# TODO: configure_clamp errors out if not connected
+    # configure the clamp board, settings default to None so that a setting that is not
+    # included is masked and stays the same
+    # TODO: configure_clamp errors out if not connected
 
-log_info, config_dict = clamp.configure_clamp(
-    ADC_SEL="CAL_SIG1",
-    DAC_SEL="drive_CAL2",
-    CCOMP=47,
-    RF1=2.1,  # feedback circuit
-    ADG_RES=100,
-    PClamp_CTRL=0,
-    P1_E_CTRL=0,
-    P1_CAL_CTRL=0,
-    P2_E_CTRL=0,
-    P2_CAL_CTRL=0,
-    gain=1,  # instrumentation amplifier
-    FDBK=1,
-    mode="voltage",
-    EN_ipump=0,
-    RF_1_Out=1,
-    addr_pins_1=0b110,
-    addr_pins_2=0b000,
-)
+    if dc_num == 1:
+        pclamp_ctrl = 1 # short P1 and P2 since not connected 
+        adg_r = 10  #TODO: add 0 ohm to board option
+    else:
+        pclamp_ctrl = 0
+        adg_r = 100
 
-# log_info, config_dict = clamp.configure_clamp(P2_E_CTRL=0, addr_pins_1=0b110, addr_pins_2=0b000)
+    log_info, config_dict = clamp[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG1",
+        DAC_SEL="drive_CAL2",
+        CCOMP=47,
+        RF1=2.1,  # feedback circuit
+        ADG_RES=adg_r,
+        PClamp_CTRL=pclamp_ctrl,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=0,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
 
-test_channel = 1
-ADC_TEST_PATTERN = False
-
-# --------  Run ADC tests  --------
-# setup = ad7961s[0].setup(reset_pll=True)
-# time.sleep(1)  # this pause is required. Failed at 100 ms.
-
-d1 = {}
-d2 = {}
-
+# --------  Enable fast ADCs  --------
 for chan in [0,1,2,3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 
 ad7961s[0].reset_wire(0)
 time.sleep(1)
 
-for chan in [0,1,2,3]:
-    for num in [1, 2]:
-        # resets FIFO and ADC controller
-        # setup = ad7961s[chan].setup(reset_pll=False)
-        # time.sleep(0.2)  # this pause is required. Failed at 100 ms.
-
-        if ADC_TEST_PATTERN:
-            ad7961s[chan].test_pattern()
-            time.sleep(0.2)
-            ad7961s[chan].reset_fifo()
-            time.sleep(0.2)  # FIFO fills in 204 us
-            d1[chan] = ad7961s[chan].stream_mult(swps=4, twos_comp_conv=False)
-            # with open(
-            #     os.path.join(
-            #         data_dir, "test_pattern_chan{}_num{}.npy".format(chan, num)
-            #     ),
-            #     "wb",
-            # ) as file1:
-            #     np.save(file1, d1)
-
-        # ad7961s[chan].power_up_adc()  # standard sampling
-        ad7961s[chan].reset_fifo()
-        d2[chan] = ad7961s[chan].stream_mult(swps=4)
-
-        # with open(
-        #     os.path.join(data_dir, "test_data_chan{}_num{}.npy".format(chan, num)), "wb"
-        # ) as file1:
-        #     np.save(file1, d2)
-
-# disp_device(ad7961s[0])
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
-# fast DAC channel 0 and 1
+# fast DAC channels setup 
 for i in range(6):
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
     daq.DAC[i].filter_select(operation="clear")
     daq.DAC[i].write(int(0))
-    daq.DAC[i].set_data_mux("host")
+    daq.DAC[i].set_data_mux("DDR")
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 500)  # 500 mV full-scale
 
-# 0xA0 = 1.25 MHz, 0x50 = 2.5 MHz
-daq.DAC[0].set_clk_divider(divide_value=0x50)
-# daq.TCA[0].write(((0xF) << (4 + 8)) + 0xFFF) accomplished using set_dac_gain
-
 # configure clamp board Utility pin to be the offset voltage for the feedback
+# at this point the slow DA Ccan be set by the host 
 for i in range(2):
     # Reset the Wishbone controller and SPI core
     # daq.DAC_gp[i].reset_master()
@@ -262,23 +226,47 @@ for i in range(2):
     daq.DAC_gp[i].set_spi_sclk_divide()
     daq.DAC_gp[i].filter_select(operation="clear")
     daq.DAC_gp[i].set_data_mux("host")
-    #daq.DAC_gp[i].set_gain(0x01ff)
-    print('Gain changed')
+    # daq.DAC_gp[i].set_gain(gain=1, divide_reference=False) #TODO: check default values
     daq.DAC_gp[i].set_config_bin(0x00)
     print('Outputs powered on')
 
-#DAC1_BP_OUT4, J11 pin #14 -- connected to utility pin -- offset voltage
+#DAC1_BP_OUT4, J11 pin #11 -- connected to utility pin to daughter card -- offset voltage
 # clamp board TP1
-daq.DAC_gp[0].write_voltage(1.25, 4)  # after bipolar conversion this produces about 0 V
 daq.DAC_gp[0].write_voltage(1.457, 4) # 0.6125 V, which approx centers P1 and P2
-
+#DAC1_BP_OUT5, J11 pin #13 -- connected to utility pin to daughter card -- offset voltage
+# clamp board TP1
+daq.DAC_gp[0].write_voltage(1.457, 5) # 0.6125 V, which approx centers P1 and P2 -- for DC #2
 # for the 3.3 V "supply voltage" to the op-amp
 daq.DAC_gp[1].write_voltage(2.36, 7)
 
+# ------------- configure ADS8686
+ads = daq.ADC_gp # ADS8686
+ads.hw_reset(val=False)
+ads.set_host_mode()
+ads.setup()
+ads.set_range(5)
+ads.set_lpf(376)
+
+codes = ads.setup_sequencer(chan_list=[('0', '0'), ('1', '1'), ('2','2')])
+ads.write_reg_bridge(clk_div=200) # 1 MSPS update rate. Write register for SPI configuration reg. Update rate is controlled by top-level timer
+ads.set_fpga_mode()
+# -------------------
+
 cmd_dac = daq.DAC[1]  # DAC channel 0 is connected to dc clamp ch 0 CMD signal
 cc = daq.DAC[0]
-ddr = DDR3(f)
+ddr = DDR3(f, data_version='TIMESTAMPS')
 
+def ddr_write_setup():
+    ddr.set_adcs_connected()
+    ddr.clear_dac_read()
+    ddr.clear_adc_write()
+    ddr.reset_fifo(name='ALL')
+    ddr.reset_mig_interface()
+    ad7961s[0].reset_trig()  # TODO: what does this do?
+
+def ddr_write_finish():
+    # reenable both DACs
+    ddr.set_adc_dac_simultaneous()  # enable DAC playback and ADC writing to DDR
 
 def get_cc_optimize(nums):
 
@@ -292,24 +280,8 @@ def get_cc_optimize(nums):
     return out
 
 
-def ddr_write_setup():
-    # adjust the DDR settings of both DACs
-    # quiet both DACs
-    cc.set_data_mux("host")
-    cmd_dac.set_data_mux("host")
-    ddr.reset_fifo()
-
-def ddr_write_finish():
-     # reenable both DACs
-    cmd_dac.set_data_mux("DDR")
-    cc.set_data_mux("DDR")
-    ddr.set_read()  # enable DAC playback and ADC reading
-
-
 def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000,
-               cc_val=None, cc_pickle_num=None):
-
-    ddr_write_setup()
+            cc_val=None, cc_pickle_num=None):
 
     dac_offset = 0x2000
     cmd_ch = 1
@@ -347,95 +319,102 @@ def set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_le
             ddr.data_arrays[cc_ch] = delayseq_interp(ddr.data_arrays[cc_ch], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
 
     # write channels to the DDR
-    g_buf = ddr.write_channels(set_ddr_read=False) # clear read, set write, etc. handled within write_channels
-
+    ddr_write_setup()
+    block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False) # clear read, set write, etc. handled within write_channels
+    ddr.reset_mig_interface()
     ddr_write_finish()
 
-def read_adc(ddr, blk_multiples=2048):
-    # block size is 2048.
-    # bits 0:63 of the DDR, first 4 channels of the
-    t, bytes_read_error = ddr.read_adc(  # just reads from the block pipe out
-        sample_size=ddr.parameters["BLOCK_SIZE"] * blk_multiples
-    )
-    d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
-    print(f'Bytes read: {bytes_read_error}')
-    return d, bytes_read_error
+ddr.data_arrays[3] = ddr.make_step(0x2000 - 0x800, 0x2000 + 0x800,
+                                    length=2048)
+ddr.data_arrays[2] = ddr.make_step(0x2000 - 0x800, 0x2000 + 0x800,
+                                    length=2048)                                    
+set_cmd_cc(cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,step_len=16384, cc_val=None, cc_pickle_num=None)
 
 
-def deswizzle(d, convert_twos=True):
+#CHAN_UNDER_TEST = 0
+#output = pd.DataFrame()
+#data = {}
+file_name = 'test'
+#data['filename'] = file_name
+#output = output.append(data, ignore_index=True)
 
-    bits = 16
-    chan_data_swz = {}  # this data is swizzled
-    for i in range(4):
-        chan_data_swz[i] = (d[(0 + i * 2) :: 8] << 0) + (d[(1 + i * 2) :: 8] << 8)
+#print(output.head())
+#output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 
-    chan_data = {}
-    chan_data[0] = chan_data_swz[2]
-    chan_data[1] = chan_data_swz[3]
-    chan_data[2] = chan_data_swz[0]
-    chan_data[3] = chan_data_swz[1]
-    if convert_twos:
-        for i in range(4):
-            chan_data[i] = twos_comp(chan_data[i], bits)
+idx = 0
 
-    return chan_data
+REPEAT = False
+if REPEAT:  # to repeat data capture without rewriting the DAC data
+    ddr.clear_adc_read()
+    ddr.clear_adc_write()
+
+    ddr.reset_fifo(name='ALL')
+    ddr.reset_mig_interface()
+
+    ddr_write_finish()
+    time.sleep(0.01)
+
+# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 8,
+                          blk_multiples=40) # blk multiples multiple of 10
+
+# to get the deswizzled data of all repeats need to read the file
+_, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
+
+# Long data sequence -- entire file 
+adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
+
+# Shorter data sequence, just one of the repeats
+# adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
+
+t = np.arange(0,len(adc_data[0]))*1/FS
+
+crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
+print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+
+# fast ADC. AD7961
+for ch in [0]:
+    fig,ax=plt.subplots()
+    y = adc_data[ch][crop_start:]
+    lbl = f'Ch{ch}'
+    ax.plot(t*1e6, y, marker = '+', label = lbl)
+    ax.legend()
+    ax.set_title('Fast ADC data')
+    ax.set_xlabel('s [us]')
+
+# DACs 
+t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
+for dac_ch in range(4):
+    fig,ax=plt.subplots()
+    y = dac_data[dac_ch][crop_start:]
+    lbl = f'Ch{dac_ch}'
+    ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
+    ax.legend()
+    ax.set_title('Fast DAC data')
+    ax.set_xlabel('s [us]')
+
+# ADS8686. ToDo will need to chop up based on sequencer settings 
+t_ads = t[crop_start::5] # ADS8686 data is saved every fifth 5 MSPS tick
+skip = 3 # sequencer has 3 channels to cycle through
+
+AC_COUPLE = False
+fig,ax=plt.subplots()
+for start_num in [0, 1, 2]:
+    if AC_COUPLE:
+        ax.plot(t_ads[start_num::skip]*1e6, ads['A'][start_num::skip] - np.mean(ads['A'][start_num::skip]), 
+            marker = '+', label = f'ADS: A:{start_num}')
+        ax.plot(t_ads[start_num::skip]*1e6, ads['B'][start_num::skip] - np.mean(ads['B'][start_num::skip]), 
+            marker = '+', label = f'ADS: B:{start_num}')
+    else:
+        ax.plot(t_ads[start_num::skip]*1e6, ads['A'][start_num::skip], 
+            marker = '+', label = f'ADS: A:{start_num}')
+        ax.plot(t_ads[start_num::skip]*1e6, ads['B'][start_num::skip], 
+            marker = '+', label = f'ADS: B:{start_num}')
+ax.legend()
+ax.set_xlabel('s [us]')
+ax.set_title('ADS8686 data')
 
 
-def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 64, PLT_ADC=False, scaling=1, ylabel='DN', ax=None):
-
-    # Continuous Graph
-    if PLT_ADC:
-        plt.ion()
-        if ax is None:
-            fig, ax = plt.subplots()
-        # ax.plot(data)
-        ax.set_xlabel("Time")
-        ax.set_ylabel(ylabel)
-    sample_rate = 2e-7  # 1 / 5e6
-    chunk_size = int(ddr.parameters["BLOCK_SIZE"] * blk_multiples / (4*2))  # readings per ADC
-    repeat = 0
-    adc_readings = chunk_size*num_repeats
-
-    print(f'Reading {adc_readings*2/1024} kB per ADC channel for a total of {adc_readings*sample_rate*1000} ms of data')
-
-    full_data_name = os.path.join(data_dir, file_name)
-    try:
-        os.remove(full_data_name)
-    except OSError:
-        pass
-
-    ddr.set_adc_read()  # enable data into the ADC reading FIFO
-    time.sleep(adc_readings*sample_rate*2)
-
-
-    # TODO: the first FIFO (or 1/2 FIFO) worth of data might be stale
-    # Save ADC DDR data to a file
-    with h5py.File(full_data_name, "w") as file:
-        data_set = file.create_dataset("adc", (4, chunk_size), maxshape=(4, None))
-        while repeat < num_repeats:
-            d, bytes_read_error = read_adc(ddr, blk_multiples)
-            chan_data = deswizzle(d)
-            chan_stack = np.vstack((chan_data[0], chan_data[1], chan_data[2], chan_data[3]))
-            if PLT_ADC:
-                if repeat == 0:
-                    t = np.arange(len(chan_data[1])) * sample_rate
-                ax_hdl = ax.plot(t, chan_data[0]*scaling, color="blue", scalex=True, scaley=False)
-                ax.set_ylim(bottom=-(2 ** 15)*scaling, top= (2 ** 15)*scaling, auto=False)
-                plt.draw()
-                plt.pause(0.001)
-
-            repeat += 1
-            if repeat == 0:
-                data_set[:] = chan_stack
-            else:
-                data_set[:, -chunk_size:] = chan_stack
-            if repeat < num_repeats:
-                if PLT_ADC:
-                    ax_hdl[0].remove()
-                data_set.resize(data_set.shape[1] + chunk_size, axis=1)
-
-    print(f'Done with ADC reading: saved as {full_data_name}')
-    return chan_data
 
 
 def tune_cc(data_dir, file_name, rf, ccomp, cmd_impulse_scaling=7424, cc_impulse_scaling=2600, PLT_DEBUG=True):
@@ -499,7 +478,7 @@ def tune_cc(data_dir, file_name, rf, ccomp, cmd_impulse_scaling=7424, cc_impulse
     bnds = ((-3e-6, 3e-6), )
     minimizer_kwargs = { "method": "L-BFGS-B","bounds":bnds,"args":(cmd_impulse, step_func, cc_impulse, new_cc_step, adjust_step_delay) }
     out_min = basinhopping(im_conv, x0=[0],
-                           minimizer_kwargs = minimizer_kwargs)
+                        minimizer_kwargs = minimizer_kwargs)
 
     new_cc_step = adjust_step_delay(out_min['x'], new_cc_step)
     print('delay shift {}'.format(out_min['x']))
@@ -508,7 +487,7 @@ def tune_cc(data_dir, file_name, rf, ccomp, cmd_impulse_scaling=7424, cc_impulse
     bnds = ((0.95, 1.05), ) # trailing comma required for len(bnds)==1
     minimizer_kwargs = { "method": "L-BFGS-B","bounds":bnds,"args":(cmd_impulse, step_func, cc_impulse, new_cc_step, adjust_step_scale) }
     out_min = basinhopping(im_conv, x0=[0],
-                           minimizer_kwargs = minimizer_kwargs)
+                        minimizer_kwargs = minimizer_kwargs)
     new_cc_step = adjust_step_scale(out_min['x'], new_cc_step)
     print('scale shift {}'.format(out_min['x']))
 
@@ -789,103 +768,81 @@ def step_responses(rf_arr=[10,33,100,332,3000,10000],
 def cc_comp():
 
     set_cmd_cc(cmd_val = 0x1d00, cc_scale = 0.351, cc_delay=0, fc=4.8e3, step_len=8000,
-               cc_val=None, cc_pickle_num=[20,21])
+            cc_val=None, cc_pickle_num=[20,21])
 
     plt.plot(ddr.data_arrays[0])
     plt.plot(ddr.data_arrays[1])
 
 
-for rf,ccomp in ([(10,47), (100,47), (332,47), (3000,4747), (10000, 4747)]):
-    # TODO: the impulse function processing needs different time ranges based on RF and ccomp. 
-    file_name = f'test_tune_rf{rf}_ccomp{ccomp}' + '_{}'
 
-    if rf <= 100:
-        scale = 7424
-        cc_scale = 2600
-        tr = 160
-    if rf == 332:
-        scale = 7424//2
-        cc_scale = 2600//2
-        tr = 160
-    if rf == 3000:
-        scale = 7424//5
-        cc_scale = 2600//5
-        tr = 600
-    if rf == 10000:
-        scale = 7424//5
-        cc_scale = 2600//5
-        tr = 600
 
-    out_min, cc_step_func, step_func, out_min_dly, t0 = tune_cc(data_dir, file_name, rf=rf, ccomp=ccomp, 
-                                                                cmd_impulse_scaling=scale, cc_impulse_scaling=cc_scale)
+if 0:
+    for rf,ccomp in ([(10,47), (100,47), (332,47), (3000,4747), (10000, 4747)]):
+        # TODO: the impulse function processing needs different time ranges based on RF and ccomp. 
+        file_name = f'test_tune_rf{rf}_ccomp{ccomp}' + '_{}'
 
-    total_len = 16384 
-    dac_offset = 0x2000
-    cmd_ch = 1
-    cc_ch = 0
+        if rf <= 100:
+            scale = 7424
+            cc_scale = 2600
+            tr = 160
+        if rf == 332:
+            scale = 7424//2
+            cc_scale = 2600//2
+            tr = 160
+        if rf == 3000:
+            scale = 7424//5
+            cc_scale = 2600//5
+            tr = 600
+        if rf == 10000:
+            scale = 7424//5
+            cc_scale = 2600//5
+            tr = 600
 
-    # pad left and right so that the result is the same length as original step function (find center)
-    center = np.argmax(step_func>0.5)
-    len_step = len(step_func)
-    step_func = np.pad(step_func, (total_len//2-(center), total_len//2-(len_step-center)), 'edge')
-    cc_step_func = np.pad(cc_step_func, (total_len//2-(center), total_len//2-(len_step-center)), 'edge')
+        out_min, cc_step_func, step_func, out_min_dly, t0 = tune_cc(data_dir, file_name, rf=rf, ccomp=ccomp, 
+                                                                    cmd_impulse_scaling=scale, cc_impulse_scaling=cc_scale)
 
-    # adjust steps to zero mean, scale, then add offset, convert to uint16
-    step_func = ((step_func - np.mean(step_func))*scale + dac_offset).astype(np.uint16)
-    cc_step_func = ((cc_step_func - np.mean(cc_step_func))*scale + dac_offset).astype(np.uint16) # both impulses are normalized so scale equally
+        total_len = 16384 
+        dac_offset = 0x2000
+        cmd_ch = 1
+        cc_ch = 0
 
-    # need to repeat the array -- total length of array is 256*16384
-    ddr.data_arrays[cc_ch] = np.tile(cc_step_func, 256)
-    ddr.data_arrays[cmd_ch] = np.tile(step_func, 256)
+        # pad left and right so that the result is the same length as original step function (find center)
+        center = np.argmax(step_func>0.5)
+        len_step = len(step_func)
+        step_func = np.pad(step_func, (total_len//2-(center), total_len//2-(len_step-center)), 'edge')
+        cc_step_func = np.pad(cc_step_func, (total_len//2-(center), total_len//2-(len_step-center)), 'edge')
 
-    ddr_write_setup()
-    g_buf = ddr.write_channels(set_ddr_read=False) # clear read, set write, etc. handled within write_channels
-    ddr_write_finish()
+        # adjust steps to zero mean, scale, then add offset, convert to uint16
+        step_func = ((step_func - np.mean(step_func))*scale + dac_offset).astype(np.uint16)
+        cc_step_func = ((cc_step_func - np.mean(cc_step_func))*scale + dac_offset).astype(np.uint16) # both impulses are normalized so scale equally
 
-    idx = 2
-    time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
-    save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
-    fig,ax=plt.subplots()
-    adc_min = {}
-    for i in [0,2]:
-        t, adc_data = read_h5(data_dir, file_name.format(i) + '.h5', chan_list=[0])
-        if i == 0:
-            lbl='$I_m$: CMD only'
-        elif i == 2:
-            lbl='$I_m$: CMD + tuned CC'
-        idx = idx_timerange(t, t0-10e-6, t0+tr*1e-6)
-        ax.plot((t[idx]-t0)*1e6, adc_data[0][idx], marker = '+', label=lbl)
-        adc_min[i] = np.min(adc_data[0][idx])
-    ax.set_xlim([-10, tr])
-    ax.set_xlabel('t [$\mu$s]')
-    ax.set_ylabel('$I_m$ [DN]')
-    ax.legend()
-    ymin, ymax = ax.get_ylim()
-    ax.set_ylim([np.min([adc_min[0], adc_min[2]])-500, ymax])
-    fig.tight_layout()
-    fig.savefig(os.path.join(data_dir, 'final_comparison_rf{}_cc{}_.png'.format(rf, ccomp)))
+        # need to repeat the array -- total length of array is 256*16384
+        ddr.data_arrays[cc_ch] = np.tile(cc_step_func, 256)
+        ddr.data_arrays[cmd_ch] = np.tile(step_func, 256)
 
-"""
-set_cmd_cc(cc_scale=cc_scale, cc_delay=cc_delay, fc=cc_fc)
-save_adc_data(data_dir, file_name + '.h5', num_repeats = 2)
-t, adc_data = read_h5(os.path.join(data_dir, file_name + '.h5'), chan_list=[0])
-plt.plot(t, adc_data[0], marker = '.')
-plt.pause(1)
-plt.close('all')
-"""
+        ddr_write_setup()
+        g_buf = ddr.write_channels(set_ddr_read=False) # clear read, set write, etc. handled within write_channels
+        ddr_write_finish()
 
-"""
-save_adc_data(data_dir, file_name + '.h5', num_repeats = 2)
-t, adc_data = read_h5(os.path.join(data_dir, file_name + '.h5'), chan_list=[0])
-plt.plot(t, adc_data[0], marker = '.')
-plt.pause(1)
-plt.close('all')
-"""
-
-"""
-step_responses(rf_arr=[332],
-                    ccomp_arr=[47],
-                    file_name='step_swp_delay5_{}',
-                    cc_delay_arr = np.linspace(-800e-9,800e-9,16))
-
-"""
+        idx = 2
+        time.sleep(0.04) # a few periods to settle after stoping and starting CMD voltage
+        save_adc_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 4)
+        fig,ax=plt.subplots()
+        adc_min = {}
+        for i in [0,2]:
+            t, adc_data = read_h5(data_dir, file_name.format(i) + '.h5', chan_list=[0])
+            if i == 0:
+                lbl='$I_m$: CMD only'
+            elif i == 2:
+                lbl='$I_m$: CMD + tuned CC'
+            idx = idx_timerange(t, t0-10e-6, t0+tr*1e-6)
+            ax.plot((t[idx]-t0)*1e6, adc_data[0][idx], marker = '+', label=lbl)
+            adc_min[i] = np.min(adc_data[0][idx])
+        ax.set_xlim([-10, tr])
+        ax.set_xlabel('t [$\mu$s]')
+        ax.set_ylabel('$I_m$ [DN]')
+        ax.legend()
+        ymin, ymax = ax.get_ylim()
+        ax.set_ylim([np.min([adc_min[0], adc_min[2]])-500, ymax])
+        fig.tight_layout()
+        fig.savefig(os.path.join(data_dir, 'final_comparison_rf{}_cc{}_.png'.format(rf, ccomp)))
