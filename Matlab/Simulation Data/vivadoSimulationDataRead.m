@@ -40,8 +40,10 @@ fclose(fileID);
 %% Read simulate.log
 
 fileID = fopen('..\..\fpga_XEM7310\fpga_XEM7310.sim\sim_1\behav\xsim\simulate.log','r');
-fgets(fileID); %skip two lines
-fgets(fileID);
+header1 = fgets(fileID); %skip two lines
+header2 = fgets(fileID);
+header3 = fgets(fileID); %skip 3rd line for 'block memory generator' warning
+
 formatSpec = '%d'; %read data
 sizeA = [Inf];
 A = fscanf(fileID, formatSpec, sizeA);

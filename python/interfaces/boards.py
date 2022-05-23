@@ -15,6 +15,7 @@ from interfaces.utils import reverse_bits, test_bit, calc_impedance
 from scipy.fft import rfftfreq
 import matplotlib.pyplot as plt
 import time
+import copy
 
 # Assign I2CDAQ busses
 Endpoint.I2CDAQ_level_shifted = Endpoint.get_chip_endpoints('I2CDAQ')
@@ -58,14 +59,16 @@ class Clamp:
         # dc_num is the daughter card channel number since there are 0-3 channels
 
         self.TCA = [None, None]
+        eps_i2cdc = copy.deepcopy(Endpoint.endpoints_from_defines['I2CDC'])
+        i2c_eps = advance_endpoints_bynum(eps_i2cdc, dc_num)
         self.TCA[0] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0,
-                              endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+                              endpoints=i2c_eps)
         self.TCA[1] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1,
-                              endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+                              endpoints=i2c_eps)
         self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins,
-                                  endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+                                  endpoints=i2c_eps)
         self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins,
-                            endpoints=advance_endpoints_bynum(Endpoint.endpoints_from_defines['I2CDC'], dc_num))
+                            endpoints=i2c_eps)
         self.serial_number = None  # Will get serial code from UID chip in setup()
 
         self.configs = {}
