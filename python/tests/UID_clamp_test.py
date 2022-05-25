@@ -66,7 +66,7 @@ gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 
 clamp_uid = UID_24AA025UID(fpga=f,
-                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDC'), 1),
+                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                      addr_pins=0b000)
 
 read = clamp_uid.get_manufacturer_code()

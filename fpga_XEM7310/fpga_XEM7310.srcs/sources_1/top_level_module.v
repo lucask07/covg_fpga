@@ -38,7 +38,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 38;
+localparam NUM_OK_EPS = 39;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -92,7 +92,7 @@ module top_level_module(
     output wire [5:0]up,
     output wire [3:0]gp_lvds_n, //TODO: need LVDS output driver (for now leave unconnected)
     output wire [3:0]gp_lvds_p,
-    output wire [3:0]gpio,
+    inout wire [3:0]gpio,
 
     //power supply regulator enable signals (5 total signals)
     output wire en_15v,
@@ -128,7 +128,6 @@ module top_level_module(
     inout  wire [3 :0]  ddr3_dqs_p,
     inout  wire [3 :0]  ddr3_dqs_n,
     output wire         ddr3_reset_n
-
 	);
 	//System Clock from input differential pair
 	wire clk_sys;
@@ -169,29 +168,29 @@ module top_level_module(
     assign led[7] = 1'b0;
 
     // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
-    mux_8to1 (
-	   .datain({d_csb[4:0], ds_csb[1], ds_csb[0], ads_csb}), // 7:0
-	   .sel(ep00wire[(`GPIO_CSB_DEBUG_LEN + `GPIO_CSB_DEBUG - 1) :(`GPIO_CSB_DEBUG)]),
-	   .dataout(gpio[0])
-	);
+//    mux_8to1 (
+//	   .datain({d_csb[4:0], ds_csb[1], ds_csb[0], ads_csb}), // 7:0
+//	   .sel(ep00wire[(`GPIO_CSB_DEBUG_LEN + `GPIO_CSB_DEBUG - 1) :(`GPIO_CSB_DEBUG)]),
+//	   .dataout(gpio[0])
+//	);
 
-    mux_8to1 (
-       .datain({d_sclk[4:0], ds_sclk[1], ds_sclk[0], ads_sclk}), // 7:0
-       .sel(ep00wire[(`GPIO_SCLK_DEBUG_LEN + `GPIO_SCLK_DEBUG - 1) :(`GPIO_SCLK_DEBUG)]),
-       .dataout(gpio[1])
-    );
+//    mux_8to1 (
+//       .datain({d_sclk[4:0], ds_sclk[1], ds_sclk[0], ads_sclk}), // 7:0
+//       .sel(ep00wire[(`GPIO_SCLK_DEBUG_LEN + `GPIO_SCLK_DEBUG - 1) :(`GPIO_SCLK_DEBUG)]),
+//       .dataout(gpio[1])
+//    );
 
-    mux_8to1 (
-       .datain({d_sdi[4:0], ds_sdi[1], ds_sdi[0], ads_sdi}), // 7:0
-       .sel(ep00wire[(`GPIO_SDI_DEBUG_LEN + `GPIO_SDI_DEBUG - 1) :(`GPIO_SDI_DEBUG)]),
-       .dataout(gpio[2])
-    );
+//    mux_8to1 (
+//       .datain({d_sdi[4:0], ds_sdi[1], ds_sdi[0], ads_sdi}), // 7:0
+//       .sel(ep00wire[(`GPIO_SDI_DEBUG_LEN + `GPIO_SDI_DEBUG - 1) :(`GPIO_SDI_DEBUG)]),
+//       .dataout(gpio[2])
+//    );
 
-    mux_8to1 (
-       .datain({4'b0100, ads_busy, ads_convst, ads_sdob, ads_sdoa}), // 7:0
-       .sel(ep00wire[(`GPIO_ADS_CONVST_DEBUG_LEN + `GPIO_ADS_CONVST_DEBUG - 1) :(`GPIO_ADS_CONVST_DEBUG)]),
-       .dataout(gpio[3])
-    );
+//    mux_8to1 (
+//       .datain({4'b0100, ads_busy, ads_convst, ads_sdob, ads_sdoa}), // 7:0
+//       .sel(ep00wire[(`GPIO_ADS_CONVST_DEBUG_LEN + `GPIO_ADS_CONVST_DEBUG - 1) :(`GPIO_ADS_CONVST_DEBUG)]),
+//       .dataout(gpio[3])
+//    );
 
     //debug AD7961 
     wire [(FADC_NUM-1):0] conv;
@@ -1045,7 +1044,9 @@ module top_level_module(
         .memdin (i2c_aux_memdin[0]),     //wire in
         .memdout (i2c_aux_memdout[0]),   //wire out
         .i2c_sclk (ls_scl),       // inout
-        .i2c_sdat (ls_sda)        // inout
+        .i2c_sdat (ls_sda),        // inout
+        .i2c_sclk_pull_up (i2c_test_sclk_pull_up),
+        .i2c_sdat_pull_up (i2c_test_sdat_pull_up)
     );
 
     wire i2c_qw_po_re;
@@ -1149,67 +1150,59 @@ module top_level_module(
      /*---------------- I2C test -------------------*/
      // Set up Endpoints
      wire [31:0] i2c_test_wi;
-     okWireIn     i2c_test_ep_wi (.okHE(okHE),                              .ep_addr(`I2CTEST_WI), .ep_dataout({i2c_test_wi[`I2CTEST_RESET], i2c_test_wi[`I2CTEST_IN +: 16]}));
+     okWireIn     i2c_test_ep_wi (.okHE(okHE),                              .ep_addr(`I2CTEST_WI), .ep_dataout({i2c_test_wi[`I2CTEST_IN +: 8]}));
      wire [31:0] i2c_test_ti;
-     okTriggerIn  i2c_test_ep_ti (.okHE(okHE),                              .ep_addr(`I2CTEST_TI), .ep_clk(okClk), .ep_trigger({i2c_test_ti[`I2CTEST_MEMREAD], i2c_test_ti[`I2CTEST_MEMWRITE], i2c_test_ti[`I2CTEST_MEMSTART], i2c_test_ti[`I2CTEST_START]}));
+     okTriggerIn  i2c_test_ep_ti (.okHE(okHE),                              .ep_addr(`I2CTEST_TI), .ep_clk(okClk), .ep_trigger({i2c_test_ti[`I2CTEST_RESET], i2c_test_ti[`I2CTEST_MEMREAD], i2c_test_ti[`I2CTEST_MEMWRITE], i2c_test_ti[`I2CTEST_MEMSTART], i2c_test_ti[`I2CTEST_START]}));
      wire [31:0] i2c_test_to;
-     okTriggerOut i2c_test_ep_to (.okHE(okHE), .okEH(okEHx[ 28*65 +: 65 ]), .ep_addr(`I2CTEST_TO), .ep_clk(okClk), .ep_trigger(i2c_test_to[`I2CTEST_DONE]));
+     okTriggerOut i2c_test_ep_to (.okHE(okHE), .okEH(okEHx[ 29*65 +: 65 ]), .ep_addr(`I2CTEST_TO), .ep_clk(okClk), .ep_trigger(i2c_test_to[`I2CTEST_DONE]));
      wire [31:0] i2c_test_wo;
-     okWireOut    i2c_test_ep_wo (.okHE(okHE), .okEH(okEHx[ 29*65 +: 65 ]), .ep_addr(`I2CTEST_WO), .ep_datain(i2c_test_wo[`I2CTEST_OUT +: 8]));
+     okWireOut    i2c_test_ep_wo (.okHE(okHE), .okEH(okEHx[ 30*65 +: 65 ]), .ep_addr(`I2CTEST_WO), .ep_datain(i2c_test_wo[`I2CTEST_OUT +: 8]));
      
      reg [63:0] i2c_test_message;
-     okWireOut i2c_test_message_0 (.okHE(okHE), .okEH(okEHx[ 30*65 +: 65 ]), .ep_addr(`I2CTEST_MESSAGE_0), .ep_datain(i2c_test_message[31:0]));
-     okWireOut i2c_test_message_1 (.okHE(okHE), .okEH(okEHx[ 31*65 +: 65 ]), .ep_addr(`I2CTEST_MESSAGE_1), .ep_datain(i2c_test_message[63:32]));
+     okWireOut i2c_test_message_0 (.okHE(okHE), .okEH(okEHx[ 31*65 +: 65 ]), .ep_addr(`I2CTEST_MESSAGE_0), .ep_datain(i2c_test_message[31:0]));
+     okWireOut i2c_test_message_1 (.okHE(okHE), .okEH(okEHx[ 32*65 +: 65 ]), .ep_addr(`I2CTEST_MESSAGE_1), .ep_datain(i2c_test_message[63:32]));
      
      // Set up I2C controller instance
-     wire i2c_test_scl;
-     wire i2c_test_sda;
+//     wire i2c_test_scl;
+//     wire i2c_test_sda;
+     assign gpio[0] = ls_scl;
+     assign gpio[2] = ls_sda;
+     // DEBUG
+     wire i2c_test_sclk_pull_up;
+     wire i2c_test_sdat_pull_up;
+     assign gpio[1] = i2c_test_sclk_pull_up;
+     assign gpio[3] = i2c_test_sdat_pull_up;
      
-     i2cController # (
-             .CLOCK_STRETCH_SUPPORT  (1),
-             .CLOCK_DIVIDER          (480)
-         ) i2c_ctrl_0 (
-             .clk          (clk_sys),
-             .reset        (i2c_test_wi[`I2CTEST_RESET]),
-             .start        (i2c_test_ti[`I2CTEST_START]),
-             .done         (i2c_test_to[`I2CTEST_DONE]),
-             .memclk       (clk_sys),
-             .memstart     (i2c_test_ti[`I2CTEST_MEMSTART]),
-             .memwrite     (i2c_test_ti[`I2CTEST_MEMWRITE]),
-             .memread      (i2c_test_ti[`I2CTEST_MEMREAD]),
-             .memdin       (i2c_test_wi[`I2CTEST_IN +: 16]),
-             .memdout      (i2c_test_wo[`I2CTEST_OUT +: 8]),
-             .i2c_sclk     (i2c_test_scl), 
-             .i2c_sdat     (i2c_test_sda)
-         );
+//     i2cController i2c_test_controller (
+//             .clk          (clk_sys),
+//             .reset        (i2c_test_ti[`I2CTEST_RESET]),
+//             .start        (i2c_test_ti[`I2CTEST_START]),
+//             .done         (i2c_test_to[`I2CTEST_DONE]),
+//             .memclk       (clk_sys),
+//             .memstart     (i2c_test_ti[`I2CTEST_MEMSTART]),
+//             .memwrite     (i2c_test_ti[`I2CTEST_MEMWRITE]),
+//             .memread      (i2c_test_ti[`I2CTEST_MEMREAD]),
+//             .memdin       (i2c_test_wi[`I2CTEST_IN +: 8]),
+//             .memdout      (i2c_test_wo[`I2CTEST_OUT +: 8]),
+//             .i2c_sclk     (i2c_test_scl), 
+//             .i2c_sdat     (i2c_test_sda),
+             
+//         );
          
      // Set up message output
      // Shift register to store transmission from the controller and read it on a WireOut
      // No reset because we can just read the newest N bits based on how many bits we sent with the last transmission
      // i2c_read_long reads 2 bytes, has register byte, 2 slave bytes -> max 5 bytes = 40 bits
-     tri1 i2c_test_pulled_up_scl;   // tri1 nets "pull up" to 1 when driven by z (high impedance)
-     assign i2c_test_pulled_up_sclk = i2c_test_scl;
-     tri1 i2c_test_pulled_up_sda;
-     assign i2c_test_pulled_up_sda = i2c_test_sda;
-     
-     reg [31:0] i2c_test_clk_count = 32'b0;
-     okWireOut i2c_test_clk_count_ep (.okHE(okHE), .okEH(okEHx[ 32*65 +: 65 ]), .ep_addr(8'h39), .ep_datain(i2c_test_clk_count)); // Decrement endpoint counter at top of file when remove this line
-     always @(posedge i2c_test_pulled_up_scl) begin
+     reg [15:0] i2c_test_clk_count = 32'b0;
+     okWireOut i2c_test_clk_count_ep (.okHE(okHE), .okEH(okEHx[ 33*65 +: 65 ]), .ep_addr(8'h39), .ep_datain({16'hAAAA, i2c_test_clk_count})); // Decrement endpoint counter at top of file when remove this line
+     always @(posedge i2c_test_sclk_pull_up) begin
          i2c_test_message[63:1] <= i2c_test_message[62:0];
-         i2c_test_message[0] <= i2c_test_pulled_up_sda;
+         i2c_test_message[0] <= i2c_test_sdat_pull_up;
          i2c_test_clk_count <= i2c_test_clk_count + 1'b1;
      end
      
-     tri1 i2c_test_pull_up_ex; // Only declaring, not driving with anything, should pull-up to 1
-     tri1 i2c_test_pull_up_ex_z;
-     assign i2c_test_pull_up_1 = 1;
-     assign i2c_test_pull_ep_ex_z = 1'bz;   // Driven with z, should pull up to 1
-     
-     wire [1:0] i2c_test_pull_up_ex_wire;
-     assign i2c_test_pull_up_ex_wire = {i2c_test_pull_up_ex, i2c_test_pull_up_ex_z};    // Expect this to have a value of 0b11
-     
      // Expect this wire out to show 0b1_11_11 for initial 1 (make sure wire read works), wire 0b11, tri1 0b11
-     okWireOut i2c_test_pull_up_ex_ep (.okHE(okHE), .okEH(okEHx[ 33*65 +: 65 ]), .ep_addr(8'h38), .ep_datain({1'b1, i2c_test_pull_up_ex_wire, i2c_test_pull_up_ex, i2c_test_pull_ep_ex_z})); // Decrement endpoint counter at top of file when remove this line
+     okWireOut i2c_test_pull_up_ex_ep (.okHE(okHE), .okEH(okEHx[ 34*65 +: 65 ]), .ep_addr(8'h38), .ep_datain({i2c_aux_memdin[1], i2c_test_sclk_pull_up, i2c_test_sdat_pull_up})); // Decrement endpoint counter at top of file when remove this line
 
      /*---------------- End I2C test -------------------*/
 
