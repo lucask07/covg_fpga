@@ -59,6 +59,7 @@ import numpy as np
 from scipy.fft import rfftfreq
 import matplotlib.pyplot as plt
 import time
+from datetime import datetime
 # TODO: replace with package import when this script is moved to the package repo
 import sys, os
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
@@ -77,6 +78,7 @@ top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
                                         'top_level_module.bit')
 from interfaces.interfaces import FPGA, DDR3, DAC80508, ADS8686, Endpoint, AD7961
 from interfaces.utils import calc_impedance, from_voltage, to_voltage
+from analysis.adc_data import read_h5
 
 
 # USER SET CONSTANTS
@@ -84,7 +86,7 @@ RESISTANCE = 10000  # Resistance of the known resistance in Ohms
 FREQUENCY = 200     # Desired frequency of the output sine wave in Hertz
 AMPLITUDE = 1.0     # Desired amplitude of the output sine wave in Volts
 BITFILE_PATH = top_level_module_bitfile   # Path to top_level_module.bit
-PLOT = True        # True to create a graph of ADS8686 readings, False otherwise
+PLOT = False        # True to create a graph of ADS8686 readings, False otherwise
 
 # Other constants
 DAC80508_OFFSET = 0x8000                # DAC80508 voltage offset code for keeping sine wave positive
@@ -213,9 +215,27 @@ ddr_write_finish()
 time.sleep(0.01)
 
 # # --- Read input and ouput voltage signals ---
-chan_data = ddr.deswizzle(ddr.read_adc(blk_multiples=40)[0])
-ddr_data_from_names = ddr.data_to_names(chan_data)
-adc_data, timestamp, dac_data, ads, read_check = ddr_data_from_names
+# chan_data = ddr.deswizzle(ddr.read_adc(blk_multiples=40)[0])
+# ddr_data_from_names = ddr.data_to_names(chan_data)
+# adc_data, timestamp, dac_data, ads, read_check = ddr_data_from_names
+data_dir = os.path.join(covg_fpga_path, 'python/tests/data/{}{:02d}{:02d}')
+today = datetime.today()
+data_dir = data_dir.format(
+    today.year, today.month, today.day
+)
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
+file_name = 'impedance_analyzer'
+
+# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(0) + '.h5', num_repeats=8,
+                                    blk_multiples=40)  # blk multiples multiple of 10
+# to get the deswizzled data of all repeats need to read the file
+_, chan_data = read_h5(data_dir, file_name=file_name.format(
+    0) + '.h5', chan_list=np.arange(8))
+# Long data sequence -- entire file
+adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
+
 data_stream = ads
 v_in_code = data_stream[input_side]
 v_out_code = data_stream[output_side]
