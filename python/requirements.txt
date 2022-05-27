@@ -1,0 +1,12 @@
+numpy
+matplotlib
+pandas
+openpyxl
+pyvisa
+instrbuilder
+ltspice
+h5py
+ipython
+jupyter
+pytest
+PyQt5
