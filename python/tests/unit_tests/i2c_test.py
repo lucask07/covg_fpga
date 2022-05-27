@@ -39,8 +39,8 @@ def i2c_controller() -> I2CController:
     global top_level_module_bitfile
     f = FPGA(bitfile=top_level_module_bitfile)
     assert f.init_device()
-    Endpoint.update_endpoints_from_defines(
-        ep_defines_path='../../../fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ep_defines.v')
+    Endpoint.update_endpoints_from_defines(ep_defines_path=os.path.join(covg_path, 'fpga_XEM7310',
+                                                                        'fpga_XEM7310.srcs', 'sources_1', 'ep_defines.v'))
     yield I2CController(fpga=f, addr_pins=0, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'))
     # Teardown
     f.xem.Close()
