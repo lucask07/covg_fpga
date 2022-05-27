@@ -1,7 +1,7 @@
 Register Index Guide
 ========================================================
 
-The register index holds the name, address, lower bit index, upper bit index, and bit width of registers so they can be read in by pypanel and stored in a Register object. The template for the register index is located here (LINK TO TEMPLATE). Start with the template and follow the example below.
+The register index holds the name, address, lower bit index, upper bit index, and bit width of registers so they can be read in by pypanel and stored in a Register object. Here is a `template <https://github.com/lucask07/covg_fpga/blob/daq_v2/examples/register_index_template.xlsx>`_ for the register index. Start with the template and follow the example below.
 
 For this example, our peripheral/chip is called GUIDE and has 4 internal registers: WRITE_IN, READ_OUT, CONFIG, and ID.
 
@@ -118,4 +118,4 @@ Repeat steps 1-5 for any remaining chips in your project. Be sure to create a ne
 
             Bit Index (Low): 10
 
-The completed register index for this example is located here (LINK TO EXAMPLE). You can read the registers into pypanel using the :py:meth:`~interfaces.interfaces.Register.get_chip_registers` method.
+Here is the `completed register index <https://github.com/lucask07/covg_fpga/blob/daq_v2/examples/register_index_guide_completed_example.xlsx>`_ for this example. You can read the registers into pypanel using the :py:meth:`~interfaces.interfaces.Register.get_chip_registers` method.
