@@ -10,7 +10,7 @@ For this example, our peripheral/chip is called GUIDE and has 4 internal registe
 
 The name of the chip is used to access this sheet of registers as a group. Our chip is GUIDE, so replace the sheet title CHIP with GUIDE.
 
-- Note: any valid Excel sheet name is allowed for CHIP, but a one word uppercase name is recommended so it can match the chip name in the endpoints definitions Verilog file (LINK TO ep_defines.v GUIDE), which cannot contain underscores.
+- Note: any valid Excel sheet name is allowed for CHIP, but a one word uppercase name is recommended so it can match the chip name in the endpoints definitions Verilog file (see :ref:`endpoint definitions guide <endpoint-definitions-guide>`), which cannot contain underscores.
 
 2. Enter register name
 ------------------------------
@@ -118,4 +118,4 @@ Repeat steps 1-5 for any remaining chips in your project. Be sure to create a ne
 
             Bit Index (Low): 10
 
-The completed register index for this example is located here (LINK TO EXAMPLE). You can read the registers into pypanel using the Register.get_chip_registers (LINK TO DOCS) method.
+The completed register index for this example is located here (LINK TO EXAMPLE). You can read the registers into pypanel using the :py:meth:`~interfaces.interfaces.Register.get_chip_registers` method.
