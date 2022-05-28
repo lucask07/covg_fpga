@@ -1,35 +1,74 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  <meta charset="utf-8" />
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
   <title>SPI Controller Class &mdash; covgDAQ 0.0.1 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
-    <script src="_static/js/theme.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="SPI FIFO Driven Controller Class" href="SPIFifoDriven.html" />
     <link rel="prev" title="I2C Controller Class" href="I2CController.html" /> 
 </head>
 
-<body class="wy-body-for-nav"> 
+<body class="wy-body-for-nav">
+
+   
   <div class="wy-grid-for-nav">
+    
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
+          
+
+          
             <a href="index.html" class="icon icon-home"> covgDAQ
+          
+
+          
           </a>
+
+          
+            
+            
+          
+
+          
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" />
@@ -37,7 +76,18 @@
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="Register.html">Register Class</a></li>
@@ -51,35 +101,76 @@
 <li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
 </ul>
 
+            
+          
         </div>
+        
       </div>
     </nav>
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
           <a href="index.html">covgDAQ</a>
+        
       </nav>
 
+
       <div class="wy-nav-content">
+        
         <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
+    
       <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
       <li>SPI Controller Class</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
+        
+          
             <a href="_sources/SPIController.rst.txt" rel="nofollow"> View page source</a>
+          
+        
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
-             
-  <section id="spi-controller-class">
-<h1>SPI Controller Class<a class="headerlink" href="#spi-controller-class" title="Permalink to this headline"></a></h1>
+            
+  <div class="section" id="spi-controller-class">
+<h1>SPI Controller Class<a class="headerlink" href="#spi-controller-class" title="Permalink to this headline">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">SPIController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">SPIController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController" title="Permalink to this definition">¶</a></dt>
 <dd><p>Class for controllers on the FPGA using SPI protocol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Attributes</dt>
@@ -105,8 +196,8 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.configure_master">
-<span class="sig-name descname"><span class="pre">configure_master</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ASS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LSB</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tx_NEG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rx_NEG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CHAR_LEN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.configure_master"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.configure_master" title="Permalink to this definition"></a></dt>
-<dd><p>Set the Wishbone’s CTRL register using several arguments.</p>
+<span class="sig-name descname"><span class="pre">configure_master</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ASS</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IE</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LSB</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tx_NEG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Rx_NEG</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CHAR_LEN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.configure_master"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.configure_master" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the Wishbone’s CTRL register using several parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><dl class="simple">
@@ -129,13 +220,13 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.configure_master_bin">
-<span class="sig-name descname"><span class="pre">configure_master_bin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.configure_master_bin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.configure_master_bin" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">configure_master_bin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.configure_master_bin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.configure_master_bin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the value of the Wishbone’s CTRL register directly.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.create_chips">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_chips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_chips</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.create_chips"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.create_chips" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_chips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_chips</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.create_chips"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.create_chips" title="Permalink to this definition">¶</a></dt>
 <dd><p>Instantiate a number of new chips.</p>
 <p>The number must be an integer greater than zero. The endpoints between
 each instance will be incremented. If the endpoints argument is left
@@ -147,46 +238,46 @@ endpoints there are ready for another instantiation if needed.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.get_master_configuration">
-<span class="sig-name descname"><span class="pre">get_master_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.get_master_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.get_master_configuration" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_master_configuration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.get_master_configuration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.get_master_configuration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the current configuration of CTRL register.</p>
 <p>Includes ASS, IO, LSB, Tx_NEG, Rx_NEG, CHAR_LEN.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.read">
-<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">register</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.read" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">register</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return data from the selected data receive register.</p>
 <p>Register should be 0, 1, 2, or 3.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.reset_master">
-<span class="sig-name descname"><span class="pre">reset_master</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.reset_master"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.reset_master" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">reset_master</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.reset_master"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.reset_master" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the Wishbone Master and SPI Core.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.select_slave">
-<span class="sig-name descname"><span class="pre">select_slave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slave_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.select_slave"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.select_slave" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">select_slave</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">slave_address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.select_slave"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.select_slave" title="Permalink to this definition">¶</a></dt>
 <dd><p>Selecting a slave device.</p>
 <p>Set the correspoinding bit in the Slave Select register to 1.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.set_divider">
-<span class="sig-name descname"><span class="pre">set_divider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">divider</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.set_divider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.set_divider" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_divider</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">divider</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.set_divider"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.set_divider" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the value of the Wishbone’s DIVIDER register.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.set_fpga_mode">
-<span class="sig-name descname"><span class="pre">set_fpga_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.set_fpga_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.set_fpga_mode" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_fpga_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.set_fpga_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.set_fpga_mode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configure SPI controller to be host driven.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.set_frequency">
-<span class="sig-name descname"><span class="pre">set_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.set_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.set_frequency" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_frequency</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frequency</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.set_frequency"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.set_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the frequency of SPI SCLK.</p>
 <p>Set the DIVIDER register of the Wishbone with the corresponding divider
 for the target frequency. Frequency must be given in MHz.</p>
@@ -194,32 +285,32 @@ for the target frequency. Frequency must be given in MHz.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.set_host_mode">
-<span class="sig-name descname"><span class="pre">set_host_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.set_host_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.set_host_mode" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_host_mode</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.set_host_mode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.set_host_mode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Configure SPI controller to be host driven.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.wb_go">
-<span class="sig-name descname"><span class="pre">wb_go</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_go"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_go" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">wb_go</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_go"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_go" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initiate a SPI transmission.</p>
 <p>Initiated by setting the GO_BSY bit of the CTRL register to  1.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.wb_is_ack">
-<span class="sig-name descname"><span class="pre">wb_is_ack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_is_ack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_is_ack" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">wb_is_ack</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_is_ack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_is_ack" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check if the Wishbone sent back a write acknowledge.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.wb_read">
-<span class="sig-name descname"><span class="pre">wb_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_read" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">wb_read</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the data stored in the currently selected register.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.wb_send_cmd">
-<span class="sig-name descname"><span class="pre">wb_send_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_send_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_send_cmd" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">wb_send_cmd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">command</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_send_cmd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_send_cmd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Send a command to the Wishbone.</p>
 <p>Sent in 32 bits through the WbSignal_converter Verilog module tos
 reformat to 34 bits.</p>
@@ -227,56 +318,73 @@ reformat to 34 bits.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.wb_set_address">
-<span class="sig-name descname"><span class="pre">wb_set_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_set_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_set_address" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">wb_set_address</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">address</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_set_address"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_set_address" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the address of the register we interact with in the Wishbone.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.wb_write">
-<span class="sig-name descname"><span class="pre">wb_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_write" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">wb_write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.wb_write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.wb_write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write up to 30 bytes of data to the currently selected register.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.SPIController.write">
-<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">register</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.write" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">register</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#SPIController.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.SPIController.write" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write data on the SPI lines.</p>
 <p>Register should be either 0, 1, 2, or 3.</p>
 </dd></dl>
 
 </dd></dl>
 
-</section>
+</div>
 
 
            </div>
+           
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="I2CController.html" class="btn btn-neutral float-left" title="I2C Controller Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="SPIFifoDriven.html" class="btn btn-neutral float-right" title="SPI FIFO Driven Controller Class" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="I2CController.html" class="btn btn-neutral float-left" title="I2C Controller Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.</p>
-  </div>
+    <p>
+        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
     <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
         </div>
       </div>
+
     </section>
+
   </div>
-  <script>
+  
+
+  <script type="text/javascript">
       jQuery(function () {
           SphinxRtdTheme.Navigation.enable(true);
       });
-  </script> 
+  </script>
+
+  
+  
+    
+   
 
 </body>
 </html>

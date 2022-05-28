@@ -57,6 +57,8 @@
 `define I2CDAQ_WIRE_OUT_GEN_ADDR 8'h26 // bit_width=8
 `define I2CDAQ_OUT_GEN_BIT 0 // address=I2CDAQ_WIRE_OUT bit_width=8
 
+`define I2CDAQ_PIPE_OUT_GEN_ADDR 8'hAB // bit_width=32
+
 `define GPIO_DEBUG_WIRE_IN 8'h00 // bit_width=32
 `define GP_HOST_FPGAB_GPIO_WIRE_IN 8'h01 // bit_width=32
 `define GP_PWR_REG_ADC_EN_WIRE_IN 8'h02 // bit_width=32
@@ -195,6 +197,7 @@
 `define DAC80508_CLK_DIV_RESET_GEN_BIT 22 // address=I2C_TRIG_IN bit_width=1
 `define DAC80508_HOST_TRIG_GEN_BIT 23 // address=I2C_TRIG_IN bit_width=1
 `define AD5453_HOST_TRIG_GEN_BIT 24 // address=I2C_TRIG_IN bit_width=1
+`define I2CDAQ_FIFO_RESET_GEN_BIT 30 // address=I2C_TRIG_IN bit_width=1
 
 // trigger in at 0x42 -- sync to adc_timing_clk
 `define AD7961_FIFO_RESET_GEN_BIT 4 // address=ADC_TIMING_TRIG_IN bit_width=1
@@ -264,7 +267,7 @@
 `define DAC80508_REGBRIDGE_OFFSET_GEN_BIT 5 // address=0x0 bit_width=19
 `define AD5453_REGBRIDGE_OFFSET_GEN_BIT 43 // address=0x0 bit_width=19
 
-// FPGA test endpoints
+// FPGA test Endpoints
 `define FPGATEST_STATIC_READ_WO 8'h3F // bit_width=32
 `define FPGATEST_STATIC_READ_PO 8'hBF // bit_width=32
 `define FPGATEST_LOOPED_WI 8'h1E // bit_width=32
@@ -274,6 +277,10 @@
 `define FPGATEST_TI_CONFIRM 8'h3D // bit_width=32
 `define FPGATEST_TO_ADDR 8'h7F // bit_width=32
 `define FPGATEST_TO 0 // address=FPGATEST_TO_ADDR bit_width=1
+
+// I2C test Endpoints
+`define I2CTEST_MESSAGE_0 8'h3C // bit_width=32
+`define I2CTEST_MESSAGE_1 8'h3B // bit_width=32
 
 // TODO set this up!
 // `define GP_NUM_OUTGOING_EPS 13 // address= bit_width=

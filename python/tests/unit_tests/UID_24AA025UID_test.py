@@ -2,7 +2,7 @@
 
 Relies on the I2CController, FPGA classes working. The UID_24AA025UID is a Unique ID chip with a unique serial number.
 
-August 2021
+May 2022
 
 Abe Stroschein, ajstroschein@stthomas.edu
 """
@@ -12,7 +12,7 @@ import os
 import sys
 
 # 24AA025UID chip is on the Clamp board
-pytestmark = pytest.mark.Clamp
+# pytestmark = pytest.mark.Clamp
 
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
@@ -26,21 +26,22 @@ else:
 interfaces_path = os.path.join(covg_path, 'python')
 sys.path.append(interfaces_path)
 
-top_level_module_bitfile = os.path.join(
-    interfaces_path, 'top_level_module.bit')
-i2c_bitfile = os.path.join(interfaces_path, 'i2c.bit')
+top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
+                                        'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
+
 
 
 # Fixtures
 @pytest.fixture(scope='module')
 def dut():
-    # global top_level_module_bitfile
-    global i2c_bitfile
-    from interfaces.interfaces import FPGA, UID_24AA025UID, Endpoint
-    # f = FPGA(bitfile=top_level_module_bitfile)
-    f = FPGA(bitfile=i2c_bitfile)
+    global top_level_module_bitfile
+    from interfaces.interfaces import FPGA, UID_24AA025UID, Endpoint, advance_endpoints_bynum
+    f = FPGA(bitfile=top_level_module_bitfile)
     assert f.init_device()
-    yield UID_24AA025UID(fpga=f, endpoints=Endpoint.get_chip_endpoints('I2C-DC'), addr_pins=0b000)
+    yield UID_24AA025UID(fpga=f,
+                         endpoints=advance_endpoints_bynum(
+                             Endpoint.get_chip_endpoints('I2CDAQ'), 1),
+                         addr_pins=0b000)
     # Teardown
     f.xem.Close()
 
@@ -49,13 +50,13 @@ def dut():
 # Get codes first to confirm the device is there and communicating
 def test_get_manufacturer_code(dut):
     got = dut.get_manufacturer_code()
-    expected = dut.parameters['MANUFACTURER_CODE'].default
+    expected = dut.registers['MANUFACTURER_CODE'].default
     assert got == expected
 
 
 def test_get_device_code(dut):
     got = dut.get_device_code()
-    expected = dut.parameters['DEVICE_CODE'].default
+    expected = dut.registers['DEVICE_CODE'].default
     assert got == expected
 
 

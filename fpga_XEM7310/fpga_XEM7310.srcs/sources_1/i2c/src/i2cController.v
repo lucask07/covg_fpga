@@ -59,13 +59,16 @@ module i2cController(
 	
 	input  wire       memclk,
 	input  wire       memstart,
-	input  wire       memwrite,
-	input  wire       memread,
+	input  wire       memwrite, //advances the memory pointer
+	input  wire       memread,  //advances the memory pointer
 	input  wire [7:0] memdin,
 	output wire [7:0] memdout,
 	
 	inout  wire       i2c_sclk,
-	inout  wire       i2c_sdat
+	inout  wire       i2c_sdat,
+	
+	output wire       i2c_sclk_pull_up,
+	output wire       i2c_sdat_pull_up
 	);
 	
 	
@@ -153,7 +156,9 @@ i2cTokenizer # (
 		.tok_rack      (tok_rack),
 		.tok_wack      (),
 		.i2c_sclk      (i2c_sclk),
-		.i2c_sdat      (i2c_sdat)
+		.i2c_sdat      (i2c_sdat),
+		.i2c_sclk_pull_up (i2c_sclk_pull_up),
+		.i2c_sdat_pull_up (i2c_sdat_pull_up)
 	);
 
 

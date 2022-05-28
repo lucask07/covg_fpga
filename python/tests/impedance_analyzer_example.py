@@ -19,7 +19,7 @@ Connect the following in series
 - GND (same as DAC80508 GND)
 
 Connect the 2 ADS8686 inputs (A7, B3) to the following components
-- Input A7 -> DAC80508 output 0
+- Input A7 -> DAC80508 output 7
 - Input B3 -> Unknown impedance positive side (the side connected to the known resistance)
 - Input channels can be changed at ADS8686_A_CHAN, ADS8686_B_CHAN as long as
   A still takes the DAC80508 output and B takes the unknown impedance
@@ -58,6 +58,8 @@ March 2022
 import numpy as np
 from scipy.fft import rfftfreq
 import matplotlib.pyplot as plt
+import time
+from datetime import datetime
 # TODO: replace with package import when this script is moved to the package repo
 import sys, os
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
@@ -74,16 +76,17 @@ sys.path.append(interfaces_path)
 top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1',
                                         'top_level_module.bit')
-from interfaces.interfaces import FPGA, DDR3, DAC80508, ADS8686
+from interfaces.interfaces import FPGA, DDR3, DAC80508, ADS8686, Endpoint, AD7961
 from interfaces.utils import calc_impedance, from_voltage, to_voltage
+from analysis.adc_data import read_h5
 
 
 # USER SET CONSTANTS
 RESISTANCE = 10000  # Resistance of the known resistance in Ohms
 FREQUENCY = 200     # Desired frequency of the output sine wave in Hertz
-AMPLITUDE = 1.0     # Desired amplitude of the output sine wave in Voltz
+AMPLITUDE = 1.0     # Desired amplitude of the output sine wave in Volts
 BITFILE_PATH = top_level_module_bitfile   # Path to top_level_module.bit
-PLOT = True        # True to create a graph of ADS8686 readings, False otherwise
+PLOT = False        # True to create a graph of ADS8686 readings, False otherwise
 
 # Other constants
 DAC80508_OFFSET = 0x8000                # DAC80508 voltage offset code for keeping sine wave positive
@@ -94,9 +97,27 @@ ADS8686_A_CHAN = 7                      # ADS8686 input from side A reading DAC8
 ADS8686_B_CHAN = 3                      # ADS8686 input from side B reading unknown impedance voltage
 
 
+# Helper functions for DDR3
+def ddr_write_setup():
+    ddr.set_adcs_connected()
+    ddr.clear_dac_read()
+    ddr.clear_adc_write()
+    ddr.reset_fifo(name='ALL')
+    ddr.reset_mig_interface()
+    ad7961s[0].reset_trig()
+
+
+def ddr_write_finish():
+    # reenable both DACs
+    ddr.set_adc_dac_simultaneous()  # enable DAC playback and ADC writing to DDR
+
+
 # --- Set up FPGA, DDR3, DAC80508, ADS8686 ---
 f = FPGA(bitfile=BITFILE_PATH)
 f.init_device()
+time.sleep(2)
+Endpoint.update_endpoints_from_defines()
+f.send_trig(Endpoint.endpoints_from_defines["GP"]["SYSTEM_RESET"])  # system reset
 
 # TODO:remove power part when in package repository?
 import time
@@ -108,9 +129,13 @@ for name in ['1V8', '5V', '3V3']:
     pwr.supply_on(name)
     time.sleep(0.05)
 
-ddr = DDR3(fpga=f)
+ddr = DDR3(fpga=f, data_version='TIMESTAMPS')
 dac = DAC80508(fpga=f)
 adc = ADS8686(fpga=f)
+
+ad7961s = AD7961.create_chips(fpga=f, number_of_chips=4)
+ad7961s[0].reset_wire(1)
+ad7961s[0].reset_wire(0)
 
 # --- Configure DAC80508 for DDR driven ---
 dac.set_spi_sclk_divide(0x8)
@@ -172,13 +197,46 @@ ddr.data_arrays[0] = np.bitwise_or(ddr.data_arrays[0], (DAC80508_OUT_CHAN & 0b11
 ddr.data_arrays[1] = np.bitwise_or(ddr.data_arrays[1], (DAC80508_OUT_CHAN & 0b001) << 14).astype(np.uint16)
 # Set voltage
 ddr.data_arrays[6] = v_in_code.astype(np.uint16)
-ddr.write_channels()
-ddr.write_channels()   # Double write to ensure good output
+
+ddr_write_setup()
+# ddr.write_channels()   # Double write to ensure good output
+g_buf = ddr.write_channels()
+ddr.reset_mig_interface()
+ddr_write_finish()
+
+ddr.clear_adc_read()
+ddr.clear_adc_write()
+
+ddr.reset_fifo(name='ADC_IN')
+ddr.reset_fifo(name='ADC_TRANSFER')
+ddr.reset_mig_interface()
+
+ddr_write_finish()
+time.sleep(0.01)
 
 # # --- Read input and ouput voltage signals ---
-throw_away = 15     # TODO: remove this (and in boards.py)
-for i in range(throw_away):
-    data_stream = adc.stream_mult(twos_comp_conv=False)
+# chan_data = ddr.deswizzle(ddr.read_adc(blk_multiples=40)[0])
+# ddr_data_from_names = ddr.data_to_names(chan_data)
+# adc_data, timestamp, dac_data, ads, read_check = ddr_data_from_names
+data_dir = os.path.join(covg_fpga_path, 'python/tests/data/{}{:02d}{:02d}')
+today = datetime.today()
+data_dir = data_dir.format(
+    today.year, today.month, today.day
+)
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
+file_name = 'impedance_analyzer'
+
+# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(0) + '.h5', num_repeats=8,
+                                    blk_multiples=40)  # blk multiples multiple of 10
+# to get the deswizzled data of all repeats need to read the file
+_, chan_data = read_h5(data_dir, file_name=file_name.format(
+    0) + '.h5', chan_list=np.arange(8))
+# Long data sequence -- entire file
+adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
+
+data_stream = ads
 v_in_code = data_stream[input_side]
 v_out_code = data_stream[output_side]
 
@@ -217,7 +275,10 @@ if PLOT:
     ax.set_xlabel('Time')
     ax.set_ylabel('Voltage')
     while not stop:
-        data_stream = adc.stream_mult(twos_comp_conv=False)
+        chan_data = ddr.deswizzle(ddr.read_adc(blk_multiples=40)[0])
+        ddr_data_from_names = ddr.data_to_names(chan_data)
+        adc_data, timestamp, dac_data, ads, read_check = ddr_data_from_names
+        data_stream = ads
         v_in = to_voltage(
             data=data_stream['A'], num_bits=16, voltage_range=10, use_twos_comp=True)
         v_out = to_voltage(
