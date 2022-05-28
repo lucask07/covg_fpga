@@ -680,7 +680,7 @@ class I2CController:
     # Note: If there is a one in the same position for both STARTS and STOPS,
     #       the stop takes precedence.
 
-    # The preamble is the device address, byte address, and (if a write) device address again:
+    # The preamble is the device address, byte address, and (if a read) device address again:
     #   preamble[0] = 0xA0; // devAddr (write)
     #   preamble[1] = 0x00; // byteAddress (MSB)
     #   preamble[2] = 0x00; // byteAddress (LSB)
@@ -688,23 +688,23 @@ class I2CController:
 
     # from the HDL
 
-    def i2c_configure(self, data_length, starts, stops, preamble):
+    def i2c_configure(self, preamble_length, starts, stops, preamble):
         """Configure the buffer for the next transmission."""
 
-        if data_length > 7:
-            print('Data too long')
+        if preamble_length > 7:
+            print('Preamble data is too long') 
             # throw DataTooLongException();
 
-        self.i2c['m_pBuf'] = [None]*(4+data_length)
-        self.i2c['m_pBuf'][0] = data_length
+        self.i2c['m_pBuf'] = [None]*(4+preamble_length)
+        self.i2c['m_pBuf'][0] = preamble_length
         self.i2c['m_pBuf'][1] = starts
         self.i2c['m_pBuf'][2] = stops
         # Payload length will be provided later.
         self.i2c['m_pBuf'][3] = 0
-        for i in range(data_length):
+        for i in range(preamble_length):
             self.i2c['m_pBuf'][4+i] = preamble[i]
 
-        self.i2c['m_nDataStart'] = 4 + data_length
+        self.i2c['m_nDataStart'] = 4 + preamble_length
 
     def i2c_transmit(self, data, data_length):
         """Send data along the SCL and SDA lines."""
@@ -716,7 +716,7 @@ class I2CController:
         # Reset the memory pointer and transfer the buffer.
         self.fpga.xem.ActivateTriggerIn(
             self.endpoints['MEMSTART'].address, self.endpoints['MEMSTART'].bit_index_low)
-        for i in range(data_length + self.i2c['m_nDataStart']):
+        for i in range(data_length + self.i2c['m_nDataStart']):  
             # print('(transmit) WireIn Value = {}'.format(self.i2c['m_pBuf'][i]))
             mask = 0xff << self.endpoints['IN'].bit_index_low
             value = self.i2c['m_pBuf'][i] << self.endpoints['IN'].bit_index_low
@@ -731,12 +731,12 @@ class I2CController:
             self.endpoints['START'].address, self.endpoints['START'].bit_index_low)
 
         # Wait for transaction to finish
-        for i in range(int(I2CController.I2C_MAX_TIMEOUT_MS / 10)):
+        for i in range(int(I2CController.I2C_MAX_TIMEOUT_MS)):
             self.fpga.xem.UpdateTriggerOuts()
             # change to waiting for True
             if self.fpga.xem.IsTriggered(self.endpoints['DONE'].address, (1 << self.endpoints['DONE'].bit_index_low)):
                 return True
-            time.sleep(0.01)
+            time.sleep(0.001)
 
         print('Timeout error in transmit')
 
@@ -752,7 +752,6 @@ class I2CController:
 
         for i in range(self.i2c['m_nDataStart']):
             # print('WireIn Value = {}'.format(self.i2c['m_pBuf'][i]))
-            # TODO: check this change (LJK)
             mask = 0xff << self.endpoints['IN'].bit_index_low
             value = self.i2c['m_pBuf'][i] << self.endpoints['IN'].bit_index_low
             self.fpga.xem.SetWireInValue(
@@ -769,7 +768,7 @@ class I2CController:
         # Wait for transaction to finish
         for _ in range(int(I2CController.I2C_MAX_TIMEOUT_MS / 10)):
             self.fpga.xem.UpdateTriggerOuts()
-            # change to 1, LJK
+
             if self.fpga.xem.IsTriggered(self.endpoints['DONE'].address,
                                          (1 << self.endpoints['DONE'].bit_index_low)):
                 if results.lower() == 'wire':
@@ -777,14 +776,12 @@ class I2CController:
                     self.fpga.xem.ActivateTriggerIn(
                         self.endpoints['MEMSTART'].address, self.endpoints['MEMSTART'].bit_index_low)
                     data = [None]*data_length
-                    for i in range(data_length):
+                    for i in range(data_length):  # for each byte we have three API calls 
                         self.fpga.xem.UpdateWireOuts()
-                        # TODO: check this change (LJK)
                         data_tmp = self.fpga.xem.GetWireOutValue(
                             self.endpoints['OUT'].address)
                         mask = 0xff << self.endpoints['OUT'].bit_index_low
-                        data[i] = (
-                            data_tmp & mask) >> self.endpoints['OUT'].bit_index_low
+                        data[i] = (data_tmp & mask) >> self.endpoints['OUT'].bit_index_low
                         self.fpga.xem.ActivateTriggerIn(
                             self.endpoints['MEMREAD'].address, self.endpoints['MEMREAD'].bit_index_low)
                     return data
@@ -812,6 +809,7 @@ class I2CController:
         regAddr must be given in a list."""
 
         preamble = [devAddr & 0xfe] + regAddr  # + data
+        # def i2c_configure(self, data_length, starts, stops, preamble)
         self.i2c_configure(len(preamble), 0x00, 1 << len(preamble), preamble)
         return self.i2c_transmit(data, data_length)
 
@@ -971,14 +969,18 @@ class UID_24AA025UID(I2CController):
             self.i2c_write_long(devAddr=dev_addr, regAddr=[
                                 word_address], data_length=16, data=list_data[:16])
             # We can recursively call this function instead of looping through multiple times.
-            recurse_data = data % (0x1 << (8 * (num_bytes - 16)))
-            print(f'{data} % {(0x1 << (8 * (num_bytes - 16)))} = {recurse_data}')
-            self.write(data=recurse_data, word_address=word_address
-                       + 16, num_bytes=num_bytes - 16)
+            # recurse_data = data % (0x1 << (8 * (num_bytes - 16)))
+            recurse_data = data
+            for i in range(16):
+                recurse_data -= list_data[i] << (8 * i)
+            recurse_data >>= 16 * 8
+            # print(f'{data} % {(0x1 << (8 * (num_bytes - 16)))} = {recurse_data}')
+            self.write(data=recurse_data, word_address=(word_address
+                       + 16) % 0x80, num_bytes=num_bytes - 16)
             return True
 
         # Data is no more than 16 bytes (1 page) and can be written with 1 I2C command.
-        self.i2c_write_long(dev_addr, [word_address], num_bytes, list_data)
+        self.i2c_write_long(devAddr=dev_addr, regAddr=[word_address], data_length=num_bytes, data=list_data)
         return True
 
     def read(self, word_address=0x00, words_read=1):
@@ -987,6 +989,11 @@ class UID_24AA025UID(I2CController):
         # A word is a byte, 8 bits
         dev_addr = UID_24AA025UID.ADDRESS_HEADER | (
             self.addr_pins << 1) | 0b1
+        # Bug when reading more than 64 bytes, only 128 bytes possible so check and split to 2 operations
+        if words_read > 64:
+            d0 = self.i2c_read_long(dev_addr, [word_address], 64)
+            d1 = self.i2c_read_long(dev_addr, [word_address + 64], words_read - 64)
+            return d0 + d1
         return self.i2c_read_long(dev_addr, [word_address], words_read)
 
     def get_serial_number(self):
@@ -1295,25 +1302,22 @@ class TMF8801(I2CController):
 
     Attributes
     ----------
-    ADDRESS_HEADER : int
-        7-bit device address with R/W bit space and 4 MSBs filled in specific
-        to this chip. The rest is left as 0 to be filled in later.
+    ADDRESS : int
+        7-bit device address with R/W bit space 
     registers : dict
         Name-Register pairs for the internal registers of the chip.
-    addr_pins : int
-        3 LSBs of the 7-bit device address formed alongside the address header
-        used to differentiate between different instances of the TCA9555 chip.
     """
 
-    ADDRESS_HEADER = 0b0100_0001 << 1
+    ADDRESS = 0b0100_0001 << 1
     registers = Register.get_chip_registers('TMF8801')
+    apps = {'measure': 0xC0, 'bootloader': 0x80}
 
 
     def write(self, data, register_name):
         """Write data to any register on the chip."""
 
-        dev_addr = TMF8801.ADDRESS_HEADER | (self.addr_pins << 1)
-        register = TMF8801.registers[register_name]
+        dev_addr = self.ADDRESS 
+        register = self.registers[register_name]
         data <<= register.bit_index_low
 
         # Mask only the bits for the specified register.
@@ -1329,23 +1333,24 @@ class TMF8801(I2CController):
         new_data = (data & mask) | (read_out & ~mask)
 
         # Turn data into a list of bytes for i2c_write method
-        # Essentially round up to the closest byte
-        #number_of_bytes = (register.bit_width + 7) // 8
         list_data = int_to_list(new_data)
         number_of_bytes = len(list_data)
+        list_data_str = ''.join(" ".join(f'0x{x:02x}' for x in list_data))
+        print(f'i2c write long: 0x{dev_addr:02x}, reg addr 0x{register.address:02x}, data {list_data_str}')
         self.i2c_write_long(
             dev_addr, [register.address], number_of_bytes, list_data)
 
-    def read(self, register_name):
+    def read(self, register_name, number_of_bytes=None):
         """Return data from any register on the chip."""
 
-        dev_addr = TMF8801.ADDRESS_HEADER | (self.addr_pins << 1)
-        register = TMF8801.registers[register_name]
+        dev_addr = self.ADDRESS 
+        register = self.registers[register_name]
         # Ex. 16-bit register: | Byte 1 [15:8] | Byte 0 [7:0] |
-        byte_number = register.bit_index_high // 8
+        byte_number = register.bit_index_high // 8  # assumption is that this will be 1 or 0 
         # 16-bit register = 2 bytes, i2c_read_long starts at the MSB so we read 2 bytes to get Byte 0
-        number_of_bytes = 2 - byte_number
-        print(f'Read: {dev_addr}, reg addr {register.address}')
+        if number_of_bytes is None:
+            number_of_bytes = 2 - byte_number
+        # print(f'Read slave address: 0x{dev_addr:02x}, reg addr 0x{register.address:02x}')
         read_back_list = self.i2c_read_long(
             dev_addr, [register.address], number_of_bytes)
 
@@ -1355,7 +1360,7 @@ class TMF8801(I2CController):
             return None
         # First byte in the list is the MSB, shift and append the next byte
         for byte in read_back_list:
-            print('Readback byte of {:02X}'.format(byte))
+            # print('Readback byte of 0x{:02X}'.format(byte))
             read_back_data <<= 8
             read_back_data |= byte
         # Get only the bits for the specified register from what was read back.
@@ -1378,9 +1383,144 @@ class TMF8801(I2CController):
 
         device_id = self.read('ID')
         version_id = self.read('REVID')
-        return (device_id << TMF8801.registers['ID'].bit_index_low) | (version_id << TMF8801.registers['ID'].bit_index_low)
+        return (device_id << self.registers['ID'].bit_index_low) | (version_id << self.registers['ID'].bit_index_low)
 
 
+    def cpu_reset(self):
+        self.write(1, 'CPU_RESET')
+
+    def cpu_ready(self):
+        return self.read('CPU_READY', 1)
+
+
+    def load_app(self, app='measure'):
+
+        if app == 'measure':
+            val = 0xC0
+        elif app == 'bootloader':
+            val = 0x80
+        self.write(val, 'APPREQID')
+
+        return self.read('APPID')
+
+    def read_app(self):
+
+        appid = self.read('APPID')
+        appname = list(self.apps.keys())[list(self.apps.values()).index(appid)]  
+        print(f'In app {appname}')
+        return appid 
+
+
+    def rom_fw_version(self):
+        rev_major = self.read('APPREV_MAJOR')
+        rev_minor = self.read('APPREV_MINOR')
+        patch = self.read('APPREV_PATCH')
+
+        print(f'major: {rev_major}, minor: {rev_minor}, patch: {patch}')
+
+        return rev_major, rev_minor, patch
+
+    def bl_command(self, cmd):
+
+        appid = self.read('APPID')
+        if appid == self.apps['bootloader']:
+            print('cannot send boatloader command when in measure app')
+            return 0
+        if cmd == 'ramremap_reset':
+            val = 0x11
+        elif cmd == 'download_init':
+            val = 0x14
+
+        self.write(val, 'CMD_DATA7')
+
+    def ram_write_status(self):
+        # TODO: Host_Driver_Comm document suggests this reads back 3 bytes
+        return self.read('CMD_DATA7', number_of_bytes=3)
+
+
+    def download_init(self):
+
+        dev_addr = self.ADDRESS
+        reg_addr = self.registers['CMD_DATA7'].address
+        data = [0x14, 0x01, 0x29, 0xC1] #TODO: why 0x29 - specified by host driver comms
+        self.i2c_write_long(dev_addr, [reg_addr],
+            len(data), data)
+
+
+    def ramremap_reset(self):
+
+        dev_addr = self.ADDRESS
+        reg_addr = self.registers['CMD_DATA7'].address
+        data = [0x11, 0x00, 0xEE]
+        self.i2c_write_long(dev_addr, [reg_addr],
+            len(data), data)
+
+    def read_dist_peak(self):
+
+        dev_addr = self.ADDRESS
+        reg_addr = self.registers['DISTANCE_PEAK'].address
+        num_bytes = self.registers['DISTANCE_PEAK'].bit_width//8
+        return self.i2c_read_long(dev_addr, [reg_addr],
+            data_length = num_bytes)
+
+    def read_data(self):
+        """ For correctly updating of these registers by TMF8801, an I²C block read starting from address 0x1D
+        until 0x27 shall be done.
+        0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27"""
+
+        dev_addr = self.ADDRESS
+        reg_addr = self.registers['STATUS'].address
+
+        read_data = self.i2c_read_long(dev_addr, [reg_addr],
+            data_length = 11)
+
+        vals = {'status': read_data[0],
+                'register_contents': read_data[1],
+                'tid': read_data[2],
+                'result_num': read_data[3],
+                'result_info': read_data[4],
+                'dist_mm': read_data[5] + (read_data[6]<<8),
+                'sys_clk': read_data[7] + (read_data[8]<<8) + (read_data[9]<<16) + (read_data[10]<<24)}
+        return vals, read_data
+
+
+    def read_by_addr(self, reg_addr, num_bytes=1):
+        dev_addr = self.ADDRESS
+        return self.i2c_read_long(dev_addr, [reg_addr],
+            data_length = num_bytes)
+
+
+    def factory_calibration(filename=None):
+        """
+        Perform factory calibration and return 14 bytes of data
+        See AN000597 -- Factor Calibration 8.1
+
+        Calibration Environment: Device has to be in the final (correct) optical stack
+        Clear glass (no smudge on the glass)
+        No target in front of the device within 40 cm (see datasheet)
+        Dark room or low ambient light
+        """
+        print('Factory calibration: device should be in dark room with no objects within 40 cm')
+
+        self.write(0x0A, 'COMMAND') # Command is register 0x10
+        time.sleep(2)
+        cal_done = 0
+        count = 0
+        while (cal_done != 0x0A) and (count < 20):
+            cal_done = tof.TMF.read('REGISTER_CONTENTS')
+            sleep(0.1)
+            count = count + 1
+            print(f'Cal done 0x{cal_done:02x}')
+
+        cal_data = self.read_by_addr(0x20, num_bytes=14) 
+        print('Calibration data')
+        for d in cal_data:
+            print(d)
+
+        with open(filename, 'w') as f:
+            f.write(','.join(cal_data))
+
+        return cal_data 
 
 class SPIController:
     """Class for controllers on the FPGA using SPI protocol.
@@ -2021,7 +2161,12 @@ class DAC80508(SPIFifoDriven):
         return self.write_chip_reg('GAIN', data)
 
     def set_gain(self, gain, outputs=[0, 1, 2, 3, 4, 5, 6, 7], divide_reference=False):
-        """Set the gain and reference divider.
+        """Set the output gain (x1 or x2) and reference divider (VREF=2.5 V).
+            Suggested settings are: 
+            gain = 2, div_ref = /2 
+            gain = 2, div_ref = /1
+            gain = 1, div_ref = /1 (not recommended)
+            gain = 1, div_ref = /2 
 
         Parameters
         ----------

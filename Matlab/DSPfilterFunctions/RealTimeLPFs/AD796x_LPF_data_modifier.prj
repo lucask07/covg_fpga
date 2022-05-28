@@ -1,5 +1,5 @@
-<deployment-project plugin="plugin.matlabhdlcoder" plugin-version="R2013a">
-  <configuration file="C:\Users\iande\Desktop\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\AD796x_LPF_data_modifier.prj" location="C:\Users\iande\Desktop\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs" name="AD796x_LPF_data_modifier" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
+<deployment-project plugin="plugin.matlabhdlcoder" plugin-version="R2020b">
+  <configuration file="C:\Users\koer2434\Documents\fpga\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\AD796x_LPF_data_modifier.prj" location="C:\Users\koer2434\Documents\fpga\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs" name="AD796x_LPF_data_modifier" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
     <param.AutoInferDefaultFile />
     <param.AutoInferUseVariableSize>false</param.AutoInferUseVariableSize>
     <param.AutoInferUseUnboundedSize>false</param.AutoInferUseUnboundedSize>
@@ -14,12 +14,12 @@
     <param.hdl.WorkingDirectory>option.hdl.ProjectDirectory</param.hdl.WorkingDirectory>
     <param.hdl.WorkingSpecifiedDirectory />
     <param.hdl.BuildDirectory>option.hdl.BuildSpecifiedDirectory</param.hdl.BuildDirectory>
-    <param.hdl.BuildSpecifiedDirectory>C:\Users\iande\Desktop\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\hdlsrc\Butter</param.hdl.BuildSpecifiedDirectory>
-    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}\hdlsrc\Butter\AD796x_LPF_data_modify\fixpt\AD796x_LPF_data_modify_float_mex.mexw64</param.fixptconv.InstrumentedMexFile>
-    <param.fixptconv.InstrumentedBuildChecksum>3457027943</param.fixptconv.InstrumentedBuildChecksum>
+    <param.hdl.BuildSpecifiedDirectory>C:\Users\koer2434\Documents\fpga\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\hdlsrc</param.hdl.BuildSpecifiedDirectory>
+    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}\hdlsrc\AD796x_LPF_data_modify\fixpt\AD796x_LPF_data_modify_float_mex.mexw64</param.fixptconv.InstrumentedMexFile>
+    <param.fixptconv.InstrumentedBuildChecksum>934554204</param.fixptconv.InstrumentedBuildChecksum>
     <param.fixptconv.ShowCoverage>true</param.fixptconv.ShowCoverage>
-    <param.fixptconv.FixedPointValidationChecksum>711180754</param.fixptconv.FixedPointValidationChecksum>
-    <param.fixptconv.FixedPointSourceCodeChecksum>3009211365</param.fixptconv.FixedPointSourceCodeChecksum>
+    <param.fixptconv.FixedPointValidationChecksum>3074185093</param.fixptconv.FixedPointValidationChecksum>
+    <param.fixptconv.FixedPointSourceCodeChecksum>4194033804</param.fixptconv.FixedPointSourceCodeChecksum>
     <param.fixptconv.FixedPointStaticAnalysisChecksum>2177818363</param.fixptconv.FixedPointStaticAnalysisChecksum>
     <param.fixptconv.DefaultTestFile />
     <param.fixptconv.ExcludedFixedPointVerificationFiles />
@@ -160,12 +160,12 @@
     <param.fixptconv.StaticAnalysisTimeout />
     <param.fixptconv.StaticAnalysisGlobalRangesOnly>false</param.fixptconv.StaticAnalysisGlobalRangesOnly>
     <var.lastFixedPointAction>option.fixedPointAction.convert</var.lastFixedPointAction>
-    <var.lastSimContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;C:\Users\iande\Desktop\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\AD796x_LPF_data_modify_test.m&lt;/file&gt;&lt;/testFiles&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastSimContext>
+    <var.lastSimContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;C:\Users\koer2434\Documents\fpga\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\AD796x_LPF_data_modify_test.m&lt;/file&gt;&lt;/testFiles&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastSimContext>
     <var.lastVerifyContext />
-    <param.fpDataRoot>C:\Users\iande\Desktop\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\hdlsrc\Butter\AD796x_LPF_data_modify\fixpt/guiFpReport.mat</param.fpDataRoot>
+    <param.fpDataRoot>C:\Users\koer2434\Documents\fpga\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\hdlsrc\AD796x_LPF_data_modify\fixpt/guiFpReport.mat</param.fpDataRoot>
     <param.fpUserFileChecksum />
-    <var.snapshotChecksum>1910531557</var.snapshotChecksum>
-    <param.fpLastConvertChecksum>3457027943</param.fpLastConvertChecksum>
+    <var.snapshotChecksum>3124344019</var.snapshotChecksum>
+    <param.fpLastConvertChecksum>934554204</param.fpLastConvertChecksum>
     <var.FixedPointAnalysisMode>option.FixedPointAnalysisMode.SimAndDerive</var.FixedPointAnalysisMode>
     <param.FixedPointUseDesignRanges>false</param.FixedPointUseDesignRanges>
     <param.hdl.Workflow>option.workflow.GenericAsicFpga</param.hdl.Workflow>
@@ -270,7 +270,7 @@
     <param.hdl.InputPipeline>0</param.hdl.InputPipeline>
     <param.hdl.OutputPipeline>0</param.hdl.OutputPipeline>
     <param.hdl.PipelineVariables />
-    <param.hdl.ResourceSharing>0</param.hdl.ResourceSharing>
+    <param.hdl.ResourceSharing>16</param.hdl.ResourceSharing>
     <param.hdl.MultiplierSharingMinimumBitwidth>0</param.hdl.MultiplierSharingMinimumBitwidth>
     <param.hdl.MultiplierPromotionThreshold>0</param.hdl.MultiplierPromotionThreshold>
     <param.hdl.AdderSharingMinimumBitwidth>0</param.hdl.AdderSharingMinimumBitwidth>
@@ -308,7 +308,7 @@
     <param.hdl.HDLLintCmd />
     <param.hdl.HDLLintTerm />
     <param.isHDLVerifierInstalled>true</param.isHDLVerifierInstalled>
-    <param.hdl.GenerateHDLTestBench>false</param.hdl.GenerateHDLTestBench>
+    <param.hdl.GenerateHDLTestBench>true</param.hdl.GenerateHDLTestBench>
     <param.hdl.SimulateGeneratedCode>false</param.hdl.SimulateGeneratedCode>
     <param.hdl.SimulationTool>No simulation tool available on system path</param.hdl.SimulationTool>
     <param.hdl.TestBenchPostfix>_tb</param.hdl.TestBenchPostfix>
@@ -495,7 +495,6 @@
       <param.hdl.InputPipeline />
       <param.hdl.OutputPipeline />
       <param.hdl.PipelineVariables />
-      <param.hdl.ResourceSharing />
       <param.hdl.MultiplierSharingMinimumBitwidth />
       <param.hdl.MultiplierPromotionThreshold />
       <param.hdl.AdderSharingMinimumBitwidth />
@@ -533,7 +532,6 @@
       <param.hdl.HDLLintCmd />
       <param.hdl.HDLLintTerm />
       <param.isHDLVerifierInstalled />
-      <param.hdl.GenerateHDLTestBench />
       <param.hdl.SimulateGeneratedCode />
       <param.hdl.SimulationTool />
       <param.hdl.TestBenchPostfix />
@@ -613,7 +611,7 @@
       <step key="category.workflow.targetinterface" skipped="false" />
       <step key="category.workflow.generate" skipped="false" />
       <step key="category.workflow.verification" skipped="false" />
-      <step key="category.workflow.hdltb" skipped="true" />
+      <step key="category.workflow.hdltb" skipped="false" />
       <step key="category.workflow.cosim" skipped="true" />
       <step key="category.workflow.FIL" skipped="true" />
       <step key="category.workflow.synthesis" skipped="true" />
@@ -632,16 +630,29 @@
       <step key="category.workflow.fpgaturnkeyprogramtargetdevice" skipped="false" />
     </workflow>
     <matlab>
-      <root>C:\Program Files\MATLAB\R2020b</root>
+      <root>C:\Program Files\MATLAB\R2021a</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
+        <toolbox name="embeddedcoder" />
+        <toolbox name="gpucoder" />
         <toolbox name="fixedpoint" />
         <toolbox name="matlabhdlcoder" />
+        <toolbox name="neuralnetwork" />
       </toolboxes>
       <toolbox>
         <matlabcoder>
           <enabled>true</enabled>
         </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+      <toolbox>
+        <gpucoder>
+          <enabled>true</enabled>
+        </gpucoder>
       </toolbox>
       <toolbox>
         <fixedpoint>
@@ -652,6 +663,11 @@
         <matlabhdlcoder>
           <enabled>true</enabled>
         </matlabhdlcoder>
+      </toolbox>
+      <toolbox>
+        <neuralnetwork>
+          <enabled>true</enabled>
+        </neuralnetwork>
       </toolbox>
     </matlab>
     <platform>

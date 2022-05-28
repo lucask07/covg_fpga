@@ -54,6 +54,7 @@ for z= 0:8
     fgets(fileID); %skip lines
 end
 fgets(fileID);
+
 formatSpec = '%d'; %read data
 sizeA = [Inf];
 A = fscanf(fileID, formatSpec, sizeA);
