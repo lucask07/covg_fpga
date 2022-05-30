@@ -7,9 +7,15 @@ Lucas Koerner koer2434@stthomas.edu
 
 import os, sys
 from time import sleep
+import numpy as np
+import matplotlib 
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
+
+plt.ion()
 
 hex_dir = '/Users/koer2434/My Drive/UST/research/tof_comparison/material_classification/TMF8801/'
-
+FW_PATCH = True
 
 # bl: boot loader commands, read .hex file and process line by line. 
 def bl_intel_hex(hex_dir, filename='main_app_3v3_k2.hex'):
@@ -95,6 +101,16 @@ def bl_process_line(l):
     return data
 
 
+def read_i2c_pipe(tof_dev, data_len=256):
+
+    return tof_dev.fpga.read_pipe_out(tof_dev.endpoints['PIPE_OUT'].address, 
+                                      data_len)
+
+def reset_i2c_fifo(tof_dev):
+    tof_dev.fpga.xem.ActivateTriggerIn(
+            tof_dev.endpoints['FIFO_RESET'].address, tof_dev.endpoints['FIFO_RESET'].bit_index_low)  # High and low bit indexes are the same for the trigger because it is 1 bit wide
+
+
 bl_hex_lines = bl_intel_hex(hex_dir, filename='main_app_3v3_k2.hex')
 print(f'RAM patch is {len(bl_hex_lines)} lines long')
 
@@ -153,8 +169,8 @@ if FW_PATCH:
             status = tof.TMF.ram_write_status()
             # TODO: check that status is 00,00,FF
             # TODO: consider skipping status check to reduce time for upload
-            if not (status == [0,0,0xFF]):
-                print(f'Bootloader status unexpected value of {status}')
+            # if not (status == [0,0,0xFF]):
+            #     print(f'Bootloader status unexpected value of {status}')
 
     tof.TMF.ramremap_reset()
 
@@ -238,6 +254,14 @@ if MEASURE:
     # S 41 W 1D Sr 41 R A A A A A A A A A A N P
     vals, data = tof.TMF.read_data()
 
+    # This works although reset behaves strange
+    # Note: the last 4 bytes out will remain (stale) if the pipe is 
+    #       re-read after the FIFO empties 
+    #       the 4 bytes out don't update until 4 I2C bytes are read.
+    #       read in 4 byte multiples 
+
+    buf,e = read_i2c_pipe(tof.TMF)
+
     # to write a register without a readback use directly (with the named registers a readback happens first):
     # i2c_write_long(self, devAddr, regAddr, data_length, data)
 
@@ -250,7 +274,7 @@ if MEASURE:
     of host <-> FPGA transactions.
     """
 
-READ_HIST = False
+READ_HIST = True
 if READ_HIST:
 
     # Stop any command
@@ -276,10 +300,11 @@ if READ_HIST:
 
     cnt = 0
     bit_1 = 0
-    while ((cnt < 10) or bit_1): # any number other than 0 evaluates to true
+    while ((cnt < 10) or not bit_1): # any number other than 0 evaluates to true
         st = tof.TMF.read('INT_STATUS')
-        bit_1 = st & 0x0003  # check bit 1 
-        time.sleep(0.1)
+        bit_1 = st & 0x0002  # check bit 1 
+        sleep(0.1)  # warning that sometimes ipython turns this into a very long sleep
+        cnt = cnt + 1
 
     #Read out COMMAND, PREV_COMMAND ... STATE STATUS REGISTER_CONTENTS -> store TID
     cmd_etc = tof.TMF.read_by_addr(0x10, num_bytes=16) 
@@ -296,14 +321,35 @@ if READ_HIST:
     tid3 = tid3_etc[-1]
 
     hist_data = {}
+    hist_data_pipe = {}
     for tdc in range(5):
-        hist_data[tdc] = np.array([])
+        hist_data[tdc] = np.array([], dtype=np.uint16)
+        hist_data_pipe[tdc] = np.array([], dtype=np.uint16)
+        # clear the FIFO pipe 
+        buf,e = read_i2c_pipe(tof.TMF, 1024)
         for quarter in range(4):
             hist_data_q = tof.TMF.read_by_addr(0x20, num_bytes=128) 
-            hist_data = np.append(hist_data, hist_data_q)
+            buf,e = read_i2c_pipe(tof.TMF, 128)
+            hist_data_q_pipe = np.asarray(buf)
+            hist_data[tdc] = np.append(hist_data[tdc], hist_data_q)
+            hist_data_pipe[tdc] = np.append(hist_data_pipe[tdc], hist_data_q_pipe)
 
         # LSB + MSB 
         hist_data[tdc] = (hist_data[tdc][0::2]) + (hist_data[tdc][1::2]<<8)
+        
+        # TODO: redoring of the pipe data -- ordering seems fine
+        # TODO: how to ensure we start at a multiple of x4?
+        # TODO: typical i2c should have max read length of 64 bytes 
+        # TODO: fix the FIFO reset
+        # TODO: create the functions below and put into interfaces.py
+        hist_data_pipe[tdc] = (hist_data_pipe[tdc][0::2]) + (hist_data_pipe[tdc][1::2]<<8)
+
+    fig,ax=plt.subplots()
+    fig2,ax2=plt.subplots()
+
+    for tdc in range(5):
+        ax.plot(hist_data[tdc], marker='*')
+        ax2.plot(hist_data_pipe[tdc], marker='o')
 
 
 # Need: 
