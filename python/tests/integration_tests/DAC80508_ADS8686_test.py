@@ -1,7 +1,7 @@
 """Integration test for the DAC80508 and ADS8686 chips on the DAQ board.
 
-Relies on DAC80508 and ADS8686 working separately. Requires DAC1_OUT4
-connected to GP_ADC_IN5.
+Relies on DAC80508 and ADS8686 working separately. Requires DAC1_OUT7
+connected to GP_ADC_IN7.
 https://github.com/lucask07/open_covg_daq_pcb/blob/main/docs/covg_daq_v2.pdf
 October 2021
 
@@ -11,7 +11,6 @@ Abe Stroschein, ajstroschein@stthomas.edu
 import pytest
 import os
 import sys
-from instrbuilder.instrument_opening import open_by_name
 import time
 
 
@@ -31,12 +30,15 @@ top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
 
 from interfaces.interfaces import FPGA, DAC80508, ADS8686
 from interfaces.boards import Daq
-from interfaces.utils import to_voltage, twos_comp
+from interfaces.utils import to_voltage
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
 pwr_setup = '3dual'
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)  # 7V and +/-16.5V, None
 tolerance = 0.009
+dac_out = 7
+ads_in = 7
+
 
 # Fixtures
 @pytest.fixture(scope='module')
@@ -87,13 +89,14 @@ def dac(fpga):
 
 @pytest.fixture(scope='module')
 def ads(fpga):
+    global ads_in
     ads = ADS8686(fpga=fpga)
     ads.hw_reset(val=False)
     ads.set_host_mode()
     ads.setup()
     ads.set_range(5)
     ads.set_lpf(376)
-    codes = ads.setup_sequencer(chan_list=[('5', 'FIXED')])
+    codes = ads.setup_sequencer(chan_list=[(str(ads_in), 'FIXED')])
     print(f'Setup Sequencer Codes: {codes}')
     ads.write_reg_bridge()
     ads.set_fpga_mode()
@@ -102,6 +105,12 @@ def ads(fpga):
 
 # Tests
 
+
+def test_delay(dac, ads):
+    # TODO: figure out why this delay is needed before the ADS8686 starts reading data that is not 0
+    delay = 23
+    print(f'Waiting {delay} seconds...')
+    time.sleep(delay)
 
 @pytest.mark.parametrize('gain_code, expected_gain', [
     ((0 << 4) | (0 << 8), 1),   # Output gain: 1, REFDIV gain: 1,   Total gain: 1
@@ -114,6 +123,7 @@ def test_dac_gain_bin(dac, ads, gain_code, expected_gain):
 
     # Looking for values within 1 LSB of expected
     global tolerance
+    global dac_out
     # Set the output on DAC80508 (1/2 scale)
     voltage_data = 0x7fff
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
@@ -121,7 +131,7 @@ def test_dac_gain_bin(dac, ads, gain_code, expected_gain):
     # divided by 2 or not.
     expected = to_voltage(data=voltage_data, num_bits=16, voltage_range=2.5 * expected_gain)
 
-    dac.write_chip_reg('DAC4', voltage_data)
+    dac.write_chip_reg('DAC' + str(dac_out), voltage_data)
     dac.set_gain_bin(gain_code)
     # Read value with ADS8686
     read_dict = ads.read_last()
@@ -145,6 +155,7 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
 
     # Looking for values within 1 LSB of expected
     global tolerance
+    global dac_out
     # Set the output on DAC80508 (1/2 scale)
     voltage_data = 0x7fff
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
@@ -152,7 +163,7 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
     # divided by 2 or not.
     expected = to_voltage(data=voltage_data, num_bits=16, voltage_range=2.5 * expected_gain)
 
-    dac.write_chip_reg('DAC4', voltage_data)
+    dac.write_chip_reg('DAC' + str(dac_out), voltage_data)
     dac.set_gain(gain=gain, outputs=4, divide_reference=divide_reference)
     # Read value with ADS8686
     read_dict = ads.read_last()
@@ -197,11 +208,12 @@ def test_dac_write_voltage(dac, ads, voltage):
 
     # Looking for values within 1 LSB of expected
     global tolerance
+    global dac_out
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
     # adjusted by the gain of the output and whether the internal reference is
     # divided by 2 or not.
     # dac.set_gain(gain=1, divide_reference=False)
-    gain_info = dac.write_voltage(voltage=voltage, outputs=4, auto_gain=True)
+    gain_info = dac.write_voltage(voltage=voltage, outputs=dac_out, auto_gain=True)
 
     # Read value with ADS8686
     read_dict = ads.read_last()

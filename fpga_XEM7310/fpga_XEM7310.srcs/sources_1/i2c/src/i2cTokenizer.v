@@ -46,7 +46,10 @@ module i2cTokenizer(
 	output reg        tok_wack,
 	
 	inout  wire       i2c_sclk,
-	inout  wire       i2c_sdat
+	inout  wire       i2c_sdat,
+	
+	output wire       i2c_sdat_pull_up,
+	output wire       i2c_sclk_pull_up
 	);
 	
 parameter  CLOCK_STRETCH_SUPPORT  = 1;
@@ -76,6 +79,8 @@ reg         tok_rack_r;
 //   i2c_sdat_oen = 0 - WRITE mode (i2c_sdat is an output).
 assign i2c_sdat = (i2c_sdat_oen) ? (1'bz) : (i2c_dout);
 assign i2c_sclk = (i2c_sclk_oen) ? (1'bz) : (1'b0);
+assign i2c_sdat_pull_up = i2c_sdat_oen | i2c_dout;
+assign i2c_sclk_pull_up = i2c_sclk_oen;
 
 
 assign tok_dataout = i2c_shift_reg;

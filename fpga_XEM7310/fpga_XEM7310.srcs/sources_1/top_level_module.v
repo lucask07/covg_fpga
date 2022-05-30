@@ -38,7 +38,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 31;
+localparam NUM_OK_EPS = 33;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -128,7 +128,6 @@ module top_level_module(
     inout  wire [3 :0]  ddr3_dqs_p,
     inout  wire [3 :0]  ddr3_dqs_n,
     output wire         ddr3_reset_n
-
 	);
 	//System Clock from input differential pair
 	wire clk_sys;
@@ -1045,7 +1044,9 @@ module top_level_module(
         .memdin (i2c_aux_memdin[0]),     //wire in
         .memdout (i2c_aux_memdout[0]),   //wire out
         .i2c_sclk (ls_scl),       // inout
-        .i2c_sdat (ls_sda)        // inout
+        .i2c_sdat (ls_sda),        // inout
+        .i2c_sclk_pull_up (i2c_test_sclk_pull_up),
+        .i2c_sdat_pull_up (i2c_test_sdat_pull_up)
     );
 
     wire i2c_qw_po_re;
@@ -1144,5 +1145,26 @@ module top_level_module(
      
      // Set up continuous TriggerOut pulses
      assign fpga_test_to = 1;
+     /*---------------- End FPGA test -------------------*/
+     
+     /*---------------- I2C test -------------------*/
+     // Set up Endpoints
+     reg [63:0] i2c_test_message;
+     okWireOut i2c_test_message_0 (.okHE(okHE), .okEH(okEHx[ 31*65 +: 65 ]), .ep_addr(`I2CTEST_MESSAGE_0), .ep_datain(i2c_test_message[31:0]));
+     okWireOut i2c_test_message_1 (.okHE(okHE), .okEH(okEHx[ 32*65 +: 65 ]), .ep_addr(`I2CTEST_MESSAGE_1), .ep_datain(i2c_test_message[63:32]));
+     
+     // SCL and SDA pulled from tri-state version of SCL, SDA of level shifted bus (i2c_controller_4)
+     // i2c_test_sclk_pull_up;
+     // i2c_test_sdat_pull_up;
+         
+     // Set up message output
+     // Shift register to store transmission from the controller and read it on a WireOut
+     // No reset because we can just read the newest N bits based on how many bits we sent with the last transmission
+     // i2c_read_long reads 2 bytes, has register byte, 2 slave bytes -> max 5 bytes = 40 bits
+     always @(posedge i2c_test_sclk_pull_up) begin
+         i2c_test_message[63:1] <= i2c_test_message[62:0];
+         i2c_test_message[0] <= i2c_test_sdat_pull_up;
+     end
+     /*---------------- End I2C test -------------------*/
 
 endmodule

@@ -969,14 +969,18 @@ class UID_24AA025UID(I2CController):
             self.i2c_write_long(devAddr=dev_addr, regAddr=[
                                 word_address], data_length=16, data=list_data[:16])
             # We can recursively call this function instead of looping through multiple times.
-            recurse_data = data % (0x1 << (8 * (num_bytes - 16)))
-            print(f'{data} % {(0x1 << (8 * (num_bytes - 16)))} = {recurse_data}')
-            self.write(data=recurse_data, word_address=word_address
-                       + 16, num_bytes=num_bytes - 16)
+            # recurse_data = data % (0x1 << (8 * (num_bytes - 16)))
+            recurse_data = data
+            for i in range(16):
+                recurse_data -= list_data[i] << (8 * i)
+            recurse_data >>= 16 * 8
+            # print(f'{data} % {(0x1 << (8 * (num_bytes - 16)))} = {recurse_data}')
+            self.write(data=recurse_data, word_address=(word_address
+                       + 16) % 0x80, num_bytes=num_bytes - 16)
             return True
 
         # Data is no more than 16 bytes (1 page) and can be written with 1 I2C command.
-        self.i2c_write_long(dev_addr, [word_address], num_bytes, list_data)
+        self.i2c_write_long(devAddr=dev_addr, regAddr=[word_address], data_length=num_bytes, data=list_data)
         return True
 
     def read(self, word_address=0x00, words_read=1):
@@ -985,6 +989,11 @@ class UID_24AA025UID(I2CController):
         # A word is a byte, 8 bits
         dev_addr = UID_24AA025UID.ADDRESS_HEADER | (
             self.addr_pins << 1) | 0b1
+        # Bug when reading more than 64 bytes, only 128 bytes possible so check and split to 2 operations
+        if words_read > 64:
+            d0 = self.i2c_read_long(dev_addr, [word_address], 64)
+            d1 = self.i2c_read_long(dev_addr, [word_address + 64], words_read - 64)
+            return d0 + d1
         return self.i2c_read_long(dev_addr, [word_address], words_read)
 
     def get_serial_number(self):
