@@ -26,6 +26,8 @@ else:
     assert False
 interfaces_path = os.path.join(covg_path, 'python')
 sys.path.append(interfaces_path)
+top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
+                                        'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
 from interfaces.interfaces import FPGA, DDR3
 from interfaces.utils import from_voltage, to_voltage, calc_impedance
@@ -35,7 +37,8 @@ from interfaces.utils import from_voltage, to_voltage, calc_impedance
 
 @pytest.fixture(scope='module')
 def ddr():
-    f = FPGA()
+    global top_level_module_bitfile
+    f = FPGA(bitfile=top_level_module_bitfile)
     f.init_device()
     ddr = DDR3(fpga=f)
     yield ddr
