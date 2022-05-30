@@ -1403,9 +1403,9 @@ class TMF8801(I2CController):
 
 
     def rom_fw_version(self):
-        rev_major = self.read('APPREV_MAJOR')
-        rev_minor = self.read('APPREV_MINOR')
-        patch = self.read('APPREV_PATCH')
+        rev_major = self.read('APPREV_MAJOR', number_of_bytes=1)
+        rev_minor = self.read('APPREV_MINOR', number_of_bytes=1)
+        patch = self.read('APPREV_PATCH', number_of_bytes=1)
 
         print(f'major: {rev_major}, minor: {rev_minor}, patch: {patch}')
 

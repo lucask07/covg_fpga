@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.matlabhdlcoder" plugin-version="R2020b">
-  <configuration file="C:\Users\koer2434\Documents\fpga\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\AD796x_LPF_data_modifier.prj" location="C:\Users\koer2434\Documents\fpga\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs" name="AD796x_LPF_data_modifier" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
+  <configuration file="/Users/koer2434/Documents/covg_fpga/Matlab/DSPfilterFunctions/RealTimeLPFs/AD796x_LPF_data_modifier.prj" location="/Users/koer2434/Documents/covg_fpga/Matlab/DSPfilterFunctions/RealTimeLPFs" name="AD796x_LPF_data_modifier" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
     <param.AutoInferDefaultFile />
     <param.AutoInferUseVariableSize>false</param.AutoInferUseVariableSize>
     <param.AutoInferUseUnboundedSize>false</param.AutoInferUseUnboundedSize>
@@ -15,7 +15,7 @@
     <param.hdl.WorkingSpecifiedDirectory />
     <param.hdl.BuildDirectory>option.hdl.BuildSpecifiedDirectory</param.hdl.BuildDirectory>
     <param.hdl.BuildSpecifiedDirectory>C:\Users\koer2434\Documents\fpga\covg_fpga\Matlab\DSPfilterFunctions\RealTimeLPFs\hdlsrc</param.hdl.BuildSpecifiedDirectory>
-    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}\hdlsrc\AD796x_LPF_data_modify\fixpt\AD796x_LPF_data_modify_float_mex.mexw64</param.fixptconv.InstrumentedMexFile>
+    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}/hdlsrc/AD796x_LPF_data_modify/fixpt/AD796x_LPF_data_modify_float_mex.mexw64</param.fixptconv.InstrumentedMexFile>
     <param.fixptconv.InstrumentedBuildChecksum>934554204</param.fixptconv.InstrumentedBuildChecksum>
     <param.fixptconv.ShowCoverage>true</param.fixptconv.ShowCoverage>
     <param.fixptconv.FixedPointValidationChecksum>3074185093</param.fixptconv.FixedPointValidationChecksum>
@@ -232,6 +232,7 @@
     <var.HDLCodingStandard_InitialStatements_enable>true</var.HDLCodingStandard_InitialStatements_enable>
     <var.HDLCodingStandard_ConditionalRegionCheck_enable>true</var.HDLCodingStandard_ConditionalRegionCheck_enable>
     <var.HDLCodingStandard_ConditionalRegionCheck_length>1</var.HDLCodingStandard_ConditionalRegionCheck_length>
+    <var.HDLCodingStandard_CascadedConditionalAssignmentCheck_enable>false</var.HDLCodingStandard_CascadedConditionalAssignmentCheck_enable>
     <var.HDLCodingStandard_IfElseChain_enable>true</var.HDLCodingStandard_IfElseChain_enable>
     <var.HDLCodingStandard_IfElseChain_length>7</var.HDLCodingStandard_IfElseChain_length>
     <var.HDLCodingStandard_IfElseNesting_enable>true</var.HDLCodingStandard_IfElseNesting_enable>
@@ -264,6 +265,7 @@
     <param.hdl.AggressiveDataflowConversion>false</param.hdl.AggressiveDataflowConversion>
     <param.hdl.RegisterInputs>false</param.hdl.RegisterInputs>
     <param.hdl.RegisterOutputs>false</param.hdl.RegisterOutputs>
+    <param.hdl.AdaptivePipelining>false</param.hdl.AdaptivePipelining>
     <param.hdl.DistributedPipelining>false</param.hdl.DistributedPipelining>
     <param.hdl.DistributedPipeliningPriority>option.hdl.NumericalIntegrity</param.hdl.DistributedPipeliningPriority>
     <param.hdl.PreserveDesignDelays>false</param.hdl.PreserveDesignDelays>
@@ -307,9 +309,9 @@
     <param.hdl.HDLLintInit />
     <param.hdl.HDLLintCmd />
     <param.hdl.HDLLintTerm />
-    <param.isHDLVerifierInstalled>true</param.isHDLVerifierInstalled>
+    <param.isHDLVerifierInstalled>false</param.isHDLVerifierInstalled>
     <param.hdl.GenerateHDLTestBench>true</param.hdl.GenerateHDLTestBench>
-    <param.hdl.SimulateGeneratedCode>false</param.hdl.SimulateGeneratedCode>
+    <param.hdl.SimulateGeneratedCode>true</param.hdl.SimulateGeneratedCode>
     <param.hdl.SimulationTool>No simulation tool available on system path</param.hdl.SimulationTool>
     <param.hdl.TestBenchPostfix>_tb</param.hdl.TestBenchPostfix>
     <param.hdl.ForceClock>true</param.hdl.ForceClock>
@@ -342,7 +344,7 @@
     <param.hdl.CosimResetLength>2</param.hdl.CosimResetLength>
     <param.hdl.GenerateFILTestBench>false</param.hdl.GenerateFILTestBench>
     <param.hdl.FILLogOutputs>false</param.hdl.FILLogOutputs>
-    <param.hdl.FILBoardName>Choose a board</param.hdl.FILBoardName>
+    <param.hdl.FILBoardName>HDL Verifier installation or license is not available</param.hdl.FILBoardName>
     <param.hdl.FILConnection />
     <param.hdl.FILBoardIPAddress>192.168.0.2</param.hdl.FILBoardIPAddress>
     <param.hdl.FILBoardMACAddress>00-0A-35-02-21-8A</param.hdl.FILBoardMACAddress>
@@ -399,7 +401,6 @@
       <param.fpUserFileChecksum />
       <param.FixedPointUseDesignRanges />
       <param.hdl.Workflow />
-      <param.hdl.TargetPlatform />
       <param.hdl.InputFrequency />
       <param.hdl.TargetFrequency />
       <param.hdl.ReferenceDesign />
@@ -458,6 +459,7 @@
       <var.HDLCodingStandard_InitialStatements_enable />
       <var.HDLCodingStandard_ConditionalRegionCheck_enable />
       <var.HDLCodingStandard_ConditionalRegionCheck_length />
+      <var.HDLCodingStandard_CascadedConditionalAssignmentCheck_enable />
       <var.HDLCodingStandard_IfElseChain_enable />
       <var.HDLCodingStandard_IfElseChain_length />
       <var.HDLCodingStandard_IfElseNesting_enable />
@@ -489,6 +491,7 @@
       <param.hdl.AggressiveDataflowConversion />
       <param.hdl.RegisterInputs />
       <param.hdl.RegisterOutputs />
+      <param.hdl.AdaptivePipelining />
       <param.hdl.DistributedPipelining />
       <param.hdl.DistributedPipeliningPriority />
       <param.hdl.PreserveDesignDelays />
@@ -532,7 +535,6 @@
       <param.hdl.HDLLintCmd />
       <param.hdl.HDLLintTerm />
       <param.isHDLVerifierInstalled />
-      <param.hdl.SimulateGeneratedCode />
       <param.hdl.SimulationTool />
       <param.hdl.TestBenchPostfix />
       <param.hdl.ForceClock />
@@ -578,7 +580,7 @@
       <param.hdl.BitstreamBuildMode />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}\AD796x_LPF_data_modify.m">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}/AD796x_LPF_data_modify.m">
         <Inputs fileName="AD796x_LPF_data_modify.m" functionName="AD796x_LPF_data_modify">
           <Input Name="din">
             <Class>embedded.fi</Class>
@@ -599,7 +601,7 @@
       </file>
     </fileset.entrypoints>
     <fileset.scriptfile>
-      <file>${PROJECT_ROOT}\AD796x_LPF_data_modify_test.m</file>
+      <file>${PROJECT_ROOT}/AD796x_LPF_data_modify_test.m</file>
     </fileset.scriptfile>
     <fileset.package />
     <build-deliverables />
@@ -630,29 +632,16 @@
       <step key="category.workflow.fpgaturnkeyprogramtargetdevice" skipped="false" />
     </workflow>
     <matlab>
-      <root>C:\Program Files\MATLAB\R2021a</root>
+      <root>/Applications/MATLAB_R2021b.app</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
-        <toolbox name="embeddedcoder" />
-        <toolbox name="gpucoder" />
         <toolbox name="fixedpoint" />
         <toolbox name="matlabhdlcoder" />
-        <toolbox name="neuralnetwork" />
       </toolboxes>
       <toolbox>
         <matlabcoder>
           <enabled>true</enabled>
         </matlabcoder>
-      </toolbox>
-      <toolbox>
-        <embeddedcoder>
-          <enabled>true</enabled>
-        </embeddedcoder>
-      </toolbox>
-      <toolbox>
-        <gpucoder>
-          <enabled>true</enabled>
-        </gpucoder>
       </toolbox>
       <toolbox>
         <fixedpoint>
@@ -664,25 +653,20 @@
           <enabled>true</enabled>
         </matlabhdlcoder>
       </toolbox>
-      <toolbox>
-        <neuralnetwork>
-          <enabled>true</enabled>
-        </neuralnetwork>
-      </toolbox>
     </matlab>
     <platform>
-      <unix>false</unix>
-      <mac>false</mac>
-      <windows>true</windows>
+      <unix>true</unix>
+      <mac>true</mac>
+      <windows>false</windows>
       <win2k>false</win2k>
       <winxp>false</winxp>
       <vista>false</vista>
       <linux>false</linux>
       <solaris>false</solaris>
-      <osver>10.0</osver>
+      <osver>12.3.1</osver>
       <os32>false</os32>
       <os64>true</os64>
-      <arch>win64</arch>
+      <arch>maci64</arch>
       <matlab>true</matlab>
     </platform>
   </configuration>
