@@ -1,0 +1,910 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Peripherals &mdash; covgDAQ 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Register Index Guide" href="register_index_guide.html" />
+    <link rel="prev" title="DDR Memory Class" href="DDR.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> covgDAQ
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Register.html">Register Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Endpoint.html">Endpoint Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FPGA.html">FPGA Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="I2CController.html">I2C Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DDR.html">DDR Memory Class</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Peripherals</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#extends-i2ccontroller">Extends I2CController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extends-spicontroller">Extends SPIController</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extends-spififodriven">Extends SPIFifoDriven</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="register_index_guide.html">Register Index Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_peripheral_guide.html">New Peripheral Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covgDAQ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Peripherals</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/peripherals.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="peripherals">
+<h1>Peripherals<a class="headerlink" href="#peripherals" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="extends-i2ccontroller">
+<h2>Extends I2CController<a class="headerlink" href="#extends-i2ccontroller" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.TCA9555">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">TCA9555</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addr_pins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'m_nDataStart':</span> <span class="pre">7,</span> <span class="pre">'m_pBuf':</span> <span class="pre">[]}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TCA9555"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TCA9555" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for the I/O Expander TCA9555.</p>
+<p>Subclass of the I2CController class. Attributes and methods below are
+differences in this class from I2CController only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ADDRESS_HEADER</strong><span class="classifier">int</span></dt><dd><p>7-bit device address with R/W bit space and 4 MSBs filled in specific
+to this chip. The rest is left as 0 to be filled in later.</p>
+</dd>
+<dt><strong>registers</strong><span class="classifier">dict</span></dt><dd><p>Name-Register pairs for the internal registers of the TCA9555 chip.</p>
+</dd>
+<dt><strong>addr_pins</strong><span class="classifier">int</span></dt><dd><p>3 LSBs of the 7-bit device address formed alongside the address header
+used to differentiate between different instances of the TCA9555 chip.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TCA9555.configure_pins">
+<span class="sig-name descname"><span class="pre">configure_pins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TCA9555.configure_pins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TCA9555.configure_pins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure the chip’s pins as inputs (1’s) or outputs (0’s).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TCA9555.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">register_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'INPUT'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TCA9555.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TCA9555.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read 2 bytes of data from the pins.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TCA9555.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">register_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'OUTPUT'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">65535</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TCA9555.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TCA9555.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write 2 bytes of data to the pins.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.UID_24AA025UID">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">UID_24AA025UID</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addr_pins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'m_nDataStart':</span> <span class="pre">7,</span> <span class="pre">'m_pBuf':</span> <span class="pre">[]}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#UID_24AA025UID"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.UID_24AA025UID" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for the ID chip 24AA025UID.</p>
+<p>Subclass of the I2CController class. Attributes and methods below are
+differences in this class from I2CController only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ADDRESS_HEADER</strong><span class="classifier">int</span></dt><dd><p>7-bit device address with R/W bit space and 4 MSBs filled in specific
+to this chip. The rest is left as 0 to be filled in later.</p>
+</dd>
+<dt><strong>registers</strong><span class="classifier">dict</span></dt><dd><p>Name-Register pairs for the internal registers of the TCA9555 chip.</p>
+</dd>
+<dt><strong>addr_pins</strong><span class="classifier">int</span></dt><dd><p>3 LSBs of the 7-bit device address formed alongside the address header
+used to differentiate between different instances of the TCA9555 chip.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.UID_24AA025UID.get_device_code">
+<span class="sig-name descname"><span class="pre">get_device_code</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#UID_24AA025UID.get_device_code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.UID_24AA025UID.get_device_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chip’s device code.</p>
+<p>For the chips we are using, it should be 0x41.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.UID_24AA025UID.get_manufacturer_code">
+<span class="sig-name descname"><span class="pre">get_manufacturer_code</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#UID_24AA025UID.get_manufacturer_code"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.UID_24AA025UID.get_manufacturer_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the chip’s manufacturer code.</p>
+<p>For the chips we are using, it should be 0x29.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.UID_24AA025UID.get_serial_number">
+<span class="sig-name descname"><span class="pre">get_serial_number</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#UID_24AA025UID.get_serial_number"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.UID_24AA025UID.get_serial_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the unique 32-serial number stored in memory on the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.UID_24AA025UID.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">word_address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">words_read</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#UID_24AA025UID.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.UID_24AA025UID.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return words_read words of data from memory at word_address.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.UID_24AA025UID.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">word_address</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#UID_24AA025UID.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.UID_24AA025UID.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data into memory at word_address.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">DAC53401</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addr_pins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'m_nDataStart':</span> <span class="pre">7,</span> <span class="pre">'m_pBuf':</span> <span class="pre">[]}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for the I2C DAC chip DAC53401.</p>
+<p>Subclass of the I2CController class. Attributes and methods below are
+differences in this class from I2CController only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ADDRESS_HEADER</strong><span class="classifier">int</span></dt><dd><p>7-bit device address with R/W bit space and 4 MSBs filled in specific
+to this chip. The rest is left as 0 to be filled in later.</p>
+</dd>
+<dt><strong>registers</strong><span class="classifier">dict</span></dt><dd><p>Name-Register pairs for the internal registers of the TCA9555 chip.</p>
+</dd>
+<dt><strong>addr_pins</strong><span class="classifier">int</span></dt><dd><p>3 LSBs of the 7-bit device address formed alongside the address header
+used to differentiate between different instances of the TCA9555 chip.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.config_func">
+<span class="sig-name descname"><span class="pre">config_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.config_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.config_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure the function generator.</p>
+<dl class="simple">
+<dt>‘triangle’: Triangle wave between MARGIN_HIGH code to MARGIN_LOW code</dt><dd><p>with slope defined by SLEW_RATE.</p>
+</dd>
+<dt>‘sawtooth_falling’: Saw-Tooth wave between MARGIN_HIGH code to</dt><dd><p>MARGIN_LOW code with slope defined by SLEW_RATE and immeidate falling edge.</p>
+</dd>
+<dt>‘sawtooth_rising’: Saw-Tooth wave between MARGIN_HIGH code to</dt><dd><p>MARGIN_LOW code with slope defined by SLEW_RATE and immeidate rising edge.</p>
+</dd>
+<dt>‘square’: Square wave between MARGIN_HIGH code to MARGIN_LOW code with</dt><dd><p>pulse high and low period defined by defined by SLEW_RATE.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.config_margins">
+<span class="sig-name descname"><span class="pre">config_margins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">margin_high</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin_low</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.config_margins"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.config_margins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure margin high and low values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.config_rate">
+<span class="sig-name descname"><span class="pre">config_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rate</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.config_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.config_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure the rate to step through each bit.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.config_step">
+<span class="sig-name descname"><span class="pre">config_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.config_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.config_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure the number of bits to step through.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.enable_internal_reference">
+<span class="sig-name descname"><span class="pre">enable_internal_reference</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.enable_internal_reference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.enable_internal_reference" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the DAC’s internal reference.</p>
+<p>This is necessary to set the gain value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.get_gain">
+<span class="sig-name descname"><span class="pre">get_gain</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.get_gain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.get_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the DAC’s current output gain value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.get_id">
+<span class="sig-name descname"><span class="pre">get_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.get_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.get_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the device ID and version ID as one integer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.lock">
+<span class="sig-name descname"><span class="pre">lock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.lock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.lock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lock the registers of the device so they cannot be changed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.power_down_10k">
+<span class="sig-name descname"><span class="pre">power_down_10k</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.power_down_10k"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.power_down_10k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Power down the DAC output to 10K ohms.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.power_down_high_impedance">
+<span class="sig-name descname"><span class="pre">power_down_high_impedance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.power_down_high_impedance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.power_down_high_impedance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Power down the DAC output to high impedance (default).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.power_up">
+<span class="sig-name descname"><span class="pre">power_up</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.power_up"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.power_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Power up the DAC output.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">register_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DAC_DATA'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return data from any register on the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the chip using a software reset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.set_gain">
+<span class="sig-name descname"><span class="pre">set_gain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gain</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.set_gain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.set_gain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the DAC’s output gain value.</p>
+<p>Gain can be set to 1.5x, 2x, 3x, or 4x the internal reference.
+Internal reference must be enabled.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.start_func">
+<span class="sig-name descname"><span class="pre">start_func</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.start_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.start_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start function generation.</p>
+<p>Waveform configured through config_func() and config_margins() functions.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.stop_func">
+<span class="sig-name descname"><span class="pre">stop_func</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.stop_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.stop_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stop function generation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.unlock">
+<span class="sig-name descname"><span class="pre">unlock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.unlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.unlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unlock the registers of the device so they can be changed again.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">register_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'DAC_DATA'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to any register on the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC53401.write_voltage">
+<span class="sig-name descname"><span class="pre">write_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC53401.write_voltage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC53401.write_voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a voltage output from the DAC.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.TMF8801">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">TMF8801</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">addr_pins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i2c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'m_nDataStart':</span> <span class="pre">7,</span> <span class="pre">'m_pBuf':</span> <span class="pre">[]}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TMF8801"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TMF8801" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for the Time-of-flight I2C device</p>
+<p>Subclass of the I2CController class. Attributes and methods below are
+differences in this class from I2CController only.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ADDRESS</strong><span class="classifier">int</span></dt><dd><p>7-bit device address with R/W bit space</p>
+</dd>
+<dt><strong>registers</strong><span class="classifier">dict</span></dt><dd><p>Name-Register pairs for the internal registers of the chip.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TMF8801.factory_calibration">
+<span class="sig-name descname"><span class="pre">factory_calibration</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TMF8801.factory_calibration"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TMF8801.factory_calibration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform factory calibration and return 14 bytes of data
+See AN000597 – Factor Calibration 8.1</p>
+<p>Calibration Environment: Device has to be in the final (correct) optical stack
+Clear glass (no smudge on the glass)
+No target in front of the device within 40 cm (see datasheet)
+Dark room or low ambient light</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TMF8801.get_id">
+<span class="sig-name descname"><span class="pre">get_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TMF8801.get_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TMF8801.get_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the device ID and rev ID as one integer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TMF8801.power_down_high_impedance">
+<span class="sig-name descname"><span class="pre">power_down_high_impedance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TMF8801.power_down_high_impedance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TMF8801.power_down_high_impedance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Power down the DAC output to high impedance (default).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TMF8801.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">register_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TMF8801.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TMF8801.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return data from any register on the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TMF8801.read_data">
+<span class="sig-name descname"><span class="pre">read_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TMF8801.read_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TMF8801.read_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>For correctly updating of these registers by TMF8801, an I²C block read starting from address 0x1D
+until 0x27 shall be done.
+0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.TMF8801.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">register_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#TMF8801.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.TMF8801.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write data to any register on the chip.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="extends-spicontroller">
+<h2>Extends SPIController<a class="headerlink" href="#extends-spicontroller" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">ADS8686</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12304</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.hw_reset">
+<span class="sig-name descname"><span class="pre">hw_reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.hw_reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.hw_reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Trigger ADS8686 active low hardware reset.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reg_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.read"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read from an internal register on the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.read_channel">
+<span class="sig-name descname"><span class="pre">read_channel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.read_channel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.read_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read a desired channel on the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.read_last">
+<span class="sig-name descname"><span class="pre">read_last</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.read_last"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.read_last" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the last value read by the ADS8686.</p>
+<p>This reads a wire_out rather than a pipe_out so we get 1 data point
+rather than many.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.reg_to_voltage">
+<span class="sig-name descname"><span class="pre">reg_to_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reg_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chan_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.reg_to_voltage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.reg_to_voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the channel’s voltage from the register value.</p>
+<p>Uses the stored gain range. reg_val can be list of ints or int</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.set_range">
+<span class="sig-name descname"><span class="pre">set_range</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vals</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.set_range"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.set_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the voltage range of all channels.</p>
+<p>If vals is a single value then all channels are given that value.
+If vals is a list of length 16 then each channel gets a separate range
+vals must be 10, 5, or 2.5. These represent +/-10, +/-5, and +/-2.5 V.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform basic setup for default chip use.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.setup_sequencer">
+<span class="sig-name descname"><span class="pre">setup_sequencer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chan_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[('FIXED',</span> <span class="pre">'FIXED'),</span> <span class="pre">('0',</span> <span class="pre">'FIXED')]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltage_range</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lpf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">376</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.setup_sequencer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.setup_sequencer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start the sequencer looping through the given channels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chan_list</strong><span class="classifier">list</span></dt><dd><dl class="simple">
+<dt>Ordered list of channel pairs (A, B) to loop through. Options below.</dt><dd><p>[0-7]
+AVDD
+ALDO
+FIXED (0xAAAA, 0x5555)</p>
+</dd>
+</dl>
+</dd>
+<dt><strong>voltage_range</strong><span class="classifier">int</span></dt><dd><p>Voltage range of the channels, positive and negative.</p>
+</dd>
+<dt><strong>lpf</strong><span class="classifier">int</span></dt><dd><p>Low pass frequency in kHz.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reg_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.write"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.write" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to an internal register on the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADS8686.write_reg_bridge">
+<span class="sig-name descname"><span class="pre">write_reg_bridge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">clk_div</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADS8686.write_reg_bridge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADS8686.write_reg_bridge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set clk divider and spi_controller to continuously read ADC data.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="extends-spififodriven">
+<h2>Extends SPIFifoDriven<a class="headerlink" href="#extends-spififodriven" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC80508">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">DAC80508</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12824</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_mux</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'DDR':</span> <span class="pre">0,</span> <span class="pre">'ad7961_ch0':</span> <span class="pre">4,</span> <span class="pre">'ad7961_ch1':</span> <span class="pre">5,</span> <span class="pre">'ad7961_ch2':</span> <span class="pre">6,</span> <span class="pre">'ad7961_ch3':</span> <span class="pre">7,</span> <span class="pre">'ads8686_chA':</span> <span class="pre">2,</span> <span class="pre">'ads8686_chB':</span> <span class="pre">3,</span> <span class="pre">'host':</span> <span class="pre">1}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC80508"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC80508" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class for SPI DAC chip DAC80508.</p>
+<p>Subclass of the SPIFifoDriven class. Listed methods do not include SPIFifoDriven methods.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>WRITE_OPERATION</strong><span class="classifier">int</span></dt><dd><p>SPI data prefix for writing to the DAC.</p>
+</dd>
+<dt><strong>READ_OPERATION</strong><span class="classifier">int</span></dt><dd><p>SPI data prefix for reading from the DAC.</p>
+</dd>
+<dt><strong>registers</strong><span class="classifier">dict</span></dt><dd><p>Name-Register pairs for the internal registers of the DAC80508.</p>
+</dd>
+<dt><strong>data_mux</strong><span class="classifier">dict</span></dt><dd><p>Matches data source names in the MUX to their select values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC80508.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC80508.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC80508.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Soft reset the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC80508.set_config">
+<span class="sig-name descname"><span class="pre">set_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ALM_SEL</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ALM_EN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CRC_EN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">FSDO</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DSDO</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">REF_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAC7_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAC6_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAC5_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAC4_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAC3_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAC2_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAC1_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DAC0_PWDWN</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC80508.set_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC80508.set_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the configuration register using keyword arguments.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC80508.set_config_bin">
+<span class="sig-name descname"><span class="pre">set_config_bin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC80508.set_config_bin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC80508.set_config_bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the configuration register with a binary number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC80508.set_gain">
+<span class="sig-name descname"><span class="pre">set_gain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gain</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">divide_reference</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC80508.set_gain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC80508.set_gain" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Set the output gain (x1 or x2) and reference divider (VREF=2.5 V).</dt><dd><p>Suggested settings are:
+gain = 2, div_ref = /2
+gain = 2, div_ref = /1
+gain = 1, div_ref = /1 (not recommended)
+gain = 1, div_ref = /2</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>gain</strong><span class="classifier">int</span></dt><dd><p>The gain for the outputs. 1 or 2.</p>
+</dd>
+<dt><strong>ouptuts</strong><span class="classifier">int or list(int)</span></dt><dd><p>The output or list of outputs to set the gain for.</p>
+</dd>
+<dt><strong>divide_reference</strong><span class="classifier">bool</span></dt><dd><p>True to divide the reference voltage by 2, False to leave the it
+unaffected.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC80508.set_gain_bin">
+<span class="sig-name descname"><span class="pre">set_gain_bin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC80508.set_gain_bin"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC80508.set_gain_bin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the gain register with a binary value.</p>
+<p>1 gives a gain of 2 for the output at that bit index (0-7). 0 gives a
+gain of 1.
+The 8th bit from the right is the REFDIV-EN: 1 divides the
+internal reference voltage by 2. 0 leaves the reference voltage
+unaffected.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC80508.write_chip_reg">
+<span class="sig-name descname"><span class="pre">write_chip_reg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">register_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC80508.write_chip_reg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC80508.write_chip_reg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write to any register on the chip.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.DAC80508.write_voltage">
+<span class="sig-name descname"><span class="pre">write_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0,</span> <span class="pre">1,</span> <span class="pre">2,</span> <span class="pre">3,</span> <span class="pre">4,</span> <span class="pre">5,</span> <span class="pre">6,</span> <span class="pre">7]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_gain</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#DAC80508.write_voltage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.DAC80508.write_voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the voltage to the outputs of the DAC.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>voltage</strong><span class="classifier">int or float</span></dt><dd><p>The decimal voltage to write. This will be rounded to a
+representable binary value.</p>
+</dd>
+<dt><strong>ouptuts</strong><span class="classifier">int or list(int)</span></dt><dd><p>The output or list of outputs to write the voltage to.</p>
+</dd>
+<dt><strong>auto_gain</strong><span class="classifier">bool</span></dt><dd><p>True to automatically set the gain for the
+outputs, False otherwise.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD5453">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">AD5453</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">master_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12304</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_mux</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'DDR':</span> <span class="pre">0,</span> <span class="pre">'DDR_norepeat':</span> <span class="pre">3,</span> <span class="pre">'ad7961_ch0':</span> <span class="pre">4,</span> <span class="pre">'ad7961_ch1':</span> <span class="pre">5,</span> <span class="pre">'ad7961_ch2':</span> <span class="pre">6,</span> <span class="pre">'ad7961_ch3':</span> <span class="pre">7,</span> <span class="pre">'ads8686_chA':</span> <span class="pre">2,</span> <span class="pre">'host':</span> <span class="pre">1}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD5453"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD5453" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD5453.read_coeff_debug">
+<span class="sig-name descname"><span class="pre">read_coeff_debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD5453.read_coeff_debug"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD5453.read_coeff_debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read two wire outs for coefficients a3 section1, scale 3
+debug wires available for filters 0, 1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD5453.set_clk_rising_edge">
+<span class="sig-name descname"><span class="pre">set_clk_rising_edge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD5453.set_clk_rising_edge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD5453.set_clk_rising_edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the signals we write to use the rising edge of the clock.</p>
+<p>Default is falling edge. To return to the falling edge, the chip
+requires a power cycle (turn it off and back on).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD5453.set_ctrl_reg">
+<span class="sig-name descname"><span class="pre">set_ctrl_reg</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reg_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12304</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD5453.set_ctrl_reg"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD5453.set_ctrl_reg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configures the SPI Wishbone control register over the registerBridge.</p>
+<p>reg_value=0x3010 sets CHAR_LEN=16, ASS, IE</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="miscellaneous">
+<h2>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">AD7961</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961" title="Permalink to this definition">¶</a></dt>
+<dd><p>An interface to the AD7961 ADC
+Passed the FPGA object
+Allows for multiple channels
+read status flags (FIFO full, empty, count and PLL)
+configures FPGA internal resets
+configures chip specific and global enables
+Formats data returned from the wire out</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.create_chips">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_chips</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fpga</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">number_of_chips</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">endpoints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.create_chips"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.create_chips" title="Permalink to this definition">¶</a></dt>
+<dd><p>Instantiate a given number of new chips.</p>
+<p>We increment the endpoints between each instantiation as well. The
+number must be greater than 0. If the endpoints argument is left
+as None, then we will use copies of the endpoints_from_defines
+dictionary for the endpoints for each instance, and update that
+original dictionary when we increment the endpoints. This way, the
+endpoints there are ready for another instantiation if needed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.get_fifo_status">
+<span class="sig-name descname"><span class="pre">get_fifo_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.get_fifo_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.get_fifo_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get fullness status of the FIFO.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.get_pll_status">
+<span class="sig-name descname"><span class="pre">get_pll_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.get_pll_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.get_pll_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get status of the phase locked loop.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.get_status">
+<span class="sig-name descname"><span class="pre">get_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.get_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.get_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get AD796x status:
+pll lock, FIFO full, half-full, and empty</p>
+<p>Returns: dictionary of status</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.get_timing_pll_status">
+<span class="sig-name descname"><span class="pre">get_timing_pll_status</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.get_timing_pll_status"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.get_timing_pll_status" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get status of the timing of the phase locked loop.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.power_down_adc">
+<span class="sig-name descname"><span class="pre">power_down_adc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.power_down_adc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.power_down_adc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Power down single channel of the ADC.</p>
+<p>Fails if the global enables are 010 for LVDS test patterns</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.power_down_all">
+<span class="sig-name descname"><span class="pre">power_down_all</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.power_down_all"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.power_down_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Power down all channels of the ADC.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.power_down_fpga">
+<span class="sig-name descname"><span class="pre">power_down_fpga</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.power_down_fpga"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.power_down_fpga" title="Permalink to this definition">¶</a></dt>
+<dd><p>Power down the FPGA controller through WireIn.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.reset_pll">
+<span class="sig-name descname"><span class="pre">reset_pll</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.reset_pll"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.reset_pll" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the phase locked loop.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.reset_trig">
+<span class="sig-name descname"><span class="pre">reset_trig</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.reset_trig"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.reset_trig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the FPGA controller for the ADC.</p>
+<p>Common to synchronize timing (resets ad7961_timing module AND the
+ads8686 timing)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.reset_wire">
+<span class="sig-name descname"><span class="pre">reset_wire</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.reset_wire"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.reset_wire" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the value of the wire to reset the FPGA controller for the ADC.</p>
+<p>Uses the Opal Kelly WireIn (the trigger can’t hold the reset).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">int</span></dt><dd><p>value = 1 is reset
+value = 0 releases reset</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.set_enables">
+<span class="sig-name descname"><span class="pre">set_enables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_enables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.set_enables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.set_enables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the EN0 specific to this channel (LSB in values).</p>
+<p>Optionally also modify the global enables (all channels).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reset_pll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.setup" title="Permalink to this definition">¶</a></dt>
+<dd><ol class="arabic simple" start="0">
+<li><p>put ADC controller into reset</p></li>
+<li><dl class="simple">
+<dt>optionally reset the ADC PLL and wait for lock</dt><dd><p>(only need to reset PLL on first channel)</p>
+</dd>
+</dl>
+</li>
+<li><p>power up adc</p></li>
+<li><p>release ADC controller reset</p></li>
+<li><p>reset fifo</p></li>
+<li><p>check and return status (PLL and fifo)</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.AD7961.test_pattern">
+<span class="sig-name descname"><span class="pre">test_pattern</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#AD7961.test_pattern"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.AD7961.test_pattern" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable PRBS test pattern on the LVDS interface.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADCDATA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">interfaces.interfaces.</span></span><span class="sig-name descname"><span class="pre">ADCDATA</span></span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADCDATA"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADCDATA" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADCDATA.convert_data">
+<span class="sig-name descname"><span class="pre">convert_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buf</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADCDATA.convert_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADCDATA.convert_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Deswizle and convert the twos complement representation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.ADCDATA.convert_twos">
+<span class="sig-name descname"><span class="pre">convert_twos</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#ADCDATA.convert_twos"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.ADCDATA.convert_twos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert data to integer two’s complement representation.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="register_index_guide.html" class="btn btn-neutral float-right" title="Register Index Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="DDR.html" class="btn btn-neutral float-left" title="DDR Memory Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
