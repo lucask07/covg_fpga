@@ -1,3 +1,5 @@
+.. _register-index-guide:
+
 Register Index Guide
 ========================================================
 

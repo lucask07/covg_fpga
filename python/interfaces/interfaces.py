@@ -3440,7 +3440,7 @@ class DDR3():
         and combine with LSBytes. Swap channels to match ADC channel numbering.
 
         Parameters
-        ---------
+        ----------
         d : array
             array of bytes. 
         convert_twos : Boolean
@@ -3498,7 +3498,7 @@ class DDR3():
 
 
         Parameters
-        ---------
+        ----------
         chan_data : dict of np.arrays
             data from reading DDR (minimally processed into 2 byte containers)
         
@@ -3571,7 +3571,7 @@ class DDR3():
         read and save DDR data to an hdf file 
 
         Parameters
-        ---------
+        ----------
         data_dir : string
             directory for data
         file_name : string
@@ -3639,7 +3639,7 @@ class DDR3():
         read DDR data into a numpy buffer of bytes
 
         Parameters
-        ---------
+        ----------
         blk_multiples : int
             total size of the read is blk_multiples * block_size  
 
