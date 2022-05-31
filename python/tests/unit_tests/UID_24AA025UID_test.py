@@ -29,6 +29,7 @@ sys.path.append(interfaces_path)
 top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
+pytestmark = [pytest.mark.usable]
 
 
 # Fixtures

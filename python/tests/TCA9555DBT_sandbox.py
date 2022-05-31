@@ -18,7 +18,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import FPGA, TCA9555
+from interfaces.interfaces import FPGA, TCA9555, Endpoint
 import logging
 
 logging.basicConfig(filename='TCA9555DBT_test.log',
@@ -30,7 +30,7 @@ f.init_device()
 f.set_wire(0x00, value=0xff00, mask=0xff00)
 
 # Instantiate and reset TCA9555DBT chip
-device = TCA9555(fpga=f, addr_pins=0b000)
+device = TCA9555(fpga=f, addr_pins=0b000, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'))
 device.reset_device()
 
 # Configure pins[0x07:0x00] as outputs, pins[0x17:0x10] as inputs
