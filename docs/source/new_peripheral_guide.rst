@@ -3,7 +3,7 @@
 New Peripheral Guide
 ===========================
 
-Adding a new peripheral is a great way to contribute. The steps below will guide you through the process. For more information on community contributions, see the contributions guide (LINK).
+Adding a new peripheral is a great way to contribute. The steps below will guide you through the process. For more information on community contributions, see the `contributions guide <https://github.com/lucask07/covg_fpga/blob/daq_v2/CONTRIBUTING.md>`_.
 
 Before You Begin
 ----------------
@@ -28,3 +28,4 @@ The last requirement of your addition is documentation. Please add class and met
 Pull Request
 ------------
 With the above steps complete, `create a pull request <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request>`_, linking the issue you created, for your peripheral. Be sure to watch your pull request for any comments on questions or additions that may be needed.
+
