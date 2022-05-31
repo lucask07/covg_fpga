@@ -38,7 +38,7 @@ pytestmark = [pytest.mark.usable]
 
 pwr_setup = '3dual'
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)  # 7V and +/-16.5V, None
-tolerance = 0.009
+tolerance = 0.009765625
 dac_out = 7
 ads_in = 7
 
