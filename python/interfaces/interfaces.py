@@ -2795,8 +2795,9 @@ class AD7961(ADCDATA):
 
     def reset_trig(self):
         """Reset the FPGA controller for the ADC.
-        Common to synchronize timing 
-            (resets ad7961_timing module AND the ads8686 timing) 
+        
+        Common to synchronize timing (resets ad7961_timing module AND the
+        ads8686 timing) 
         """
 
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['RESET'].address,
