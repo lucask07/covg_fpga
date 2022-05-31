@@ -26,6 +26,9 @@ from interfaces.interfaces import FPGA, I2CController, Endpoint
 top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
+pytestmark = [pytest.mark.usable, pytest.mark.fpga_only]
+
+
 NACK = 1
 ACK = 0
 START = 1

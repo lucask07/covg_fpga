@@ -916,8 +916,7 @@ class TCA9555(I2CController):
     def read(self, register_name='INPUT'):
         """Read 2 bytes of data from the pins."""
 
-        dev_addr = self.ADDRESS_HEADER | (
-            self.addr_pins << 1) | 0b1
+        dev_addr = self.ADDRESS_HEADER | (self.addr_pins << 1) | 0b1
         return self.i2c_read_long(dev_addr, [TCA9555.registers[register_name].address], 2)
 
 

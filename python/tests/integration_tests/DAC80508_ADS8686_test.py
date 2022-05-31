@@ -33,6 +33,9 @@ from interfaces.boards import Daq
 from interfaces.utils import to_voltage
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
+pytestmark = [pytest.mark.usable]
+
+
 pwr_setup = '3dual'
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)  # 7V and +/-16.5V, None
 tolerance = 0.009

@@ -77,7 +77,7 @@ gpio.spi_debug('dfast0')
 gpio.ads_misc('sdoa')  # do not care for this experiment
 
 ddr = DDR3(f)
-ddr.reset_fifo()
+ddr.reset_fifo('ALL')
 
 fdac = []
 for i in range(6):

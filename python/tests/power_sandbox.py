@@ -31,7 +31,8 @@ sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Endpoint
 from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, AD5453, DAC53401
-from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DebugFIFO, DDR3
+from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DDR3
+# from interfaces.interfaces import DebugFIFO
 from interfaces.utils import get_timestamp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply, log_dc_pwr, init_current_meas_dict
 
@@ -131,10 +132,10 @@ gpio.ads_misc('sdoa')
 #    ad7961s[i].power_down_all()
 #    ad7961s[i].reset_wire(1)  # FPGA reset wire, resets FPGA controller
 
-if FIFO_DEBUG_EN:
-    fifo_debug = DebugFIFO(f)
-    fifo_debug.reset_fifo()
-    dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
+# if FIFO_DEBUG_EN:
+#     fifo_debug = DebugFIFO(f)
+#     fifo_debug.reset_fifo()
+#     dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
 
 ads.hw_reset(val=True)  # put ADS into hardware reset
 
