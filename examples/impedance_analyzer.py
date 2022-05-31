@@ -50,7 +50,7 @@ ADS8686 reads.
 
 
 Abe Stroschein, ajstroschein@stthomas.edu
-March 2022
+May 2022
 """
 # TODO: include package name in script docstring above
 # TODO: remove this comment when in new repo -> MUST TURN ON POWER SUPPLY YOURSELF (7V, 16.5V, -15V)
