@@ -17,6 +17,7 @@ Welcome to covgDAQ's documentation!
    SPIController
    SPIFifoDriven
    DDR
+   peripherals
    register_index_guide
    endpoint_definitions_guide
    new_peripheral_guide
