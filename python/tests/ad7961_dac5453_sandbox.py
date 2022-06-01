@@ -21,7 +21,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum, TCA9555
+from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, TCA9555
 from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines

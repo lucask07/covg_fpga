@@ -20,7 +20,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import FPGA, Endpoint, disp_device, advance_endpoints_bynum,UID_24AA025UID
+from interfaces.interfaces import FPGA, Endpoint, disp_device, UID_24AA025UID
 import logging
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from interfaces.boards import Daq
@@ -66,7 +66,7 @@ gpio = Daq.GPIO(f)
 gpio.fpga.debug = True
 
 clamp_uid = UID_24AA025UID(fpga=f,
-                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
+                     endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                      addr_pins=0b000)
 
 read = clamp_uid.get_manufacturer_code()

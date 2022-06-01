@@ -49,7 +49,7 @@ def test_multiple_instances():
         clamps.append(Clamp(f))
         # Must use endpoints_from_defines directly rather than get_chip_endpoints
         # so we increment the reference dictionary rather than a copy.
-        Endpoint.increment_endpoints(
+        Endpoint.advance_endpoints(
             Endpoint.endpoints_from_defines.get('I2CDC'))
 
     # Make sure all the endpoints for chips within a Clamp are the same
@@ -57,7 +57,7 @@ def test_multiple_instances():
     for clamp in clamps:
         assert all([chip.endpoints == clamp.TCA_0.endpoints for chip in [clamp.TCA_1, clamp.UID, clamp.DAC]])
 
-    # Make sure the endpoints for different Clamps are different from using increment_endpoints()
+    # Make sure the endpoints for different Clamps are different from using advance_endpoints()
     # Skip the first element in clamps because that is what we will compare against
     # Can just use TCA_0 since we already checked that all the chips have the same endpoints
     assert all(

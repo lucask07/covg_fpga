@@ -28,7 +28,7 @@ CHIPNAME: the name of the chip this endpoint belongs to. This is the chip the en
 
 ENDPOINT_NAME: the name of the endpoint. This will be the dictionary key paired with the Endpoint object holding the data defined on this line. Underscores are allowed in this name.
 
-_GEN_ADDR: an optional phrase added after the endpoint name that tells pypanel to increment this endpoint’s address when Endpoint.increment_endpoints (TODO: are we using this method or advance_endpoints_bynum?) is called on a group containing this endpoint.
+_GEN_ADDR: an optional phrase added after the endpoint name that tells pypanel to increment this endpoint’s address when :py:meth:`~interfaces.interfaces.Endpoint.advance_endpoints` is called on a group containing this endpoint.
 
 8’h: declaration of an 8 bit hexadecimal value before the address. If your address is more than 8 bits, change the 8 to that value. Ex. 16 bit address would be 16’h.
 
@@ -61,7 +61,7 @@ CHIPNAME: the name of the chip this endpoint belongs to. This is the chip the en
 
 ENDPOINT_NAME: the name of the endpoint. This will be the dictionary key paired with the Endpoint object holding the data defined on this line. Underscores are allowed in this name.
 
-_GEN_BIT: an optional phrase added after the endpoint name that tells pypanel to increment this endpoint’s lower bit index by its bit width when :py:meth:`~interfaces.interfaces.Endpoint.increment_endpoints` (TODO: are we using this method or advance_endpoints_bynum?) is called on a group containing this endpoint.
+_GEN_BIT: an optional phrase added after the endpoint name that tells pypanel to increment this endpoint’s lower bit index by its bit width when :py:meth:`~interfaces.interfaces.Endpoint.advance_endpoints` is called on a group containing this endpoint.
 
 BIT: the decimal lower bit index for this endpoint. This is the value the parameter will hold in the Verilog.
 

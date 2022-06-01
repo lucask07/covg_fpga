@@ -62,7 +62,7 @@ def test_multiple_instances():
         ]
         # Must use endpoints_from_defines directly rather than get_chip_endpoints
         # so we increment the reference dictionary rather than a copy.
-        Endpoint.increment_endpoints(Endpoint.endpoints_from_defines.get(i2c_type))
+        Endpoint.advance_endpoints(Endpoint.endpoints_from_defines.get(i2c_type))
         group2 = [
             I2CController(fpga=f, addr_pins=0, endpoints=Endpoint.get_chip_endpoints(i2c_type)),
             I2CController(fpga=f, addr_pins=0, endpoints=Endpoint.get_chip_endpoints(i2c_type)),

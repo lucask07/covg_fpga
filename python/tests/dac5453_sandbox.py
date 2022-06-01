@@ -19,7 +19,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum, DDR3
+from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, DDR3
 from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
@@ -82,7 +82,7 @@ ddr.reset_fifo('ALL')
 fdac = []
 for i in range(6):
     fdac.append(AD5453(f,
-                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
+                endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
     fdac[i].set_ctrl_reg(fdac[i].master_config)
     fdac[i].set_spi_sclk_divide()
