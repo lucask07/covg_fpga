@@ -807,32 +807,16 @@ class I2CController:
         """Send a write command with given data to regAddr on devAddr.
 
         regAddr must be given in a list."""
-
-        preamble = [devAddr & 0xfe] + regAddr  # + data
+        if (regAddr == [None]) or (regAddr == None):
+            preamble = [devAddr & 0xfe]  # for chips without register addresses -- just a single register           
+        else:
+            preamble = [devAddr & 0xfe] + regAddr  # + data
         # def i2c_configure(self, data_length, starts, stops, preamble)
         self.i2c_configure(len(preamble), 0x00, 1 << len(preamble), preamble)
         return self.i2c_transmit(data, data_length)
 
     # Sequence is
     # [START] DEV_ADDR(W) REG_ADDR [START] DEV_ADDR(R) VALUE
-    # LJK - this command does not execute OK API calls
-    # def i2c_read8(self, devAddr, regAddr, data_length):
-
-    #     # for the pressure sensors that only need the slave address and a read bit and then send out 4 bytes.
-    #     if regAddr is None:
-    #         preamble = [devAddr | 0x01]
-    #         self.i2c_configure(1, 0x01, 0x00, preamble)
-    #     else:
-    #         preamble = [devAddr & 0xfe, regAddr, devAddr | 0x01]
-    #         # signature: i2c_configure(data_length, starts (a one for each byte that gets a start), stops, preamble):
-    #         self.i2c_configure(3, 0x02, 0x00, preamble)
-    #     data = self.i2c_receive(data_length)
-
-    #     return data
-
-    # Sequence is
-    # [START] DEV_ADDR(W) REG_ADDR [START] DEV_ADDR(R) VALUE
-    # LJK - this command does not execute OK API calls
     def i2c_read_long(self, devAddr, regAddr, data_length):
         """Read data_length bytes from regAddr on devAddr.
 
@@ -845,11 +829,14 @@ class I2CController:
         data_length : int
             Number of bytes expected to receive
         """
-
-        preamble = [devAddr & 0xfe] + regAddr + [devAddr | 0x01]
-        # signature: i2c_configure(data_length, starts (a one for each byte that gets a start), stops, preamble):
-        start_positions = 0x01 << len(regAddr)
-        self.i2c_configure(len(preamble), start_positions, 0x00, preamble)
+        if (regAddr == None) or (regAddr == [None]):
+            preamble = [devAddr | 0x01] # for chips without register addresses -- just a single register
+            self.i2c_configure(1, 0x01, 0x00, preamble)
+        else:
+            preamble = [devAddr & 0xfe] + regAddr + [devAddr | 0x01]
+            # signature: i2c_configure(data_length, starts (a one for each byte that gets a start), stops, preamble):
+            start_positions = 0x01 << len(regAddr)
+            self.i2c_configure(len(preamble), start_positions, 0x00, preamble)
         data = self.i2c_receive(data_length)
 
         return data
@@ -1521,6 +1508,63 @@ class TMF8801(I2CController):
             f.write(','.join(cal_data))
 
         return cal_data 
+
+class DAC101C081(I2CController):
+    """Class for the DAC101C081.
+
+    Subclass of the I2CController class. Attributes and methods below are
+    differences in this class from I2CController only.
+
+    Attributes
+    ----------
+    ADDRESS_HEADER : int
+        7-bit device address with R/W bit space.
+    registers : dict
+        Name-Register pairs (this chip has only 1 register! PD[13:12], DATA[9:0])
+        PD = b00 for normal operation  
+    addr_pins : int
+        3 LSBs of the 7-bit device address formed alongside the address header
+        used to differentiate between different instances using the ADDR pins.
+    """
+
+    ADDRESS_HEADER = 0b100_0110  # ADR0=Gnd -- Bath Clamp. ADR0 to GND
+    # The device address table in the data sheet is strange 
+    # see here: 
+    #   https://e2e.ti.com/support/data-converters-group/data-converters/f/data-converters-forum/955893/dac101c081-dac101c081-i2c-address-selection
+    registers = Register.get_chip_registers('DAC101C081')
+    addr_pins = 0
+    dac_res_bits = 10
+
+    def write(self, data):
+        """Write DAC data and set the PD bits to 00
+           DAC data should be no greater than 2^{dac_res_bits} - 1
+        """
+        dev_addr = self.ADDRESS_HEADER | (self.addr_pins << 1)
+        if self.dac_res_bits == 10:
+            data = data << 2  # for the 10 bit DAC the 2 LSBs are zeros.  
+        elif self.dac_res_bits == 12:
+            pass  # don't need to shift the data 
+        else:
+            raise ValueError('Incorrect DAC resolution in bits')
+        data = data & 0x0fff  # set PD bits to b00 [13:12] also bits 15:14 are do not care  
+        # Turn data into a list of bytes for i2c_write method
+        list_data = [data // (16**2), data % (16**2)] # equivalent to [((data & 0xff00)>>8), (data & 0x00ff)]
+        self.i2c_write_long(dev_addr, [None], 2, list_data)
+
+    def read(self):
+        """Read 2 bytes of data from the chip register"""
+
+        dev_addr = self.ADDRESS_HEADER | (self.addr_pins << 1) | 0b1
+        return self.i2c_read_long(dev_addr, [None], 2)
+
+    def power_down(self):
+        data = b0010_0000_0000_0000 # this is the 100 kOhm power down mode  
+        dev_addr = self.ADDRESS_HEADER | (self.addr_pins << 1)
+
+        # Turn data into a list of bytes for i2c_write method
+        list_data = [data // (16**2), data % (16**2)] # equivalent to [((data & 0xff00)>>8), (data & 0x00ff)]
+        self.i2c_write_long(dev_addr, [None], 2, list_data)
+
 
 class SPIController:
     """Class for controllers on the FPGA using SPI protocol.
