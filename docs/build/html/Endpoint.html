@@ -97,8 +97,10 @@
 <li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DDR.html">DDR Memory Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="peripherals.html">Peripherals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="register_index_guide.html">Register Index Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_peripheral_guide.html">New Peripheral Guide</a></li>
 </ul>
 
             
@@ -198,6 +200,33 @@ of endpoint names to Endpoint objects, starts empty.</p>
 </dd>
 </dl>
 <dl class="py method">
+<dt class="sig sig-object py" id="interfaces.interfaces.Endpoint.advance_endpoints">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">advance_endpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoints_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">advance_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#Endpoint.advance_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.Endpoint.advance_endpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Advances Endpoints in a dict in place by advance_num. Checks each
+Endpoint’s gen_bit and gen_address attributes to see whether to
+increment the bit or the address or both.</p>
+<dl class="simple">
+<dt>Example usage:</dt><dd><p>endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints(‘I2CDAQ’),1)</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>endpoints_dict</strong><span class="classifier">dict of Endpoints</span></dt><dd><p>The dict of Endpoints to advance by advance_num.</p>
+</dd>
+<dt><strong>advance_num</strong><span class="classifier">int</span></dt><dd><p>How much to advance the Endpoints by.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>dict</strong><span class="classifier">the same dict of Endpoints given in endpoints_dict, now advanced</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="interfaces.interfaces.Endpoint.excel_to_defines">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">excel_to_defines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">excel_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">defines_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sheet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#Endpoint.excel_to_defines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.Endpoint.excel_to_defines" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an Excel spreadsheet of endpoint definitions to Verilog.</p>
@@ -225,25 +254,6 @@ spreadsheet, or the str sheet name.</p>
 <dt class="sig sig-object py" id="interfaces.interfaces.Endpoint.get_chip_endpoints">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_chip_endpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chip_name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#Endpoint.get_chip_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.Endpoint.get_chip_endpoints" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a copy of the dictionary of Endpoints for a specific chip or group.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="interfaces.interfaces.Endpoint.increment_endpoints">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">increment_endpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">endpoints_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_place</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/interfaces.html#Endpoint.increment_endpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.interfaces.Endpoint.increment_endpoints" title="Permalink to this definition">¶</a></dt>
-<dd><p>Increment all Endpoints in endpoints_dict.</p>
-<p>Use each Endpoint’s gen_bit and gen_addr values to determine whether to
-increment bits and addresses, respectively.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><dl class="simple">
-<dt><strong>endpoints_dict</strong><span class="classifier">dict</span></dt><dd><p>The dict of Endpoints to increment.</p>
-</dd>
-<dt><strong>in_place</strong><span class="classifier">bool</span></dt><dd><p>If True, the dictionary given will be changed. Otherwise, a copy
-of the dictionary will be made.</p>
-</dd>
-</dl>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py method">

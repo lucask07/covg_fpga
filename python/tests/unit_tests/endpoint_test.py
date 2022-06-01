@@ -25,6 +25,9 @@ sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Endpoint
 
+pytestmark = [pytest.mark.usable, pytest.mark.no_fpga]
+
+
 # Total params for typical use = (0xff + 1) * 32 * 32 * 2 * 2 = 1048576
 # We will choose some random sets of values from these ranges and test only those
 num_test_params = 200

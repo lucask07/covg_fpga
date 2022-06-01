@@ -6,6 +6,7 @@ instantiation and the ability to more easily swap to a different board.
 
 August 2021
 
+Lucas Koerner, koer2434@stthomas.edu
 Abe Stroschein, ajstroschein@stthomas.edu
 """
 
@@ -19,9 +20,9 @@ import copy
 
 # Assign I2CDAQ busses
 Endpoint.I2CDAQ_level_shifted = Endpoint.get_chip_endpoints('I2CDAQ')
-# We want the endpoints_from_defines to be the same so in_place=False to use a copy when incrementing
-Endpoint.I2CDAQ_QW = Endpoint.increment_endpoints(
-    endpoints_dict=Endpoint.I2CDAQ_level_shifted, in_place=False)
+# We want the endpoints_from_defines to be the same make a copy before incrementing
+Endpoint.I2CDAQ_QW = Endpoint.advance_endpoints(
+    endpoints_dict=copy.deepcopy(Endpoint.I2CDAQ_level_shifted))
 
 
 class Clamp:
@@ -60,7 +61,7 @@ class Clamp:
 
         self.TCA = [None, None]
         eps_i2cdc = copy.deepcopy(Endpoint.endpoints_from_defines['I2CDC'])
-        i2c_eps = advance_endpoints_bynum(eps_i2cdc, dc_num)
+        i2c_eps = Endpoint.advance_endpoints(eps_i2cdc, dc_num)
         self.TCA[0] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0,
                               endpoints=i2c_eps)
         self.TCA[1] = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_1,

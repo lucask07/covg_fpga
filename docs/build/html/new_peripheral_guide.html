@@ -1,0 +1,254 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>New Peripheral Guide &mdash; covgDAQ 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Endpoint Definitions Guide" href="endpoint_definitions_guide.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> covgDAQ
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Register.html">Register Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Endpoint.html">Endpoint Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="FPGA.html">FPGA Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="I2CController.html">I2C Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="DDR.html">DDR Memory Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="peripherals.html">Peripherals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="register_index_guide.html">Register Index Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">New Peripheral Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#before-you-begin">Before You Begin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#registers">Registers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interfaces">Interfaces</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#sandbox-test-file">Sandbox/Test File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#pull-request">Pull Request</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covgDAQ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>New Peripheral Guide</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/new_peripheral_guide.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="new-peripheral-guide">
+<span id="id1"></span><h1>New Peripheral Guide<a class="headerlink" href="#new-peripheral-guide" title="Permalink to this headline">¶</a></h1>
+<p>Adding a new peripheral is a great way to contribute. The steps below will guide you through the process. For more information on community contributions, see the <a class="reference external" href="https://github.com/lucask07/covg_fpga/blob/daq_v2/CONTRIBUTING.md">contributions guide</a>.</p>
+<div class="section" id="before-you-begin">
+<h2>Before You Begin<a class="headerlink" href="#before-you-begin" title="Permalink to this headline">¶</a></h2>
+<p>To get set up, first <a class="reference external" href="https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue">create a new issue</a> for the peripheral you want to add. Include the name, a short description, and a link to the datasheet. To avoidi duplicates, check if there are any open issues with the same peripheral before creating a new issue. With this done, <a class="reference external" href="https://docs.github.com/en/get-started/quickstart/fork-a-repo">fork the repo</a> and begin working on your addition. Be sure to keep your branch up to date with the main branch of the repository.</p>
+</div>
+<div class="section" id="registers">
+<h2>Registers<a class="headerlink" href="#registers" title="Permalink to this headline">¶</a></h2>
+<p>The first step is to add your peripheral to the <a class="reference external" href="https://github.com/lucask07/covg_fpga/blob/daq_v2/python/Registers.xlsx">main registers spreadsheet</a>. Add a new page to the spreadsheet with the name of your peripheral and fill in the information for its internal registers. For more information, see the <a class="reference internal" href="register_index_guide.html#register-index-guide"><span class="std std-ref">register index guide</span></a>.</p>
+</div>
+<div class="section" id="interfaces">
+<h2>Interfaces<a class="headerlink" href="#interfaces" title="Permalink to this headline">¶</a></h2>
+<p>Add a class for your peripheral to the <a class="reference internal" href="Register.html#module-interfaces.interfaces" title="interfaces.interfaces"><code class="xref py py-mod docutils literal notranslate"><span class="pre">interfaces</span></code></a> module. If your peripheral uses an I2C or SPI interface, you may consider extending the <a class="reference internal" href="I2CController.html#interfaces.interfaces.I2CController" title="interfaces.interfaces.I2CController"><code class="xref py py-class docutils literal notranslate"><span class="pre">I2CController</span></code></a>, <a class="reference internal" href="SPIController.html#interfaces.interfaces.SPIController" title="interfaces.interfaces.SPIController"><code class="xref py py-class docutils literal notranslate"><span class="pre">SPIController</span></code></a>, or <a class="reference internal" href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven" title="interfaces.interfaces.SPIFifoDriven"><code class="xref py py-class docutils literal notranslate"><span class="pre">SPIFifoDriven</span></code></a> class. Your class should include a <code class="xref py py-meth docutils literal notranslate"><span class="pre">create_chips()</span></code> method for creating several instances of the new peripheral at once. Write and read commands are commonly useful methods that, if applicable, should be included, but remaining functionality will likely be specific to your peripheral. Add what will be useful.</p>
+</div>
+<div class="section" id="sandbox-test-file">
+<h2>Sandbox/Test File<a class="headerlink" href="#sandbox-test-file" title="Permalink to this headline">¶</a></h2>
+<p>Once your peripheral is functional, create an example script or test file to show its use. Any test files should be written using <a class="reference external" href="https://docs.pytest.org/en/7.1.x/contents.html">pytest</a>.</p>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>The last requirement of your addition is documentation. Please add class and method docstrings to your code in <a class="reference external" href="https://numpydoc.readthedocs.io/en/latest/format.html#docstring-standard">numpy format</a>. See the <a class="reference internal" href="peripherals.html#interfaces.interfaces.DAC80508" title="interfaces.interfaces.DAC80508"><code class="xref py py-class docutils literal notranslate"><span class="pre">DAC80508</span></code></a> class for an example. Please also add a docstring to your exampe/test file explaining what it does.</p>
+</div>
+<div class="section" id="pull-request">
+<h2>Pull Request<a class="headerlink" href="#pull-request" title="Permalink to this headline">¶</a></h2>
+<p>With the above steps complete, <a class="reference external" href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request">create a pull request</a>, linking the issue you created, for your peripheral. Be sure to watch your pull request for any comments on questions or additions that may be needed.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="endpoint_definitions_guide.html" class="btn btn-neutral float-left" title="Endpoint Definitions Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

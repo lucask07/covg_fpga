@@ -48,7 +48,7 @@ def test_multiple_instances():
     ]
     # Must use endpoints_from_defines directly rather than get_chip_endpoints
     # so we increment the reference dictionary rather than a copy.
-    Endpoint.increment_endpoints(
+    Endpoint.advance_endpoints(
         Endpoint.endpoints_from_defines.get('ADS8686'))
     group2 = [
         ADS8686(fpga=f, endpoints=Endpoint.get_chip_endpoints('ADS8686')),

@@ -43,7 +43,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Endpoint Definitions Guide" href="endpoint_definitions_guide.html" />
-    <link rel="prev" title="DDR Memory Class" href="DDR.html" /> 
+    <link rel="prev" title="Peripherals" href="peripherals.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -97,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DDR.html">DDR Memory Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="peripherals.html">Peripherals</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Register Index Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#enter-the-chip-name">1. Enter the chip name</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#enter-register-name">2. Enter register name</a></li>
@@ -107,6 +108,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_peripheral_guide.html">New Peripheral Guide</a></li>
 </ul>
 
             
@@ -175,7 +177,7 @@
            <div itemprop="articleBody">
             
   <div class="section" id="register-index-guide">
-<h1>Register Index Guide<a class="headerlink" href="#register-index-guide" title="Permalink to this headline">¶</a></h1>
+<span id="id1"></span><h1>Register Index Guide<a class="headerlink" href="#register-index-guide" title="Permalink to this headline">¶</a></h1>
 <p>The register index holds the name, address, lower bit index, upper bit index, and bit width of registers so they can be read in by pypanel and stored in a Register object. Here is a <a class="reference external" href="https://github.com/lucask07/covg_fpga/blob/daq_v2/examples/register_index_template.xlsx">template</a> for the register index. Start with the template and follow the example below.</p>
 <p>For this example, our peripheral/chip is called GUIDE and has 4 internal registers: WRITE_IN, READ_OUT, CONFIG, and ID.</p>
 <div class="section" id="enter-the-chip-name">
@@ -286,7 +288,7 @@
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
         <a href="endpoint_definitions_guide.html" class="btn btn-neutral float-right" title="Endpoint Definitions Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-        <a href="DDR.html" class="btn btn-neutral float-left" title="DDR Memory Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="peripherals.html" class="btn btn-neutral float-left" title="Peripherals" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
   <hr/>

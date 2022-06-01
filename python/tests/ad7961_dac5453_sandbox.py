@@ -21,7 +21,7 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
-from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, advance_endpoints_bynum, TCA9555
+from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, TCA9555
 from interfaces.boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 eps = Endpoint.endpoints_from_defines
@@ -104,11 +104,8 @@ gpio.ads_misc('sdoa')  # do not care for this experiment
 filter_coeff = '500kHz'
 # filter_coeff = 'passthru'
 
-fdac = []
+fdac = AD5453.create_chips(fpga=f, number_of_chips=6)
 for i in range(6):
-    fdac.append(AD5453(f,
-                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
-                channel=i))
     fdac[i].set_data_mux('host')  # for writing filter coefficients
     fdac[i].filter_select(operation='set')
     fdac[i].set_spi_sclk_divide()

@@ -26,6 +26,10 @@ top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
 from interfaces.interfaces import FPGA, Endpoint
+
+pytestmark = [pytest.mark.usable, pytest.mark.fpga_only]
+
+
 # Fixtures
 @pytest.fixture(scope='module')
 def configured_fpga() -> FPGA:

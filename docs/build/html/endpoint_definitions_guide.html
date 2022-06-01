@@ -42,6 +42,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="New Peripheral Guide" href="new_peripheral_guide.html" />
     <link rel="prev" title="Register Index Guide" href="register_index_guide.html" /> 
 </head>
 
@@ -96,6 +97,7 @@
 <li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DDR.html">DDR Memory Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="peripherals.html">Peripherals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="register_index_guide.html">Register Index Guide</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Endpoint Definitions Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#addresses">Addresses</a></li>
@@ -104,6 +106,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="new_peripheral_guide.html">New Peripheral Guide</a></li>
 </ul>
 
             
@@ -187,7 +190,7 @@
 </div>
 <p>CHIPNAME: the name of the chip this endpoint belongs to. This is the chip the endpoint will be found under when using the <a class="reference internal" href="Endpoint.html#interfaces.interfaces.Endpoint.get_chip_endpoints" title="interfaces.interfaces.Endpoint.get_chip_endpoints"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_chip_endpoints()</span></code></a> method. This name MUST NOT have any underscores in it because pypanel uses the first underscore in this line to separate the chip name from the endpoint name.</p>
 <p>ENDPOINT_NAME: the name of the endpoint. This will be the dictionary key paired with the Endpoint object holding the data defined on this line. Underscores are allowed in this name.</p>
-<p>_GEN_ADDR: an optional phrase added after the endpoint name that tells pypanel to increment this endpoint’s address when Endpoint.increment_endpoints (TODO: are we using this method or advance_endpoints_bynum?) is called on a group containing this endpoint.</p>
+<p>_GEN_ADDR: an optional phrase added after the endpoint name that tells pypanel to increment this endpoint’s address when <a class="reference internal" href="Endpoint.html#interfaces.interfaces.Endpoint.advance_endpoints" title="interfaces.interfaces.Endpoint.advance_endpoints"><code class="xref py py-meth docutils literal notranslate"><span class="pre">advance_endpoints()</span></code></a> is called on a group containing this endpoint.</p>
 <p>8’h: declaration of an 8 bit hexadecimal value before the address. If your address is more than 8 bits, change the 8 to that value. Ex. 16 bit address would be 16’h.</p>
 <p>ADDRESS: the hexadecimal address value for this endpoint. This is the value the parameter will hold in the Verilog.</p>
 <p>//: start of the comment part of this line. The Verilog parameter only holds the address, but the pypanel Endpoint object will also hold the bit_width, which is defined in the comment.</p>
@@ -206,7 +209,7 @@
 </div>
 <p>CHIPNAME: the name of the chip this endpoint belongs to. This is the chip the endpoint will be found under when using the <a class="reference internal" href="Endpoint.html#interfaces.interfaces.Endpoint.get_chip_endpoints" title="interfaces.interfaces.Endpoint.get_chip_endpoints"><code class="xref py py-meth docutils literal notranslate"><span class="pre">get_chip_endpoints()</span></code></a> method. This name MUST NOT have any underscores in it because pypanel uses the first underscore in this line to separate the chip name from the endpoint name.</p>
 <p>ENDPOINT_NAME: the name of the endpoint. This will be the dictionary key paired with the Endpoint object holding the data defined on this line. Underscores are allowed in this name.</p>
-<p>_GEN_BIT: an optional phrase added after the endpoint name that tells pypanel to increment this endpoint’s lower bit index by its bit width when <a class="reference internal" href="Endpoint.html#interfaces.interfaces.Endpoint.increment_endpoints" title="interfaces.interfaces.Endpoint.increment_endpoints"><code class="xref py py-meth docutils literal notranslate"><span class="pre">increment_endpoints()</span></code></a> (TODO: are we using this method or advance_endpoints_bynum?) is called on a group containing this endpoint.</p>
+<p>_GEN_BIT: an optional phrase added after the endpoint name that tells pypanel to increment this endpoint’s lower bit index by its bit width when <a class="reference internal" href="Endpoint.html#interfaces.interfaces.Endpoint.advance_endpoints" title="interfaces.interfaces.Endpoint.advance_endpoints"><code class="xref py py-meth docutils literal notranslate"><span class="pre">advance_endpoints()</span></code></a> is called on a group containing this endpoint.</p>
 <p>BIT: the decimal lower bit index for this endpoint. This is the value the parameter will hold in the Verilog.</p>
 <p>//: start of the comment part of this line. The Verilog parameter only holds the address, but the pypanel Endpoint object will also hold the bit_width, which is defined in the comment.</p>
 <p>addr=: the prefix for defining the associated address for pypanel.</p>
@@ -247,6 +250,7 @@
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="new_peripheral_guide.html" class="btn btn-neutral float-right" title="New Peripheral Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="register_index_guide.html" class="btn btn-neutral float-left" title="Register Index Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 
