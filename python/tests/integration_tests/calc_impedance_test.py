@@ -32,6 +32,8 @@ top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
 from interfaces.interfaces import FPGA, DDR3
 from interfaces.utils import from_voltage, to_voltage, calc_impedance
 
+pytestmark = [pytest.mark.usable, pytest.mark.no_fpga]
+
 # Fixtures
 
 

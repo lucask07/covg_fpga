@@ -1,18 +1,18 @@
 """Module for configuring OpalKelly XEM7310
 and use it as an I2C controller, SPI controller, and Serial LVDS controller.
 
+May 2022
+
 Lucas Koerner, koer2434@stthomas.edu
 Abe Stroschein, ajstroschein@stthomas.edu
-August 2021
 """
 
 import ok
 import numpy as np
 import pandas as pd
 import os
-import struct
 import time
-from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list, from_voltage, to_voltage
+from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list, from_voltage
 import copy
 import h5py
 
@@ -325,44 +325,6 @@ class Endpoint:
         return copy.deepcopy(Endpoint.endpoints_from_defines.get(chip_name))
 
     @staticmethod
-    def increment_endpoints(endpoints_dict, in_place=True):
-        """Increment all Endpoints in endpoints_dict.
-
-        Use each Endpoint's gen_bit and gen_addr values to determine whether to
-        increment bits and addresses, respectively.
-
-        Parameters
-        ----------
-        endpoints_dict : dict
-            The dict of Endpoints to increment.
-        in_place : bool
-            If True, the dictionary given will be changed. Otherwise, a copy
-            of the dictionary will be made.
-        """
-
-        if not in_place:
-            # Make a copy
-            endpoints_dict = copy.deepcopy(endpoints_dict)
-
-        for key in endpoints_dict:
-            endpoint = endpoints_dict[key]
-            if endpoint.gen_bit and endpoint.gen_address:
-                # Increment the bit by the endpoint's bit_width and if it would
-                # go outside the address's width, increment the address
-                # TODO: do we want to wrap around the bits on the same address, -> can change address on each bit individually
-                # or shift all bits when one moves to the next address? -> each bit needs to know if other bits fit on the current address as well
-                pass
-            elif endpoint.gen_bit:
-                # Increment the bit by the bit_width
-                endpoint.bit_index_low += endpoint.bit_width
-                endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
-            elif endpoint.gen_address:
-                # Increment the address by 1
-                endpoint.address += 1
-
-        return endpoints_dict
-
-    @staticmethod
     def excel_to_defines(excel_path, defines_path, sheet=0):
         """Convert an Excel spreadsheet of endpoint definitions to Verilog.
 
@@ -387,29 +349,36 @@ class Endpoint:
             file.write(text)
         return text
 
+    @staticmethod
+    def advance_endpoints(endpoints_dict, advance_num=1):
+        """
+        Advances Endpoints in a dict in place by advance_num. Checks each
+        Endpoint's gen_bit and gen_address attributes to see whether to
+        increment the bit or the address or both.
 
-def advance_endpoints_bynum(endpoints_dict, num):
-    """
-    Advance endpoints by a specific number; calculates based on the bit_widths
-    and knowing that the width of the OK interface is 32 bits.
-    Just a method of an Endpoint (not a classmethod).
-    Goal is to not impact future device instantiations.
+        Example usage:
+            endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('I2CDAQ'),1)
 
-    Example usage:
-        endpoints=Endpoint.advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'),1)
-    """
-    print('Number to advance is {}'.format(num))
-    # num is the number to advance from the base addresses and bits
-    for key in endpoints_dict:
-        endpoint = endpoints_dict[key]
-        if endpoint.gen_bit:
-            endpoint.bit_index_low = (
-                endpoint.bit_index_low + (endpoint.bit_width*num))
-            endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
-        if endpoint.gen_address:
-            print(f'gen address bit_width: {endpoint.bit_width}')
-            endpoint.address += 1
-    return endpoints_dict
+        Parameters
+        ----------
+        endpoints_dict : dict of Endpoints
+            The dict of Endpoints to advance by advance_num.
+        advance_num : int
+            How much to advance the Endpoints by.
+
+        Returns
+        -------
+        dict : the same dict of Endpoints given in endpoints_dict, now advanced
+        """
+        
+        for key in endpoints_dict:
+            endpoint = endpoints_dict[key]
+            if endpoint.gen_bit:
+                endpoint.bit_index_low += endpoint.bit_width * advance_num
+                endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
+            if endpoint.gen_address:
+                endpoint.address += advance_num
+        return endpoints_dict
 
 # Class for the FPGA itself. Handles FPGA configuration, setting wire values,
 # and other FPGA specific functions.
@@ -903,8 +872,7 @@ class TCA9555(I2CController):
     def read(self, register_name='INPUT'):
         """Read 2 bytes of data from the pins."""
 
-        dev_addr = self.ADDRESS_HEADER | (
-            self.addr_pins << 1) | 0b1
+        dev_addr = self.ADDRESS_HEADER | (self.addr_pins << 1) | 0b1
         return self.i2c_read_long(dev_addr, [TCA9555.registers[register_name].address], 2)
 
 
@@ -1625,18 +1593,17 @@ class SPIController:
                 chips.append(cls(fpga=fpga, endpoints=endpoints))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
-                Endpoint.increment_endpoints(endpoints)
+                Endpoint.advance_endpoints(endpoints)
         else:
             for i in range(number_of_chips):
                 chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(
                     endpoints), master_config=master_config))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
-                Endpoint.increment_endpoints(endpoints)
+                Endpoint.advance_endpoints(endpoints)
 
         if endpoints is None:
             # Increment shared endpoints dictionary
-            # TODO: is there a better way to do this?
             # We need to get the shared endpoints in endpoints_from_defines to
             # increment and we only have the endpoints given to us in the
             # argument.
@@ -1646,11 +1613,10 @@ class SPIController:
                     list(shared_full_eps.values()).index(chips[0].endpoints)
                     ]
                 ]
-            for i in range(number_of_chips):
-                Endpoint.increment_endpoints(shared_chip_eps)
+            Endpoint.advance_endpoints(shared_chip_eps, number_of_chips)
         else:
             # Increment custom dictionary
-            Endpoint.increment_endpoints(endpoints)
+            Endpoint.advance_endpoints(endpoints, number_of_chips)
 
         return chips
 
@@ -1948,14 +1914,14 @@ class SPIFifoDriven():
                 chips.append(cls(fpga=fpga, endpoints=endpoints))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
-                Endpoint.increment_endpoints(endpoints)
+                Endpoint.advance_endpoints(endpoints)
         else:
             for i in range(number_of_chips):
                 chips.append(cls(fpga=fpga, endpoints=copy.deepcopy(
                     endpoints), master_config=master_config))
                 # Use deepcopy to keep the endpoints for different instances separate
                 endpoints = copy.deepcopy(chips[-1].endpoints)
-                Endpoint.increment_endpoints(endpoints)
+                Endpoint.advance_endpoints(endpoints)
 
         if endpoints is None:
             # Increment shared endpoints dictionary
@@ -1969,11 +1935,10 @@ class SPIFifoDriven():
                     list(shared_full_eps.values()).index(chips[0].endpoints)
                 ]
             ]
-            for i in range(number_of_chips):
-                Endpoint.increment_endpoints(shared_chip_eps)
+            Endpoint.advance_endpoints(shared_chip_eps, number_of_chips)
         else:
             # Increment custom dictionary
-            Endpoint.increment_endpoints(endpoints)
+            Endpoint.advance_endpoints(endpoints, number_of_chips)
 
         return chips
 
@@ -2755,7 +2720,7 @@ class AD7961(ADCDATA):
         for i in range(number_of_chips):
             # Use deepcopy here to keep the endpoints for different instances separate
             chips.append(AD7961(fpga=fpga, endpoints=copy.deepcopy(endpoints)))
-            Endpoint.increment_endpoints(endpoints)
+            Endpoint.advance_endpoints(endpoints)
         return chips
 
     def get_status(self):
@@ -2840,8 +2805,9 @@ class AD7961(ADCDATA):
 
     def reset_trig(self):
         """Reset the FPGA controller for the ADC.
-        Common to synchronize timing 
-            (resets ad7961_timing module AND the ads8686 timing) 
+        
+        Common to synchronize timing (resets ad7961_timing module AND the
+        ads8686 timing) 
         """
 
         return self.fpga.xem.ActivateTriggerIn(self.endpoints['RESET'].address,
@@ -3485,7 +3451,7 @@ class DDR3():
         and combine with LSBytes. Swap channels to match ADC channel numbering.
 
         Parameters
-        ---------
+        ----------
         d : array
             array of bytes. 
         convert_twos : Boolean
@@ -3543,7 +3509,7 @@ class DDR3():
 
 
         Parameters
-        ---------
+        ----------
         chan_data : dict of np.arrays
             data from reading DDR (minimally processed into 2 byte containers)
         
@@ -3616,7 +3582,7 @@ class DDR3():
         read and save DDR data to an hdf file 
 
         Parameters
-        ---------
+        ----------
         data_dir : string
             directory for data
         file_name : string
@@ -3684,7 +3650,7 @@ class DDR3():
         read DDR data into a numpy buffer of bytes
 
         Parameters
-        ---------
+        ----------
         blk_multiples : int
             total size of the read is blk_multiples * block_size  
 

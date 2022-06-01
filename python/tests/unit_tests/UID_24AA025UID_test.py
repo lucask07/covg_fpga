@@ -29,17 +29,18 @@ sys.path.append(interfaces_path)
 top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
+pytestmark = [pytest.mark.usable]
 
 
 # Fixtures
 @pytest.fixture(scope='module')
 def dut():
     global top_level_module_bitfile
-    from interfaces.interfaces import FPGA, UID_24AA025UID, Endpoint, advance_endpoints_bynum
+    from interfaces.interfaces import FPGA, UID_24AA025UID, Endpoint
     f = FPGA(bitfile=top_level_module_bitfile)
     assert f.init_device()
     yield UID_24AA025UID(fpga=f,
-                         endpoints=advance_endpoints_bynum(
+                         endpoints=Endpoint.advance_endpoints(
                              Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                          addr_pins=0b000)
     # Teardown

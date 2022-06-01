@@ -42,7 +42,7 @@
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Register Index Guide" href="register_index_guide.html" />
+    <link rel="next" title="Peripherals" href="peripherals.html" />
     <link rel="prev" title="SPI FIFO Driven Controller Class" href="SPIFifoDriven.html" /> 
 </head>
 
@@ -97,8 +97,10 @@
 <li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">DDR Memory Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="peripherals.html">Peripherals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="register_index_guide.html">Register Index Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_peripheral_guide.html">New Peripheral Guide</a></li>
 </ul>
 
             
@@ -288,7 +290,10 @@ Check the constant values for errors.</p>
 ‘TIMESTAMPS’: DDR data is numerous. AD7961, AD5453 out, ADS8686, timestamps, readcheck</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>chan_data</strong> (<em>dict of np.arrays</em>) – data from reading DDR (minimally processed into 2 byte containers)</p>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>chan_data</strong><span class="classifier">dict of np.arrays</span></dt><dd><p>data from reading DDR (minimally processed into 2 byte containers)</p>
+</dd>
+</dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
@@ -312,10 +317,12 @@ Check the constant values for errors.</p>
 and combine with LSBytes. Swap channels to match ADC channel numbering.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>d</strong> (<em>array</em>) – array of bytes.</p></li>
-<li><p><strong>convert_twos</strong> (<em>Boolean</em>) – if true converts data to signed</p></li>
-</ul>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>d</strong><span class="classifier">array</span></dt><dd><p>array of bytes.</p>
+</dd>
+<dt><strong>convert_twos</strong><span class="classifier">Boolean</span></dt><dd><p>if true converts data to signed</p>
+</dd>
+</dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
@@ -469,7 +476,10 @@ should take place BEFORE this function.</p>
 <dd><p>read DDR data into a numpy buffer of bytes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>blk_multiples</strong> (<em>int</em>) – total size of the read is blk_multiples * block_size</p>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>blk_multiples</strong><span class="classifier">int</span></dt><dd><p>total size of the read is blk_multiples * block_size</p>
+</dd>
+</dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
@@ -533,12 +543,16 @@ the DDR address pointers for read/write of both buffers
 <dd><p>read and save DDR data to an hdf file</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_dir</strong> (<em>string</em>) – directory for data</p></li>
-<li><p><strong>file_name</strong> (<em>string</em>) – filename to save data (does not append extension).</p></li>
-<li><p><strong>num_repeats</strong> (<em>int</em>) – total data read is 2048 bytes * num_repeats * blk_multiples</p></li>
-<li><p><strong>blk_multiples</strong> (<em>int</em>) – number of blocks read by adc_read. adc_read is a single OpalKelly API call</p></li>
-</ul>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>data_dir</strong><span class="classifier">string</span></dt><dd><p>directory for data</p>
+</dd>
+<dt><strong>file_name</strong><span class="classifier">string</span></dt><dd><p>filename to save data (does not append extension).</p>
+</dd>
+<dt><strong>num_repeats</strong><span class="classifier">int</span></dt><dd><p>total data read is 2048 bytes * num_repeats * blk_multiples</p>
+</dd>
+<dt><strong>blk_multiples</strong><span class="classifier">int</span></dt><dd><p>number of blocks read by adc_read. adc_read is a single OpalKelly API call</p>
+</dd>
+</dl>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><dl class="simple">
@@ -642,7 +656,7 @@ This is now fixed to improve timing performance.</p>
           </div>
           <footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
-        <a href="register_index_guide.html" class="btn btn-neutral float-right" title="Register Index Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="peripherals.html" class="btn btn-neutral float-right" title="Peripherals" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
         <a href="SPIFifoDriven.html" class="btn btn-neutral float-left" title="SPI FIFO Driven Controller Class" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
     </div>
 

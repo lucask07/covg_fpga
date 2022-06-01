@@ -95,8 +95,10 @@
 <li class="toctree-l1"><a class="reference internal" href="SPIController.html">SPI Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="DDR.html">DDR Memory Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="peripherals.html">Peripherals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="register_index_guide.html">Register Index Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_peripheral_guide.html">New Peripheral Guide</a></li>
 </ul>
 
             
@@ -172,7 +174,9 @@
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
+ | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
@@ -185,7 +189,19 @@
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.AD5453">AD5453 (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961">AD7961 (class in interfaces.interfaces)</a>
+</li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.adc_single">adc_single() (interfaces.interfaces.DDR3 method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.ADCDATA">ADCDATA (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686">ADS8686 (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="Endpoint.html#interfaces.interfaces.Endpoint.advance_endpoints">advance_endpoints() (interfaces.interfaces.Endpoint static method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -207,19 +223,35 @@
 </li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.clear_endpoint">clear_endpoint() (interfaces.interfaces.FPGA method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.clear_wire_bit">clear_wire_bit() (interfaces.interfaces.FPGA method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.closest_frequency">closest_frequency() (interfaces.interfaces.DDR3 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.config_func">config_func() (interfaces.interfaces.DAC53401 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.config_margins">config_margins() (interfaces.interfaces.DAC53401 method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.config_rate">config_rate() (interfaces.interfaces.DAC53401 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.config_step">config_step() (interfaces.interfaces.DAC53401 method)</a>
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.configure_master">configure_master() (interfaces.interfaces.SPIController method)</a>
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.configure_master_bin">configure_master_bin() (interfaces.interfaces.SPIController method)</a>
 </li>
-      <li><a href="I2CController.html#interfaces.interfaces.I2CController.create_chips">create_chips() (interfaces.interfaces.I2CController class method)</a>
+      <li><a href="peripherals.html#interfaces.interfaces.TCA9555.configure_pins">configure_pins() (interfaces.interfaces.TCA9555 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADCDATA.convert_data">convert_data() (interfaces.interfaces.ADCDATA method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADCDATA.convert_twos">convert_twos() (interfaces.interfaces.ADCDATA method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.create_chips">create_chips() (interfaces.interfaces.AD7961 static method)</a>
 
       <ul>
+        <li><a href="I2CController.html#interfaces.interfaces.I2CController.create_chips">(interfaces.interfaces.I2CController class method)</a>
+</li>
         <li><a href="SPIController.html#interfaces.interfaces.SPIController.create_chips">(interfaces.interfaces.SPIController class method)</a>
 </li>
         <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.create_chips">(interfaces.interfaces.SPIFifoDriven class method)</a>
@@ -231,10 +263,14 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="DDR.html#interfaces.interfaces.DDR3.data_to_names">data_to_names() (interfaces.interfaces.DDR3 method)</a>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401">DAC53401 (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC80508">DAC80508 (class in interfaces.interfaces)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="DDR.html#interfaces.interfaces.DDR3.data_to_names">data_to_names() (interfaces.interfaces.DDR3 method)</a>
+</li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3">DDR3 (class in interfaces.interfaces)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.deswizzle">deswizzle() (interfaces.interfaces.DDR3 method)</a>
@@ -245,10 +281,12 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="Endpoint.html#interfaces.interfaces.Endpoint">Endpoint (class in interfaces.interfaces)</a>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.enable_internal_reference">enable_internal_reference() (interfaces.interfaces.DAC53401 method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="Endpoint.html#interfaces.interfaces.Endpoint">Endpoint (class in interfaces.interfaces)</a>
+</li>
       <li><a href="Endpoint.html#interfaces.interfaces.Endpoint.excel_to_defines">excel_to_defines() (interfaces.interfaces.Endpoint static method)</a>
 </li>
   </ul></td>
@@ -257,6 +295,8 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.TMF8801.factory_calibration">factory_calibration() (interfaces.interfaces.TMF8801 method)</a>
+</li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.fifo_status">fifo_status() (interfaces.interfaces.DDR3 method)</a>
 </li>
   </ul></td>
@@ -273,11 +313,41 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="Endpoint.html#interfaces.interfaces.Endpoint.get_chip_endpoints">get_chip_endpoints() (interfaces.interfaces.Endpoint static method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="Register.html#interfaces.interfaces.Register.get_chip_registers">get_chip_registers() (interfaces.interfaces.Register static method)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.UID_24AA025UID.get_device_code">get_device_code() (interfaces.interfaces.UID_24AA025UID method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.get_fifo_status">get_fifo_status() (interfaces.interfaces.AD7961 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.get_gain">get_gain() (interfaces.interfaces.DAC53401 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.get_id">get_id() (interfaces.interfaces.DAC53401 method)</a>
+
+      <ul>
+        <li><a href="peripherals.html#interfaces.interfaces.TMF8801.get_id">(interfaces.interfaces.TMF8801 method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.UID_24AA025UID.get_manufacturer_code">get_manufacturer_code() (interfaces.interfaces.UID_24AA025UID method)</a>
+</li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.get_master_configuration">get_master_configuration() (interfaces.interfaces.SPIController method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.get_pll_status">get_pll_status() (interfaces.interfaces.AD7961 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.UID_24AA025UID.get_serial_number">get_serial_number() (interfaces.interfaces.UID_24AA025UID method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.get_status">get_status() (interfaces.interfaces.AD7961 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.get_timing_pll_status">get_timing_pll_status() (interfaces.interfaces.AD7961 method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.hw_reset">hw_reset() (interfaces.interfaces.ADS8686 method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -293,13 +363,11 @@
 </li>
       <li><a href="I2CController.html#interfaces.interfaces.I2CController.i2c_transmit">i2c_transmit() (interfaces.interfaces.I2CController method)</a>
 </li>
-      <li><a href="I2CController.html#interfaces.interfaces.I2CController.i2c_write_long">i2c_write_long() (interfaces.interfaces.I2CController method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="I2CController.html#interfaces.interfaces.I2CController">I2CController (class in interfaces.interfaces)</a>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController.i2c_write_long">i2c_write_long() (interfaces.interfaces.I2CController method)</a>
 </li>
-      <li><a href="Endpoint.html#interfaces.interfaces.Endpoint.increment_endpoints">increment_endpoints() (interfaces.interfaces.Endpoint static method)</a>
+      <li><a href="I2CController.html#interfaces.interfaces.I2CController">I2CController (class in interfaces.interfaces)</a>
 </li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.init_device">init_device() (interfaces.interfaces.FPGA method)</a>
 </li>
@@ -310,6 +378,14 @@
         <li><a href="Register.html#module-interfaces.interfaces">module</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="L">L</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.lock">lock() (interfaces.interfaces.DAC53401 method)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -339,6 +415,24 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.power_down_10k">power_down_10k() (interfaces.interfaces.DAC53401 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.power_down_adc">power_down_adc() (interfaces.interfaces.AD7961 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.power_down_all">power_down_all() (interfaces.interfaces.AD7961 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.power_down_fpga">power_down_fpga() (interfaces.interfaces.AD7961 method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.power_down_high_impedance">power_down_high_impedance() (interfaces.interfaces.DAC53401 method)</a>
+
+      <ul>
+        <li><a href="peripherals.html#interfaces.interfaces.TMF8801.power_down_high_impedance">(interfaces.interfaces.TMF8801 method)</a>
+</li>
+      </ul></li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.power_up">power_up() (interfaces.interfaces.DAC53401 method)</a>
+</li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.print_fifo_status">print_fifo_status() (interfaces.interfaces.DDR3 method)</a>
 </li>
   </ul></td>
@@ -347,26 +441,54 @@
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="SPIController.html#interfaces.interfaces.SPIController.read">read() (interfaces.interfaces.SPIController method)</a>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.read">read() (interfaces.interfaces.ADS8686 method)</a>
+
+      <ul>
+        <li><a href="peripherals.html#interfaces.interfaces.DAC53401.read">(interfaces.interfaces.DAC53401 method)</a>
 </li>
+        <li><a href="SPIController.html#interfaces.interfaces.SPIController.read">(interfaces.interfaces.SPIController method)</a>
+</li>
+        <li><a href="peripherals.html#interfaces.interfaces.TCA9555.read">(interfaces.interfaces.TCA9555 method)</a>
+</li>
+        <li><a href="peripherals.html#interfaces.interfaces.TMF8801.read">(interfaces.interfaces.TMF8801 method)</a>
+</li>
+        <li><a href="peripherals.html#interfaces.interfaces.UID_24AA025UID.read">(interfaces.interfaces.UID_24AA025UID method)</a>
+</li>
+      </ul></li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.read_adc">read_adc() (interfaces.interfaces.DDR3 method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.read_adc_block">read_adc_block() (interfaces.interfaces.DDR3 method)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.read_channel">read_channel() (interfaces.interfaces.ADS8686 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD5453.read_coeff_debug">read_coeff_debug() (interfaces.interfaces.AD5453 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.TMF8801.read_data">read_data() (interfaces.interfaces.TMF8801 method)</a>
+</li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_ep">read_ep() (interfaces.interfaces.FPGA method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.read_last">read_last() (interfaces.interfaces.ADS8686 method)</a>
 </li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_pipe_out">read_pipe_out() (interfaces.interfaces.FPGA method)</a>
 </li>
-      <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_trig">read_trig() (interfaces.interfaces.FPGA method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_trig">read_trig() (interfaces.interfaces.FPGA method)</a>
+</li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_wire">read_wire() (interfaces.interfaces.FPGA method)</a>
 </li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.read_wire_bit">read_wire_bit() (interfaces.interfaces.FPGA method)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.reg_to_voltage">reg_to_voltage() (interfaces.interfaces.ADS8686 method)</a>
+</li>
       <li><a href="Register.html#interfaces.interfaces.Register">Register (class in interfaces.interfaces)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.reset">reset() (interfaces.interfaces.DAC53401 method)</a>
+
+      <ul>
+        <li><a href="peripherals.html#interfaces.interfaces.DAC80508.reset">(interfaces.interfaces.DAC80508 method)</a>
+</li>
+      </ul></li>
       <li><a href="I2CController.html#interfaces.interfaces.I2CController.reset_device">reset_device() (interfaces.interfaces.I2CController method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.reset_fifo">reset_fifo() (interfaces.interfaces.DDR3 method)</a>
@@ -374,6 +496,12 @@
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.reset_master">reset_master() (interfaces.interfaces.SPIController method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.reset_mig_interface">reset_mig_interface() (interfaces.interfaces.DDR3 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.reset_pll">reset_pll() (interfaces.interfaces.AD7961 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.reset_trig">reset_trig() (interfaces.interfaces.AD7961 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.reset_wire">reset_wire() (interfaces.interfaces.AD7961 method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -399,18 +527,30 @@
 </li>
       <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_clk_divider">set_clk_divider() (interfaces.interfaces.SPIFifoDriven method)</a>
 </li>
-      <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_ctrl_reg">set_ctrl_reg() (interfaces.interfaces.SPIFifoDriven method)</a>
+      <li><a href="peripherals.html#interfaces.interfaces.AD5453.set_clk_rising_edge">set_clk_rising_edge() (interfaces.interfaces.AD5453 method)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC80508.set_config">set_config() (interfaces.interfaces.DAC80508 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC80508.set_config_bin">set_config_bin() (interfaces.interfaces.DAC80508 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD5453.set_ctrl_reg">set_ctrl_reg() (interfaces.interfaces.AD5453 method)</a>
+
+      <ul>
+        <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_ctrl_reg">(interfaces.interfaces.SPIFifoDriven method)</a>
+</li>
+      </ul></li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.set_dac_read">set_dac_read() (interfaces.interfaces.DDR3 method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.set_dac_write">set_dac_write() (interfaces.interfaces.DDR3 method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_data_mux">set_data_mux() (interfaces.interfaces.SPIFifoDriven method)</a>
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.set_divider">set_divider() (interfaces.interfaces.SPIController method)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.set_enables">set_enables() (interfaces.interfaces.AD7961 method)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.set_endpoint">set_endpoint() (interfaces.interfaces.FPGA method)</a>
 </li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.set_ep_simultaneous">set_ep_simultaneous() (interfaces.interfaces.FPGA method)</a>
@@ -419,9 +559,19 @@
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.set_frequency">set_frequency() (interfaces.interfaces.SPIController method)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.set_gain">set_gain() (interfaces.interfaces.DAC53401 method)</a>
+
+      <ul>
+        <li><a href="peripherals.html#interfaces.interfaces.DAC80508.set_gain">(interfaces.interfaces.DAC80508 method)</a>
+</li>
+      </ul></li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC80508.set_gain_bin">set_gain_bin() (interfaces.interfaces.DAC80508 method)</a>
+</li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.set_host_mode">set_host_mode() (interfaces.interfaces.SPIController method)</a>
 </li>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.set_index">set_index() (interfaces.interfaces.DDR3 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.set_range">set_range() (interfaces.interfaces.ADS8686 method)</a>
 </li>
       <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.set_spi_sclk_divide">set_spi_sclk_divide() (interfaces.interfaces.SPIFifoDriven method)</a>
 </li>
@@ -429,9 +579,21 @@
 </li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.set_wire_bit">set_wire_bit() (interfaces.interfaces.FPGA method)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.setup">setup() (interfaces.interfaces.AD7961 method)</a>
+
+      <ul>
+        <li><a href="peripherals.html#interfaces.interfaces.ADS8686.setup">(interfaces.interfaces.ADS8686 method)</a>
+</li>
+      </ul></li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.setup_sequencer">setup_sequencer() (interfaces.interfaces.ADS8686 method)</a>
+</li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController">SPIController (class in interfaces.interfaces)</a>
 </li>
       <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven">SPIFifoDriven (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.start_func">start_func() (interfaces.interfaces.DAC53401 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.stop_func">stop_func() (interfaces.interfaces.DAC53401 method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -439,10 +601,16 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="FPGA.html#interfaces.interfaces.FPGA.toggle_high">toggle_high() (interfaces.interfaces.FPGA method)</a>
+      <li><a href="peripherals.html#interfaces.interfaces.TCA9555">TCA9555 (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.AD7961.test_pattern">test_pattern() (interfaces.interfaces.AD7961 method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.TMF8801">TMF8801 (class in interfaces.interfaces)</a>
+</li>
+      <li><a href="FPGA.html#interfaces.interfaces.FPGA.toggle_high">toggle_high() (interfaces.interfaces.FPGA method)</a>
+</li>
       <li><a href="FPGA.html#interfaces.interfaces.FPGA.toggle_low">toggle_low() (interfaces.interfaces.FPGA method)</a>
 </li>
   </ul></td>
@@ -451,6 +619,12 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.UID_24AA025UID">UID_24AA025UID (class in interfaces.interfaces)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.unlock">unlock() (interfaces.interfaces.DAC53401 method)</a>
+</li>
       <li><a href="Endpoint.html#interfaces.interfaces.Endpoint.update_endpoints_from_defines">update_endpoints_from_defines() (interfaces.interfaces.Endpoint static method)</a>
 </li>
   </ul></td>
@@ -469,20 +643,40 @@
 </li>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.wb_set_address">wb_set_address() (interfaces.interfaces.SPIController method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="SPIController.html#interfaces.interfaces.SPIController.wb_write">wb_write() (interfaces.interfaces.SPIController method)</a>
 </li>
-      <li><a href="DDR.html#interfaces.interfaces.DDR3.write">write() (interfaces.interfaces.DDR3 method)</a>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.write">write() (interfaces.interfaces.ADS8686 method)</a>
 
       <ul>
+        <li><a href="peripherals.html#interfaces.interfaces.DAC53401.write">(interfaces.interfaces.DAC53401 method)</a>
+</li>
+        <li><a href="DDR.html#interfaces.interfaces.DDR3.write">(interfaces.interfaces.DDR3 method)</a>
+</li>
         <li><a href="SPIController.html#interfaces.interfaces.SPIController.write">(interfaces.interfaces.SPIController method)</a>
 </li>
         <li><a href="SPIFifoDriven.html#interfaces.interfaces.SPIFifoDriven.write">(interfaces.interfaces.SPIFifoDriven method)</a>
 </li>
+        <li><a href="peripherals.html#interfaces.interfaces.TCA9555.write">(interfaces.interfaces.TCA9555 method)</a>
+</li>
+        <li><a href="peripherals.html#interfaces.interfaces.TMF8801.write">(interfaces.interfaces.TMF8801 method)</a>
+</li>
+        <li><a href="peripherals.html#interfaces.interfaces.UID_24AA025UID.write">(interfaces.interfaces.UID_24AA025UID method)</a>
+</li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="DDR.html#interfaces.interfaces.DDR3.write_channels">write_channels() (interfaces.interfaces.DDR3 method)</a>
 </li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC80508.write_chip_reg">write_chip_reg() (interfaces.interfaces.DAC80508 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.ADS8686.write_reg_bridge">write_reg_bridge() (interfaces.interfaces.ADS8686 method)</a>
+</li>
+      <li><a href="peripherals.html#interfaces.interfaces.DAC53401.write_voltage">write_voltage() (interfaces.interfaces.DAC53401 method)</a>
+
+      <ul>
+        <li><a href="peripherals.html#interfaces.interfaces.DAC80508.write_voltage">(interfaces.interfaces.DAC80508 method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 

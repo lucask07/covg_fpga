@@ -26,6 +26,9 @@ sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Register
 
+pytestmark = [pytest.mark.usable, pytest.mark.no_fpga]
+
+
 # We will choose some random sets of values from these ranges and test only those
 num_test_params = 200
 test_params = []

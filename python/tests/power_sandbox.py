@@ -31,7 +31,8 @@ sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Endpoint
 from interfaces.interfaces import FPGA, UID_24AA025UID, AD7961, DAC80508, AD5453, DAC53401
-from interfaces.interfaces import TCA9555, disp_device, ADS8686, advance_endpoints_bynum, DebugFIFO, DDR3
+from interfaces.interfaces import TCA9555, disp_device, ADS8686, DDR3
+# from interfaces.interfaces import DebugFIFO
 from interfaces.utils import get_timestamp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply, log_dc_pwr, init_current_meas_dict
 
@@ -78,15 +79,15 @@ f.send_trig(eps['GP']['SYSTEM_RESET'])  # system reset
 
 ########## GET Chip Instances ###################
 uid = UID_24AA025UID(fpga=f,
-                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
+                     endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                      addr_pins=0b000)
 
 clamp_dac = DAC53401(fpga=f,
-                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDC'),3),
+                     endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('I2CDC'),3),
                      addr_pins=0b000)
 
 clamp_uid = UID_24AA025UID(fpga=f,
-                     endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDC'),3),
+                     endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('I2CDC'),3),
                      addr_pins=0b000)
 
 ads = ADS8686(fpga=f,
@@ -94,7 +95,7 @@ ads = ADS8686(fpga=f,
 
 dac0 = DAC80508(fpga=f)
 dac1 = DAC80508(fpga=f,
-                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('DAC80508'), 1))
+                endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('DAC80508'), 1))
 
 
 
@@ -131,10 +132,10 @@ gpio.ads_misc('sdoa')
 #    ad7961s[i].power_down_all()
 #    ad7961s[i].reset_wire(1)  # FPGA reset wire, resets FPGA controller
 
-if FIFO_DEBUG_EN:
-    fifo_debug = DebugFIFO(f)
-    fifo_debug.reset_fifo()
-    dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
+# if FIFO_DEBUG_EN:
+#     fifo_debug = DebugFIFO(f)
+#     fifo_debug.reset_fifo()
+#     dt = fifo_debug.stream_mult(swps=4, twos_comp_conv=False)
 
 ads.hw_reset(val=True)  # put ADS into hardware reset
 
@@ -148,7 +149,7 @@ ddr_readback_sin = ddr.read()
 fdac = []
 for i in range(6):
     fdac.append(AD5453(f,
-                endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('AD5453'),i),
+                endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('AD5453'),i),
                 channel=i))
     fdac[i].set_spi_sclk_divide()
     fdac[i].set_data_mux('ads8686_chA')
@@ -195,9 +196,9 @@ log_dc_pwr(dc_pwr, dc_pwr2, current_meas, desc='ipump_disable')
 
 # desired I/O expander:
 # DAC gains and current output select
-io_0 = TCA9555(fpga=f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
+io_0 = TCA9555(fpga=f, endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                addr_pins=0b000)  # DAC gains 0,1,2,3
-io_1 = TCA9555(fpga=f, endpoints=advance_endpoints_bynum(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
+io_1 = TCA9555(fpga=f, endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                addr_pins=0b100)  # DAC gains 4,5;
                                                   # ISEL1[3:0]; ISEL2[3:0]
 

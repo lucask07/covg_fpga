@@ -15,6 +15,18 @@ Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 
+import os
+import sys
+# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+covg_fpga_path = os.getcwd()
+for i in range(15):
+    if os.path.basename(covg_fpga_path) == "covg_fpga":
+        interfaces_path = os.path.join(covg_fpga_path, "python")
+        break
+    else:
+        # If we aren't in covg_fpga, move up a folder and check again
+        covg_fpga_path = os.path.dirname(covg_fpga_path)
+sys.path.append(interfaces_path)
 from interfaces.boards import Daq, Clamp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import logging
@@ -26,13 +38,10 @@ from interfaces.interfaces import (
     AD7961,
     disp_device,
     DDR3,
-    advance_endpoints_bynum,
     TCA9555,
 )
 from interfaces.boards import Daq, Clamp
 from interfaces.utils import twos_comp, from_voltage
-import os
-import sys
 from time import sleep
 import datetime
 import time
@@ -51,20 +60,10 @@ from analysis.utils import calc_fft
 FS = 5e6  # sampling frequency 
 dac80508_offset = 0x8000
 
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-covg_fpga_path = os.getcwd()
-for i in range(15):
-    if os.path.basename(covg_fpga_path) == "covg_fpga":
-        interfaces_path = os.path.join(covg_fpga_path, "python")
-        break
-    else:
-        # If we aren't in covg_fpga, move up a folder and check again
-        covg_fpga_path = os.path.dirname(covg_fpga_path)
-sys.path.append(interfaces_path)
 
 eps = Endpoint.endpoints_from_defines
 
-data_dir_base = os.path.expanduser('~')
+data_dir_base = covg_fpga_path
 if sys.platform == "linux" or sys.platform == "linux2":
     print('Linux directory not configured... Error')
     pass
@@ -72,7 +71,7 @@ elif sys.platform == "darwin":
     print('MAC directory not configured... Error')
     pass
 elif sys.platform == "win32":
-    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
+    data_dir_covg = os.path.join(data_dir_base, 'covg/data/clamp/{}{:02d}{:02d}')
 
 today = datetime.datetime.today()
 data_dir = data_dir_covg.format(
@@ -231,7 +230,7 @@ ads.setup()
 ads.set_range(5)
 ads.set_lpf(376)
 # 4B - clear sine wave set by the Slow DAC
-codes = ads.setup_sequencer(chan_list=[('4', '4')])
+codes = ads.setup_sequencer(chan_list=[('7', '3')])
 ads.write_reg_bridge(clk_div=200) # 1 MSPS update rate. Write register for SPI configuration reg. But update rate is controlled by top-level timer
 ads.set_fpga_mode()
 
@@ -329,7 +328,7 @@ _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_l
 adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
 
 # Shorter data sequence, just one of the repeats
-# adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
+# adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data_one_repeat)
 
 t = np.arange(0,len(adc_data[0]))*1/FS
 

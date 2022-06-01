@@ -17,7 +17,6 @@ from interfaces.interfaces import (
     AD7961,
     disp_device,
     DDR3,
-    advance_endpoints_bynum,
     TCA9555,
 )
 from interfaces.boards import Daq, Clamp
@@ -479,4 +478,4 @@ for rf in [10, 100, 332]:
         data['passive'] = passive
         output = output.append(data, ignore_index=True)
 
-output.to_csv(os.path.join(data_dir, 'noise_test' + '.csv'))
+output.to_csv(os.path.join(data_dir, 'noise_measurement' + '.csv'))

@@ -95,8 +95,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../SPIController.html">SPI Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../SPIFifoDriven.html">SPI FIFO Driven Controller Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../DDR.html">DDR Memory Class</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../peripherals.html">Peripherals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../register_index_guide.html">Register Index Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../new_peripheral_guide.html">New Peripheral Guide</a></li>
 </ul>
 
             
@@ -166,18 +168,18 @@
 <span></span><span class="sd">&quot;&quot;&quot;Module for configuring OpalKelly XEM7310</span>
 <span class="sd">and use it as an I2C controller, SPI controller, and Serial LVDS controller.</span>
 
+<span class="sd">May 2022</span>
+
 <span class="sd">Lucas Koerner, koer2434@stthomas.edu</span>
 <span class="sd">Abe Stroschein, ajstroschein@stthomas.edu</span>
-<span class="sd">August 2021</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">ok</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">interfaces.utils</span> <span class="kn">import</span> <span class="n">gen_mask</span><span class="p">,</span> <span class="n">twos_comp</span><span class="p">,</span> <span class="n">test_bit</span><span class="p">,</span> <span class="n">int_to_list</span><span class="p">,</span> <span class="n">from_voltage</span><span class="p">,</span> <span class="n">to_voltage</span>
+<span class="kn">from</span> <span class="nn">interfaces.utils</span> <span class="kn">import</span> <span class="n">gen_mask</span><span class="p">,</span> <span class="n">twos_comp</span><span class="p">,</span> <span class="n">test_bit</span><span class="p">,</span> <span class="n">int_to_list</span><span class="p">,</span> <span class="n">from_voltage</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
 
@@ -489,44 +491,6 @@
         <span class="c1"># we copy also get copied, not left as references.</span>
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">chip_name</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Endpoint.increment_endpoints"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.increment_endpoints">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">increment_endpoints</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Increment all Endpoints in endpoints_dict.</span>
-
-<span class="sd">        Use each Endpoint&#39;s gen_bit and gen_addr values to determine whether to</span>
-<span class="sd">        increment bits and addresses, respectively.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        endpoints_dict : dict</span>
-<span class="sd">            The dict of Endpoints to increment.</span>
-<span class="sd">        in_place : bool</span>
-<span class="sd">            If True, the dictionary given will be changed. Otherwise, a copy</span>
-<span class="sd">            of the dictionary will be made.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_place</span><span class="p">:</span>
-            <span class="c1"># Make a copy</span>
-            <span class="n">endpoints_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">endpoints_dict</span><span class="p">:</span>
-            <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoints_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_bit</span> <span class="ow">and</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_address</span><span class="p">:</span>
-                <span class="c1"># Increment the bit by the endpoint&#39;s bit_width and if it would</span>
-                <span class="c1"># go outside the address&#39;s width, increment the address</span>
-                <span class="c1"># TODO: do we want to wrap around the bits on the same address, -&gt; can change address on each bit individually</span>
-                <span class="c1"># or shift all bits when one moves to the next address? -&gt; each bit needs to know if other bits fit on the current address as well</span>
-                <span class="k">pass</span>
-            <span class="k">elif</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_bit</span><span class="p">:</span>
-                <span class="c1"># Increment the bit by the bit_width</span>
-                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span>
-                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_high</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span>
-            <span class="k">elif</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_address</span><span class="p">:</span>
-                <span class="c1"># Increment the address by 1</span>
-                <span class="n">endpoint</span><span class="o">.</span><span class="n">address</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">return</span> <span class="n">endpoints_dict</span></div>
-
 <div class="viewcode-block" id="Endpoint.excel_to_defines"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.excel_to_defines">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">excel_to_defines</span><span class="p">(</span><span class="n">excel_path</span><span class="p">,</span> <span class="n">defines_path</span><span class="p">,</span> <span class="n">sheet</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert an Excel spreadsheet of endpoint definitions to Verilog.</span>
@@ -550,31 +514,38 @@
         <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sheet_data</span><span class="p">[</span><span class="s1">&#39;Generated Line&#39;</span><span class="p">])</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">defines_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">text</span></div></div>
+        <span class="k">return</span> <span class="n">text</span></div>
 
+<div class="viewcode-block" id="Endpoint.advance_endpoints"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.advance_endpoints">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">advance_endpoints</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">advance_num</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Advances Endpoints in a dict in place by advance_num. Checks each</span>
+<span class="sd">        Endpoint&#39;s gen_bit and gen_address attributes to see whether to</span>
+<span class="sd">        increment the bit or the address or both.</span>
 
-<span class="k">def</span> <span class="nf">advance_endpoints_bynum</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Advance endpoints by a specific number; calculates based on the bit_widths</span>
-<span class="sd">    and knowing that the width of the OK interface is 32 bits.</span>
-<span class="sd">    Just a method of an Endpoint (not a classmethod).</span>
-<span class="sd">    Goal is to not impact future device instantiations.</span>
+<span class="sd">        Example usage:</span>
+<span class="sd">            endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints(&#39;I2CDAQ&#39;),1)</span>
 
-<span class="sd">    Example usage:</span>
-<span class="sd">        endpoints=Endpoint.advance_endpoints_bynum(Endpoint.get_chip_endpoints(&#39;I2CDAQ&#39;),1)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number to advance is </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">))</span>
-    <span class="c1"># num is the number to advance from the base addresses and bits</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">endpoints_dict</span><span class="p">:</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoints_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_bit</span><span class="p">:</span>
-            <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+</span> <span class="p">(</span><span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span><span class="o">*</span><span class="n">num</span><span class="p">))</span>
-            <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_high</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span>
-        <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_address</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;gen address bit_width: </span><span class="si">{</span><span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="n">endpoint</span><span class="o">.</span><span class="n">address</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">endpoints_dict</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        endpoints_dict : dict of Endpoints</span>
+<span class="sd">            The dict of Endpoints to advance by advance_num.</span>
+<span class="sd">        advance_num : int</span>
+<span class="sd">            How much to advance the Endpoints by.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict : the same dict of Endpoints given in endpoints_dict, now advanced</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">endpoints_dict</span><span class="p">:</span>
+            <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoints_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_bit</span><span class="p">:</span>
+                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span> <span class="o">*</span> <span class="n">advance_num</span>
+                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_high</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span>
+            <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_address</span><span class="p">:</span>
+                <span class="n">endpoint</span><span class="o">.</span><span class="n">address</span> <span class="o">+=</span> <span class="n">advance_num</span>
+        <span class="k">return</span> <span class="n">endpoints_dict</span></div></div>
 
 <span class="c1"># Class for the FPGA itself. Handles FPGA configuration, setting wire values,</span>
 <span class="c1"># and other FPGA specific functions.</span>
@@ -1027,7 +998,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">TCA9555</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
+<div class="viewcode-block" id="TCA9555"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TCA9555">[docs]</a><span class="k">class</span> <span class="nc">TCA9555</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class for the I/O Expander TCA9555.</span>
 
 <span class="sd">    Subclass of the I2CController class. Attributes and methods below are</span>
@@ -1048,16 +1019,16 @@
     <span class="n">ADDRESS_HEADER</span> <span class="o">=</span> <span class="mb">0b0100_0000</span>
     <span class="n">registers</span> <span class="o">=</span> <span class="n">Register</span><span class="o">.</span><span class="n">get_chip_registers</span><span class="p">(</span><span class="s1">&#39;TCA9555&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">configure_pins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="TCA9555.configure_pins"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TCA9555.configure_pins">[docs]</a>    <span class="k">def</span> <span class="nf">configure_pins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure the chip&#39;s pins as inputs (1&#39;s) or outputs (0&#39;s).&quot;&quot;&quot;</span>
 
         <span class="c1"># Inputs = 1</span>
         <span class="c1"># Outputs = 0</span>
         <span class="n">dev_addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ADDRESS_HEADER</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addr_pins</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c_write_long</span><span class="p">(</span>
-            <span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">TCA9555</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;CONFIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+            <span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">TCA9555</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;CONFIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">register_name</span><span class="o">=</span><span class="s1">&#39;OUTPUT&#39;</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="mh">0xffff</span><span class="p">):</span>
+<div class="viewcode-block" id="TCA9555.write"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TCA9555.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">register_name</span><span class="o">=</span><span class="s1">&#39;OUTPUT&#39;</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="mh">0xffff</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write 2 bytes of data to the pins.&quot;&quot;&quot;</span>
 
         <span class="n">dev_addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ADDRESS_HEADER</span> <span class="o">|</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addr_pins</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span>
@@ -1076,16 +1047,16 @@
         <span class="c1"># Turn data into a list of bytes for i2c_write method</span>
         <span class="n">list_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">new_data</span> <span class="o">//</span> <span class="p">(</span><span class="mi">16</span><span class="o">**</span><span class="mi">2</span><span class="p">),</span> <span class="n">new_data</span> <span class="o">%</span> <span class="p">(</span><span class="mi">16</span><span class="o">**</span><span class="mi">2</span><span class="p">)]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c_write_long</span><span class="p">(</span>
-            <span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">TCA9555</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="n">list_data</span><span class="p">)</span>
+            <span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">TCA9555</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="mi">2</span><span class="p">,</span> <span class="n">list_data</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="o">=</span><span class="s1">&#39;INPUT&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="TCA9555.read"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TCA9555.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="o">=</span><span class="s1">&#39;INPUT&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read 2 bytes of data from the pins.&quot;&quot;&quot;</span>
 
         <span class="n">dev_addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ADDRESS_HEADER</span> <span class="o">|</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addr_pins</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="o">|</span> <span class="mb">0b1</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_read_long</span><span class="p">(</span><span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">TCA9555</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_read_long</span><span class="p">(</span><span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">TCA9555</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">register_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="mi">2</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">UID_24AA025UID</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
+<div class="viewcode-block" id="UID_24AA025UID"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.UID_24AA025UID">[docs]</a><span class="k">class</span> <span class="nc">UID_24AA025UID</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class for the ID chip 24AA025UID.</span>
 
 <span class="sd">    Subclass of the I2CController class. Attributes and methods below are</span>
@@ -1106,7 +1077,7 @@
     <span class="n">ADDRESS_HEADER</span> <span class="o">=</span> <span class="mb">0b10100000</span>
     <span class="n">registers</span> <span class="o">=</span> <span class="n">Register</span><span class="o">.</span><span class="n">get_chip_registers</span><span class="p">(</span><span class="s1">&#39;24AA025UID&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">word_address</span><span class="o">=</span><span class="mh">0x00</span><span class="p">,</span> <span class="n">num_bytes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="UID_24AA025UID.write"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.UID_24AA025UID.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">word_address</span><span class="o">=</span><span class="mh">0x00</span><span class="p">,</span> <span class="n">num_bytes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write data into memory at word_address.&quot;&quot;&quot;</span>
 
         <span class="n">dev_addr</span> <span class="o">=</span> <span class="n">UID_24AA025UID</span><span class="o">.</span><span class="n">ADDRESS_HEADER</span> <span class="o">|</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addr_pins</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span>
@@ -1145,9 +1116,9 @@
 
         <span class="c1"># Data is no more than 16 bytes (1 page) and can be written with 1 I2C command.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c_write_long</span><span class="p">(</span><span class="n">devAddr</span><span class="o">=</span><span class="n">dev_addr</span><span class="p">,</span> <span class="n">regAddr</span><span class="o">=</span><span class="p">[</span><span class="n">word_address</span><span class="p">],</span> <span class="n">data_length</span><span class="o">=</span><span class="n">num_bytes</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">list_data</span><span class="p">)</span>
-        <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
 
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">word_address</span><span class="o">=</span><span class="mh">0x00</span><span class="p">,</span> <span class="n">words_read</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="UID_24AA025UID.read"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.UID_24AA025UID.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">word_address</span><span class="o">=</span><span class="mh">0x00</span><span class="p">,</span> <span class="n">words_read</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return words_read words of data from memory at word_address.&quot;&quot;&quot;</span>
 
         <span class="c1"># A word is a byte, 8 bits</span>
@@ -1158,9 +1129,9 @@
             <span class="n">d0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_read_long</span><span class="p">(</span><span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">word_address</span><span class="p">],</span> <span class="mi">64</span><span class="p">)</span>
             <span class="n">d1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_read_long</span><span class="p">(</span><span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">word_address</span> <span class="o">+</span> <span class="mi">64</span><span class="p">],</span> <span class="n">words_read</span> <span class="o">-</span> <span class="mi">64</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">d0</span> <span class="o">+</span> <span class="n">d1</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_read_long</span><span class="p">(</span><span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">word_address</span><span class="p">],</span> <span class="n">words_read</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_read_long</span><span class="p">(</span><span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">word_address</span><span class="p">],</span> <span class="n">words_read</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">get_serial_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="UID_24AA025UID.get_serial_number"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.UID_24AA025UID.get_serial_number">[docs]</a>    <span class="k">def</span> <span class="nf">get_serial_number</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the unique 32-serial number stored in memory on the chip.&quot;&quot;&quot;</span>
 
         <span class="n">serial_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span>
@@ -1170,26 +1141,26 @@
             <span class="n">serial_number</span> <span class="o">&lt;&lt;=</span> <span class="mi">8</span>
             <span class="n">serial_number</span> <span class="o">|=</span> <span class="n">byte</span>
 
-        <span class="k">return</span> <span class="n">serial_number</span>
+        <span class="k">return</span> <span class="n">serial_number</span></div>
 
-    <span class="k">def</span> <span class="nf">get_manufacturer_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="UID_24AA025UID.get_manufacturer_code"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.UID_24AA025UID.get_manufacturer_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_manufacturer_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the chip&#39;s manufacturer code.</span>
 
 <span class="sd">        For the chips we are using, it should be 0x29.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">word_address</span><span class="o">=</span><span class="n">UID_24AA025UID</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;MANUFACTURER_CODE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">word_address</span><span class="o">=</span><span class="n">UID_24AA025UID</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;MANUFACTURER_CODE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
 
-    <span class="k">def</span> <span class="nf">get_device_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="UID_24AA025UID.get_device_code"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.UID_24AA025UID.get_device_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_device_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the chip&#39;s device code.</span>
 
 <span class="sd">        For the chips we are using, it should be 0x41.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">word_address</span><span class="o">=</span><span class="n">UID_24AA025UID</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;DEVICE_CODE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">word_address</span><span class="o">=</span><span class="n">UID_24AA025UID</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;DEVICE_CODE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">DAC53401</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401">[docs]</a><span class="k">class</span> <span class="nc">DAC53401</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class for the I2C DAC chip DAC53401.</span>
 
 <span class="sd">    Subclass of the I2CController class. Attributes and methods below are</span>
@@ -1217,7 +1188,7 @@
     <span class="c1">#           010   |   SDA</span>
     <span class="c1">#           011   |   SCL</span>
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">register_name</span><span class="o">=</span><span class="s1">&#39;DAC_DATA&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.write"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">register_name</span><span class="o">=</span><span class="s1">&#39;DAC_DATA&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write data to any register on the chip.&quot;&quot;&quot;</span>
 
         <span class="n">dev_addr</span> <span class="o">=</span> <span class="n">DAC53401</span><span class="o">.</span><span class="n">ADDRESS_HEADER</span> <span class="o">|</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addr_pins</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span>
@@ -1242,9 +1213,9 @@
         <span class="n">list_data</span> <span class="o">=</span> <span class="n">int_to_list</span><span class="p">(</span><span class="n">new_data</span><span class="p">)</span>
         <span class="n">number_of_bytes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">list_data</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c_write_long</span><span class="p">(</span>
-            <span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">register</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="n">number_of_bytes</span><span class="p">,</span> <span class="n">list_data</span><span class="p">)</span>
+            <span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">register</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="n">number_of_bytes</span><span class="p">,</span> <span class="n">list_data</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="o">=</span><span class="s1">&#39;DAC_DATA&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.read"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="o">=</span><span class="s1">&#39;DAC_DATA&#39;</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return data from any register on the chip.&quot;&quot;&quot;</span>
 
         <span class="n">dev_addr</span> <span class="o">=</span> <span class="n">DAC53401</span><span class="o">.</span><span class="n">ADDRESS_HEADER</span> <span class="o">|</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">addr_pins</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span><span class="p">)</span>
@@ -1272,24 +1243,24 @@
         <span class="n">desired_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">read_back_data</span>
                         <span class="o">&amp;</span> <span class="n">desired_bits</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">register</span><span class="o">.</span><span class="n">bit_index_low</span>
 
-        <span class="k">return</span> <span class="n">desired_data</span>
+        <span class="k">return</span> <span class="n">desired_data</span></div>
 
-    <span class="k">def</span> <span class="nf">write_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voltage</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.write_voltage"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.write_voltage">[docs]</a>    <span class="k">def</span> <span class="nf">write_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voltage</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write a voltage output from the DAC.&quot;&quot;&quot;</span>
 
         <span class="n">voltage_data</span> <span class="o">=</span> <span class="n">from_voltage</span><span class="p">(</span><span class="n">voltage</span><span class="o">=</span><span class="n">voltage</span><span class="p">,</span> <span class="n">num_bits</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">voltage_range</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">with_negatives</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">voltage_data</span><span class="p">,</span> <span class="s1">&#39;DAC_DATA&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">voltage_data</span><span class="p">,</span> <span class="s1">&#39;DAC_DATA&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">enable_internal_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.enable_internal_reference"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.enable_internal_reference">[docs]</a>    <span class="k">def</span> <span class="nf">enable_internal_reference</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Enable the DAC&#39;s internal reference.</span>
 
 <span class="sd">        This is necessary to set the gain value.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mh">0x1</span><span class="p">,</span> <span class="s1">&#39;REF_EN&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mh">0x1</span><span class="p">,</span> <span class="s1">&#39;REF_EN&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gain</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.set_gain"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.set_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gain</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the DAC&#39;s output gain value.</span>
 
 <span class="sd">        Gain can be set to 1.5x, 2x, 3x, or 4x the internal reference.</span>
@@ -1307,9 +1278,9 @@
         <span class="k">if</span> <span class="n">gain_code</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Invalid gain&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gain_code</span><span class="p">,</span> <span class="s1">&#39;DAC_SPAN&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gain_code</span><span class="p">,</span> <span class="s1">&#39;DAC_SPAN&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">get_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.get_gain"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.get_gain">[docs]</a>    <span class="k">def</span> <span class="nf">get_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the DAC&#39;s current output gain value.&quot;&quot;&quot;</span>
 
         <span class="n">gain_dict</span> <span class="o">=</span> <span class="p">{</span>
@@ -1320,9 +1291,9 @@
         <span class="p">}</span>
 
         <span class="n">gain_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;DAC_SPAN&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">gain_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">gain_code</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gain_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">gain_code</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">config_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function_name</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.config_func"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.config_func">[docs]</a>    <span class="k">def</span> <span class="nf">config_func</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure the function generator.</span>
 
 <span class="sd">        &#39;triangle&#39;: Triangle wave between MARGIN_HIGH code to MARGIN_LOW code</span>
@@ -1346,30 +1317,30 @@
         <span class="k">if</span> <span class="n">func_code</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Invalid function name&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">func_code</span><span class="p">,</span> <span class="s1">&#39;FUNC_CONFIG&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">func_code</span><span class="p">,</span> <span class="s1">&#39;FUNC_CONFIG&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">start_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.start_func"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.start_func">[docs]</a>    <span class="k">def</span> <span class="nf">start_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Start function generation.</span>
 
 <span class="sd">        Waveform configured through config_func() and config_margins() functions.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b1</span><span class="p">,</span> <span class="s1">&#39;START_FUNC_GEN&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b1</span><span class="p">,</span> <span class="s1">&#39;START_FUNC_GEN&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">stop_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.stop_func"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.stop_func">[docs]</a>    <span class="k">def</span> <span class="nf">stop_func</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Stop function generation.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b0</span><span class="p">,</span> <span class="s1">&#39;START_FUNC_GEN&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b0</span><span class="p">,</span> <span class="s1">&#39;START_FUNC_GEN&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">config_margins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">margin_high</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">margin_low</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.config_margins"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.config_margins">[docs]</a>    <span class="k">def</span> <span class="nf">config_margins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">margin_high</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">margin_low</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure margin high and low values.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">margin_high</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">margin_high</span><span class="p">,</span> <span class="s1">&#39;MARGIN_HIGH&#39;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">margin_low</span> <span class="o">!=</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">margin_low</span><span class="p">,</span> <span class="s1">&#39;MARGIN_LOW&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">margin_low</span><span class="p">,</span> <span class="s1">&#39;MARGIN_LOW&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">config_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.config_step"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.config_step">[docs]</a>    <span class="k">def</span> <span class="nf">config_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure the number of bits to step through.&quot;&quot;&quot;</span>
 
         <span class="n">step_dict</span> <span class="o">=</span> <span class="p">{</span>
@@ -1387,9 +1358,9 @@
         <span class="k">if</span> <span class="n">step_code</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Invalid step&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">step_code</span><span class="p">,</span> <span class="s1">&#39;CODE_STEP&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">step_code</span><span class="p">,</span> <span class="s1">&#39;CODE_STEP&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">config_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.config_rate"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.config_rate">[docs]</a>    <span class="k">def</span> <span class="nf">config_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rate</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configure the rate to step through each bit.&quot;&quot;&quot;</span>
 
         <span class="c1"># Instead of asking the user to type in the timing, the rates are organized slowest to fastest and numbered 1-16</span>
@@ -1416,49 +1387,49 @@
         <span class="k">if</span> <span class="n">rate_code</span> <span class="o">==</span> <span class="kc">None</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Invalid rate&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">False</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rate_code</span><span class="p">,</span> <span class="s1">&#39;SLEW_RATE&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">rate_code</span><span class="p">,</span> <span class="s1">&#39;SLEW_RATE&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.reset"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset the chip using a software reset.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b1010</span><span class="p">,</span> <span class="s1">&#39;SW_RESET&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b1010</span><span class="p">,</span> <span class="s1">&#39;SW_RESET&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">lock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.lock"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.lock">[docs]</a>    <span class="k">def</span> <span class="nf">lock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Lock the registers of the device so they cannot be changed.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b1</span><span class="p">,</span> <span class="s1">&#39;DEVICE_LOCK&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b1</span><span class="p">,</span> <span class="s1">&#39;DEVICE_LOCK&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.unlock"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.unlock">[docs]</a>    <span class="k">def</span> <span class="nf">unlock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Unlock the registers of the device so they can be changed again.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b0101</span><span class="p">,</span> <span class="s1">&#39;DEVICE_UNLOCK_CODE&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b0101</span><span class="p">,</span> <span class="s1">&#39;DEVICE_UNLOCK_CODE&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">power_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.power_up"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.power_up">[docs]</a>    <span class="k">def</span> <span class="nf">power_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Power up the DAC output.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b00</span><span class="p">,</span> <span class="s1">&#39;DAC_PDN&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b00</span><span class="p">,</span> <span class="s1">&#39;DAC_PDN&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">power_down_10k</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.power_down_10k"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.power_down_10k">[docs]</a>    <span class="k">def</span> <span class="nf">power_down_10k</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Power down the DAC output to 10K ohms.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b01</span><span class="p">,</span> <span class="s1">&#39;DAC_PDN&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b01</span><span class="p">,</span> <span class="s1">&#39;DAC_PDN&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">power_down_high_impedance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.power_down_high_impedance"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.power_down_high_impedance">[docs]</a>    <span class="k">def</span> <span class="nf">power_down_high_impedance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Power down the DAC output to high impedance (default).&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b10</span><span class="p">,</span> <span class="s1">&#39;DAC_PDN&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mb">0b10</span><span class="p">,</span> <span class="s1">&#39;DAC_PDN&#39;</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">get_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC53401.get_id"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC53401.get_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the device ID and version ID as one integer.&quot;&quot;&quot;</span>
 
         <span class="n">device_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;DEVICE_ID&#39;</span><span class="p">)</span>
         <span class="n">version_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;VERSION_ID&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">device_id</span> <span class="o">&lt;&lt;</span> <span class="n">DAC53401</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;DEVICE_ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">version_id</span> <span class="o">&lt;&lt;</span> <span class="n">DAC53401</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;VERSION_ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">device_id</span> <span class="o">&lt;&lt;</span> <span class="n">DAC53401</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;DEVICE_ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">version_id</span> <span class="o">&lt;&lt;</span> <span class="n">DAC53401</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;VERSION_ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div></div>
 
 
 
 
-<span class="k">class</span> <span class="nc">TMF8801</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
+<div class="viewcode-block" id="TMF8801"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TMF8801">[docs]</a><span class="k">class</span> <span class="nc">TMF8801</span><span class="p">(</span><span class="n">I2CController</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class for the Time-of-flight I2C device</span>
 
 <span class="sd">    Subclass of the I2CController class. Attributes and methods below are</span>
@@ -1477,7 +1448,7 @@
     <span class="n">apps</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;measure&#39;</span><span class="p">:</span> <span class="mh">0xC0</span><span class="p">,</span> <span class="s1">&#39;bootloader&#39;</span><span class="p">:</span> <span class="mh">0x80</span><span class="p">}</span>
 
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">register_name</span><span class="p">):</span>
+<div class="viewcode-block" id="TMF8801.write"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TMF8801.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">register_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write data to any register on the chip.&quot;&quot;&quot;</span>
 
         <span class="n">dev_addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ADDRESS</span> 
@@ -1502,9 +1473,9 @@
         <span class="n">list_data_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;0x</span><span class="si">{</span><span class="n">x</span><span class="si">:</span><span class="s1">02x</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">list_data</span><span class="p">))</span>
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;i2c write long: 0x</span><span class="si">{</span><span class="n">dev_addr</span><span class="si">:</span><span class="s1">02x</span><span class="si">}</span><span class="s1">, reg addr 0x</span><span class="si">{</span><span class="n">register</span><span class="o">.</span><span class="n">address</span><span class="si">:</span><span class="s1">02x</span><span class="si">}</span><span class="s1">, data </span><span class="si">{</span><span class="n">list_data_str</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">i2c_write_long</span><span class="p">(</span>
-            <span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">register</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="n">number_of_bytes</span><span class="p">,</span> <span class="n">list_data</span><span class="p">)</span>
+            <span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">register</span><span class="o">.</span><span class="n">address</span><span class="p">],</span> <span class="n">number_of_bytes</span><span class="p">,</span> <span class="n">list_data</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="p">,</span> <span class="n">number_of_bytes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TMF8801.read"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TMF8801.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="p">,</span> <span class="n">number_of_bytes</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return data from any register on the chip.&quot;&quot;&quot;</span>
 
         <span class="n">dev_addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ADDRESS</span> 
@@ -1534,20 +1505,20 @@
         <span class="n">desired_data</span> <span class="o">=</span> <span class="p">(</span><span class="n">read_back_data</span>
                         <span class="o">&amp;</span> <span class="n">desired_bits</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">register</span><span class="o">.</span><span class="n">bit_index_low</span>
 
-        <span class="k">return</span> <span class="n">desired_data</span>
+        <span class="k">return</span> <span class="n">desired_data</span></div>
 
-    <span class="k">def</span> <span class="nf">power_down_high_impedance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TMF8801.power_down_high_impedance"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TMF8801.power_down_high_impedance">[docs]</a>    <span class="k">def</span> <span class="nf">power_down_high_impedance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Power down the DAC output to high impedance (default).&quot;&quot;&quot;</span>
 
-        <span class="k">pass</span>
+        <span class="k">pass</span></div>
         <span class="c1"># self.write(0b10, &#39;DAC_PDN&#39;)</span>
 
-    <span class="k">def</span> <span class="nf">get_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TMF8801.get_id"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TMF8801.get_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the device ID and rev ID as one integer.&quot;&quot;&quot;</span>
 
         <span class="n">device_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;ID&#39;</span><span class="p">)</span>
         <span class="n">version_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;REVID&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">(</span><span class="n">device_id</span> <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">version_id</span> <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">device_id</span> <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">version_id</span> <span class="o">&lt;&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
 
     <span class="k">def</span> <span class="nf">cpu_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1627,7 +1598,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">i2c_read_long</span><span class="p">(</span><span class="n">dev_addr</span><span class="p">,</span> <span class="p">[</span><span class="n">reg_addr</span><span class="p">],</span>
             <span class="n">data_length</span> <span class="o">=</span> <span class="n">num_bytes</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="TMF8801.read_data"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TMF8801.read_data">[docs]</a>    <span class="k">def</span> <span class="nf">read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; For correctly updating of these registers by TMF8801, an I²C block read starting from address 0x1D</span>
 <span class="sd">        until 0x27 shall be done.</span>
 <span class="sd">        0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27&quot;&quot;&quot;</span>
@@ -1645,7 +1616,7 @@
                 <span class="s1">&#39;result_info&#39;</span><span class="p">:</span> <span class="n">read_data</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span>
                 <span class="s1">&#39;dist_mm&#39;</span><span class="p">:</span> <span class="n">read_data</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">read_data</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="mi">8</span><span class="p">),</span>
                 <span class="s1">&#39;sys_clk&#39;</span><span class="p">:</span> <span class="n">read_data</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">read_data</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">read_data</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">read_data</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span><span class="o">&lt;&lt;</span><span class="mi">24</span><span class="p">)}</span>
-        <span class="k">return</span> <span class="n">vals</span><span class="p">,</span> <span class="n">read_data</span>
+        <span class="k">return</span> <span class="n">vals</span><span class="p">,</span> <span class="n">read_data</span></div>
 
 
     <span class="k">def</span> <span class="nf">read_by_addr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_addr</span><span class="p">,</span> <span class="n">num_bytes</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -1654,7 +1625,7 @@
             <span class="n">data_length</span> <span class="o">=</span> <span class="n">num_bytes</span><span class="p">)</span>
 
 
-    <span class="k">def</span> <span class="nf">factory_calibration</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="TMF8801.factory_calibration"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.TMF8801.factory_calibration">[docs]</a>    <span class="k">def</span> <span class="nf">factory_calibration</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Perform factory calibration and return 14 bytes of data</span>
 <span class="sd">        See AN000597 -- Factor Calibration 8.1</span>
@@ -1684,7 +1655,7 @@
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cal_data</span><span class="p">))</span>
 
-        <span class="k">return</span> <span class="n">cal_data</span> 
+        <span class="k">return</span> <span class="n">cal_data</span> </div></div>
 
 <div class="viewcode-block" id="SPIController"><a class="viewcode-back" href="../../SPIController.html#interfaces.interfaces.SPIController">[docs]</a><span class="k">class</span> <span class="nc">SPIController</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Class for controllers on the FPGA using SPI protocol.</span>
@@ -1745,18 +1716,17 @@
                 <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">endpoints</span><span class="p">))</span>
                 <span class="c1"># Use deepcopy to keep the endpoints for different instances separate</span>
                 <span class="n">endpoints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+                <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
                 <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
                     <span class="n">endpoints</span><span class="p">),</span> <span class="n">master_config</span><span class="o">=</span><span class="n">master_config</span><span class="p">))</span>
                 <span class="c1"># Use deepcopy to keep the endpoints for different instances separate</span>
                 <span class="n">endpoints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+                <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Increment shared endpoints dictionary</span>
-            <span class="c1"># TODO: is there a better way to do this?</span>
             <span class="c1"># We need to get the shared endpoints in endpoints_from_defines to</span>
             <span class="c1"># increment and we only have the endpoints given to us in the</span>
             <span class="c1"># argument.</span>
@@ -1766,11 +1736,10 @@
                     <span class="nb">list</span><span class="p">(</span><span class="n">shared_full_eps</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
                     <span class="p">]</span>
                 <span class="p">]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">shared_chip_eps</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">shared_chip_eps</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Increment custom dictionary</span>
-            <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">chips</span></div>
 
@@ -2068,14 +2037,14 @@
                 <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">endpoints</span><span class="p">))</span>
                 <span class="c1"># Use deepcopy to keep the endpoints for different instances separate</span>
                 <span class="n">endpoints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+                <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
                 <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
                     <span class="n">endpoints</span><span class="p">),</span> <span class="n">master_config</span><span class="o">=</span><span class="n">master_config</span><span class="p">))</span>
                 <span class="c1"># Use deepcopy to keep the endpoints for different instances separate</span>
                 <span class="n">endpoints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+                <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Increment shared endpoints dictionary</span>
@@ -2089,11 +2058,10 @@
                     <span class="nb">list</span><span class="p">(</span><span class="n">shared_full_eps</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
                 <span class="p">]</span>
             <span class="p">]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">shared_chip_eps</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">shared_chip_eps</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Increment custom dictionary</span>
-            <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">chips</span></div>
 
@@ -2189,7 +2157,7 @@
                                         <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;HOST_TRIG&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div></div>
 
 
-<span class="k">class</span> <span class="nc">DAC80508</span><span class="p">(</span><span class="n">SPIFifoDriven</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC80508"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC80508">[docs]</a><span class="k">class</span> <span class="nc">DAC80508</span><span class="p">(</span><span class="n">SPIFifoDriven</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Class for SPI DAC chip DAC80508.</span>
 
 <span class="sd">    Subclass of the SPIFifoDriven class. Listed methods do not include SPIFifoDriven methods.</span>
@@ -2231,7 +2199,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">set_data_mux</span><span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">)</span>
 
     <span class="c1"># Method to write to any register on the chip.</span>
-    <span class="k">def</span> <span class="nf">write_chip_reg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC80508.write_chip_reg"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC80508.write_chip_reg">[docs]</a>    <span class="k">def</span> <span class="nf">write_chip_reg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">register_name</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write to any register on the chip.&quot;&quot;&quot;</span>
 
         <span class="c1"># .get instead of [brackets] because .get will return None if the register name is not in the dictionary</span>
@@ -2244,9 +2212,9 @@
         <span class="n">transmission</span> <span class="o">=</span> <span class="n">DAC80508</span><span class="o">.</span><span class="n">WRITE_OPERATION</span> <span class="o">+</span> \
             <span class="p">(</span><span class="n">reg</span><span class="o">.</span><span class="n">address</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">data</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">transmission</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">transmission</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">write_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">auto_gain</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC80508.write_voltage"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC80508.write_voltage">[docs]</a>    <span class="k">def</span> <span class="nf">write_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">auto_gain</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write the voltage to the outputs of the DAC.</span>
 
 <span class="sd">        Parameters</span>
@@ -2291,15 +2259,15 @@
         <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write_chip_reg</span><span class="p">(</span><span class="s1">&#39;DAC&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">outputs</span><span class="p">),</span> <span class="n">voltage_bin</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">gain_info</span>
+        <span class="k">return</span> <span class="n">gain_info</span></div>
 
-    <span class="k">def</span> <span class="nf">set_config_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC80508.set_config_bin"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC80508.set_config_bin">[docs]</a>    <span class="k">def</span> <span class="nf">set_config_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the configuration register with a binary number.&quot;&quot;&quot;</span>
 
         <span class="c1"># Write new config</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chip_reg</span><span class="p">(</span><span class="s1">&#39;CONFIG&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chip_reg</span><span class="p">(</span><span class="s1">&#39;CONFIG&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ALM_SEL</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ALM_EN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">CRC_EN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">FSDO</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DSDO</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">REF_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC7_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC6_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC5_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC4_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC3_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC2_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC1_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC0_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC80508.set_config"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC80508.set_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ALM_SEL</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ALM_EN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">CRC_EN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">FSDO</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DSDO</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">REF_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC7_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC6_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC5_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC4_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC3_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC2_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC1_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">DAC0_PWDWN</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the configuration register using keyword arguments.&quot;&quot;&quot;</span>
 
         <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">ALM_SEL</span><span class="p">,</span> <span class="n">ALM_EN</span><span class="p">,</span> <span class="n">CRC_EN</span><span class="p">,</span> <span class="n">FSDO</span><span class="p">,</span>
@@ -2310,9 +2278,9 @@
         <span class="n">data</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">)):</span>
             <span class="n">data</span> <span class="o">+=</span> <span class="n">params</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">**</span><span class="n">bit</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_config_bin</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_config_bin</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_gain_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC80508.set_gain_bin"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC80508.set_gain_bin">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain_bin</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the gain register with a binary value.</span>
 
 <span class="sd">        1 gives a gain of 2 for the output at that bit index (0-7). 0 gives a</span>
@@ -2322,9 +2290,9 @@
 <span class="sd">        unaffected.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chip_reg</span><span class="p">(</span><span class="s1">&#39;GAIN&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chip_reg</span><span class="p">(</span><span class="s1">&#39;GAIN&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">divide_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC80508.set_gain"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC80508.set_gain">[docs]</a>    <span class="k">def</span> <span class="nf">set_gain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="n">divide_reference</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the output gain (x1 or x2) and reference divider (VREF=2.5 V).</span>
 <span class="sd">            Suggested settings are: </span>
 <span class="sd">            gain = 2, div_ref = /2 </span>
@@ -2353,12 +2321,12 @@
                 <span class="n">gain_bin</span> <span class="o">|=</span> <span class="p">(</span><span class="n">gain</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">output</span>
         <span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
             <span class="n">gain_bin</span> <span class="o">|=</span> <span class="p">(</span><span class="n">gain</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">outputs</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_gain_bin</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">gain_bin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_gain_bin</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">gain_bin</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="DAC80508.reset"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.DAC80508.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Soft reset the chip.&quot;&quot;&quot;</span>
 
-        <span class="n">ack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chip_reg</span><span class="p">(</span><span class="s1">&#39;TRIGGER&#39;</span><span class="p">,</span> <span class="mb">0b1010</span><span class="p">,</span> <span class="mh">0x000f</span><span class="p">)</span>
+        <span class="n">ack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">write_chip_reg</span><span class="p">(</span><span class="s1">&#39;TRIGGER&#39;</span><span class="p">,</span> <span class="mb">0b1010</span><span class="p">,</span> <span class="mh">0x000f</span><span class="p">)</span></div></div>
         <span class="c1"># if self.debug:</span>
         <span class="c1">#     if ack:</span>
         <span class="c1">#         print(&#39;Reset: SUCCESS&#39;)</span>
@@ -2367,7 +2335,7 @@
         <span class="c1"># return ack</span>
 
 
-<span class="k">class</span> <span class="nc">AD5453</span><span class="p">(</span><span class="n">SPIFifoDriven</span><span class="p">):</span>
+<div class="viewcode-block" id="AD5453"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD5453">[docs]</a><span class="k">class</span> <span class="nc">AD5453</span><span class="p">(</span><span class="n">SPIFifoDriven</span><span class="p">):</span>
     <span class="c1"># TODO: add class docstring</span>
 
     <span class="n">bits</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span>
@@ -2404,22 +2372,22 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">current_data_mux</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_data_mux</span><span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">set_clk_rising_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD5453.set_clk_rising_edge"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD5453.set_clk_rising_edge">[docs]</a>    <span class="k">def</span> <span class="nf">set_clk_rising_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the signals we write to use the rising edge of the clock.</span>
 
 <span class="sd">        Default is falling edge. To return to the falling edge, the chip</span>
 <span class="sd">        requires a power cycle (turn it off and back on).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">clk_edge_bits</span> <span class="o">=</span> <span class="mb">0b11</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clk_edge_bits</span> <span class="o">=</span> <span class="mb">0b11</span></div>
 
-    <span class="k">def</span> <span class="nf">set_ctrl_reg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_value</span><span class="o">=</span><span class="mh">0x3010</span><span class="p">):</span>
+<div class="viewcode-block" id="AD5453.set_ctrl_reg"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD5453.set_ctrl_reg">[docs]</a>    <span class="k">def</span> <span class="nf">set_ctrl_reg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_value</span><span class="o">=</span><span class="mh">0x3010</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Configures the SPI Wishbone control register over the registerBridge.</span>
 
 <span class="sd">        reg_value=0x3010 sets CHAR_LEN=16, ASS, IE</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_ctrl_reg</span><span class="p">(</span><span class="n">reg_value</span><span class="o">=</span><span class="n">reg_value</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">set_ctrl_reg</span><span class="p">(</span><span class="n">reg_value</span><span class="o">=</span><span class="n">reg_value</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">write_filter_coeffs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># TODO: add method docstring</span>
@@ -2456,7 +2424,7 @@
                     <span class="s1">&#39;Write filter addr=0x</span><span class="si">{:02X}</span><span class="s1">  value=0x</span><span class="si">{:02X}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">WriteRegisters</span><span class="p">(</span><span class="n">regs</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">read_coeff_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD5453.read_coeff_debug"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD5453.read_coeff_debug">[docs]</a>    <span class="k">def</span> <span class="nf">read_coeff_debug</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Read two wire outs for coefficients a3 section1, scale 3</span>
 <span class="sd">        debug wires available for filters 0, 1</span>
@@ -2476,7 +2444,7 @@
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    1:&#39;</span><span class="p">,</span> <span class="n">debug_coeff_1</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    2:&#39;</span><span class="p">,</span> <span class="n">debug_coeff_2</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;    3:&#39;</span><span class="p">,</span> <span class="n">debug_coeff_3</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">debug_coeff_0</span><span class="p">,</span> <span class="n">debug_coeff_1</span><span class="p">,</span> <span class="n">debug_coeff_2</span><span class="p">,</span> <span class="n">debug_coeff_3</span>
+        <span class="k">return</span> <span class="n">debug_coeff_0</span><span class="p">,</span> <span class="n">debug_coeff_1</span><span class="p">,</span> <span class="n">debug_coeff_2</span><span class="p">,</span> <span class="n">debug_coeff_3</span></div>
 
     <span class="k">def</span> <span class="nf">change_filter_coeff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># TODO: add method docstring</span>
@@ -2523,10 +2491,10 @@
                                  <span class="mi">11</span><span class="p">:</span> <span class="mh">0x20000000</span><span class="p">,</span>
                                  <span class="mi">12</span><span class="p">:</span> <span class="mh">0xab762783</span><span class="p">,</span>
                                  <span class="mi">13</span><span class="p">:</span> <span class="mh">0x287ecada</span><span class="p">,</span>
-                                 <span class="mi">7</span><span class="p">:</span> <span class="mh">0x7fffffff</span><span class="p">}</span>
+                                 <span class="mi">7</span><span class="p">:</span> <span class="mh">0x7fffffff</span><span class="p">}</span></div>
 
 
-<span class="k">class</span> <span class="nc">ADCDATA</span><span class="p">():</span>
+<div class="viewcode-block" id="ADCDATA"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADCDATA">[docs]</a><span class="k">class</span> <span class="nc">ADCDATA</span><span class="p">():</span>
     <span class="c1"># TODO: add class docstring</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2556,15 +2524,15 @@
             <span class="n">c</span><span class="p">[</span><span class="s1">&#39;B&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">d2</span>
         <span class="k">return</span> <span class="n">c</span>
 
-    <span class="k">def</span> <span class="nf">convert_twos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+<div class="viewcode-block" id="ADCDATA.convert_twos"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADCDATA.convert_twos">[docs]</a>    <span class="k">def</span> <span class="nf">convert_twos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert data to integer two&#39;s complement representation.&quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="n">twos_comp</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_bits</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">twos_comp</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_bits</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">convert_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
+<div class="viewcode-block" id="ADCDATA.convert_data"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADCDATA.convert_data">[docs]</a>    <span class="k">def</span> <span class="nf">convert_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">buf</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Deswizle and convert the twos complement representation.&quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_twos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deswizzle</span><span class="p">(</span><span class="n">buf</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_twos</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">deswizzle</span><span class="p">(</span><span class="n">buf</span><span class="p">))</span></div>
 
     <span class="c1"># TODO: test composite ADC function that enables, reads, converts and plots</span>
     <span class="c1"># TODO: incorporate/connect QT graphing (UIscript.py)</span>
@@ -2608,11 +2576,11 @@
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_data</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deswizzle</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="n">data</span></div>
 
 
 <span class="c1"># Class for the ADS8686 ADC chip.</span>
-<span class="k">class</span> <span class="nc">ADS8686</span><span class="p">(</span><span class="n">SPIController</span><span class="p">,</span> <span class="n">ADCDATA</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686">[docs]</a><span class="k">class</span> <span class="nc">ADS8686</span><span class="p">(</span><span class="n">SPIController</span><span class="p">,</span> <span class="n">ADCDATA</span><span class="p">):</span>
     <span class="c1"># TODO: add class docstring</span>
 
     <span class="n">registers</span> <span class="o">=</span> <span class="n">Register</span><span class="o">.</span><span class="n">get_chip_registers</span><span class="p">(</span><span class="s1">&#39;ADS8686&#39;</span><span class="p">)</span>
@@ -2634,25 +2602,25 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">num_bits</span> <span class="o">=</span> <span class="mi">16</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;ADS8686&#39;</span>
 
-    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">reg_name</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.write"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">reg_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Write to an internal register on the chip.&quot;&quot;&quot;</span>
 
         <span class="n">reg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">reg_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">reg</span> <span class="o">|</span> <span class="n">ADS8686</span><span class="o">.</span><span class="n">msg_w</span> <span class="o">|</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">reg</span> <span class="o">|</span> <span class="n">ADS8686</span><span class="o">.</span><span class="n">msg_w</span> <span class="o">|</span> <span class="n">msg</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_name</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.read"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.read">[docs]</a>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_name</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read from an internal register on the chip.&quot;&quot;&quot;</span>
 
         <span class="n">reg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registers</span><span class="p">[</span><span class="n">reg_name</span><span class="p">]</span><span class="o">.</span><span class="n">address</span> <span class="o">&lt;&lt;</span> <span class="mi">9</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">reg</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">()</span></div>
 
-    <span class="k">def</span> <span class="nf">read_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.read_channel"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.read_channel">[docs]</a>    <span class="k">def</span> <span class="nf">read_channel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Read a desired channel on the chip.&quot;&quot;&quot;</span>
 
-        <span class="k">pass</span>  <span class="c1"># TODO: write method</span>
+        <span class="k">pass</span>  <span class="c1"># TODO: write method</span></div>
 
-    <span class="k">def</span> <span class="nf">read_last</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.read_last"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.read_last">[docs]</a>    <span class="k">def</span> <span class="nf">read_last</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the last value read by the ADS8686.</span>
 
 <span class="sd">        This reads a wire_out rather than a pipe_out so we get 1 data point</span>
@@ -2661,9 +2629,9 @@
 
         <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">read_wire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;OUT&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">)</span>
         <span class="n">buf</span> <span class="o">=</span> <span class="nb">int</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;little&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">deswizzle</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">deswizzle</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.setup"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Perform basic setup for default chip use.&quot;&quot;&quot;</span>
 
         <span class="c1"># TODO -- defaults to modify the SPI setup</span>
@@ -2671,9 +2639,9 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">configure_master_bin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">master_config</span><span class="p">)</span>  <span class="c1"># configures directly</span>
         <span class="c1"># self.set_frequency(5)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_divider</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># TODO: check on scope: 200/(3+1)=50 MHz</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">select_slave</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select_slave</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.set_range"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.set_range">[docs]</a>    <span class="k">def</span> <span class="nf">set_range</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vals</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the voltage range of all channels.</span>
 
 <span class="sd">        If vals is a single value then all channels are given that value.</span>
@@ -2696,9 +2664,9 @@
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Writing 0x</span><span class="si">{:x}</span><span class="s1"> to reg </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                         <span class="n">towrite</span><span class="p">,</span> <span class="n">regs</span><span class="p">[</span><span class="n">idx</span><span class="o">//</span><span class="mi">4</span><span class="p">]))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">towrite</span><span class="p">,</span> <span class="n">regs</span><span class="p">[</span><span class="n">idx</span><span class="o">//</span><span class="mi">4</span><span class="p">])</span>
-                <span class="n">towrite</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">towrite</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-    <span class="k">def</span> <span class="nf">reg_to_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_val</span><span class="p">,</span> <span class="n">chan_num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.reg_to_voltage"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.reg_to_voltage">[docs]</a>    <span class="k">def</span> <span class="nf">reg_to_voltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_val</span><span class="p">,</span> <span class="n">chan_num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Calculates the channel&#39;s voltage from the register value.</span>
 
 <span class="sd">        Uses the stored gain range. reg_val can be list of ints or int</span>
@@ -2706,9 +2674,9 @@
         <span class="c1">#  TODO: setup for sequence of channels</span>
         <span class="n">val</span> <span class="o">=</span> <span class="n">twos_comp</span><span class="p">(</span><span class="n">reg_val</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>  <span class="c1"># 16-bit channel readings</span>
         <span class="n">lsb</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ranges</span><span class="p">[</span><span class="n">chan_num</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="o">**</span><span class="mi">16</span>
-        <span class="k">return</span> <span class="n">val</span><span class="o">*</span><span class="n">lsb</span>
+        <span class="k">return</span> <span class="n">val</span><span class="o">*</span><span class="n">lsb</span></div>
 
-    <span class="k">def</span> <span class="nf">write_reg_bridge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clk_div</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.write_reg_bridge"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.write_reg_bridge">[docs]</a>    <span class="k">def</span> <span class="nf">write_reg_bridge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clk_div</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set clk divider and spi_controller to continuously read ADC data.&quot;&quot;&quot;</span>
 
         <span class="c1"># Configures the clock divider to determine the CONVST frequency</span>
@@ -2728,7 +2696,7 @@
                                     <span class="mh">0x4000_3110</span><span class="p">)</span>  <span class="c1">#</span>
         <span class="c1"># reset the clk divider</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">send_trig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;CLK_DIV_RESET&#39;</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_fpga_mode</span><span class="p">()</span>  <span class="c1"># lower the control bit for host vs. FPGA driven</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_fpga_mode</span><span class="p">()</span>  <span class="c1"># lower the control bit for host vs. FPGA driven</span></div>
         <span class="c1"># so the FPGA takes control of sending SPI</span>
 
     <span class="k">def</span> <span class="nf">set_lpf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lpf</span><span class="p">):</span>
@@ -2743,7 +2711,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ADS8686</span><span class="o">.</span><span class="n">lpf_khz</span><span class="p">[</span><span class="n">lpf</span><span class="p">],</span> <span class="s1">&#39;lpf&#39;</span><span class="p">)</span>  <span class="c1"># 376 khZ</span>
 
-    <span class="k">def</span> <span class="nf">setup_sequencer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chan_list</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;FIXED&#39;</span><span class="p">,</span> <span class="s1">&#39;FIXED&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;FIXED&#39;</span><span class="p">)],</span> <span class="n">voltage_range</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lpf</span><span class="o">=</span><span class="mi">376</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.setup_sequencer"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.setup_sequencer">[docs]</a>    <span class="k">def</span> <span class="nf">setup_sequencer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chan_list</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;FIXED&#39;</span><span class="p">,</span> <span class="s1">&#39;FIXED&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;FIXED&#39;</span><span class="p">)],</span> <span class="n">voltage_range</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">lpf</span><span class="o">=</span><span class="mi">376</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Start the sequencer looping through the given channels.</span>
 
 <span class="sd">        Parameters</span>
@@ -2816,9 +2784,9 @@
                    <span class="s1">&#39;seq&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">codes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
         <span class="c1"># enable the sequencer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">base_creg</span> <span class="o">|</span> <span class="mh">0x20</span><span class="p">,</span> <span class="s1">&#39;config&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">codes</span>
+        <span class="k">return</span> <span class="n">codes</span></div>
 
-    <span class="k">def</span> <span class="nf">hw_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="ADS8686.hw_reset"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.ADS8686.hw_reset">[docs]</a>    <span class="k">def</span> <span class="nf">hw_reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Trigger ADS8686 active low hardware reset.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">val</span><span class="p">:</span>
@@ -2827,11 +2795,11 @@
 
         <span class="k">elif</span> <span class="ow">not</span> <span class="n">val</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                   <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div></div>
 
 
 <span class="c1"># Class for the AD7961 Fast ADC. Does not use SPI or I2C (uses LVDS).</span>
-<span class="k">class</span> <span class="nc">AD7961</span><span class="p">(</span><span class="n">ADCDATA</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961">[docs]</a><span class="k">class</span> <span class="nc">AD7961</span><span class="p">(</span><span class="n">ADCDATA</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;An interface to the AD7961 ADC</span>
 <span class="sd">    Passed the FPGA object</span>
 <span class="sd">    Allows for multiple channels</span>
@@ -2852,7 +2820,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;AD7961&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_bits</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># for AD7961 bits=18 for AD7960</span>
 
-    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="AD7961.create_chips"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.create_chips">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">create_chips</span><span class="p">(</span><span class="n">fpga</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Instantiate a given number of new chips.</span>
 
@@ -2875,10 +2843,10 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
             <span class="c1"># Use deepcopy here to keep the endpoints for different instances separate</span>
             <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AD7961</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)))</span>
-            <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">chips</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">chips</span></div>
 
-    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.get_status"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Get AD796x status:</span>
 <span class="sd">        pll lock, FIFO full, half-full, and empty</span>
 
@@ -2890,21 +2858,21 @@
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> status of </span><span class="si">{}</span><span class="s1"> = </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
                                                 <span class="n">k</span><span class="p">,</span> <span class="n">status</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
-        <span class="k">return</span> <span class="n">status</span>
+        <span class="k">return</span> <span class="n">status</span></div>
 
-    <span class="k">def</span> <span class="nf">get_pll_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.get_pll_status"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.get_pll_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_pll_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get status of the phase locked loop.&quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">read_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;PLL_LOCKED&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                       <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;PLL_LOCKED&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;PLL_LOCKED&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">get_timing_pll_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.get_timing_pll_status"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.get_timing_pll_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_timing_pll_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get status of the timing of the phase locked loop.&quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">read_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;TIMING_PLL_LOCKED&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                       <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;TIMING_PLL_LOCKED&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                       <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;TIMING_PLL_LOCKED&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">get_fifo_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.get_fifo_status"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.get_fifo_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_fifo_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Get fullness status of the FIFO.&quot;&quot;&quot;</span>
 
         <span class="n">flags</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;FULL&#39;</span><span class="p">,</span> <span class="s1">&#39;HALFFULL&#39;</span><span class="p">,</span> <span class="s1">&#39;EMPTY&#39;</span><span class="p">]</span>
@@ -2913,7 +2881,7 @@
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">flags</span><span class="p">:</span>
             <span class="n">fifo_status</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">IsTriggered</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FIFO_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
                                                        <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;FIFO_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">fifo_status</span>
+        <span class="k">return</span> <span class="n">fifo_status</span></div>
 
     <span class="c1"># Enable pins:</span>
     <span class="c1"># 0000 - power down</span>
@@ -2922,18 +2890,18 @@
     <span class="c1"># 1101 - enabled with ref buffer on; 9 MHZ</span>
     <span class="c1"># Note that EN[3]=1 enables the VCM output buffer.</span>
 
-    <span class="k">def</span> <span class="nf">power_down_adc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.power_down_adc"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.power_down_adc">[docs]</a>    <span class="k">def</span> <span class="nf">power_down_adc</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Power down single channel of the ADC.</span>
 
 <span class="sd">        Fails if the global enables are 010 for LVDS test patterns</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_enables</span><span class="p">(</span><span class="mb">0b0</span><span class="p">,</span> <span class="n">global_enables</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_enables</span><span class="p">(</span><span class="mb">0b0</span><span class="p">,</span> <span class="n">global_enables</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">test_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.test_pattern"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.test_pattern">[docs]</a>    <span class="k">def</span> <span class="nf">test_pattern</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Enable PRBS test pattern on the LVDS interface.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_enables</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mb">0b0100</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_enables</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mb">0b0100</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">power_up_adc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bw</span><span class="o">=</span><span class="s1">&#39;28M&#39;</span><span class="p">):</span>
         <span class="c1"># TODO: add method docstring</span>
@@ -2946,28 +2914,29 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;incorrect input sampling bandwidth for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">power_down_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.power_down_all"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.power_down_all">[docs]</a>    <span class="k">def</span> <span class="nf">power_down_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Power down all channels of the ADC.&quot;&quot;&quot;</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_enables</span><span class="p">(</span><span class="mb">0b0000</span><span class="p">)</span>  <span class="c1"># TODO: return anything here?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_enables</span><span class="p">(</span><span class="mb">0b0000</span><span class="p">)</span>  <span class="c1"># TODO: return anything here?</span></div>
 
-    <span class="k">def</span> <span class="nf">reset_pll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.reset_pll"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.reset_pll">[docs]</a>    <span class="k">def</span> <span class="nf">reset_pll</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset the phase locked loop.&quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;PLL_RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;PLL_RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;PLL_RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
 
-    <span class="k">def</span> <span class="nf">reset_trig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.reset_trig"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.reset_trig">[docs]</a>    <span class="k">def</span> <span class="nf">reset_trig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Reset the FPGA controller for the ADC.</span>
-<span class="sd">        Common to synchronize timing </span>
-<span class="sd">            (resets ad7961_timing module AND the ads8686 timing) </span>
+<span class="sd">        </span>
+<span class="sd">        Common to synchronize timing (resets ad7961_timing module AND the</span>
+<span class="sd">        ads8686 timing) </span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">xem</span><span class="o">.</span><span class="n">ActivateTriggerIn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">reset_wire</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.reset_wire"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.reset_wire">[docs]</a>    <span class="k">def</span> <span class="nf">reset_wire</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the value of the wire to reset the FPGA controller for the ADC.</span>
 
 <span class="sd">        Uses the Opal Kelly WireIn (the trigger can&#39;t hold the reset).</span>
@@ -2984,16 +2953,16 @@
                                    <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;WIRE_RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">clear_wire_bit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;WIRE_RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span>
-                                     <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;WIRE_RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span>
+                                     <span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;WIRE_RESET&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">bit_index_low</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">power_down_fpga</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.power_down_fpga"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.power_down_fpga">[docs]</a>    <span class="k">def</span> <span class="nf">power_down_fpga</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Power down the FPGA controller through WireIn.&quot;&quot;&quot;</span>
 
         <span class="c1"># TODO: add functionality (wirein bit) to the FPGA</span>
         <span class="c1">#       this would reduce FPGA power consumption</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">reset_wire</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_wire</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">set_enables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mb">0b0000</span><span class="p">,</span> <span class="n">global_enables</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.set_enables"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.set_enables">[docs]</a>    <span class="k">def</span> <span class="nf">set_enables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mb">0b0000</span><span class="p">,</span> <span class="n">global_enables</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Set the EN0 specific to this channel (LSB in values).</span>
 
 <span class="sd">        Optionally also modify the global enables (all channels).</span>
@@ -3020,9 +2989,9 @@
 
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Enables setting value = 0x</span><span class="si">{:0x}</span><span class="s1"> with mask = = 0x</span><span class="si">{:0x}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
             <span class="n">value</span><span class="p">,</span> <span class="n">mask</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fpga</span><span class="o">.</span><span class="n">set_wire</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">endpoints</span><span class="p">[</span><span class="s1">&#39;ENABLE&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">address</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">)</span></div>
 
-    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset_pll</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="AD7961.setup"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reset_pll</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        0) put ADC controller into reset</span>
 <span class="sd">        1) optionally reset the ADC PLL and wait for lock</span>
@@ -3053,7 +3022,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reset_fifo</span><span class="p">()</span>
         <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_status</span><span class="p">()</span>
         <span class="c1"># TODO: the FIFO is guaranteed to overflow</span>
-        <span class="k">return</span> <span class="n">status</span>
+        <span class="k">return</span> <span class="n">status</span></div></div>
 
 
 <div class="viewcode-block" id="DDR3"><a class="viewcode-back" href="../../DDR.html#interfaces.interfaces.DDR3">[docs]</a><span class="k">class</span> <span class="nc">DDR3</span><span class="p">():</span>
@@ -3605,7 +3574,7 @@
 <span class="sd">        and combine with LSBytes. Swap channels to match ADC channel numbering.</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        ---------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        d : array</span>
 <span class="sd">            array of bytes. </span>
 <span class="sd">        convert_twos : Boolean</span>
@@ -3663,7 +3632,7 @@
 
 
 <span class="sd">        Parameters</span>
-<span class="sd">        ---------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        chan_data : dict of np.arrays</span>
 <span class="sd">            data from reading DDR (minimally processed into 2 byte containers)</span>
 <span class="sd">        </span>
@@ -3736,7 +3705,7 @@
 <span class="sd">        read and save DDR data to an hdf file </span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        ---------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        data_dir : string</span>
 <span class="sd">            directory for data</span>
 <span class="sd">        file_name : string</span>
@@ -3804,7 +3773,7 @@
 <span class="sd">        read DDR data into a numpy buffer of bytes</span>
 
 <span class="sd">        Parameters</span>
-<span class="sd">        ---------</span>
+<span class="sd">        ----------</span>
 <span class="sd">        blk_multiples : int</span>
 <span class="sd">            total size of the read is blk_multiples * block_size  </span>
 
