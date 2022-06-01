@@ -19,7 +19,6 @@ from interfaces.interfaces import (
     Endpoint,
     DAC80508,
     DDR3,
-    advance_endpoints_bynum,
 )
 from interfaces.utils import from_voltage
 import os

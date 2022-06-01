@@ -36,11 +36,11 @@ pytestmark = [pytest.mark.usable]
 @pytest.fixture(scope='module')
 def dut():
     global top_level_module_bitfile
-    from interfaces.interfaces import FPGA, UID_24AA025UID, Endpoint, advance_endpoints_bynum
+    from interfaces.interfaces import FPGA, UID_24AA025UID, Endpoint
     f = FPGA(bitfile=top_level_module_bitfile)
     assert f.init_device()
     yield UID_24AA025UID(fpga=f,
-                         endpoints=advance_endpoints_bynum(
+                         endpoints=Endpoint.advance_endpoints(
                              Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                          addr_pins=0b000)
     # Teardown

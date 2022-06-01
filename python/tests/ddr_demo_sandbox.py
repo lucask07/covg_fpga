@@ -38,7 +38,6 @@ from interfaces.interfaces import (
     AD7961,
     disp_device,
     DDR3,
-    advance_endpoints_bynum,
     TCA9555,
 )
 from interfaces.boards import Daq, Clamp

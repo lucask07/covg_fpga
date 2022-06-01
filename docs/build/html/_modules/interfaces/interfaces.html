@@ -168,18 +168,18 @@
 <span></span><span class="sd">&quot;&quot;&quot;Module for configuring OpalKelly XEM7310</span>
 <span class="sd">and use it as an I2C controller, SPI controller, and Serial LVDS controller.</span>
 
+<span class="sd">May 2022</span>
+
 <span class="sd">Lucas Koerner, koer2434@stthomas.edu</span>
 <span class="sd">Abe Stroschein, ajstroschein@stthomas.edu</span>
-<span class="sd">August 2021</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">ok</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">import</span> <span class="nn">time</span>
-<span class="kn">from</span> <span class="nn">interfaces.utils</span> <span class="kn">import</span> <span class="n">gen_mask</span><span class="p">,</span> <span class="n">twos_comp</span><span class="p">,</span> <span class="n">test_bit</span><span class="p">,</span> <span class="n">int_to_list</span><span class="p">,</span> <span class="n">from_voltage</span><span class="p">,</span> <span class="n">to_voltage</span>
+<span class="kn">from</span> <span class="nn">interfaces.utils</span> <span class="kn">import</span> <span class="n">gen_mask</span><span class="p">,</span> <span class="n">twos_comp</span><span class="p">,</span> <span class="n">test_bit</span><span class="p">,</span> <span class="n">int_to_list</span><span class="p">,</span> <span class="n">from_voltage</span>
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">h5py</span>
 
@@ -491,44 +491,6 @@
         <span class="c1"># we copy also get copied, not left as references.</span>
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">Endpoint</span><span class="o">.</span><span class="n">endpoints_from_defines</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">chip_name</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="Endpoint.increment_endpoints"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.increment_endpoints">[docs]</a>    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">increment_endpoints</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">in_place</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Increment all Endpoints in endpoints_dict.</span>
-
-<span class="sd">        Use each Endpoint&#39;s gen_bit and gen_addr values to determine whether to</span>
-<span class="sd">        increment bits and addresses, respectively.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        endpoints_dict : dict</span>
-<span class="sd">            The dict of Endpoints to increment.</span>
-<span class="sd">        in_place : bool</span>
-<span class="sd">            If True, the dictionary given will be changed. Otherwise, a copy</span>
-<span class="sd">            of the dictionary will be made.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">in_place</span><span class="p">:</span>
-            <span class="c1"># Make a copy</span>
-            <span class="n">endpoints_dict</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">)</span>
-
-        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">endpoints_dict</span><span class="p">:</span>
-            <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoints_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_bit</span> <span class="ow">and</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_address</span><span class="p">:</span>
-                <span class="c1"># Increment the bit by the endpoint&#39;s bit_width and if it would</span>
-                <span class="c1"># go outside the address&#39;s width, increment the address</span>
-                <span class="c1"># TODO: do we want to wrap around the bits on the same address, -&gt; can change address on each bit individually</span>
-                <span class="c1"># or shift all bits when one moves to the next address? -&gt; each bit needs to know if other bits fit on the current address as well</span>
-                <span class="k">pass</span>
-            <span class="k">elif</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_bit</span><span class="p">:</span>
-                <span class="c1"># Increment the bit by the bit_width</span>
-                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span>
-                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_high</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span>
-            <span class="k">elif</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_address</span><span class="p">:</span>
-                <span class="c1"># Increment the address by 1</span>
-                <span class="n">endpoint</span><span class="o">.</span><span class="n">address</span> <span class="o">+=</span> <span class="mi">1</span>
-
-        <span class="k">return</span> <span class="n">endpoints_dict</span></div>
-
 <div class="viewcode-block" id="Endpoint.excel_to_defines"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.excel_to_defines">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">excel_to_defines</span><span class="p">(</span><span class="n">excel_path</span><span class="p">,</span> <span class="n">defines_path</span><span class="p">,</span> <span class="n">sheet</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Convert an Excel spreadsheet of endpoint definitions to Verilog.</span>
@@ -552,31 +514,38 @@
         <span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sheet_data</span><span class="p">[</span><span class="s1">&#39;Generated Line&#39;</span><span class="p">])</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">defines_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
             <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">text</span></div></div>
+        <span class="k">return</span> <span class="n">text</span></div>
 
+<div class="viewcode-block" id="Endpoint.advance_endpoints"><a class="viewcode-back" href="../../Endpoint.html#interfaces.interfaces.Endpoint.advance_endpoints">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">advance_endpoints</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">advance_num</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Advances Endpoints in a dict in place by advance_num. Checks each</span>
+<span class="sd">        Endpoint&#39;s gen_bit and gen_address attributes to see whether to</span>
+<span class="sd">        increment the bit or the address or both.</span>
 
-<span class="k">def</span> <span class="nf">advance_endpoints_bynum</span><span class="p">(</span><span class="n">endpoints_dict</span><span class="p">,</span> <span class="n">num</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Advance endpoints by a specific number; calculates based on the bit_widths</span>
-<span class="sd">    and knowing that the width of the OK interface is 32 bits.</span>
-<span class="sd">    Just a method of an Endpoint (not a classmethod).</span>
-<span class="sd">    Goal is to not impact future device instantiations.</span>
+<span class="sd">        Example usage:</span>
+<span class="sd">            endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints(&#39;I2CDAQ&#39;),1)</span>
 
-<span class="sd">    Example usage:</span>
-<span class="sd">        endpoints=Endpoint.advance_endpoints_bynum(Endpoint.get_chip_endpoints(&#39;I2CDAQ&#39;),1)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Number to advance is </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="p">))</span>
-    <span class="c1"># num is the number to advance from the base addresses and bits</span>
-    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">endpoints_dict</span><span class="p">:</span>
-        <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoints_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_bit</span><span class="p">:</span>
-            <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+</span> <span class="p">(</span><span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span><span class="o">*</span><span class="n">num</span><span class="p">))</span>
-            <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_high</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span>
-        <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_address</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;gen address bit_width: </span><span class="si">{</span><span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="n">endpoint</span><span class="o">.</span><span class="n">address</span> <span class="o">+=</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">endpoints_dict</span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        endpoints_dict : dict of Endpoints</span>
+<span class="sd">            The dict of Endpoints to advance by advance_num.</span>
+<span class="sd">        advance_num : int</span>
+<span class="sd">            How much to advance the Endpoints by.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        dict : the same dict of Endpoints given in endpoints_dict, now advanced</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">endpoints_dict</span><span class="p">:</span>
+            <span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoints_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_bit</span><span class="p">:</span>
+                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span> <span class="o">*</span> <span class="n">advance_num</span>
+                <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_high</span> <span class="o">=</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_index_low</span> <span class="o">+</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">bit_width</span>
+            <span class="k">if</span> <span class="n">endpoint</span><span class="o">.</span><span class="n">gen_address</span><span class="p">:</span>
+                <span class="n">endpoint</span><span class="o">.</span><span class="n">address</span> <span class="o">+=</span> <span class="n">advance_num</span>
+        <span class="k">return</span> <span class="n">endpoints_dict</span></div></div>
 
 <span class="c1"># Class for the FPGA itself. Handles FPGA configuration, setting wire values,</span>
 <span class="c1"># and other FPGA specific functions.</span>
@@ -1747,18 +1716,17 @@
                 <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">endpoints</span><span class="p">))</span>
                 <span class="c1"># Use deepcopy to keep the endpoints for different instances separate</span>
                 <span class="n">endpoints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+                <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
                 <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
                     <span class="n">endpoints</span><span class="p">),</span> <span class="n">master_config</span><span class="o">=</span><span class="n">master_config</span><span class="p">))</span>
                 <span class="c1"># Use deepcopy to keep the endpoints for different instances separate</span>
                 <span class="n">endpoints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+                <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Increment shared endpoints dictionary</span>
-            <span class="c1"># TODO: is there a better way to do this?</span>
             <span class="c1"># We need to get the shared endpoints in endpoints_from_defines to</span>
             <span class="c1"># increment and we only have the endpoints given to us in the</span>
             <span class="c1"># argument.</span>
@@ -1768,11 +1736,10 @@
                     <span class="nb">list</span><span class="p">(</span><span class="n">shared_full_eps</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
                     <span class="p">]</span>
                 <span class="p">]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">shared_chip_eps</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">shared_chip_eps</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Increment custom dictionary</span>
-            <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">chips</span></div>
 
@@ -2070,14 +2037,14 @@
                 <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">endpoints</span><span class="p">))</span>
                 <span class="c1"># Use deepcopy to keep the endpoints for different instances separate</span>
                 <span class="n">endpoints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+                <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
                 <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">cls</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span>
                     <span class="n">endpoints</span><span class="p">),</span> <span class="n">master_config</span><span class="o">=</span><span class="n">master_config</span><span class="p">))</span>
                 <span class="c1"># Use deepcopy to keep the endpoints for different instances separate</span>
                 <span class="n">endpoints</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+                <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">endpoints</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># Increment shared endpoints dictionary</span>
@@ -2091,11 +2058,10 @@
                     <span class="nb">list</span><span class="p">(</span><span class="n">shared_full_eps</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">chips</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endpoints</span><span class="p">)</span>
                 <span class="p">]</span>
             <span class="p">]</span>
-            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
-                <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">shared_chip_eps</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">shared_chip_eps</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Increment custom dictionary</span>
-            <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">,</span> <span class="n">number_of_chips</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">chips</span></div>
 
@@ -2877,7 +2843,7 @@
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">number_of_chips</span><span class="p">):</span>
             <span class="c1"># Use deepcopy here to keep the endpoints for different instances separate</span>
             <span class="n">chips</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">AD7961</span><span class="p">(</span><span class="n">fpga</span><span class="o">=</span><span class="n">fpga</span><span class="p">,</span> <span class="n">endpoints</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)))</span>
-            <span class="n">Endpoint</span><span class="o">.</span><span class="n">increment_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
+            <span class="n">Endpoint</span><span class="o">.</span><span class="n">advance_endpoints</span><span class="p">(</span><span class="n">endpoints</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">chips</span></div>
 
 <div class="viewcode-block" id="AD7961.get_status"><a class="viewcode-back" href="../../peripherals.html#interfaces.interfaces.AD7961.get_status">[docs]</a>    <span class="k">def</span> <span class="nf">get_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
