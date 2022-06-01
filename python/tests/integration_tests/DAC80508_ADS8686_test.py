@@ -109,19 +109,23 @@ def ads(fpga):
 # Tests
 
 
-def test_delay(dac, ads):
-    # TODO: figure out why this delay is needed before the ADS8686 starts reading data that is not 0
-    delay = 23
-    print(f'Waiting {delay} seconds...')
-    time.sleep(delay)
+def test_delay(dac: DAC80508, ads: ADS8686):
+    dac.write_voltage(5, outputs=dac_out)
+    print(f'Waiting for ADS8686 to yield nonzero data (max wait 23s)...')
+    time_increment = 0.25
+    for i in range(int(23 / time_increment) + 1):
+        if ads.read_last()['A'][0] == 0:
+            time.sleep(time_increment)
+    print(f'Waited {i * time_increment} seconds')
+
 
 @pytest.mark.parametrize('gain_code, expected_gain', [
-    ((0 << 4) | (0 << 8), 1),   # Output gain: 1, REFDIV gain: 1,   Total gain: 1
-    ((0 << 4) | (1 << 8), 1/2), # Output gain: 1, REFDIV gain: 1/2, Total gain: 1/2
-    ((1 << 4) | (0 << 8), 2),   # Output gain: 2, REFDIV gain: 1,   Total gain: 2
-    ((1 << 4) | (1 << 8), 1), # Output gain: 2, REFDIV gain: 1/2, Total gain: 1
+    ((0 << dac_out) | (0 << 8), 1),   # Output gain: 1, REFDIV gain: 1,   Total gain: 1
+    ((0 << dac_out) | (1 << 8), 1/2), # Output gain: 1, REFDIV gain: 1/2, Total gain: 1/2
+    ((1 << dac_out) | (0 << 8), 2),   # Output gain: 2, REFDIV gain: 1,   Total gain: 2
+    ((1 << dac_out) | (1 << 8), 1), # Output gain: 2, REFDIV gain: 1/2, Total gain: 1
 ])
-def test_dac_gain_bin(dac, ads, gain_code, expected_gain):
+def test_dac_gain_bin(dac: DAC80508, ads: ADS8686, gain_code, expected_gain):
     """Test DAC80508.set_gain_bin() method."""
 
     # Looking for values within 1 LSB of expected
@@ -153,7 +157,7 @@ def test_dac_gain_bin(dac, ads, gain_code, expected_gain):
     (2, False, 2),  # Output gain: 2, REFDIV gain: 1,   Total gain: 2
     (2, True, 1),   # Output gain: 2, REFDIV gain: 1/2, Total gain: 1
 ])
-def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
+def test_dac_gain(dac: DAC80508, ads: ADS8686, gain, divide_reference, expected_gain):
     """Test DAC80508.set_gain() method."""
 
     # Looking for values within 1 LSB of expected
@@ -167,7 +171,7 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
     expected = to_voltage(data=voltage_data, num_bits=16, voltage_range=2.5 * expected_gain)
 
     dac.write_chip_reg('DAC' + str(dac_out), voltage_data)
-    dac.set_gain(gain=gain, outputs=4, divide_reference=divide_reference)
+    dac.set_gain(gain=gain, outputs=dac_out, divide_reference=divide_reference)
     # Read value with ADS8686
     read_dict = ads.read_last()
     read_data = int(read_dict['A'][0])
@@ -180,7 +184,7 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
 
 
 # @pytest.mark.parametrize('voltage', [x for x in range(0, 0xffff + 1)])
-# def test_dac_write(dac, ads, voltage):
+# def test_dac_write(dac: DAC80508, ads: ADS8686, voltage):
 #     """Test DAC80508.write() method to write output voltage."""
 
 #     # Looking for values within 1 LSB of expected
@@ -206,7 +210,7 @@ def test_dac_gain(dac, ads, gain, divide_reference, expected_gain):
 
 
 @pytest.mark.parametrize('voltage', [x * (10 ** -5) for x in range(0, 5 * (10 ** 5) + 4, 4)])
-def test_dac_write_voltage(dac, ads, voltage):
+def test_dac_write_voltage(dac: DAC80508, ads: ADS8686, voltage):
     """Test DAC80508.write() method to write output voltage."""
 
     # Looking for values within 1 LSB of expected
