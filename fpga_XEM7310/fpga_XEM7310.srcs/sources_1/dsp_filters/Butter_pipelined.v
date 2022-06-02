@@ -93,9 +93,7 @@ module Butter_pipelined
   wire signed [31:0] coeff_scale1_temp; // sfix32_En31
   reg  signed [31:0] coeff_scale1_reg; // sfix32_En31
   reg  signed [31:0] coeff_scale1_shadow_reg; // sfix32_En31
-  //wire signed [15:0] scale1; // sfix16_En15
   reg signed [15:0] scale1; // sfix16_En15
-  //wire signed [47:0] mul_temp; // sfix48_En46
   reg signed [47:0] mul_temp; // sfix48_En46
   wire signed [31:0] coeff_b1_section1_assigned; // sfix32_En29
   wire signed [31:0] coeff_b1_section1_temp; // sfix32_En29
@@ -118,28 +116,18 @@ module Butter_pipelined
   reg  signed [31:0] coeff_a3_section1_reg; // sfix32_En30
   reg  signed [31:0] coeff_a3_section1_shadow_reg; // sfix32_En30
   // Section 1 Signals 
-  wire signed [48:0] ab1sum1; // sfix49_En44
   wire signed [48:0] ab2sum1; // sfix49_En44
-  wire signed [48:0] ab3sum1; // sfix49_En44
-  wire signed [48:0] b2sum1; // sfix49_En44
-//  reg signed [48:0] ab1sum1; // sfix49_En44
-//  reg signed [48:0] ab2sum1; // sfix49_En44
-//  reg signed [48:0] ab3sum1; // sfix49_En44
-//  reg signed [48:0] b2sum1; // sfix49_En44
+  reg signed [48:0] ab1sum1; // sfix49_En44
+  reg signed [48:0] ab3sum1; // sfix49_En44
+  reg signed [48:0] b2sum1; // sfix49_En44
   reg  signed [15:0] delay1_section1; // sfix16_En14
   reg  signed [15:0] delay2_section1; // sfix16_En14
   wire signed [15:0] inputconv1; // sfix16_En15
-//  wire signed [15:0] feedback1; // sfix16_En14
   reg signed [15:0] feedback1; // sfix16_En14
-  //wire signed [47:0] a2mul1; // sfix48_En44
   reg signed [47:0] a2mul1; // sfix48_En44
-  //wire signed [47:0] a3mul1; // sfix48_En44
   reg signed [47:0] a3mul1; // sfix48_En44
-  //wire signed [47:0] b1mul1; // sfix48_En44
   reg signed [47:0] b1mul1; // sfix48_En44
-  //wire signed [47:0] b2mul1; // sfix48_En44
   reg signed [47:0] b2mul1; // sfix48_En44
-  //wire signed [47:0] b3mul1; // sfix48_En44
   reg signed [47:0] b3mul1; // sfix48_En44
   wire signed [47:0] sub_signext; // sfix48_En44
   wire signed [47:0] sub_signext_1; // sfix48_En44
@@ -147,13 +135,10 @@ module Butter_pipelined
   wire signed [47:0] add_signext_1; // sfix48_En44
   wire signed [48:0] sub_signext_2; // sfix49_En44
   wire signed [48:0] sub_signext_3; // sfix49_En44
-  wire signed [49:0] sub_temp; // sfix50_En44
-//  reg signed [49:0] sub_temp; // sfix50_En44
+  reg signed [49:0] sub_temp; // sfix50_En44
   wire signed [47:0] add_signext_2; // sfix48_En44
   wire signed [47:0] add_signext_3; // sfix48_En44
-//  wire signed [15:0] delay1_typeconvert1; // sfix16_En14
   reg signed [15:0] delay1_typeconvert1; // sfix16_En14
-//  wire signed [15:0] delay2_typeconvert1; // sfix16_En14
   reg signed [15:0] delay2_typeconvert1; // sfix16_En14
   reg  signed [15:0] sos_pipeline1; // sfix16_En14
   // Section 2   Processor Interface Signals 
@@ -161,9 +146,7 @@ module Butter_pipelined
   wire signed [31:0] coeff_scale2_temp; // sfix32_En31
   reg  signed [31:0] coeff_scale2_reg; // sfix32_En31
   reg  signed [31:0] coeff_scale2_shadow_reg; // sfix32_En31
-  //wire signed [15:0] scale2; // sfix16_En15
   reg signed [15:0] scale2; // sfix16_En15
-  //wire signed [47:0] mul_temp_1; // sfix48_En45
   reg signed [47:0] mul_temp_1; // sfix48_En45
   wire signed [31:0] coeff_b1_section2_assigned; // sfix32_En29
   wire signed [31:0] coeff_b1_section2_temp; // sfix32_En29
@@ -186,28 +169,18 @@ module Butter_pipelined
   reg  signed [31:0] coeff_a3_section2_reg; // sfix32_En30
   reg  signed [31:0] coeff_a3_section2_shadow_reg; // sfix32_En30
   // Section 2 Signals 
-  wire signed [48:0] ab1sum2; // sfix49_En44
   wire signed [48:0] ab2sum2; // sfix49_En44
-  wire signed [48:0] ab3sum2; // sfix49_En44
-  wire signed [48:0] b2sum2; // sfix49_En44
-//  reg signed [48:0] ab1sum2; // sfix49_En44
-//  reg signed [48:0] ab2sum2; // sfix49_En44
-//  reg signed [48:0] ab3sum2; // sfix49_En44
-//  reg signed [48:0] b2sum2; // sfix49_En44
+  reg signed [48:0] ab1sum2; // sfix49_En44
+  reg signed [48:0] ab3sum2; // sfix49_En44
+  reg signed [48:0] b2sum2; // sfix49_En44
   reg  signed [15:0] delay1_section2; // sfix16_En14
   reg  signed [15:0] delay2_section2; // sfix16_En14
   wire signed [15:0] inputconv2; // sfix16_En15
-//  wire signed [15:0] feedback2; // sfix16_En14
   reg signed [15:0] feedback2; // sfix16_En14
-  //wire signed [47:0] a2mul2; // sfix48_En44
   reg signed [47:0] a2mul2; // sfix48_En44
-  //wire signed [47:0] a3mul2; // sfix48_En44
   reg signed [47:0] a3mul2; // sfix48_En44
-  //wire signed [47:0] b1mul2; // sfix48_En44
   reg signed [47:0] b1mul2; // sfix48_En44
-  //wire signed [47:0] b2mul2; // sfix48_En44
   reg signed [47:0] b2mul2; // sfix48_En44
-  //wire signed [47:0] b3mul2; // sfix48_En44
   reg signed [47:0] b3mul2; // sfix48_En44
   wire signed [47:0] sub_signext_4; // sfix48_En44
   wire signed [47:0] sub_signext_5; // sfix48_En44
@@ -215,22 +188,17 @@ module Butter_pipelined
   wire signed [47:0] add_signext_5; // sfix48_En44
   wire signed [48:0] sub_signext_6; // sfix49_En44
   wire signed [48:0] sub_signext_7; // sfix49_En44
-  wire signed [49:0] sub_temp_1; // sfix50_En44
-//  reg signed [49:0] sub_temp_1; // sfix50_En44
+  reg signed [49:0] sub_temp_1; // sfix50_En44
   wire signed [47:0] add_signext_6; // sfix48_En44
   wire signed [47:0] add_signext_7; // sfix48_En44
-//  wire signed [15:0] delay1_typeconvert2; // sfix16_En14
   reg signed [15:0] delay1_typeconvert2; // sfix16_En14
-//  wire signed [15:0] delay2_typeconvert2; // sfix16_En14
   reg signed [15:0] delay2_typeconvert2; // sfix16_En14
   // Last Section Value --   Processor Interface Signals 
   wire signed [31:0] coeff_scale3_assigned; // sfix32_En31
   wire signed [31:0] coeff_scale3_temp; // sfix32_En31
   reg  signed [31:0] coeff_scale3_reg; // sfix32_En31
   reg  signed [31:0] coeff_scale3_shadow_reg; // sfix32_En31
-  //wire signed [13:0] scale3; // sfix14_En12
   reg signed [13:0] scale3; // sfix14_En12
-  //wire signed [47:0] mul_temp_2; // sfix48_En45
   reg signed [47:0] mul_temp_2; // sfix48_En45
   wire signed [13:0] output_typeconvert; // sfix14_En12
   reg  signed [13:0] output_register; // sfix14_En12
@@ -256,20 +224,26 @@ module Butter_pipelined
       end
     end // input_reg_process
     
-    //Shared Multiplier
-    reg [4:0] ena;
+    //Shared Multiplier (one per biquad section)
+    reg [5:0] ena;
     reg done;
     reg [15:0] A;
     reg [31:0] B;
     wire [47:0] P;
+    reg [15:0] A1;
+    reg [31:0] B1;
+    wire [47:0] P1;
     
     mult_gen_0 mult1(.CLK(clk), .A(A), .B(B), .P(P));
+    mult_gen_0 mult2(.CLK(clk), .A(A1), .B(B1), .P(P1));
     
     always @ ( posedge clk)begin
         if(reset == 1'b1)begin
             A <= 1'b0;
             B <= 1'b0;
-            ena <= 4'b0;
+            A1 <= 1'b0;
+            B1 <= 1'b0;
+            ena <= 6'b0;
             done <= 1'b0;
             mul_temp <= 47'b0;
             a2mul1 <= 47'b0;
@@ -293,110 +267,144 @@ module Butter_pipelined
             scale1 <= 16'b0;
             scale2 <= 16'b0;
             scale3 <= 14'b0;
-            sos_pipeline1 <= 0;
+            ab3sum1 <= 49'b0;
+            b2sum1 <= 49'b0;
+            sub_temp <= 50'b0;
+            ab1sum1 <= 49'b0;
+            ab3sum2 <= 49'b0;
+            b2sum2 <= 49'b0;
+            sub_temp_1 <= 50'b0;
+            ab1sum2 <= 49'b0;
         end
         else if(clk_enable == 1'b1)begin
             ena <= 4'b0;
             done <= 1'b0;
-            scale1 <= (mul_temp[46:0] + {mul_temp[31], {30{~mul_temp[31]}}})>>>31;
-            scale2 <= (mul_temp_1[45:0] + {mul_temp_1[30], {29{~mul_temp_1[30]}}})>>>30;
-            scale3 <= (mul_temp_2[46:0] + {mul_temp_2[33], {32{~mul_temp_2[33]}}})>>>33;
         end
-        else if(ena < 5'h12) begin
+        else if(ena < 6'd39) begin
             ena <= ena + 1'b1;
         end
         else begin
             ena <= ena;
         end
-        if(ena == 5'h00)begin
-            A <= input_register;
-            B <= coeff_scale1_shadow_reg;
-            feedback1 <= (ab1sum1[45:0] + {ab1sum1[30], {29{~ab1sum1[30]}}})>>>30;
-            feedback2 <= (ab1sum2[45:0] + {ab1sum2[30], {29{~ab1sum2[30]}}})>>>30;
-        end
-        else if(ena == 5'h01)begin
-            A <= feedback1;
-            B <= coeff_a2_section1_shadow_reg;
-        end
-        else if(ena == 5'h02)begin
-            A <= feedback1;
-            B <= coeff_a3_section1_shadow_reg;
-        end
-        else if(ena == 5'h03)begin
-            A <= sos_pipeline1;
-            B <= coeff_scale2_shadow_reg;
-        end
-        else if(ena == 5'h04)begin//wait four cycles to grab mult output since mult has 4 pipeline stages
-            A <= inputconv1;
-            B <= coeff_b1_section1_shadow_reg;
-        end
-        else if(ena == 5'h05)begin
-            mul_temp <= P;
-            A <= inputconv1;
-            B <= coeff_b2_section1_shadow_reg;
-        end
-        else if(ena == 5'h06)begin
-            a2mul1 <= P;
-            A <= inputconv1;
-            B <= coeff_b3_section1_shadow_reg;
-        end
-        else if(ena == 5'h07)begin
-            a3mul1 <= P;
-            A <= feedback2;
-            B <= coeff_a2_section2_shadow_reg;
-        end
-        else if(ena == 5'h08)begin
-            mul_temp_1 <= P;
-            A <= feedback2;
-            B <= coeff_a3_section2_shadow_reg;
-            delay1_typeconvert1 <= (ab2sum1[45:0] + {ab2sum1[30], {29{~ab2sum1[30]}}})>>>30;
-            delay2_typeconvert1 <= (ab3sum1[45:0] + {ab3sum1[30], {29{~ab3sum1[30]}}})>>>30;
-        end
-        else if(ena == 5'h09)begin
-            b1mul1 <= P;
-            A <= feedback2;
-            B <= coeff_scale3_shadow_reg;
-        end
-        else if(ena == 5'h0a)begin
-            b2mul1 <= P;
-            A <= inputconv2;
-            B <= coeff_b1_section2_shadow_reg;
-        end
-        else if(ena == 5'h0b)begin
-            b3mul1 <= P;
-            A <= inputconv2;
-            B <= coeff_b2_section2_shadow_reg;
-        end
-        else if(ena == 5'h0c)begin
-            a2mul2 <= P;
-            A <= inputconv2;
-            B <= coeff_b3_section2_shadow_reg;
-        end
-        else if(ena == 5'h0d)begin
-            a3mul2 <= P;
-        end
-        else if(ena == 5'h0e)begin
-            mul_temp_2 <= P;
-            delay1_typeconvert2 <= (ab2sum2[45:0] + {ab2sum2[30], {29{~ab2sum2[30]}}})>>>30;
-            delay2_typeconvert2 <= (ab3sum2[45:0] + {ab3sum2[30], {29{~ab3sum2[30]}}})>>>30;
-        end
-        else if(ena == 5'h0f)begin
-            b1mul2 <= P;
-        end
-        else if(ena == 5'h10)begin
-            b2mul2 <= P;
-        end
-        else if(ena == 5'h11)begin
-            b3mul2 <= P;
-        end
-        else if(ena == 5'h12)begin
-            sos_pipeline1 <= feedback1;
-        end
+        case(ena)
+            0: begin
+                A <= 16'b0;
+                B <= 32'b0;
+                A1 <= 16'b0;
+                B1 <= 32'b0;
+            end
+            1: begin
+                A <= input_register;
+                B <= coeff_scale1_shadow_reg;
+                A1 <= sos_pipeline1;
+                B1 <= coeff_scale2_shadow_reg;
+                scale1 <= (mul_temp[46:0] + {mul_temp[31], {30{~mul_temp[31]}}})>>>31;
+            end
+            6: begin
+                mul_temp <= P;
+                mul_temp_1 <= P1;
+            end
+            7: begin
+                scale2 <= (mul_temp_1[45:0] + {mul_temp_1[30], {29{~mul_temp_1[30]}}})>>>30;
+            end
+            8: begin
+                A <= inputconv1;
+                B <= coeff_b1_section1_shadow_reg;
+                A1 <= inputconv2;
+                B1 <= coeff_b1_section2_shadow_reg;
+            end
+            9: begin
+                A <= inputconv1;
+                B <= coeff_b2_section1_shadow_reg;
+                A1 <= inputconv2;
+                B1 <= coeff_b2_section2_shadow_reg;
+            end
+            10: begin
+                A <= inputconv1;
+                B <= coeff_b3_section1_shadow_reg;
+                A1 <= inputconv2;
+                B1 <= coeff_b3_section2_shadow_reg;
+            end
+            11: begin
+                A <= feedback1;
+                B <= 0;
+                A1 <= feedback2;
+                B1 <= 0;
+            end
+            12: begin
+                A <= feedback1;
+                B <= 0;
+                A1 <= feedback2;
+                B1 <= 0;
+            end
+            13: begin //wait four cycles to grab mult output since mult has 4 pipeline stages
+                b1mul1 <= P;
+                b1mul2 <= P1;
+            end
+            14: begin
+                b2mul1 <= P;
+                b2mul2 <= P1;
+                ab1sum1 <= add_signext_2 + add_signext_3;
+                ab1sum2 <= add_signext_6 + add_signext_7;
+            end
+            15: begin
+                b3mul1 <= P;
+                b3mul2 <= P1;
+                feedback1 <= (ab1sum1[45:0] + {ab1sum1[30], {29{~ab1sum1[30]}}})>>>30;
+                feedback2 <= (ab1sum2[45:0] + {ab1sum2[30], {29{~ab1sum2[30]}}})>>>30;
+                b2sum1 <= add_signext + add_signext_1;
+                b2sum2 <= add_signext_4 + add_signext_5;
+            end
+            16: begin
+                A <= feedback1;
+                B <= coeff_a2_section1_shadow_reg;
+                A1 <= feedback2;
+                B1 <= coeff_a2_section2_shadow_reg;
+            end
+            17: begin
+                A <= feedback1;
+                B <= coeff_a3_section1_shadow_reg;
+                A1 <= feedback2;
+                B1 <= coeff_a3_section2_shadow_reg;
+            end
+            18: begin
+                A <= feedback2;
+                B <= coeff_scale3_shadow_reg;
+            end
+            21: begin
+                a2mul1 <= P;
+                a2mul2 <= P1;
+            end
+            22: begin
+                a3mul1 <= P;
+                a3mul2 <= P1;
+            end
+            23: begin
+                ab3sum1 <= sub_signext - sub_signext_1;
+                sub_temp <= sub_signext_2 - sub_signext_3;
+                ab3sum2 <= sub_signext_4 - sub_signext_5;
+                sub_temp_1 <= sub_signext_6 - sub_signext_7;
+                mul_temp_2 <= P;
+            end
+            24: begin
+                delay1_typeconvert1 <= (ab2sum1[45:0] + {ab2sum1[30], {29{~ab2sum1[30]}}})>>>30;
+                delay2_typeconvert1 <= (ab3sum1[45:0] + {ab3sum1[30], {29{~ab3sum1[30]}}})>>>30;
+                delay1_typeconvert2 <= (ab2sum2[45:0] + {ab2sum2[30], {29{~ab2sum2[30]}}})>>>30;
+                delay2_typeconvert2 <= (ab3sum2[45:0] + {ab3sum2[30], {29{~ab3sum2[30]}}})>>>30;
+                scale3 <= (mul_temp_2[46:0] + {mul_temp_2[33], {32{~mul_temp_2[33]}}})>>>33;
+            end
+            default: begin
+                A <= 16'b0;
+                B <= 32'b0;
+                A1 <= 16'b0;
+                B1 <= 32'b0;
+            end
+        endcase
     end
 
   //   -------- Section 1 Processor Interface logic------------------
 
-  //assign mul_temp = input_register * coeff_scale1_shadow_reg;
+//  assign mul_temp = input_register * coeff_scale1_shadow_reg;
 //  assign scale1 = (mul_temp[46:0] + {mul_temp[31], {30{~mul_temp[31]}}})>>>31;
 
   assign coeff_scale1_assigned = (write_address_reg == 4'b0000) ? coeffs_in_reg :
@@ -483,20 +491,20 @@ module Butter_pipelined
 
   assign sub_signext = b3mul1;
   assign sub_signext_1 = a3mul1;
-  assign ab3sum1 = sub_signext - sub_signext_1;
+//  assign ab3sum1 = sub_signext - sub_signext_1;
 
   assign add_signext = b2mul1;
   assign add_signext_1 = $signed({delay2_section1[15:0], 30'b000000000000000000000000000000});
-  assign b2sum1 = add_signext + add_signext_1;
+//  assign b2sum1 = add_signext + add_signext_1;
 
   assign sub_signext_2 = b2sum1;
   assign sub_signext_3 = $signed({{1{a2mul1[47]}}, a2mul1});
-  assign sub_temp = sub_signext_2 - sub_signext_3;
+//  assign sub_temp = sub_signext_2 - sub_signext_3;
   assign ab2sum1 = sub_temp[48:0];
 
   assign add_signext_2 = $signed({delay1_section1[15:0], 30'b000000000000000000000000000000});
   assign add_signext_3 = b1mul1;
-  assign ab1sum1 = add_signext_2 + add_signext_3;
+//  assign ab1sum1 = add_signext_2 + add_signext_3;
 
 //  assign delay1_typeconvert1 = (ab2sum1[45:0] + {ab2sum1[30], {29{~ab2sum1[30]}}})>>>30;
 
@@ -518,21 +526,22 @@ module Butter_pipelined
 
 //  assign feedback1 = (ab1sum1[45:0] + {ab1sum1[30], {29{~ab1sum1[30]}}})>>>30;
 
-//  always @ ( posedge clk)
-//    begin: sos_pipeline_process_section1
-//      if (reset == 1'b1) begin
-//        sos_pipeline1 <= 0;
-//      end
-//      else begin
-//        if (clk_enable == 1'b1) begin
-//          sos_pipeline1 <= feedback1;
-//        end
-//      end
-//    end // sos_pipeline_process_section1
+  always @ ( posedge clk)
+    begin: sos_pipeline_process_section1
+      if (reset == 1'b1) begin
+        sos_pipeline1 <= 0;
+      end
+      else begin
+        if (clk_enable == 1'b1) begin
+          sos_pipeline1 <= feedback1;
+//          $display("Folded: pipeline = %h", sos_pipeline1);
+        end
+      end
+    end // sos_pipeline_process_section1
 
   //   -------- Section 2 Processor Interface logic------------------
 
-  //assign mul_temp_1 = sos_pipeline1 * coeff_scale2_shadow_reg;
+//  assign mul_temp_1 = sos_pipeline1 * coeff_scale2_shadow_reg;
 //  assign scale2 = (mul_temp_1[45:0] + {mul_temp_1[30], {29{~mul_temp_1[30]}}})>>>30;
 
   assign coeff_scale2_assigned = (write_address_reg == 4'b1000) ? coeffs_in_reg :
@@ -619,20 +628,20 @@ module Butter_pipelined
 
   assign sub_signext_4 = b3mul2;
   assign sub_signext_5 = a3mul2;
-  assign ab3sum2 = sub_signext_4 - sub_signext_5;
+//  assign ab3sum2 = sub_signext_4 - sub_signext_5;
 
   assign add_signext_4 = b2mul2;
   assign add_signext_5 = $signed({delay2_section2[15:0], 30'b000000000000000000000000000000});
-  assign b2sum2 = add_signext_4 + add_signext_5;
+//  assign b2sum2 = add_signext_4 + add_signext_5;
 
   assign sub_signext_6 = b2sum2;
   assign sub_signext_7 = $signed({{1{a2mul2[47]}}, a2mul2});
-  assign sub_temp_1 = sub_signext_6 - sub_signext_7;
+//  assign sub_temp_1 = sub_signext_6 - sub_signext_7;
   assign ab2sum2 = sub_temp_1[48:0];
 
   assign add_signext_6 = $signed({delay1_section2[15:0], 30'b000000000000000000000000000000});
   assign add_signext_7 = b1mul2;
-  assign ab1sum2 = add_signext_6 + add_signext_7;
+//  assign ab1sum2 = add_signext_6 + add_signext_7;
 
 //  assign delay1_typeconvert2 = (ab2sum2[45:0] + {ab2sum2[30], {29{~ab2sum2[30]}}})>>>30;
 
@@ -656,7 +665,7 @@ module Butter_pipelined
 
   //   -------- Last Section Value -- Processor Interface logic------------------
 
-  //assign mul_temp_2 = feedback2 * coeff_scale3_shadow_reg;
+//  assign mul_temp_2 = feedback2 * coeff_scale3_shadow_reg;
 //  assign scale3 = (mul_temp_2[46:0] + {mul_temp_2[33], {32{~mul_temp_2[33]}}})>>>33;
 
   assign coeff_scale3_assigned = (write_address_reg == 4'b0111) ? coeffs_in_reg :
@@ -696,7 +705,7 @@ module Butter_pipelined
           output_register <= 0;
         end
         else begin
-          if (ena == 5'h12) begin
+          if (ena == 5'd25) begin
             output_register <= output_typeconvert;
           end
         end
@@ -708,7 +717,7 @@ module Butter_pipelined
           data_ready <= 1'b0;
         end
         else begin
-          if (ena == 5'h12) begin
+          if (ena == 5'd25) begin
             data_ready <= 1'b1;
           end
           else data_ready <= 1'b0;
