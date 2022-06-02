@@ -104,7 +104,7 @@ class Clamp:
             CCOMP_dict[cap_val] = i
         self.configs['CCOMP_dict'] = CCOMP_dict
 
-        self.configs['RF1_dict'] = {  # Selecting the resistor value for the feedback circuit
+        self.configs['RF1_dict'] = {  # Selecting the resistor value for the feedback circuit, all in kilo-ohms
             0: 0b0000,
             60: 0b0001,
             30: 0b0010,
@@ -123,7 +123,7 @@ class Clamp:
             2.1: 0b1111,
             None: 0b0000
         }
-        self.configs['ADG_RES_dict'] = {  # Select resistance acroos P2 and RF_1 (ADG)
+        self.configs['ADG_RES_dict'] = {  # Select resistance acroos P2 and RF_1 (ADG), all listed in kilo-ohms
             'current': 0b000,
             10: 0b100,
             33: 0b010,

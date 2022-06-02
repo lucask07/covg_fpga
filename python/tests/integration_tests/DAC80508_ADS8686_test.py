@@ -131,6 +131,7 @@ def test_dac_gain_bin(dac: DAC80508, ads: ADS8686, gain_code, expected_gain):
     # Looking for values within 1 LSB of expected
     global tolerance
     global dac_out
+    global ads_in
     # Set the output on DAC80508 (1/2 scale)
     voltage_data = 0x7fff
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
@@ -146,7 +147,7 @@ def test_dac_gain_bin(dac: DAC80508, ads: ADS8686, gain_code, expected_gain):
     # We double the range used in the to_voltage calculation to account for
     # both +/- sides of the range.
     # Ex. set_range(5) == +/-5V which spans a total of 10V
-    read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
+    read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=ads.ranges[ads_in] * 2, use_twos_comp=True)
     # Compare
     assert abs(read - expected) <= tolerance
 
@@ -163,6 +164,7 @@ def test_dac_gain(dac: DAC80508, ads: ADS8686, gain, divide_reference, expected_
     # Looking for values within 1 LSB of expected
     global tolerance
     global dac_out
+    global ads_in
     # Set the output on DAC80508 (1/2 scale)
     voltage_data = 0x7fff
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
@@ -178,7 +180,7 @@ def test_dac_gain(dac: DAC80508, ads: ADS8686, gain, divide_reference, expected_
     # We double the range used in the to_voltage calculation to account for
     # both +/- sides of the range.
     # Ex. set_range(5) == +/-5V which spans a total of 10V
-    read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
+    read = to_voltage(data=read_data, num_bits=ads.num_bits, voltage_range=ads.ranges[ads_in] * 2, use_twos_comp=True)
     # Compare
     assert abs(read - expected) <= tolerance
 
@@ -189,6 +191,8 @@ def test_dac_gain(dac: DAC80508, ads: ADS8686, gain, divide_reference, expected_
 
 #     # Looking for values within 1 LSB of expected
 #     global tolerance
+#     global dac_out
+#     global ads_in
 #     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
 #     # adjusted by the gain of the output and whether the internal reference is
 #     # divided by 2 or not.
@@ -204,7 +208,7 @@ def test_dac_gain(dac: DAC80508, ads: ADS8686, gain, divide_reference, expected_
 #     # both +/- sides of the range.
 #     # Ex. set_range(5) == +/-5V which spans a total of 10V
 #     read = to_voltage(data=read_data, num_bits=ads.num_bits,
-#                       voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
+#                       voltage_range=ads.ranges[ads_in] * 2, use_twos_comp=True)
 #     # Compare
 #     assert abs(read - expected) <= tolerance
 
@@ -216,6 +220,7 @@ def test_dac_write_voltage(dac: DAC80508, ads: ADS8686, voltage):
     # Looking for values within 1 LSB of expected
     global tolerance
     global dac_out
+    global ads_in
     # The DAC80508 operates on 16-bit resolution with a voltage range of 2.5V
     # adjusted by the gain of the output and whether the internal reference is
     # divided by 2 or not.
@@ -229,6 +234,6 @@ def test_dac_write_voltage(dac: DAC80508, ads: ADS8686, voltage):
     # both +/- sides of the range.
     # Ex. set_range(5) == +/-5V which spans a total of 10V
     read = to_voltage(data=read_data, num_bits=ads.num_bits,
-                      voltage_range=ads.ranges[5] * 2, use_twos_comp=True)
+                      voltage_range=ads.ranges[ads_in] * 2, use_twos_comp=True)
     # Compare
     assert abs(read - voltage) <= tolerance
