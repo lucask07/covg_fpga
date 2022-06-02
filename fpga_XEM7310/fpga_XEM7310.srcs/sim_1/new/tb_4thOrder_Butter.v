@@ -22,7 +22,7 @@
 // 
 ////////////////////////////////////////////////////////////////////////////////
 
-module tb_spi_top;
+module tb_4thOrder_Butter;
 
 	// Inputs
 	reg clk;
@@ -48,6 +48,7 @@ module tb_spi_top;
 	wire slow_pulse;
 	wire clk_en;
 	wire [13:0] filter_out_modified;
+	wire [13:0] filter_out_modified_2;
 	//
 //	wire clk_en;
 //	general_clock_divide divide(
@@ -63,7 +64,7 @@ module tb_spi_top;
 	reg [23:0] filter_in; // expand data length
 
 	// Instantiate the Unit Under Test (UUT)
-	spi_fifo_driven #(.ADDR(8'h15)) uut (
+	spi_fifo_driven_filter_test #(.ADDR(8'h15)) uut (
 		.clk(clk),
 		.fifoclk(fifoclk),
 		.rst(rst), 
@@ -86,7 +87,8 @@ module tb_spi_top;
 		//.ddr3_rst(ddr3_rst),
 		//.clk_en(clk_en),
 		.regTrigger(regTrigger),
-		.filter_out_modified(filter_out_modified)
+		.filter_out_modified(filter_out_modified),
+		.filter_out_modified_2(filter_out_modified_2)
 	);
 	
 	// Generate clock
@@ -114,11 +116,15 @@ module tb_spi_top;
     integer FileID, file;
 //     Data source for filter_in
       initial begin
-          FileID = $fopen("filter_in.dat", "r");
+          FileID = $fopen("C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.sim/sim_1/behav/xsim/filter_in.dat", "r");
       end
     
     always@(posedge data_rdy)begin
-        $display("%d", filter_out_modified);
+        $display("folded: %d", filter_out_modified);
+        $display("unfolded: %d", filter_out_modified_2);
+        if(filter_out_modified !== filter_out_modified_2)begin
+            $display("MISMATCH in y_out and y_out2 at time %t : Y_out '%h' Folded out '%h'", $time, filter_out_modified, filter_out_modified_2);
+        end
         if(count > 10'd49)begin
             count = count + 1'b1;
             //filter_in = 16'h7fff;
@@ -375,4 +381,3 @@ module tb_spi_top;
 		$finish;
 	end
 endmodule
-
