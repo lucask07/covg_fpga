@@ -20,4 +20,7 @@ Verilog and Python for the COVG project.
 
 * Matplotlib 
 * numpy
-* pandas 
+* pandas
+
+### (Approximate) FPGA Block Diagram 
+![Block diagram](docs/block_diagram/fpga_block_diagram.pdf)

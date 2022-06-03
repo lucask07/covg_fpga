@@ -131,3 +131,7 @@ python/tests/unit_tests/test_defines.v
 !docs/*.js
 !docs/*objects.inv
 !docs/*.md
+
+# For Blockdiagram
+!docs/block_diagram/*.tex
+!docs/block_diagram/*.pdf
