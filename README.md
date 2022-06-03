@@ -1,6 +1,4 @@
-Verilog and Python for the COVG project.
-
-
+Verilog and Python for a general purpose data acquisition system using an OpalKelly FPGA as the main controller. The Python is designed to be a general purpose approach to interface with multiple peripheral components that contain register maps. 
 
 ## Acknowledgements 
 
@@ -22,6 +20,15 @@ Verilog and Python for the COVG project.
 * numpy
 * pandas
 
-### (Approximate) FPGA Block Diagram 
+
+## OpalKelly Module Compatibility. 
+We have targeted and tested with the [XEM7310-A75 module](https://opalkelly.com/products/xem7310/) (Xilinx Artix-7). We have not tested but anticipate reasonable portability to other USB 3 OpalKelly modules:
+
+* XEM7310MT
+* XEM7320
+* XEM7305
+* XEM7360
+
+## (Approximate) FPGA Block Diagram 
 <p align="center">
 <img src="docs/block_diagram/fpga_block_diagram.png" width="700">
