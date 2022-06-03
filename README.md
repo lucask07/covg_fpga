@@ -23,4 +23,5 @@ Verilog and Python for the COVG project.
 * pandas
 
 ### (Approximate) FPGA Block Diagram 
-![Block diagram](docs/block_diagram/fpga_block_diagram.pdf)
+<p align="center">
+<img src="docs/block_diagram/fpga_block_diagram.pdf" width="700">
