@@ -21,8 +21,8 @@ T = 1/Fs;             % Sampling period
 fsig = 100000;        % frequency of test sinewave
 t = (0:714)*T;        % Time vector
 
-Amplitude = 2048; %amplitude
-Offset = 4096; %offset
+Amplitude = 16383; %amplitude
+Offset = 16384; %offset
 
 j = Amplitude*sin(2*pi*fsig*t)+Offset;
 %j = 2^15*(t>1e-5);
@@ -98,7 +98,7 @@ t1 = (0:length(A)-1)*T;        % Time vector
 %% Reading Python Output
 figure(3);
 y = hdf5read('test100kHz.h5','/adc');
-plot(t1, y(1:length(t1),5), '-*');
+plot(t1(1:2:end), y(1:2:length(t1),5), '-*');
 %plot(y(:,5));
 
 hold on;
@@ -131,81 +131,348 @@ saveas(figure(3), 'VivadoSimResults.png');
 amplitude = [];
 freq = [];
 gain = [];
+gain_RMS_array = [];
+gain_FFT_array = [];
 
 y = hdf5read('test100Hz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 100];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
+
 y = hdf5read('test1kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 1e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test10kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 10e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test100kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 100e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test200kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 200e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test300kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 300e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test400kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 400e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test500kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 500e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test600kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 600e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test700kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 700e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test800kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 800e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test900kHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 900e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
 y = hdf5read('test1MHz.h5','/adc');
 amplitude = [amplitude, (max(y(:,5)) - min(y(:,5)))/2];
+gain_RMS = ((rms(y(:,5) - mean(y(:,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+gain_RMS_array = [gain_RMS_array, gain_RMS];
 gain = [gain, (max(y(:,5)) - min(y(:,5)))/(max(y(:,3)) - min(y(:,3)))];
 freq = [freq, 1000e3];
 
+o = y(:,5) - mean(y(:,5));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+o = y(:,3) - mean(y(:,3));
+Y = fft(o);
+L = length(o);
+f = Fs*(0:(L/2))/L;
+P4 = abs(Y/L);
+P3 = P4(1:L/2+1);
+P3(2:end-1) = 2*P3(2:end-1);
+gain_FFT = max(P1)/max(P3);
+gain_FFT_array = [gain_FFT_array, gain_FFT];
+
+freq = 2*freq;
+
 figure(4);
-semilogx(freq, 20*log(gain/max(gain)), 'LineWidth', 2);
+semilogx(freq, 20*log(gain/max(gain)), '-*', 'LineWidth', 2);
 hold on;
 grid on;
 ylim([-80 10]);
 yticks(-80:4:10);
 title('Bode Plot');
-xlabel('Frequency - Hz');
-ylabel('Magnitude - dB');
+xlabel('Frequency (Hz)');
+ylabel('Magnitude (dB)');
+
+semilogx(freq, 20*log(gain_RMS_array/max(gain_RMS_array)), '-*', 'LineWidth', 2);
+hold on;
+
+[hideal,f] = freqz(sos1, 512, fs);
+Hideal = 20*log10(abs(hideal));
+plot(f, Hideal, 'LineWidth', 2);
+hold on;
+
+semilogx(freq, 20*log(gain_FFT_array/max(gain_FFT_array)), '-*', 'LineWidth', 2);
+hold on;
+
+yline(-3, '--');
+legend('DDR Bench Meas', 'DDR Bench Meas (RMS calc)', 'Matlab', 'DDR Bench Meas (FFT calc)', 'Location', 'southwest');
+
 saveas(figure(4), '4thOrderButterWorthBode.png');
 
 %%
