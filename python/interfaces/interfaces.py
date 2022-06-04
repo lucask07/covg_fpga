@@ -800,7 +800,9 @@ class I2CController:
         """
         if (regAddr == None) or (regAddr == [None]):
             preamble = [devAddr | 0x01] # for chips without register addresses -- just a single register
-            self.i2c_configure(1, 0x01, 0x00, preamble)
+            # self.i2c_configure(1, 0x01, 0x00, preamble)
+            self.i2c_configure(1, 0x00, 0x00, preamble) # no starts needed
+
         else:
             preamble = [devAddr & 0xfe] + regAddr + [devAddr | 0x01]
             # signature: i2c_configure(data_length, starts (a one for each byte that gets a start), stops, preamble):
@@ -1495,7 +1497,7 @@ class DAC101C081(I2CController):
         used to differentiate between different instances using the ADDR pins.
     """
 
-    ADDRESS_HEADER = 0b100_0110  # ADR0=Gnd -- Bath Clamp. ADR0 to GND
+    ADDRESS_HEADER = (0b000_1101 << 1) # ADR0=Gnd -- Bath Clamp. ADR0 to GND
     # The device address table in the data sheet is strange 
     # see here: 
     #   https://e2e.ti.com/support/data-converters-group/data-converters/f/data-converters-forum/955893/dac101c081-dac101c081-i2c-address-selection
@@ -1523,7 +1525,10 @@ class DAC101C081(I2CController):
         """Read 2 bytes of data from the chip register"""
 
         dev_addr = self.ADDRESS_HEADER | (self.addr_pins << 1) | 0b1
-        return self.i2c_read_long(dev_addr, [None], 2)
+        data_list = self.i2c_read_long(dev_addr, [None], 2)
+        data = ((data_list[0] & 0x0f) << 6) + (data_list[1] >> 2)
+        pd = ((data_list[0] & 0x30) >> 4)
+        return data, pd
 
     def power_down(self):
         data = b0010_0000_0000_0000 # this is the 100 kOhm power down mode  

@@ -68,8 +68,11 @@ class Clamp:
                               endpoints=i2c_eps)
         self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins,
                                   endpoints=i2c_eps)
-        self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins,
+        # self.DAC = DAC53401(fpga=fpga, addr_pins=DAC_addr_pins,
+        #                     endpoints=i2c_eps)
+        self.DAC = DAC101C081(fpga=fpga, addr_pins=DAC_addr_pins,
                             endpoints=i2c_eps)
+
         self.serial_number = None  # Will get serial code from UID chip in setup()
 
         self.configs = {}

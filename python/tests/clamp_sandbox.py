@@ -18,8 +18,8 @@ from interfaces.interfaces import (
     AD7961,
     disp_device,
     DDR3,
-    TCA9555,
-)
+    TCA9555
+    )
 from interfaces.boards import Daq, Clamp
 from interfaces.utils import twos_comp
 import os
@@ -341,80 +341,87 @@ file_name = 'test'
 #output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 
 idx = 0
+REPEAT = True
 
-REPEAT = False
-if REPEAT:  # to repeat data capture without rewriting the DAC data
-    ddr.clear_adc_read()
-    ddr.clear_adc_write()
+for dv in [2**6, 2**8, 2**9]:
+    clamp[1].DAC.write(dv)
+    if REPEAT:  # to repeat data capture without rewriting the DAC data
+        ddr.clear_adc_read()
+        ddr.clear_adc_write()
 
-    ddr.reset_fifo(name='ALL')
-    ddr.reset_mig_interface()
+        ddr.reset_fifo(name='ALL')
+        ddr.reset_mig_interface()
 
-    ddr_write_finish()
-    time.sleep(0.01)
+        ddr_write_finish()
+        time.sleep(0.01)
 
-# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 8,
-                          blk_multiples=40) # blk multiples multiple of 10
+    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+    chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats = 8,
+                            blk_multiples=40) # blk multiples multiple of 10
 
-# to get the deswizzled data of all repeats need to read the file
-_, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
+    # to get the deswizzled data of all repeats need to read the file
+    _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
 
-# Long data sequence -- entire file 
-adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
+    # Long data sequence -- entire file 
+    adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
 
-# Shorter data sequence, just one of the repeats
-# adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
+    # Shorter data sequence, just one of the repeats
+    # adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
 
-t = np.arange(0,len(adc_data[0]))*1/FS
+    t = np.arange(0,len(adc_data[0]))*1/FS
 
-crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
-print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+    crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
+    print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
-# fast ADC. AD7961
-for ch in [0]:
+    # fast ADC. AD7961
+    for ch in [0]:
+        fig,ax=plt.subplots()
+        y = adc_data[ch][crop_start:]
+        lbl = f'Ch{ch}'
+        ax.plot(t*1e6, y, marker = '+', label = lbl)
+        ax.legend()
+        ax.set_title('Fast ADC data')
+        ax.set_xlabel('s [us]')
+
+    # DACs 
+    t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
+    for dac_ch in range(4):
+        fig,ax=plt.subplots()
+        y = dac_data[dac_ch][crop_start:]
+        lbl = f'Ch{dac_ch}'
+        ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
+        ax.legend()
+        ax.set_title('Fast DAC data')
+        ax.set_xlabel('s [us]')
+
+    # ADS8686. ToDo will need to chop up based on sequencer settings 
+    t_ads = t[crop_start::5] # ADS8686 data is saved every fifth 5 MSPS tick
+    skip = 3 # sequencer has 3 channels to cycle through
+
+    AC_COUPLE = False
     fig,ax=plt.subplots()
-    y = adc_data[ch][crop_start:]
-    lbl = f'Ch{ch}'
-    ax.plot(t*1e6, y, marker = '+', label = lbl)
+    for start_num in [0, 1, 2]:
+        if AC_COUPLE:
+            ax.plot(t_ads[start_num::skip]*1e6, ads['A'][start_num::skip] - np.mean(ads['A'][start_num::skip]), 
+                marker = '+', label = f'ADS: A:{start_num}')
+            ax.plot(t_ads[start_num::skip]*1e6, ads['B'][start_num::skip] - np.mean(ads['B'][start_num::skip]), 
+                marker = '+', label = f'ADS: B:{start_num}')
+        else:
+            ax.plot(t_ads[start_num::skip]*1e6, ads['A'][start_num::skip], 
+                marker = '+', label = f'ADS: A:{start_num}')
+            ax.plot(t_ads[start_num::skip]*1e6, ads['B'][start_num::skip], 
+                marker = '+', label = f'ADS: B:{start_num}')
     ax.legend()
-    ax.set_title('Fast ADC data')
     ax.set_xlabel('s [us]')
+    ax.set_title('ADS8686 data')
 
-# DACs 
-t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
-for dac_ch in range(4):
-    fig,ax=plt.subplots()
-    y = dac_data[dac_ch][crop_start:]
-    lbl = f'Ch{dac_ch}'
-    ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
-    ax.legend()
-    ax.set_title('Fast DAC data')
-    ax.set_xlabel('s [us]')
-
-# ADS8686. ToDo will need to chop up based on sequencer settings 
-t_ads = t[crop_start::5] # ADS8686 data is saved every fifth 5 MSPS tick
-skip = 3 # sequencer has 3 channels to cycle through
-
-AC_COUPLE = False
-fig,ax=plt.subplots()
-for start_num in [0, 1, 2]:
-    if AC_COUPLE:
-        ax.plot(t_ads[start_num::skip]*1e6, ads['A'][start_num::skip] - np.mean(ads['A'][start_num::skip]), 
-            marker = '+', label = f'ADS: A:{start_num}')
-        ax.plot(t_ads[start_num::skip]*1e6, ads['B'][start_num::skip] - np.mean(ads['B'][start_num::skip]), 
-            marker = '+', label = f'ADS: B:{start_num}')
-    else:
-        ax.plot(t_ads[start_num::skip]*1e6, ads['A'][start_num::skip], 
-            marker = '+', label = f'ADS: A:{start_num}')
-        ax.plot(t_ads[start_num::skip]*1e6, ads['B'][start_num::skip], 
-            marker = '+', label = f'ADS: B:{start_num}')
-ax.legend()
-ax.set_xlabel('s [us]')
-ax.set_title('ADS8686 data')
-
-
-
+'''
+# Test the clamp v2 DAC
+test_write = 42
+clamp[1].DAC.write(test_write)
+test_read = clamp[1].DAC.read()
+print(test_read)
+'''
 
 def tune_cc(data_dir, file_name, rf, ccomp, cmd_impulse_scaling=7424, cc_impulse_scaling=2600, PLT_DEBUG=True):
 
