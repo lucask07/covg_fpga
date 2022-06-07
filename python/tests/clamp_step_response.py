@@ -21,14 +21,7 @@ import atexit
 from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import minimize, basinhopping
-import pandas as pd
 import pickle as pkl
-import h5py
-
-#import matplotlib
-
-# matplotlib.use("TkAgg")  # or "Qt5agg" depending on you version of Qt
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -44,7 +37,7 @@ sys.path.append(interfaces_path)
 from analysis.clamp_data import adjust_step2, adjust_step, adjust_step_delay, adjust_step_scale
 from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv, idx_timerange
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
-from interfaces.utils import to_voltage, twos_comp
+from interfaces.utils import to_voltage, from_voltage, twos_comp
 from interfaces.interfaces import (
     FPGA,
     Endpoint,
@@ -60,7 +53,7 @@ def ddr_write_setup():
     ddr.clear_adc_write()
     ddr.reset_fifo(name='ALL')
     ddr.reset_mig_interface()
-    ad7961s[0].reset_trig()  # TODO: what does this do?
+    ad7961s[1].reset_trig()  # TODO: what does this do?
 
 
 def ddr_write_finish():
@@ -85,8 +78,8 @@ def set_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=80
                cc_val=None, cc_pickle_num=None):
 
     dac_offset = 0x2000
-    cmd_ch = 1
-    cc_ch = 0
+    cmd_ch = 3
+    cc_ch = 2
 
     ddr.data_arrays[cmd_ch] = ddr.make_step(
         low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len)  # 1.6 ms between edges
@@ -135,7 +128,7 @@ def set_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=80
 
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
-DC_NUM = 0  # the Daughter-card channel under test. Order on board from L to R: 1,0,2,3
+DC_NUM = 1  # the Daughter-card channel under test. Order on board from L to R: 1,0,2,3
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
 
@@ -207,7 +200,7 @@ pwr.all_off()  # disable all power enables
 
 daq = Daq(f)
 ad7961s = daq.ADC
-ad7961s[0].reset_wire(1)
+ad7961s[1].reset_wire(1)
 
 # power supply turn on via FPGA enables
 for name in ["1V8", "5V", "3V3"]:
@@ -231,7 +224,7 @@ log_info, config_dict = clamp.configure_clamp(
     CCOMP=47,
     RF1=2.2,  # feedback circuit
     # RF1=2.1,  # feedback circuit
-    ADG_RES=100,
+    ADG_RES=10,
     PClamp_CTRL=0,
     P1_E_CTRL=0,
     P1_CAL_CTRL=0,
@@ -250,7 +243,7 @@ log_info, config_dict = clamp.configure_clamp(
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 
-ad7961s[0].reset_wire(0)
+ad7961s[1].reset_wire(0)
 time.sleep(1)
 
 # TODO: is this needed?
@@ -266,7 +259,7 @@ for i in range(6):
     daq.DAC[i].set_data_mux("DDR")
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
-    daq.set_dac_gain(i, 500)  # 500 mV full-scale
+    daq.set_dac_gain(i, 5)  # 500 mV full-scale
 
 # # TODO: do we need this for this experiment?
 # # configure clamp board Utility pin to be the offset voltage for the feedback
@@ -308,12 +301,15 @@ ddr = DDR3(f, data_version='TIMESTAMPS')
 # ddr.reset_mig_interface()
 # ddr_write_finish()
 
-ddr.data_arrays[3] = ddr.make_step(0x2000 - 0x800, 0x2000 + 0x800,
-                                   length=2048)
-ddr.data_arrays[2] = ddr.make_step(0x2000 - 0x800, 0x2000 + 0x800,
-                                   length=2048)
-set_cmd_cc(cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
+# ddr.data_arrays[3] = ddr.make_step(0x2000 - 0x800, 0x2000 + 0x800,
+#                                    length=2048)
+# ddr.data_arrays[2] = ddr.make_step(0x2000 - 0x800, 0x2000 + 0x800,
+#                                    length=2048)
+
+set_cmd_cc(cmd_val=0xff00, cc_scale=0, cc_delay=0, fc=None,
            step_len=16384, cc_val=None, cc_pickle_num=None)
+# set_cmd_cc(cmd_val=from_voltage(0.05, 16, 5), cc_scale=0, cc_delay=0, fc=None,
+#            step_len=16384, cc_val=None, cc_pickle_num=None)
 
 #CHAN_UNDER_TEST = 0
 #output = pd.DataFrame()
@@ -358,30 +354,99 @@ t = np.arange(0, len(adc_data[0]))*1/FS
 crop_start = 0
 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
-fig, axes = plt.subplots(2, 4)
-# fast ADC. AD7961
-for ch in range(4):
-    y = adc_data[ch][crop_start:]
-    lbl = f'Ch{ch}'
-    axes[0][ch].plot(t*1e6, y, marker='.', label=lbl)
-    axes[0][ch].legend()
-    axes[0][ch].set_title('Fast ADC data')
-    axes[0][ch].set_xlabel('s [us]')
+# fig, axes = plt.subplots(2, 4)
+# # fast ADC. AD7961
+# for ch in range(4):
+#     y = adc_data[ch][crop_start:]
+#     lbl = f'Ch{ch}'
+#     axes[0][ch].plot(t*1e6, y, marker='.', label=lbl)
+#     axes[0][ch].legend()
+#     axes[0][ch].set_title('Fast ADC data')
+#     axes[0][ch].set_xlabel('s [us]')
 
-# DACs
-t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
-for dac_ch in range(4):
-    y = dac_data[dac_ch][crop_start:]
-    lbl = f'Ch{dac_ch}'
-    axes[1][dac_ch].plot(t_dacs*1e6, y, marker='.', label=lbl)
-    axes[1][dac_ch].legend()
-    axes[1][dac_ch].set_title(f'Fast DAC data {dac_ch}')
-    axes[1][dac_ch].set_xlabel('s [us]')
+# # DACs
+# t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
+# for dac_ch in range(4):
+#     y = dac_data[dac_ch][crop_start:]
+#     lbl = f'Ch{dac_ch}'
+#     axes[1][dac_ch].plot(t_dacs*1e6, y, marker='.', label=lbl)
+#     axes[1][dac_ch].legend()
+#     axes[1][dac_ch].set_title(f'Fast DAC data {dac_ch}')
+#     axes[1][dac_ch].set_xlabel('s [us]')
+
+# fig2, ax2 = plt.subplots(2, 4)
+# for ch in range(8):
+#     y = ddr.data_arrays[ch]
+#     ax2[ch // 4][ch % 4].plot(y)
+#     ax2[ch // 4][ch % 4].set_title(f'DDR ch{ch}')
+
+# # Convert to voltage?
+# adc_converted = to_voltage(chan_data[1][crop_start:], num_bits=16, voltage_range=10, use_twos_comp=True)
+# adc_converted2 = to_voltage(adc_data[0][crop_start:], num_bits=16, voltage_range=10, use_twos_comp=True)
+# fig3, ax3 = plt.subplots()
+# ax3.plot(t[crop_start:] * 1e6, adc_converted, c='b', label='chan_data')
+# ax3.plot(t[crop_start:] * 1e6, adc_converted2, c='r', label='adc_data')
+# ax3.set_title('Converted ADC data (AD7961)')
+# ax3.set_xlabel('Time [us]')
+# ax3.set_ylabel('Voltage [V]')
+# ax3.legend()
 
 # Convert to voltage?
-adc_converted = to_voltage(chan_data[0][crop_start:], num_bits=16, voltage_range=10, use_twos_comp=True)
+adc_converted = to_voltage(chan_data[1][crop_start:], num_bits=16, voltage_range=10, use_twos_comp=True)
 fig3, ax3 = plt.subplots()
-ax3.plot(t[crop_start:] * 1e6, adc_converted)
+ax3.plot(t[crop_start:] * 1e6, adc_converted, c='b', label='chan_data')
 ax3.set_title('Converted ADC data (AD7961)')
 ax3.set_xlabel('Time [us]')
 ax3.set_ylabel('Voltage [V]')
+ax3.legend()
+
+# Try with 5 different resistors
+voltage_data = {10: [], 33: [], 100: [], 332: [], 3000: []}    # Rf Resistor values for Figure 4 graph
+main_fig, main_ax = plt.subplots()
+main_ax.set_title('Voltage response to CMD step voltage')
+for res in voltage_data.keys():
+    # Choose resistor
+    log_info, config_dict = clamp.configure_clamp(
+        ADC_SEL="CAL_SIG1",
+        DAC_SEL="drive_CAL2",
+        CCOMP=47,
+        RF1=2.2,  # feedback circuit
+        # RF1=2.1,  # feedback circuit
+        ADG_RES=res,
+        PClamp_CTRL=0,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=0,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
+
+    # Set CMD and CC signals
+    set_cmd_cc(cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
+               step_len=16384, cc_val=None, cc_pickle_num=None)
+
+    # Get data
+    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+    chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+                                        blk_multiples=40)  # blk multiples multiple of 10
+
+    # to get the deswizzled data of all repeats need to read the file
+    _, chan_data = read_h5(data_dir, file_name=file_name.format(
+        idx) + '.h5', chan_list=np.arange(8))
+
+    # Store voltage in list
+    voltage_data[res] = to_voltage(chan_data[1][crop_start:], num_bits=16, voltage_range=10, use_twos_comp=True)
+    main_ax.plot(voltage_data[res], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
+main_ax.legend()
+
+current_fig, current_ax = plt.subplots()
+current_ax.set_title('Current response to CMD step voltage')
+for res in voltage_data.keys():
+    current_ax.plot([v / res for v in voltage_data[res]], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
+current_ax.legend()
