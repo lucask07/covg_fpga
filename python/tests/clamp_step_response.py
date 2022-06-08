@@ -247,54 +247,61 @@ print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 # Time in seconds
 t = np.arange(0, len(chan_data[0]))*1/FS
 
-# Try with 5 different resistors
-voltage_data = {10: [], 33: [], 100: [], 332: [], 3000: []}    # Rf Resistor values for Figure 4 graph
-current_fig, current_ax = plt.subplots()
-current_ax.set_title('Current response to CMD step voltage')
-current_ax.set_xlabel('Time (\N{GREEK SMALL LETTER MU}s)')
-current_ax.set_ylabel('Current (A)')
-for res in voltage_data.keys():
-    # Choose resistor; setup
-    log_info, config_dict = clamp.configure_clamp(
-        ADC_SEL="CAL_SIG1",
-        DAC_SEL="drive_CAL2",
-        CCOMP=47,
-        RF1=2.2,  # feedback circuit
-        # RF1=2.1,  # feedback circuit
-        ADG_RES=res,
-        PClamp_CTRL=0,
-        P1_E_CTRL=0,
-        P1_CAL_CTRL=0,
-        P2_E_CTRL=0,
-        P2_CAL_CTRL=0,
-        gain=1,  # instrumentation amplifier
-        FDBK=1,
-        mode="voltage",
-        EN_ipump=0,
-        RF_1_Out=1,
-        addr_pins_1=0b110,
-        addr_pins_2=0b000,
-    )
+# Try with different capacitors
+capacitors = [47, 200, 1000, 4700]  # CCOMP Capacitor values in pF
+voltage_data = {10: [], 33: [], 100: [], 332: [], 3000: []}    # Rf Resistor values in kilo-ohms for Figure 4 graph
+fig, axes = plt.subplots(2, 2)
+fig.suptitle('Current response to CMD step voltage')
+for i in range(len(capacitors)):
+    cap = capacitors[i]
+    current_ax = axes[i // 2][i % 2]
+    current_ax.set_title(f'CCOMP={cap}pF')
+    current_ax.set_xlabel('Time (\N{GREEK SMALL LETTER MU}s)')
+    current_ax.set_ylabel('Current (\N{GREEK SMALL LETTER MU}A)')
 
-    # Set CMD and CC signals
-    set_cmd_cc(cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
-               step_len=16384, cc_val=None, cc_pickle_num=None)
+    # Try with 5 different resistors
+    for res in voltage_data.keys():
+        # Choose resistor; setup
+        log_info, config_dict = clamp.configure_clamp(
+            ADC_SEL="CAL_SIG1",
+            DAC_SEL="drive_CAL2",
+            CCOMP=cap,
+            RF1=2.2,  # feedback circuit
+            # RF1=2.1,  # feedback circuit
+            ADG_RES=res,
+            PClamp_CTRL=0,
+            P1_E_CTRL=0,
+            P1_CAL_CTRL=0,
+            P2_E_CTRL=0,
+            P2_CAL_CTRL=0,
+            gain=1,  # instrumentation amplifier
+            FDBK=1,
+            mode="voltage",
+            EN_ipump=0,
+            RF_1_Out=1,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000,
+        )
 
-    # Get data
-    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-    chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-                                        blk_multiples=40)  # blk multiples multiple of 10
+        # Set CMD and CC signals
+        set_cmd_cc(cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
+                step_len=16384, cc_val=None, cc_pickle_num=None)
 
-    # to get the deswizzled data of all repeats need to read the file
-    _, chan_data = read_h5(data_dir, file_name=file_name.format(
-        idx) + '.h5', chan_list=np.arange(8))
+        # Get data
+        # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+        chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+                                            blk_multiples=40)  # blk multiples multiple of 10
 
-    # Store voltage in list; plot
-    voltage_data[res] = to_voltage(chan_data[1], num_bits=16, voltage_range=10, use_twos_comp=True)
+        # to get the deswizzled data of all repeats need to read the file
+        _, chan_data = read_h5(data_dir, file_name=file_name.format(
+            idx) + '.h5', chan_list=np.arange(8))
 
-    # Plot current (A) against time (us)
-    current_ax.plot(t * 1e6, [v / res for v in voltage_data[res]], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
-current_ax.legend()
-# Zoom in on the data
-current_ax.set_xlim(6550, 6800)
-current_ax.set_ylim(-0.01, 0.03)
+        # Store voltage in list; plot
+        voltage_data[res] = to_voltage(chan_data[1], num_bits=16, voltage_range=10, use_twos_comp=True)
+
+        # Plot current (uA) against time (us) -> uA because resistor values are in kilo-ohms, we multiply current by 1e3
+        current_ax.plot(t * 1e6, [(v / res) * 1e3 for v in voltage_data[res]], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
+    current_ax.legend()
+    # Zoom in on the data
+    current_ax.set_xlim(6550, 6800)
+    current_ax.set_ylim(-10, 30)
