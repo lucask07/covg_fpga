@@ -25,8 +25,9 @@ t = (0:714)*T;        % Time vector
 Amplitude = 16383; %amplitude
 Offset = 16384; %offset
 
-j = Amplitude*sin(2*pi*fsig*t)+Offset;
-%j = 2^15*(t>1e-5);
+% j = Amplitude*sin(2*pi*fsig*t)+Offset;
+% j = (2^15-1)*(t>5e-5);
+j = 2^15*exp(-2e5*(t-5e-5)).*(t>5e-5);
 
 input = int16(j);
 
@@ -40,14 +41,13 @@ title('input to filter');
 xlim([0 t(length(t))]);
 
 fileID = fopen('..\..\fpga_XEM7310\fpga_XEM7310.sim\sim_1\behav\xsim\filter_in.dat','w');
-%fprintf(fileID, '%s\r\n', '// Input data for filter_in');
+
 for i = (1:length(input))
-    %fprintf(fileID,'%s%d%s%s\r\n', 'filter_in[', i, '] <= 16h''', dec2hex(input(i)));
     fprintf(fileID,'%s\r\n', dec2hex(input(i)));
 end
 fclose(fileID);
 
-%% Read simulate.log
+%% Read simulate.log (Raw Vivado Simulation Results)
 
 fileID = fopen('..\..\fpga_XEM7310\fpga_XEM7310.sim\sim_1\behav\xsim\simulate.log','r');
 
@@ -61,40 +61,7 @@ sizeA = [Inf];
 A = fscanf(fileID, formatSpec, sizeA);
 fclose(fileID);
 
-%% Raw Vivado Simulation Results
-
-% Fs = 5e6;            % Sampling frequency                    
-% T = 1/Fs;             % Sampling period
 t1 = (0:length(A)-1)*T;        % Time vector
-% 
-% figure(2);
-% plot(t1, A, '-*');
-% grid on;
-% title('Vivado Simulation Results');
-% xlabel('Time (s)');
-% ylabel('Hex Code');
-% xlim([0 t1(length(t1))]);
-% ylim([8000 10000]);
-% saveas(figure(2), 'VivadoSimResults.png');
-
-% vivadoGain = (max(A(20:end-1)-min(A(20:end-1))))/(max(j)-min(j))
-
-%% Overlaying Normalized Input and Normalized Output
-% A_normalized = (A-8191)/8192; %normalize and cancel offset of output
-% in_normalized = j/32768;
-% in_normalized = in_normalized/max(in_normalized);
-% A_normalized = A_normalized/max(in_normalized);
-% 
-% figure(3);
-% plot(t1, A_normalized);
-% grid on;
-% title('Normalized Input and Output');
-% xlabel('Time (s)');
-% ylabel('Hex Code');
-% xlim([0 t1(length(t1))]);
-% ylim([min(in_normalized) max(in_normalized)]);
-% hold on;
-% plot(t, in_normalized);
 
 %% Reading Python Output
 figure(3);
@@ -123,10 +90,56 @@ for x = (1:length(t1))
     output = [output, out];
 end
 
+offsetOutput = AD796x_LPF_data_modify_fixpt(output);
+
 % Plotting Input and Output on same graph
-plot(t1, AD796x_LPF_data_modify_fixpt(output), '-*');
+plot(t1, offsetOutput, '-*');
 legend('DDR Bench Meas', 'Vivado Sim', 'Matlab');
 saveas(figure(3), 'VivadoSimResults.png');
+
+%% Series Resistance Compensation
+scaleval = 0.5;
+figure(4);
+
+% get the scaled filtered signal
+scaledFiltered = series_res_comp_gain(offsetOutput, scaleval);
+
+% example command signal
+cmd = (2^13-1)*(t1>5e-5) + 2^13;
+subplot(2, 2, 1);
+plot(t1, cmd, '-.b', 'Linewidth', 2);
+title('Command Signal');
+xlabel('Time (s)');
+ylabel('Hex Code');
+xlim([0.2e-4 1e-4]);
+
+% plot filtered example AD7961 signal
+subplot(2, 2, 2);
+plot(t1, offsetOutput, '-.r', 'Linewidth', 2);
+hold on;
+plot(t1, A, '-*');
+title('Filtered AD7961 readings');
+xlabel('Time (s)');
+ylabel('Hex Code');
+xlim([0.2e-4 1e-4]);
+
+% plot filtered example AD7961 signal
+subplot(2, 2, 4);
+plot(t1, scaledFiltered, '-.r', 'Linewidth', 2);
+title('Filtered AD7961 readings');
+xlabel('Time (s)');
+ylabel('Hex Code');
+xlim([0.2e-4 1e-4]);
+
+% apply gain to filtered signal and sum with command signal
+subplot(2, 2, 3);
+filteredsum = cmd + scaledFiltered;
+plot(t1, filteredsum, '-.g', 'Linewidth', 2);
+title('Summed Signal');
+xlabel('Time (s)');
+ylabel('Hex Code');
+xlim([0.2e-4 1e-4]);
+
 
 %% Bode Plot
 amplitude = [];
@@ -450,7 +463,7 @@ gain_FFT_array = [gain_FFT_array, gain_FFT];
 
 freq = 2*freq;
 
-figure(4);
+figure(5);
 semilogx(freq, 20*log(gain/max(gain)), '-*', 'LineWidth', 2);
 hold on;
 grid on;
@@ -474,10 +487,10 @@ hold on;
 yline(-3, '--');
 legend('DDR Bench Meas', 'DDR Bench Meas (RMS calc)', 'Matlab', 'DDR Bench Meas (FFT calc)', 'Location', 'southwest');
 
-saveas(figure(4), '4thOrderButterWorthBode.png');
+saveas(figure(5), '4thOrderButterWorthBode.png');
 
 %%
-% figure(5);
+% figure(6);
 % semilogx([10e3 100e3 200e3 300e3 400e3 500e3 600e3 700e3 800e3 800e3 1000e3], 20*log(g/max(g)), 'LineWidth', 2);
 % hold on;
 % grid on;
@@ -572,4 +585,13 @@ function fm = get_fimath()
 	     'MaxProductWordLength', 128,...
 	     'SumMode','FullPrecision',...
 	     'MaxSumWordLength', 128);
+end
+
+%%
+function y = series_res_comp_gain(x, scale)
+    fm = get_fimath();
+
+    g = fi(scale, 0, 14, 13);
+    in = fi(x, 0, 14, 0);
+    y = fi(in*g, 0, 28, 13);
 end
