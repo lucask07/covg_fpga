@@ -150,6 +150,9 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 .addrb({27'b0, read_address}), .clkb(clk), .doutb(coeff_bram_in), .enb(read_coeff)
 	 );
 	 
+	 wire [13:0] filter_out_scaled;
+     wire filter_out_ready;
+	 
 	 // Real-Time LPF
        Butter_pipelined u_Butterworth_0
          (
@@ -162,13 +165,18 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          .write_address(write_address[3:0]),
          .coeffs_in(coeffs_in),
          .filter_out(filter_out),
-         .data_ready(filter_data_rdy)
+         .data_ready(filter_out_ready)
          //.coeff_debug_out1(coeff_debug_out1),
          //.coeff_debug_out2(coeff_debug_out2)
          );
               
      LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
-     .din(filter_out), .dout(filter_out_modified)
+     .din(filter_out_scaled), .dout(filter_out_modified)
+     );
+     
+     LPF_data_scale #(.ADDR(ADDR)) u_dat_scale(
+     .clk(clk), .reset(rst), .ep_write(ep_write), .ep_address(ep_address), .regDataOut(ep_dataout_coeff),
+     .filter_data_in(filter_out), .filter_out_ready(filter_out_ready), .filter_data_out(filter_out_scaled), .data_rdy(filter_data_rdy)
      );
 	 
 	 //Wishbone Master module for AD796x and AD5453

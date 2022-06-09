@@ -264,8 +264,8 @@
 // 8'h2B == 43
 // Only 1 ADS8686 instantiation so no GEN_BIT
 `define ADS8686_REGBRIDGE_OFFSET 0 // address=0x0 bit_width=19
-`define DAC80508_REGBRIDGE_OFFSET_GEN_BIT 5 // address=0x0 bit_width=19
-`define AD5453_REGBRIDGE_OFFSET_GEN_BIT 43 // address=0x0 bit_width=19
+`define DAC80508_REGBRIDGE_OFFSET_GEN_BIT 5 // address=0x0 bit_width=20
+`define AD5453_REGBRIDGE_OFFSET_GEN_BIT 45 // address=0x0 bit_width=20
 
 // FPGA test Endpoints
 `define FPGATEST_STATIC_READ_WO 8'h3F // bit_width=32

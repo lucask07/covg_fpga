@@ -888,7 +888,7 @@ module top_level_module(
         
         assign data_ready_ds[k] = ds_spi_data[k][31];
             
-        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_BIT + k*19))spi_fifo1 (
+        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_BIT + k*20))spi_fifo1 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
                  .data_rdy_0(data_ready_ds[k]), 
@@ -955,7 +955,7 @@ module top_level_module(
         
         assign data_ready_fast_dac[p] = spi_data[p][31]; // assign MUX output MSB to the data_ready signal. 
             
-        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_BIT + p*19))spi_fifo0 (
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_BIT + p*20))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[p]), .mosi_0(d_sdi[p]), .sclk_0(d_sclk[p]), 
                  .data_rdy_0(data_ready_fast_dac[p]), 
