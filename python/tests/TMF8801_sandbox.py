@@ -14,8 +14,11 @@ import matplotlib.pyplot as plt
 
 plt.ion()
 
+# location of the hex FW patch file
 hex_dir = '/Users/koer2434/My Drive/UST/research/tof_comparison/material_classification/TMF8801/'
 FW_PATCH = True
+READ_HIST = False
+
 
 # bl: boot loader commands, read .hex file and process line by line. 
 def bl_intel_hex(hex_dir, filename='main_app_3v3_k2.hex'):
@@ -174,7 +177,7 @@ if FW_PATCH:
 
     tof.TMF.ramremap_reset()
 
-    for i in range(10):
+    for i in range(3):
         print(f'CPU ready? {tof.TMF.cpu_ready()}')
 
     major,minor,patch = tof.TMF.rom_fw_version()
@@ -187,11 +190,11 @@ if FW_PATCH:
 # app = tof.TMF.read_app()
 
 # factory calibration 
-CAL = False 
+PERFORM_CAL = False 
 MEASURE = True
 
 # perform factory calibration 
-if CAL:
+if PERFORM_CAL:
     tof.TMF.write(0x0A, 'COMMAND') # Command is register 0x10
     sleep(2)
     cal_done = 0
@@ -212,9 +215,9 @@ if MEASURE:
     STATE_DATA = True
 
     if (CAL_DATA is False) and (STATE_DATA is True):
-        state_addr = 0x20
+        state_addr = 0x20  # if now cal data start at register 0x20 for state data 
     else:
-        state_addr = 0x2E
+        state_addr = 0x2E # if both are available state starts at 0x2E
 
     # These registers shall be pre-loaded by the host before command=0x02 or 0x0B is executed
     if CAL_DATA:
@@ -253,14 +256,26 @@ if MEASURE:
     # Read measurement data
     # S 41 W 1D Sr 41 R A A A A A A A A A A N P
     vals, data = tof.TMF.read_data()
+    print(vals)
 
-    # This works although reset behaves strange
+    ## to run a continuous test for 20 seconds 
+    cnt = 0
+    while (cnt < 20):
+        vals, data = tof.TMF.read_data()
+        print(vals)
+        sleep(1)
+        cnt += 1
+
+
+
+    # I2C pipe (for large data transfers) 
+    #  works although reset behaves strange
     # Note: the last 4 bytes out will remain (stale) if the pipe is 
     #       re-read after the FIFO empties 
     #       the 4 bytes out don't update until 4 I2C bytes are read.
     #       read in 4 byte multiples 
 
-    buf,e = read_i2c_pipe(tof.TMF)
+    # buf,e = read_i2c_pipe(tof.TMF)
 
     # to write a register without a readback use directly (with the named registers a readback happens first):
     # i2c_write_long(self, devAddr, regAddr, data_length, data)
@@ -274,7 +289,12 @@ if MEASURE:
     of host <-> FPGA transactions.
     """
 
-READ_HIST = True
+
+'''
+Reading of histograms needs testing and development
+for now not executed
+'''
+
 if READ_HIST:
 
     # Stop any command

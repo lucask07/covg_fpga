@@ -1268,10 +1268,12 @@ class TMF8801(I2CController):
     ADDRESS = 0b0100_0001 << 1
     registers = Register.get_chip_registers('TMF8801')
     apps = {'measure': 0xC0, 'bootloader': 0x80}
-
+    MULTI_BYTE_ORDER = 'LSB_1st'
 
     def write(self, data, register_name):
-        """Write data to any register on the chip."""
+        """Write data to any register on the chip.
+            first reads to enable writing of (just) bit-fields within the register
+        """
 
         dev_addr = self.ADDRESS 
         register = self.registers[register_name]
@@ -1302,11 +1304,10 @@ class TMF8801(I2CController):
 
         dev_addr = self.ADDRESS 
         register = self.registers[register_name]
-        # Ex. 16-bit register: | Byte 1 [15:8] | Byte 0 [7:0] |
-        byte_number = register.bit_index_high // 8  # assumption is that this will be 1 or 0 
-        # 16-bit register = 2 bytes, i2c_read_long starts at the MSB so we read 2 bytes to get Byte 0
+        byte_number = (register.bit_index_high // 8) + 1  # This is the total number of bytes to read 
+        # e.g. 16-bit register = 2 bytes, i2c_read_long starts at the MSB so we read 2 bytes to get Byte 0
         if number_of_bytes is None:
-            number_of_bytes = 2 - byte_number
+            number_of_bytes = byte_number
         # print(f'Read slave address: 0x{dev_addr:02x}, reg addr 0x{register.address:02x}')
         read_back_list = self.i2c_read_long(
             dev_addr, [register.address], number_of_bytes)
@@ -1315,15 +1316,23 @@ class TMF8801(I2CController):
         read_back_data = 0
         if read_back_list == None:
             return None
-        # First byte in the list is the MSB, shift and append the next byte
-        for byte in read_back_list:
-            # print('Readback byte of 0x{:02X}'.format(byte))
-            read_back_data <<= 8
-            read_back_data |= byte
+
+        if self.MULTI_BYTE_ORDER == 'MSB_1st':
+            for byte in read_back_list:
+                # print('Readback byte of 0x{:02X}'.format(byte))
+                read_back_data <<= 8
+                read_back_data |= byte
+        elif self.MULTI_BYTE_ORDER == 'LSB_1st':
+            for byte in read_back_list[::-1]:  # flip list order 
+                # print('Readback byte of 0x{:02X}'.format(byte))
+                read_back_data <<= 8
+                read_back_data |= byte
+
+
         # Get only the bits for the specified register from what was read back.
         desired_bits = 0
         for bit in range(register.bit_index_high, register.bit_index_low - 1, -1):
-            desired_bits += 0x1 << bit
+            desired_bits += 0x1 << bit        
         desired_data = (read_back_data
                         & desired_bits) >> register.bit_index_low
 
@@ -1433,11 +1442,12 @@ class TMF8801(I2CController):
 
         vals = {'status': read_data[0],
                 'register_contents': read_data[1],
-                'tid': read_data[2],
+                'transaction_id': read_data[2],
                 'result_num': read_data[3],
                 'result_info': read_data[4],
                 'dist_mm': read_data[5] + (read_data[6]<<8),
                 'sys_clk': read_data[7] + (read_data[8]<<8) + (read_data[9]<<16) + (read_data[10]<<24)}
+        vals['sys_clk_seconds'] = vals['sys_clk']*0.2e-6
         return vals, read_data
 
 
