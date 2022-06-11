@@ -170,13 +170,13 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          //.coeff_debug_out2(coeff_debug_out2)
          );
               
-     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
-     .din(filter_out_scaled), .dout(filter_out_modified)
-     );
+//     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
+//     .din(filter_out_scaled), .dout(filter_out_modified)
+//     );
      
      LPF_data_scale #(.ADDR(ADDR)) u_dat_scale(
      .clk(clk), .reset(rst), .ep_write(ep_write), .ep_address(ep_address), .regDataOut(ep_dataout_coeff),
-     .filter_data_in(filter_out), .filter_out_ready(filter_out_ready), .filter_data_out(filter_out_scaled), .data_rdy(filter_data_rdy)
+     .filter_data_in(filter_out), .filter_out_ready(filter_out_ready), .filter_data_out(filter_out_modified), .data_rdy(filter_data_rdy)
      );
 	 
 	 //Wishbone Master module for AD796x and AD5453

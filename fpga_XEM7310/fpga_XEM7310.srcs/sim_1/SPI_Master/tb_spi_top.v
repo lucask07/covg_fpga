@@ -215,7 +215,7 @@ module tb_spi_top;
       ep_dataout_coeff = 32'h7fffffff;
       #10;
       ep_address = 32'h0000000f + 8'h19;
-      ep_dataout_coeff = 32'h00001000;
+      ep_dataout_coeff = 32'h00002000;
       #10;
       ep_write = 1'b0;
       #5;
