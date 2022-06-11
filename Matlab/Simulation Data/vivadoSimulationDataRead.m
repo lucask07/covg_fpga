@@ -98,11 +98,12 @@ legend('DDR Bench Meas', 'Vivado Sim', 'Matlab');
 saveas(figure(3), 'VivadoSimResults.png');
 
 %% Series Resistance Compensation
-scaleval = 0.5;
+scaleval = .5;
 figure(4);
 
 % get the scaled filtered signal
-scaledFiltered = series_res_comp_gain(offsetOutput, scaleval);
+scaledFiltered = series_res_comp_gain(output, scaleval);
+offsetOutput = AD796x_LPF_data_modify_fixpt(scaledFiltered);
 
 % example command signal
 cmd = (2^13-1)*(t1>5e-5) + 2^13;
@@ -115,25 +116,23 @@ xlim([0.2e-4 1e-4]);
 
 % plot filtered example AD7961 signal
 subplot(2, 2, 2);
-plot(t1, offsetOutput, '-.r', 'Linewidth', 2);
-hold on;
 plot(t1, A, '-*');
-title('Filtered AD7961 readings');
+title('Filtered AD7961 readings (Vivado Sim)');
 xlabel('Time (s)');
 ylabel('Hex Code');
 xlim([0.2e-4 1e-4]);
 
 % plot filtered example AD7961 signal
 subplot(2, 2, 4);
-plot(t1, scaledFiltered, '-.r', 'Linewidth', 2);
-title('Filtered AD7961 readings');
+plot(t1, offsetOutput, '-.r', 'Linewidth', 2);
+title('Filtered AD7961 readings (MATLAB)');
 xlabel('Time (s)');
 ylabel('Hex Code');
 xlim([0.2e-4 1e-4]);
 
 % apply gain to filtered signal and sum with command signal
 subplot(2, 2, 3);
-filteredsum = cmd + scaledFiltered;
+filteredsum = cmd + offsetOutput;
 plot(t1, filteredsum, '-.g', 'Linewidth', 2);
 title('Summed Signal');
 xlabel('Time (s)');
@@ -592,6 +591,6 @@ function y = series_res_comp_gain(x, scale)
     fm = get_fimath();
 
     g = fi(scale, 0, 14, 13);
-    in = fi(x, 0, 14, 0);
-    y = fi(in*g, 0, 28, 13);
+    in = fi(x, 1, 14, 12);
+    y = fi(in*g, 1, 14, 12);
 end

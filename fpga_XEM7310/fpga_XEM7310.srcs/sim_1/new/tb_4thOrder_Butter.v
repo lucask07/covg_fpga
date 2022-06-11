@@ -220,6 +220,9 @@ module tb_4thOrder_Butter;
       ep_address = 32'h00000007 + 8'h19;
       ep_dataout_coeff = 32'h7fffffff;
       #10;
+      ep_address = 32'h0000000f + 8'h19;
+      ep_dataout_coeff = 32'h00002000;
+      #10;
       ep_write = 1'b0;
       #5;
       ep_dataout = 32'h80000051;//divide register address
