@@ -43,7 +43,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      output wire [31:0] coeff_debug_out2,
      output reg [23:0] dac_val_out,
      output reg data_out_ready,
-     output wire [13:0] filter_out_modified
+     output wire [13:0] filter_out_modified,
+     /*****Filter Data and Enable Separate from CMD signals*****/
+     input wire [23:0] filter_data_i,
+     input wire data_rdy_0_filt,
+     input wire downsample_en,
+     input wire sum_en
     );
     
       wire cmd_stb;
@@ -157,9 +162,9 @@ module spi_fifo_driven #(parameter ADDR = 0) (
        Butter_pipelined u_Butterworth_0
          (
          .clk(clk),
-         .clk_enable(data_rdy_0 | write_enable | write_done),  // input data is registered when clk_enable is high 
+         .clk_enable(data_rdy_0_filt | write_enable | write_done),  // input data is registered when clk_enable is high 
          .reset(rst),
-         .filter_in(data_i[15:0]), 
+         .filter_in(filter_data_i[15:0]), 
          .write_enable(write_enable),
          .write_done(write_done),
          .write_address(write_address[3:0]),
@@ -176,7 +181,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      
      LPF_data_scale #(.ADDR(ADDR)) u_dat_scale(
      .clk(clk), .reset(rst), .ep_write(ep_write), .ep_address(ep_address), .regDataOut(ep_dataout_coeff),
-     .filter_data_in(filter_out), .filter_out_ready(filter_out_ready), .filter_data_out(filter_out_modified), .data_rdy(filter_data_rdy)
+     .filter_data_in(filter_out), .filter_in_ready(filter_out_ready), .filter_data_out(filter_out_modified), .data_rdy(filter_data_rdy),
+     .cmd_data_in(data_i[13:0]), .cmd_in_ready(data_rdy_0), .downsample_en(downsample_en), .sum_en(sum_en)
      );
 	 
 	 //Wishbone Master module for AD796x and AD5453

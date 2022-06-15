@@ -60,7 +60,10 @@ module tb_spi_top;
 	integer i;
 	//
 	reg data_rdy = 1'b0;
+	reg cmd_data_rdy = 1'b0;
+	reg [23:0] cmd_in;
 	reg [23:0] filter_in; // expand data length
+	wire data_out_ready;
 
 	// Instantiate the Unit Under Test (UUT)
 	spi_fifo_driven #(.ADDR(8'h15)) uut (
@@ -76,8 +79,8 @@ module tb_spi_top;
 		//.lastWrite(lastWrite),
 		//.ep_ready(ep_ready),
 		//.slow_pulse(slow_pulse),
-		.data_rdy_0(data_rdy),
-		.data_i(filter_in),
+		.data_rdy_0(cmd_data_rdy),
+		.data_i(cmd_in),
 		.ep_write(ep_write),
 		.ep_address(ep_address),
 		.ep_dataout_coeff(ep_dataout_coeff),
@@ -85,8 +88,13 @@ module tb_spi_top;
 		//.en_period(en_period),
 		//.ddr3_rst(ddr3_rst),
 		//.clk_en(clk_en),
+		.data_out_ready(data_out_ready),
 		.regTrigger(regTrigger),
-		.filter_out_modified(filter_out_modified)
+		.filter_out_modified(filter_out_modified),
+		.filter_data_i(filter_in),
+		.data_rdy_0_filt(data_rdy),
+		.downsample_en(1'b0),
+		.sum_en(1'b0)
 	);
 	
 	// Generate clock
@@ -97,6 +105,7 @@ module tb_spi_top;
 	
 	//simulating data ready from ad796x.v
 	reg [7:0] count_enable = 8'b0;
+	reg [7:0] count_enable_1 = 8'b0;
     reg [7:0] count = 8'b0;	
 	
 	//reg data_rdy = 1'b0;
@@ -110,15 +119,26 @@ module tb_spi_top;
             count_enable = count_enable + 1'b1;
         end
     end
+    always@(posedge clk)begin
+        if(count_enable_1 == 8'd79)begin
+            cmd_data_rdy = 1'b1;
+            count_enable_1 = 8'b0;
+        end
+        else begin
+            cmd_data_rdy = 1'b0;
+            count_enable_1 = count_enable_1 + 1'b1;
+        end
+    end
     
-    integer FileID, file;
+    integer FileID, FileID_1, file, file_1;
 //     Data source for filter_in
       initial begin
           FileID = $fopen("filter_in.dat", "r");
+          FileID_1 = $fopen("cmd_in.dat", "r");
       end
     
     always@(posedge data_rdy)begin
-        $display("%d", filter_out_modified);
+//        $display("%d", filter_out_modified);
         if(count > 10'd49)begin
             count = count + 1'b1;
             //filter_in = 16'h7fff;
@@ -132,6 +152,14 @@ module tb_spi_top;
             //filter_in = 16'hc000;
             count = count + 1'b1;
         end
+    end
+    
+    always@(posedge cmd_data_rdy)begin
+        file_1 = $fscanf(FileID_1, "%h\n", cmd_in);
+    end
+    
+    always@(posedge data_out_ready)begin
+        $display("%d", filter_out_modified);
     end
     
 	initial begin
@@ -215,7 +243,7 @@ module tb_spi_top;
       ep_dataout_coeff = 32'h7fffffff;
       #10;
       ep_address = 32'h0000000f + 8'h19;
-      ep_dataout_coeff = 32'h00002000;
+      ep_dataout_coeff = 32'h00000800;
       #10;
       ep_write = 1'b0;
       #5;
@@ -374,8 +402,9 @@ module tb_spi_top;
 		#1350;
 		readFifo = 1'b0;
 		#20;
+		$fclose(FileID_1);
 		$fclose(FileID);
-		$finish;
+		$stop;
 	end
 endmodule
 
