@@ -137,15 +137,17 @@ capacitors = [47, 200, 1000, 4700]          # list of CCOMP values; use None to 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
 
-
+# TODO: at data directories like this to a config file
 data_dir_base = os.path.expanduser('~')
 if sys.platform == "linux" or sys.platform == "linux2":
     pass
 elif sys.platform == "darwin":
     data_dir_covg = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}"
 elif sys.platform == "win32":
-    data_dir_covg = os.path.join(
-        data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
+    if os.path.exists('C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data'):
+        data_dir_covg = 'C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data/{}{:02d}{:02d}'
+    else:
+        data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
 
 today = datetime.datetime.today()
 data_dir = data_dir_covg.format(
@@ -267,7 +269,7 @@ for i in range(6):
     daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
 
 # ------ Collect Data --------------
-file_name = 'test'
+file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
 # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
