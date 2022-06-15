@@ -991,7 +991,7 @@ module top_level_module(
 
     generate
         for (i = 0; i < (I2C_DCARDS_NUM / 2); i = i + 1) begin : i2c_dc_wire_gen
-            okWireIn wi_i2c_dc0 (.okHE(okHE), .ep_addr(`I2CDC_WIRE_IN_GEN_ADDR + i), .ep_dataout({i2c_memdin[(i * 2) + 1], i2c_memdin[i * 2]}));
+            okWireIn wi_i2c_dc0 (.okHE(okHE), .ep_addr(`I2CDC_WIRE_IN + i), .ep_dataout({i2c_memdin[(i * 2) + 1], i2c_memdin[i * 2]}));
         end
     endgenerate
 

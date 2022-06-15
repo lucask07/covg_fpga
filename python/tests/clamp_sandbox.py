@@ -7,21 +7,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 
-from interfaces.boards import Daq, Clamp
-from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import logging
-from interfaces.interfaces import (
-    FPGA,
-    AD5453,
-    Endpoint,
-    DAC80508,
-    AD7961,
-    disp_device,
-    DDR3,
-    TCA9555
-    )
-from interfaces.boards import Daq, Clamp
-from interfaces.utils import twos_comp
 import os
 import sys
 from time import sleep
@@ -35,12 +21,7 @@ from scipy.optimize import minimize, basinhopping
 import pandas as pd
 import pickle as pkl
 import h5py
-from filters.filter_tools import butter_lowpass_filter, delayseq_interp
-from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv, idx_timerange
-from analysis.clamp_data import adjust_step2, adjust_step, adjust_step_delay, adjust_step_scale
 
-FS = 5e6
-SAMPLE_PERIOD = 1/FS
 #import matplotlib
 
 # matplotlib.use("TkAgg")  # or "Qt5agg" depending on you version of Qt
@@ -56,6 +37,27 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
+from interfaces.boards import Daq, Clamp
+from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
+from interfaces.interfaces import (
+    FPGA,
+    AD5453,
+    Endpoint,
+    DAC80508,
+    AD7961,
+    disp_device,
+    DDR3,
+    TCA9555,
+)
+from interfaces.boards import Daq, Clamp
+from interfaces.utils import twos_comp
+from filters.filter_tools import butter_lowpass_filter, delayseq_interp
+from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv, idx_timerange
+from analysis.clamp_data import adjust_step2, adjust_step, adjust_step_delay, adjust_step_scale
+
+
+FS = 5e6
+SAMPLE_PERIOD = 1/FS
 eps = Endpoint.endpoints_from_defines
 
 data_dir_base = os.path.expanduser('~')

@@ -130,7 +130,6 @@ def set_cmd_cc(dc_num, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, ste
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 DC_NUMS = [0, 1]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
-DC_NUMS.sort()  # Sort so when the list of Clamps is created the indices match with the board numbers
 
 feedback_resistors = [2.1]                  # list of RF1 values; use None to get all options
 capacitors = [47, 200, 1000, 4700]          # list of CCOMP values; use None to get all options
@@ -211,36 +210,39 @@ gpio.spi_debug("dfast1")
 gpio.ads_misc("sdoa")  # do not care for this experiment
 
 # ------- COPIED FROM clamp_sandbox.py FOR CLAMP V1 BUG FIX -------
-# configure clamp board Utility pin to be the offset voltage for the feedback
-# at this point the slow DA Ccan be set by the host
-for i in range(2):
-    # Reset the Wishbone controller and SPI core
-    # daq.DAC_gp[i].reset_master()
-    daq.DAC_gp[i].set_ctrl_reg(daq.DAC_gp[i].master_config)
-    daq.DAC_gp[i].set_spi_sclk_divide()
-    daq.DAC_gp[i].filter_select(operation="clear")
-    daq.DAC_gp[i].set_data_mux("host")
-    # daq.DAC_gp[i].set_gain(gain=1, divide_reference=False) #TODO: check default values
-    daq.DAC_gp[i].set_config_bin(0x00)
-    print('Outputs powered on')
+# # configure clamp board Utility pin to be the offset voltage for the feedback
+# # at this point the slow DA Ccan be set by the host
+# for i in range(2):
+#     # Reset the Wishbone controller and SPI core
+#     # daq.DAC_gp[i].reset_master()
+#     daq.DAC_gp[i].set_ctrl_reg(daq.DAC_gp[i].master_config)
+#     daq.DAC_gp[i].set_spi_sclk_divide()
+#     daq.DAC_gp[i].filter_select(operation="clear")
+#     daq.DAC_gp[i].set_data_mux("host")
+#     # daq.DAC_gp[i].set_gain(gain=1, divide_reference=False) #TODO: check default values
+#     daq.DAC_gp[i].set_config_bin(0x00)
+#     print('Outputs powered on')
 
-#DAC1_BP_OUT4, J11 pin #11 -- connected to utility pin to daughter card -- offset voltage
-# clamp board TP1
-# 0.6125 V, which approx centers P1 and P2
-daq.DAC_gp[0].write_voltage(1.457, 4)
-#DAC1_BP_OUT5, J11 pin #13 -- connected to utility pin to daughter card -- offset voltage
-# clamp board TP1
-# 0.6125 V, which approx centers P1 and P2 -- for DC #2
-daq.DAC_gp[0].write_voltage(1.457, 5)
-# for the 3.3 V "supply voltage" to the op-amp
-daq.DAC_gp[1].write_voltage(2.36, 7)
+# #DAC1_BP_OUT4, J11 pin #11 -- connected to utility pin to daughter card -- offset voltage
+# # clamp board TP1
+# # 0.6125 V, which approx centers P1 and P2
+# daq.DAC_gp[0].write_voltage(1.457, 4)
+# #DAC1_BP_OUT5, J11 pin #13 -- connected to utility pin to daughter card -- offset voltage
+# # clamp board TP1
+# # 0.6125 V, which approx centers P1 and P2 -- for DC #2
+# daq.DAC_gp[0].write_voltage(1.457, 5)
+# # for the 3.3 V "supply voltage" to the op-amp
+# daq.DAC_gp[1].write_voltage(2.36, 7)
 # ------- END COPIED FROM clamp_sandbox.py FOR CLAMP V1 BUG FIX -------
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
-clamps = [Clamp(f, dc_num=dc_num) for dc_num in DC_NUMS]
-for clamp in clamps:
+clamps = [None] * 4
+for dc_num in DC_NUMS:
+    clamp = Clamp(f, dc_num=dc_num)
+    print(f'Clamp {dc_num} Init'.center(35, '-'))
     clamp.init_board()
-clamps[1].DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
+    clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
+    clamps[dc_num] = clamp
 
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
