@@ -14,7 +14,7 @@ sos1 = zp2sos(z, p, k);
 figure(1);
 freqz(sos1, 512, fs);
 
-%% Create Input Data Array for Vivado (.dat file)
+%% Create Input Data Arrays for Vivado (.dat file)
 
 Fs = 5e6;            % Sampling frequency                    
 T = 1/Fs;             % Sampling period       
@@ -29,12 +29,20 @@ Offset = 16384; %offset
 % j = (2^15-1)*(t>5e-5);
 j = 2^15*exp(-2e5*(t-5e-5)).*(t>5e-5);
 
+t_cmd = t(1:2:end);
+cmd = (2^12)*(t_cmd>5e-5) + (2^13 - 1);
+
 input = int16(j);
+input_cmd = int16(cmd);
 
 figure(2);
 plot(t, input);
 hold on;
 plot(t, j, '-*');
+hold on;
+plot(t_cmd, cmd);
+hold on;
+plot(t_cmd, input_cmd, '-*');
 xlabel('time (s)');
 ylabel('Hex Code');
 title('input to filter');
@@ -44,6 +52,13 @@ fileID = fopen('..\..\fpga_XEM7310\fpga_XEM7310.sim\sim_1\behav\xsim\filter_in.d
 
 for i = (1:length(input))
     fprintf(fileID,'%s\r\n', dec2hex(input(i)));
+end
+fclose(fileID);
+
+fileID = fopen('..\..\fpga_XEM7310\fpga_XEM7310.sim\sim_1\behav\xsim\cmd_in.dat','w');
+
+for i = (1:length(input_cmd))
+    fprintf(fileID,'%s\r\n', dec2hex(input_cmd(i)));
 end
 fclose(fileID);
 
@@ -98,17 +113,22 @@ legend('DDR Bench Meas', 'Vivado Sim', 'Matlab');
 saveas(figure(3), 'VivadoSimResults.png');
 
 %% Series Resistance Compensation
-scaleval = .5;
+scaleval = .25;
+offset = 0;
 figure(4);
+
+% example command signal
+%cmd = (2^13-1)*(t1>5e-5) + 2^13;
 
 % get the scaled filtered signal
 scaledFiltered = series_res_comp_gain(output, scaleval);
-offsetOutput = AD796x_LPF_data_modify_fixpt(scaledFiltered);
+signconvert = AD796x_LPF_data_modify_fixpt(scaledFiltered);
+downsampled_signconvert = downsample(signconvert, 2, 0);
+offsetOutput = series_res_offset_sum(downsampled_signconvert, cmd(1:length(downsampled_signconvert)), offset);
 
-% example command signal
-cmd = (2^13-1)*(t1>5e-5) + 2^13;
+% plot example command signal
 subplot(2, 2, 1);
-plot(t1, cmd, '-.b', 'Linewidth', 2);
+plot(t_cmd, cmd, '-.b', 'Linewidth', 2);
 title('Command Signal');
 xlabel('Time (s)');
 ylabel('Hex Code');
@@ -116,6 +136,7 @@ xlim([0.2e-4 1e-4]);
 
 % plot filtered example AD7961 signal
 subplot(2, 2, 2);
+% plot(t_cmd(1:length(A)), A, '-*');
 plot(t1, A, '-*');
 title('Filtered AD7961 readings (Vivado Sim)');
 xlabel('Time (s)');
@@ -124,7 +145,7 @@ xlim([0.2e-4 1e-4]);
 
 % plot filtered example AD7961 signal
 subplot(2, 2, 4);
-plot(t1, offsetOutput, '-.r', 'Linewidth', 2);
+plot(t1, signconvert, '-.r', 'Linewidth', 2);
 title('Filtered AD7961 readings (MATLAB)');
 xlabel('Time (s)');
 ylabel('Hex Code');
@@ -132,8 +153,8 @@ xlim([0.2e-4 1e-4]);
 
 % apply gain to filtered signal and sum with command signal
 subplot(2, 2, 3);
-filteredsum = cmd + offsetOutput;
-plot(t1, filteredsum, '-.g', 'Linewidth', 2);
+filteredsum = offsetOutput;
+plot(t_cmd(1:length(downsampled_signconvert)), filteredsum, '-.g', 'Linewidth', 2);
 title('Summed Signal');
 xlabel('Time (s)');
 ylabel('Hex Code');
@@ -593,4 +614,18 @@ function y = series_res_comp_gain(x, scale)
     g = fi(scale, 0, 14, 13);
     in = fi(x, 1, 14, 12);
     y = fi(in*g, 1, 14, 12);
+end
+
+%%
+function y = series_res_offset_sum(x, cmd, offset)
+    fm = get_fimath();
+
+    x_offset = fi(x+offset, 0, 14, 0);
+    if(x_offset >= 8191)
+        diff = fi(x_offset - 8191, 0, 14, 0);
+        y = fi(cmd + diff, 0 ,14, 0);
+    else
+        diff = fi(8191 - x_offset, 0, 14, 0);
+        y = fi(cmd - diff, 0, 14, 0);
+    end
 end

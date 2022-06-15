@@ -61,7 +61,10 @@ module tb_4thOrder_Butter;
 	integer i;
 	//
 	reg data_rdy = 1'b0;
+	reg cmd_data_rdy = 1'b0;
+    reg [23:0] cmd_in;
 	reg [23:0] filter_in; // expand data length
+	wire data_out_ready;
 
 	// Instantiate the Unit Under Test (UUT)
 	spi_fifo_driven_filter_test #(.ADDR(8'h15)) uut (
@@ -77,8 +80,8 @@ module tb_4thOrder_Butter;
 		//.lastWrite(lastWrite),
 		//.ep_ready(ep_ready),
 		//.slow_pulse(slow_pulse),
-		.data_rdy_0(data_rdy),
-		.data_i(filter_in),
+		.data_rdy_0(cmd_data_rdy),
+		.data_i(cmd_in),
 		.ep_write(ep_write),
 		.ep_address(ep_address),
 		.ep_dataout_coeff(ep_dataout_coeff),
@@ -86,9 +89,14 @@ module tb_4thOrder_Butter;
 		//.en_period(en_period),
 		//.ddr3_rst(ddr3_rst),
 		//.clk_en(clk_en),
+		.data_out_ready(data_out_ready),
 		.regTrigger(regTrigger),
 		.filter_out_modified(filter_out_modified),
-		.filter_out_modified_2(filter_out_modified_2)
+		.filter_out_modified_2(filter_out_modified_2),
+		.filter_data_i(filter_in),
+        .data_rdy_0_filt(data_rdy),
+		.downsample_en(1'b0),
+		.sum_en(1'b0)
 	);
 	
 	// Generate clock
@@ -99,6 +107,7 @@ module tb_4thOrder_Butter;
 	
 	//simulating data ready from ad796x.v
 	reg [7:0] count_enable = 8'b0;
+	reg [7:0] count_enable_1 = 8'b0;
     reg [7:0] count = 8'b0;	
 	
 	//reg data_rdy = 1'b0;
@@ -113,18 +122,25 @@ module tb_4thOrder_Butter;
         end
     end
     
-    integer FileID, file;
+    always@(posedge clk)begin
+        if(count_enable_1 == 8'd79)begin
+            cmd_data_rdy = 1'b1;
+            count_enable_1 = 8'b0;
+        end
+        else begin
+            cmd_data_rdy = 1'b0;
+            count_enable_1 = count_enable_1 + 1'b1;
+        end
+    end
+    
+    integer FileID, FileID_1, file, file_1;
 //     Data source for filter_in
       initial begin
           FileID = $fopen("C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.sim/sim_1/behav/xsim/filter_in.dat", "r");
+          FileID_1 = $fopen("C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.sim/sim_1/behav/xsim/cmd_in.dat", "r");
       end
     
     always@(posedge data_rdy)begin
-        $display("folded: %d", filter_out_modified);
-        $display("unfolded: %d", filter_out_modified_2);
-        if(filter_out_modified !== filter_out_modified_2)begin
-            $display("MISMATCH in y_out and y_out2 at time %t : Y_out '%h' Folded out '%h'", $time, filter_out_modified, filter_out_modified_2);
-        end
         if(count > 10'd49)begin
             count = count + 1'b1;
             //filter_in = 16'h7fff;
@@ -139,6 +155,19 @@ module tb_4thOrder_Butter;
             count = count + 1'b1;
         end
     end
+    
+    always@(posedge cmd_data_rdy)begin
+        file_1 = $fscanf(FileID_1, "%h\n", cmd_in);
+    end
+    
+    always@(posedge data_out_ready)begin
+        $display("folded: %d", filter_out_modified);
+        $display("unfolded: %d", filter_out_modified_2);
+        if(filter_out_modified !== filter_out_modified_2)begin
+            $display("MISMATCH in y_out and y_out2 at time %t : Y_out '%h' Folded out '%h'", $time, filter_out_modified, filter_out_modified_2);
+        end
+    end
+        
     
 	initial begin
 		// Initialize Inputs
@@ -381,6 +410,7 @@ module tb_4thOrder_Butter;
 		readFifo = 1'b0;
 		#20;
 		$fclose(FileID);
+		$fclose(FileID_1);
 		$finish;
 	end
 endmodule
