@@ -48,13 +48,13 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from interfaces.boards import Daq, Clamp
 
 
-def ddr_write_setup(dc_num):
+def ddr_write_setup():
     ddr.set_adcs_connected()
     ddr.clear_dac_read()
     ddr.clear_adc_write()
+    ddr.clear_adc_read()    # Stop putting data in outgoing FIFO for Pipe read
     ddr.reset_fifo(name='ALL')
     ddr.reset_mig_interface()
-    ad7961s[dc_num].reset_trig()  # TODO: what does this do?
 
 
 def ddr_write_finish():
@@ -75,14 +75,22 @@ def get_cc_optimize(nums):
     return out
 
 
-def set_cmd_cc(dc_num, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
+def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
+    """Return the CMD and CC signals determined by the parameters.
+    
+    Parameters
+    ----------
+    
+    Returns
+    -------
+    np.ndarray, np.ndarray : the CMD signal data, the CC signal data.
+    """
 
+    # TODO: move to Clamp board class in boards.py
     dac_offset = 0x2000
-    cmd_ch = dc_num * 2 + 1
-    cc_ch = dc_num * 2
 
-    ddr.data_arrays[cmd_ch] = ddr.make_step(
+    cmd_signal = ddr.make_step(
         low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len)  # 1.6 ms between edges
 
     # create the cc using multiple methods
@@ -90,38 +98,66 @@ def set_cmd_cc(dc_num, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, ste
         cc_impulse_scale = -2600/7424
         out = get_cc_optimize(cc_pickle_num)
         cc_wave = adjust_step2(
-            out['x'], ddr.data_arrays[cmd_ch].astype(np.int32) - dac_offset)
+            out['x'], cmd_signal.astype(np.int32) - dac_offset)
         cc_wave = cc_wave * cc_impulse_scale
         cc_wave = cc_wave + dac_offset
         if cc_delay != 0:
             # 2.5e6 is the sampling rate
             cc_wave = delayseq_interp(cc_wave, cc_delay, 2.5e6)
-        ddr.data_arrays[cc_ch] = cc_wave.astype(np.uint16)
+        cc_signal = cc_wave.astype(np.uint16)
 
     elif cc_val is None:  # get the cc signal from scaling the cmd signal
         if fc is not None:
-            ddr.data_arrays[cc_ch] = butter_lowpass_filter(
-                ddr.data_arrays[cmd_ch] - dac_offset, cutoff=fc, fs=2.5e6, order=1)*cc_scale + dac_offset
+            cc_signal = butter_lowpass_filter(
+                cmd_signal - dac_offset, cutoff=fc, fs=2.5e6, order=1)*cc_scale + dac_offset
         else:
-            ddr.data_arrays[cc_ch] = (
-                ddr.data_arrays[cmd_ch] - dac_offset)*cc_scale + dac_offset
+            cc_signal = (
+                cmd_signal - dac_offset)*cc_scale + dac_offset
         if cc_delay != 0:
-            ddr.data_arrays[cc_ch] = delayseq_interp(
-                ddr.data_arrays[cc_ch], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+            cc_signal = delayseq_interp(
+                cc_signal, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
 
     else:  # needed so that the cmd signal can be zero with a non-zero cc signal
-        ddr.data_arrays[cc_ch] = ddr.make_step(low=dac_offset - int(cc_val),
+        cc_signal = ddr.make_step(low=dac_offset - int(cc_val),
                                                high=dac_offset + int(cc_val),
                                                length=step_len)  # 1.6 ms between edges
         if fc is not None:
-            ddr.data_arrays[cc_ch] = butter_lowpass_filter(
-                ddr.data_arrays[cc_ch], cutoff=fc, fs=2.5e6, order=1)
+            cc_signal = butter_lowpass_filter(
+                cc_signal, cutoff=fc, fs=2.5e6, order=1)
         if cc_delay != 0:
-            ddr.data_arrays[cc_ch] = delayseq_interp(
-                ddr.data_arrays[cc_ch], cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+            cc_signal = delayseq_interp(
+                cc_signal, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
 
+    return cmd_signal, cc_signal
+
+
+def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
+               cc_val=None, cc_pickle_num=None):
+    """Write the CMD and CC signals to the DDR for the specified daughtercards.
+    
+    Parameters
+    ----------
+    dc_nums : int or list
+        The port number(s) of the daughtercard(s) to write signals for.
+
+    Returns
+    -------
+    None
+    """
+
+    # TODO: move to Clamp board class in boards.py
+    if (type(dc_nums) == int):
+        dc_nums = [dc_nums]
+    elif (type(dc_nums) != list):
+        raise TypeError('dc_nums must be int or list')
+
+    for dc_num in dc_nums:
+        cmd_ch = dc_num * 2 + 1
+        cc_ch = dc_num * 2
+        ddr.data_arrays[cmd_ch], ddr.data_arrays[cc_ch] = make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
+    
     # write channels to the DDR
-    ddr_write_setup(dc_num=dc_num)
+    ddr_write_setup()
     # clear read, set write, etc. handled within write_channels
     block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
     ddr.reset_mig_interface()
@@ -129,7 +165,7 @@ def set_cmd_cc(dc_num, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, ste
 
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
-DC_NUMS = [0, 1]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
+DC_NUMS = [0, 1, 2, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 feedback_resistors = [2.1]                  # list of RF1 values; use None to get all options
 capacitors = [47, 200, 1000, 4700]          # list of CCOMP values; use None to get all options
@@ -198,8 +234,7 @@ pwr.all_off()  # disable all power enables
 daq = Daq(f)
 ddr = DDR3(f, data_version='TIMESTAMPS')
 ad7961s = daq.ADC
-for dc_num in DC_NUMS:
-    ad7961s[dc_num].reset_wire(1)
+ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
 # power supply turn on via FPGA enables
 for name in ["1V8", "5V", "3V3"]:
@@ -250,10 +285,10 @@ for dc_num in DC_NUMS:
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 
-for dc_num in DC_NUMS:
-    ad7961s[dc_num].reset_wire(0)
+ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
 time.sleep(1)
 
+# TODO: are the TCA pins already configured in Clamp.configure_clamp()?
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
@@ -287,35 +322,30 @@ print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 # Time in seconds
 t = np.arange(0, len(chan_data[0]))*1/FS
 
+# Try with different capacitors
+if feedback_resistors is None:
+    feedback_resistors = [x for x in Clamp.configs['RF1_dict'].keys() if type(x) == int or type(x) == float] # RF1 Resistor values in kilo-ohms for Offset Adjust amplifier
+    feedback_resistors.sort()
+if capacitors is None:
+    capacitors = [x for x in Clamp.configs['CCOMP_dict'] if type(x) == int or type(x) == np.int32]  # CCOMP Capacitor values in pF
+    capacitors.sort()
+
+voltage_data = dict([(x, None) for x in Clamp.configs['ADG_RES_dict'].keys() if type(x) == int])    # Rf Resistor values in kilo-ohms for Figure 4 graph
+for key in voltage_data:
+    voltage_data[key] = []  # Lists to hold voltage data at each resistor value
+
+dc_data = {}
 for dc_num in DC_NUMS:
-    clamp = clamps[dc_num]
+    # access data with dc_data[dc_num][fb_res][cap][res]
+    dc_data[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
 
-    # Try with different capacitors
-    if feedback_resistors is None:
-        feedback_resistors = [x for x in clamp.configs['RF1_dict'].keys() if type(x) == int or type(x) == float] # RF1 Resistor values in kilo-ohms for Offset Adjust amplifier
-        feedback_resistors.sort()
-    if capacitors is None:
-        capacitors = [x for x in clamp.configs['CCOMP_dict'] if type(x) == int or type(x) == np.int32]  # CCOMP Capacitor values in pF
-        capacitors.sort()
-    voltage_data = dict(clamp.configs['ADG_RES_dict'])    # Rf Resistor values in kilo-ohms for Figure 4 graph
-    for key in voltage_data:
-        voltage_data[key] = []  # Lists to hold voltage data at each resistor value
-
-    for fb_res in feedback_resistors:
-        rows = ceil(len(capacitors)**(1/2))
-        fig, axes = plt.subplots(rows, rows)
-        fig.suptitle(f'DC{dc_num} Current response to CMD step voltage (RF1={fb_res})')
-        for i in range(len(capacitors)):
-            cap = capacitors[i]
-            current_ax = axes[i // rows][i % rows]
-            current_ax.set_title(f'CCOMP={cap}pF')
-            current_ax.set_xlabel('Time (\N{GREEK SMALL LETTER MU}s)')
-            current_ax.set_ylabel('Current (\N{GREEK SMALL LETTER MU}A)')
-
-            # Try with 5 different resistors
-            for res in [x for x in voltage_data.keys() if type(x) == int]:
-                # Choose resistor; setup
-                log_info, config_dict = clamp.configure_clamp(
+for fb_res in feedback_resistors:
+    for cap in capacitors:
+        # Try with 5 different resistors
+        for res in [x for x in Clamp.configs['ADG_RES_dict'].keys() if type(x) == int]:
+            # Choose resistor; setup
+            for dc_num in DC_NUMS:
+                log_info, config_dict = clamps[dc_num].configure_clamp(
                     ADC_SEL="CAL_SIG1",
                     DAC_SEL="drive_CAL2",
                     CCOMP=cap,
@@ -335,27 +365,45 @@ for dc_num in DC_NUMS:
                     addr_pins_2=0b000,
                 )
 
-                # Set CMD and CC signals
-                set_cmd_cc(dc_num=dc_num, cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
-                        step_len=16384, cc_val=None, cc_pickle_num=None)
+            # Set CMD and CC signals
+            set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
+                    step_len=16384, cc_val=None, cc_pickle_num=None)
 
-                # Get data
-                # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-                chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-                                                    blk_multiples=40)  # blk multiples multiple of 10
+            # Get data
+            # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+            chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+                                                blk_multiples=40)  # blk multiples multiple of 10
 
-                # to get the deswizzled data of all repeats need to read the file
-                _, chan_data = read_h5(data_dir, file_name=file_name.format(
-                    idx) + '.h5', chan_list=np.arange(8))
+            # to get the deswizzled data of all repeats need to read the file
+            _, chan_data = read_h5(data_dir, file_name=file_name.format(
+                idx) + '.h5', chan_list=np.arange(8))
 
-                # Store voltage in list; plot
-                voltage_data[res] = to_voltage(chan_data[dc_num], num_bits=16, voltage_range=10, use_twos_comp=True)
+            # Store voltage in list; plot
+            for dc_num in DC_NUMS:
+                dc_data[dc_num][fb_res][cap][res] = to_voltage(
+                    chan_data[dc_num], num_bits=16, voltage_range=10, use_twos_comp=True)
 
+print('Data collected. Plotting...')
+
+for dc_num in DC_NUMS:
+    for fb_res in dc_data[dc_num].keys():
+        rows = ceil(len(capacitors)**(1/2))
+        fig, axes = plt.subplots(rows, rows)
+        fig.suptitle(f'DC{dc_num} Current response to CMD step voltage (RF1={fb_res})')
+
+        for i in range(len(capacitors)):
+            cap = capacitors[i]
+            current_ax = axes[i // rows][i % rows]
+            current_ax.set_title(f'CCOMP={cap}pF')
+            current_ax.set_xlabel('Time (\N{GREEK SMALL LETTER MU}s)')
+            current_ax.set_ylabel('Current (\N{GREEK SMALL LETTER MU}A)')
+            
+            for res in dc_data[dc_num][fb_res][cap].keys():
                 # Plot current (uA) against time (us) -> uA because resistor values are in kilo-ohms, we multiply current by 1e3
-                current_ax.plot(t * 1e6, [(v / res) * 1e3 for v in voltage_data[res]], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
-            # Zoom in on the data
-            current_ax.set_xlim(6550, 6800)
-            current_ax.set_ylim(-10, 40)
+                current_ax.plot(t * 1e6, [(v / res) * 1e3 for v in dc_data[dc_num][fb_res][cap][res]], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
+                # Zoom in on the data
+                current_ax.set_xlim(6550, 6800)
+                current_ax.set_ylim(-10, 40)
             
             # Set up the legend after the first subplot so there are no repeat labels from following subplots
             if i == 0:
