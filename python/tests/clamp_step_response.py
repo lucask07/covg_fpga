@@ -58,6 +58,21 @@ def ddr_write_setup():
     ddr.reset_mig_interface()
 
 
+def ddr_repeat_setup():
+    """Setup for reading new data without writing to the DDR again."""
+
+    # stop access to the FIFOs so that after reset of the FIFO(s) no new data is added/extracted
+    ddr.clear_adc_read()
+    ddr.clear_adc_write()
+    ddr.clear_dac_read()
+    ddr.reset_fifo(name='ALL')
+    ddr.reset_mig_interface()  # self.fpga.send_trig(self.endpoints['UI_RESET'])
+    # note that the MIG interface addresses are driven by the FIFOs so will idle
+    # until the FIFOs are reenable with ddr_write_finish()
+    ddr_write_finish()
+    time.sleep(0.01)
+
+
 def ddr_write_finish():
     # reenable both DACs
     ddr.set_adc_dac_simultaneous()  # enable DAC playback and ADC writing to DDR
@@ -326,6 +341,10 @@ for dc_num in DC_NUMS:
     dc_data[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
 errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store whether an error occurred on the DDR read
 
+# Set CMD and CC signals
+set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
+        step_len=16384, cc_val=None, cc_pickle_num=None)
+
 for fb_res in feedback_resistors:
     for cap in capacitors:
         # Try with 5 different resistors
@@ -352,10 +371,7 @@ for fb_res in feedback_resistors:
                     addr_pins_2=0b000,
                 )
 
-            # Set CMD and CC signals
-            set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
-                    step_len=16384, cc_val=None, cc_pickle_num=None)
-
+            ddr_repeat_setup()
             # Get data
             # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
             chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
@@ -413,3 +429,26 @@ for dc_num in DC_NUMS:
             # Set up the legend after the first subplot so there are no repeat labels from following subplots
             if i == 0:
                 fig.legend(loc='lower right')
+
+print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
+# Configure for better oscilloscope viewing
+for dc_num in DC_NUMS:
+    log_info, config_dict = clamps[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG1",
+        DAC_SEL="drive_CAL2",
+        CCOMP=47,
+        RF1=2.1,  # feedback circuit
+        ADG_RES=100,
+        PClamp_CTRL=0,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=0,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
