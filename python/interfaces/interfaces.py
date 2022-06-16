@@ -105,6 +105,8 @@ class Endpoint:
         Whether to increment the address when incrementing the endpoint.
     """
 
+    # TODO: put MAX_WIDTH in a config file (YAML?) for the package and somehow read it from there, maybe when imported? __init__.py file?
+    MAX_WIDTH = 32  # Maximum bit width of an Endpoint. Used to wrap Endpoints to the next address when incrementing
     endpoints_from_defines = dict()
     I2CDAQ_level_shifted = dict()
     I2CDAQ_QW = dict()
@@ -374,8 +376,17 @@ class Endpoint:
         for key in endpoints_dict:
             endpoint = endpoints_dict[key]
             if endpoint.gen_bit:
-                endpoint.bit_index_low += endpoint.bit_width * advance_num
+                endpoint.bit_index_low += (endpoint.bit_width * advance_num)
+                if endpoint.bit_index_low > Endpoint.MAX_WIDTH:
+                    # Endpoint does not fit, wrap to next address
+                    endpoint.address += 1
+                    endpoint.bit_index_low %= Endpoint.MAX_WIDTH
                 endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
+                if endpoint.bit_index_high > Endpoint.MAX_WIDTH:
+                    # Endpoint split across two addresses -> move to next address, start at bit 0
+                    endpoint.address += 1
+                    endpoint.bit_index_low = 0
+                    endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
             if endpoint.gen_address:
                 endpoint.address += advance_num
         return endpoints_dict
