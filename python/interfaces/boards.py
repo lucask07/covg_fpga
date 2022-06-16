@@ -12,7 +12,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 
 from interfaces.interfaces import *
 from interfaces.interfaces import Endpoint, DDR3
-from interfaces.utils import reverse_bits, test_bit, calc_impedance
+from interfaces.utils import reverse_bits, test_bit, calc_impedance, from_voltage, to_voltage
 from scipy.fft import rfftfreq
 import matplotlib.pyplot as plt
 import time
@@ -55,6 +55,134 @@ class Clamp:
         Sets the I/O Expanders according to the arguments given.
     """
 
+    configs = {}
+    #Dictonaries
+    configs['ADC_SEL_dict'] = {  # Select the signal to output (Usually only output one signal at a time)
+        'CAL_SIG1': 0b0111,
+        'CAL_SIG2': 0b1011,
+         'INAMP_OUT': 0b1101,
+        'CC': 0b1110,
+            'noDrive': 0b1111,
+            None: 0b0000
+        }
+
+    configs['DAC_SEL_dict'] = {  # Choose to drive/store CAL_Sig1 and CAL_Sig2
+         'drive_CAL1': 0b0111,
+          'drive_CAL2': 0b1011,
+         'gnd_CAL2': 0b1101,
+            'gnd_CAL1': 0b1110,
+            'store_CAL1': 0b0110,
+            'store_CAL2': 0b1001,
+            'noDrive': 0b1111,
+            None: 0b0000
+         }
+
+    comp_caps = np.array([4700, 1000, 200, 47])
+    CCOMP_dict = {}
+    for i in range(16):
+        cap_val = 0
+        for bit, j in enumerate(comp_caps):
+            if test_bit(i, bit) == 0:  # a zero closes the switch
+                cap_val += comp_caps[bit]
+        CCOMP_dict[cap_val] = i
+    configs['CCOMP_dict'] = CCOMP_dict
+
+    configs['RF1_dict'] = {  # Selecting the resistor value for the feedback circuit, all in kilo-ohms
+        0: 0b0000,
+        60: 0b0001,
+        30: 0b0010,
+        20: 0b0011,
+        12: 0b0100,
+        10: 0b0101,
+        8: 0b0110,
+        7: 0b0111,
+        3: 0b1000,
+        2.8: 0b1001,
+        2.7: 0b1010,
+        2.6: 0b1011,
+        2.4: 0b1100,
+        2.3: 0b1101,
+        2.2: 0b1110,
+        2.1: 0b1111,
+        None: 0b0000
+    }
+    configs['ADG_RES_dict'] = {  # Select resistance acroos P2 and RF_1 (ADG), all listed in kilo-ohms
+        'current': 0b000,
+        10: 0b100,
+        33: 0b010,
+        100: 0b110,
+        332: 0b001,
+        1000: 0b101,
+        3000: 0b011,
+        10000: 0b111,
+        None: 0b000
+    }
+
+    configs['PClamp_CTRL_dict'] = {
+        0: 0,
+        1: 1,
+        None: 0
+    }
+
+    configs['P1_E_CTRL_dict'] = {
+        0: 0,
+        1: 1,
+        None: 0
+    }
+
+    configs['P1_CAL_CTRL_dict'] = {
+        0: 0,
+        1: 1,
+        None: 0
+    }
+
+    configs['P2_E_CTRL_dict'] = {
+        0: 0,
+        1: 1,
+        None: 0
+    }
+
+    configs['P2_CAL_CTRL_dict'] = {
+        0: 0,
+        1: 1,
+        None: 0
+    }
+
+    configs['gain_dict'] = {  # Selecet the gain of the instrumentation AMP in ADC Driver circuit
+        2: 0b100,
+        5: 0b010,
+        10: 0b001,
+        55: 0b011,
+        60: 0b101,
+        63: 0b110,
+        64: 0b111,
+        1: 0b000
+    }
+
+    configs['FDBK_dict'] = {
+        0: 0,
+        1: 1,
+        None: 0
+    }
+
+    configs['mode_dict'] = {  # select the mode for the ADC driver
+        'voltage': 0b00,
+        'current': 0b11,
+        None: 0b00
+    }
+
+    configs['EN_ipump_dict'] = {
+        0: 0,
+        1: 1,
+        None: 0
+    }
+
+    configs['RF_1_Out_dict'] = {
+        0: 0,
+        1: 1,
+        None: 0
+    }
+
     def __init__(self, fpga, TCA_addr_pins_0=0b110, TCA_addr_pins_1=0b000,
                  UID_addr_pins=0b000, DAC_addr_pins=0b000, dc_num=0):
         # dc_num is the daughter card channel number since there are 0-3 channels
@@ -75,133 +203,6 @@ class Clamp:
 
         self.serial_number = None  # Will get serial code from UID chip in setup()
 
-        self.configs = {}
-        #Dictonaries
-        self.configs['ADC_SEL_dict'] = {  # Select the signal to output (Usually only output one signal at a time)
-            'CAL_SIG1': 0b0111,
-            'CAL_SIG2': 0b1011,
-            'INAMP_OUT': 0b1101,
-            'CC': 0b1110,
-            'noDrive': 0b1111,
-            None: 0b0000
-        }
-
-        self.configs['DAC_SEL_dict'] = {  # Choose to drive/store CAL_Sig1 and CAL_Sig2
-            'drive_CAL1': 0b0111,
-            'drive_CAL2': 0b1011,
-            'gnd_CAL2': 0b1101,
-            'gnd_CAL1': 0b1110,
-            'store_CAL1': 0b0110,
-            'store_CAL2': 0b1001,
-            'noDrive': 0b1111,
-            None: 0b0000
-        }
-
-        comp_caps = np.array([4700, 1000, 200, 47])
-        CCOMP_dict = {}
-        for i in range(16):
-            cap_val = 0
-            for bit, j in enumerate(comp_caps):
-                if test_bit(i,bit) == 0: # a zero closes the switch
-                    cap_val += comp_caps[bit]
-            CCOMP_dict[cap_val] = i
-        self.configs['CCOMP_dict'] = CCOMP_dict
-
-        self.configs['RF1_dict'] = {  # Selecting the resistor value for the feedback circuit, all in kilo-ohms
-            0: 0b0000,
-            60: 0b0001,
-            30: 0b0010,
-            20: 0b0011,
-            12: 0b0100,
-            10: 0b0101,
-            8: 0b0110,
-            7: 0b0111,
-            3: 0b1000,
-            2.8: 0b1001,
-            2.7: 0b1010,
-            2.6: 0b1011,
-            2.4: 0b1100,
-            2.3: 0b1101,
-            2.2: 0b1110,
-            2.1: 0b1111,
-            None: 0b0000
-        }
-        self.configs['ADG_RES_dict'] = {  # Select resistance acroos P2 and RF_1 (ADG), all listed in kilo-ohms
-            'current': 0b000,
-            10: 0b100,
-            33: 0b010,
-            100: 0b110,
-            332: 0b001,
-            1000: 0b101,
-            3000: 0b011,
-            10000: 0b111,
-            None: 0b000
-        }
-
-        self.configs['PClamp_CTRL_dict'] = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        self.configs['P1_E_CTRL_dict'] = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        self.configs['P1_CAL_CTRL_dict'] = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        self.configs['P2_E_CTRL_dict'] = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        self.configs['P2_CAL_CTRL_dict'] = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        self.configs['gain_dict'] = {  # Selecet the gain of the instrumentation AMP in ADC Driver circuit
-            2: 0b100,
-            5: 0b010,
-            10: 0b001,
-            55: 0b011,
-            60: 0b101,
-            63: 0b110,
-            64: 0b111,
-            1: 0b000
-        }
-
-        self.configs['FDBK_dict'] = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        self.configs['mode_dict'] = {  # select the mode for the ADC driver
-            'voltage': 0b00,
-            'current': 0b11,
-            None: 0b00
-        }
-
-        self.configs['EN_ipump_dict'] = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
-
-        self.configs['RF_1_Out_dict'] = {
-            0: 0,
-            1: 1,
-            None: 0
-        }
 
     def init_board(self, skip_dac=True):
         """Tests and configures the board.
@@ -297,23 +298,23 @@ class Clamp:
                 tmp = 0
             return tmp
 
-        ADC_SEL_code = get_dict_none_zero(self.configs['ADC_SEL_dict'], ADC_SEL)
-        DAC_SEL_code = get_dict_none_zero(self.configs['DAC_SEL_dict'], DAC_SEL)
-        CCOMP_code = get_dict_none_zero(self.configs['CCOMP_dict'], CCOMP)
-        RF1_code = get_dict_none_zero(self.configs['RF1_dict'], RF1)
+        ADC_SEL_code = get_dict_none_zero(Clamp.configs['ADC_SEL_dict'], ADC_SEL)
+        DAC_SEL_code = get_dict_none_zero(Clamp.configs['DAC_SEL_dict'], DAC_SEL)
+        CCOMP_code = get_dict_none_zero(Clamp.configs['CCOMP_dict'], CCOMP)
+        RF1_code = get_dict_none_zero(Clamp.configs['RF1_dict'], RF1)
 
         # I/O Expander 2 (self.TCA_1)
-        ADG_RES_code = get_dict_none_zero(self.configs['ADG_RES_dict'], ADG_RES)
-        PClamp_CTRL_code = get_dict_none_zero(self.configs['PClamp_CTRL_dict'], PClamp_CTRL)
-        P1_E_CTRL_code = get_dict_none_zero(self.configs['P1_E_CTRL_dict'], P1_E_CTRL)
-        P1_CAL_CTRL_code = get_dict_none_zero(self.configs['P1_CAL_CTRL_dict'], P1_CAL_CTRL)
-        P2_E_CTRL_code = get_dict_none_zero(self.configs['P2_E_CTRL_dict'], P2_E_CTRL)
-        P2_CAL_CTRL_code = get_dict_none_zero(self.configs['P2_CAL_CTRL_dict'], P2_CAL_CTRL)
-        gain_code = get_dict_none_zero(self.configs['gain_dict'], gain)
-        FDBK_code = get_dict_none_zero(self.configs['FDBK_dict'], FDBK)
-        mode_code = get_dict_none_zero(self.configs['mode_dict'], mode)
-        EN_ipump_code = get_dict_none_zero(self.configs['EN_ipump_dict'], EN_ipump)
-        RF_1_Out_code = get_dict_none_zero(self.configs['RF_1_Out_dict'], RF_1_Out)
+        ADG_RES_code = get_dict_none_zero(Clamp.configs['ADG_RES_dict'], ADG_RES)
+        PClamp_CTRL_code = get_dict_none_zero(Clamp.configs['PClamp_CTRL_dict'], PClamp_CTRL)
+        P1_E_CTRL_code = get_dict_none_zero(Clamp.configs['P1_E_CTRL_dict'], P1_E_CTRL)
+        P1_CAL_CTRL_code = get_dict_none_zero(Clamp.configs['P1_CAL_CTRL_dict'], P1_CAL_CTRL)
+        P2_E_CTRL_code = get_dict_none_zero(Clamp.configs['P2_E_CTRL_dict'], P2_E_CTRL)
+        P2_CAL_CTRL_code = get_dict_none_zero(Clamp.configs['P2_CAL_CTRL_dict'], P2_CAL_CTRL)
+        gain_code = get_dict_none_zero(Clamp.configs['gain_dict'], gain)
+        FDBK_code = get_dict_none_zero(Clamp.configs['FDBK_dict'], FDBK)
+        mode_code = get_dict_none_zero(Clamp.configs['mode_dict'], mode)
+        EN_ipump_code = get_dict_none_zero(Clamp.configs['EN_ipump_dict'], EN_ipump)
+        RF_1_Out_code = get_dict_none_zero(Clamp.configs['RF_1_Out_dict'], RF_1_Out)
 
         # Assemble messages
         s0 = ''
