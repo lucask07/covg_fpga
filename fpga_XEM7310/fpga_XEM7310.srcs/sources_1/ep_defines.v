@@ -28,8 +28,12 @@
 // - I2CDC or I2CDAQ for I2C on the Daughtercard or the DAQ board (Verilog does not allow hyphens)
 // "PARAM_NAME" = parameter name to be used in the Python
 // "GEN_BIT" = included if the parameter holds a bit and we can add the bit_width
-//     of the parameter to get the bit for the next instance
-// "GEN_ADDR" = included if the parameter holds an address and we can add 1 to
+//     of the parameter to get the bit for the next instance. If any bit of
+//     the Endpoint would move outside of the Endpoint.MAX_WIDTH range, then
+//     its address will be incremented and it will start at bit 0 when
+//     advance_endpoints is called on it.
+// "GEN_ADDR" = included to move the Endpoint to the the address + 1 when
+//     advance_endpoints is called
 //     get the address for the next instance
 // "// address=ASSOCIATED_ADDRESS_PARAM" = the address associated with a bit parameter
 // - If dependent on an address held by another parameter, use that parameter's name
@@ -46,8 +50,8 @@
 `define DEBUGFIFO_PIPE_OUT 8'hA7 // bit_width=32
 `define ADS8686_WB_IN 8'h05 // bit_width=32
 `define DAC80508_HOST_WIRE_IN_GEN_ADDR 8'h06 // bit_width=32
-`define I2CDC_WIRE_IN_GEN_ADDR 8'h08 // bit_width=16
-`define I2CDC_IN_GEN_BIT 0 // address=I2CDC_WIRE_IN_GEN_ADDR bit_width=16
+`define I2CDC_WIRE_IN 8'h08 // bit_width=16
+`define I2CDC_IN_GEN_BIT 0 // address=I2CDC_WIRE_IN bit_width=16
 `define I2CDAQ_WIRE_IN_GEN_ADDR 8'h0A // bit_width=16
 `define I2CDAQ_IN_GEN_BIT 0 // address=I2CDAQ_WIRE_IN bit_width=16
 
@@ -77,6 +81,13 @@
 `define DDR3_ADC_ADDR_SET 29 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_ADC_WRITE_ENABLE 30 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_ADC_TRANSFER_ENABLE 31 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
+
+`define AD5453_SERIES_RES_WIRE_IN 8'h04 // bit_width=32
+`define AD5453_FILTER_DATA_SEL_GEN_BIT 0 // address=AD5453_SERIES_RES_WIRE_IN bit_width=3
+// [2:0], [5:3], [8:6], [11:9], [14:12], [17:15]
+`define AD5453_FILTER_DATA_SEL_GEN_BIT_LEN 3 // address=AD5453_SERIES_RES_WIRE_IN bit_width=3
+`define AD5453_DOWNSAMPLE_ENABLE_GEN_BIT 18 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
+`define AD5453_SUMMATION_ENABLE_GEN_BIT 24 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
 
 `define FILTER_SEL_WIRE_IN 8'h11 // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1

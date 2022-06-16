@@ -184,7 +184,7 @@ module LPF_data_scale #(parameter ADDR = 0) (
                     filter_data_out_reg <= (filter_data_out_temp_3 - 14'h1fff) + cmd_data_in_reg;
                 end
                 else begin
-                    filter_data_out_reg <= (14'h1fff - filter_data_out_temp_3) + cmd_data_in_reg;
+                    filter_data_out_reg <= cmd_data_in_reg - (14'h1fff - filter_data_out_temp_3);
                 end
                 data_rdy <= 1'b1;
             end
