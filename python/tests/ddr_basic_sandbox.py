@@ -116,33 +116,40 @@ for i in range(2):
 
 ddr_write_setup()
 block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
-ddr.reset_mig_interface()
-ddr_write_finish()
+ddr.reset_mig_interface()  # resets the address pointers for both DDR buffers 
+ddr_write_finish()  # simultaneously enables DAC read, ADC write, and ADC read via PipeOut 
 
 ## ----------- end writing data to DDR -------------------
 
-def run_test(repeat=False, num_repeats=8, blk_multiples=40, PLT=False):
+def run_test(repeat=False, num_repeats=8, blk_multiples=40, PLT=False, KEEP_DAC_GOING=False):
 
     if repeat:  # to repeat data capture without rewriting the DAC data
+        
+        # stop access to the FIFOs so that after reset of the FIFO(s) no new data is added/extracted
         ddr.clear_adc_read()
         ddr.clear_adc_write()
         ddr.clear_dac_read()
 
-        ddr.reset_fifo(name='ALL')
+        if not KEEP_DAC_GOING:
+            ddr.reset_fifo(name='ALL')
 
-        # alternatively to keep DAC data running only reset ADC fifos (but mismatches will fail)
-        # ddr.reset_fifo(name='ADC_IN')
-        # ddr.reset_fifo(name='ADC_TRANSFER')
+        elif KEEP_DAC_GOING:
+            # alternatively to keep DAC data running only reset ADC fifos 
+            # (but mismatches of DAC written / read will fail)
+            ddr.reset_fifo(name='ADC_IN')
+            ddr.reset_fifo(name='ADC_TRANSFER')
 
-        ddr.reset_mig_interface()
+        ddr.reset_mig_interface()  # self.fpga.send_trig(self.endpoints['UI_RESET'])
 
-        ddr_write_finish()
+        ddr_write_finish()  # note that the MIG interface addresses are driven by the FIFOs so will idle 
+                            # until the FIFOs are reenable with ddr_write_finish()
         time.sleep(0.01)
 
     file_name = 'test'
     idx = 0
 
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+    # ddr.save_data calls:   set_adc_read()  # enable data into the ADC reading FIFO
     chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats = num_repeats,
                             blk_multiples=blk_multiples) # blk multiples must be a multiple of 10
 
@@ -192,9 +199,20 @@ def run_test(repeat=False, num_repeats=8, blk_multiples=40, PLT=False):
 
     return test_pass, total_mismatches, reading_error, speed_MBs
 
-
-run_test(num_repeats = 8)
+print(f'First run after DDR upload'.center(35, '-'))
+run_test(num_repeats = 8, PLT=True)
 # TODO: data_to_names - hangs with num_repeats = 80 
 
 # can be rerun again without reloading DDR via
-# run_test(repeat=False)
+# however output data (DAC) and read data (ADC, DAC readback) will be out of phase unless repeat=True
+print(f'Re-run without re-writing the DDR data'.center(35, '-'))
+run_test(repeat=True, num_repeats=2, PLT=True)
+
+pasue_time = 10
+print(f'Pausing for {pasue_time} seconds'.center(35, '-'))
+print(f'Re-run without re-writing the DDR data'.center(35, '-'))
+time.sleep(pasue_time)
+run_test(repeat=True, num_repeats=2, PLT=True)
+
+print(f'Re-run without re-writing the DDR data and without DAC FIFO reset'.center(35, '-'))
+run_test(repeat=True, num_repeats=2, PLT=True, KEEP_DAC_GOING=True)
