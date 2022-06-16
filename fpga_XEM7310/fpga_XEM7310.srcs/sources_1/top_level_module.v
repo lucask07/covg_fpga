@@ -38,7 +38,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 33;
+localparam NUM_OK_EPS = 34;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -888,7 +888,7 @@ module top_level_module(
         
         assign data_ready_ds[k] = ds_spi_data[k][31];
             
-        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_BIT + k*19))spi_fifo1 (
+        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_BIT + k*20))spi_fifo1 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
                  .data_rdy_0(data_ready_ds[k]), 
@@ -913,8 +913,10 @@ module top_level_module(
     /* ------------------ AD5453 SPI ------------------- */
     wire [(AD5453_NUM-1):0] rd_en_fast_dac;
     wire [(AD5453_NUM-1):0] data_ready_fast_dac;
+    wire [(AD5453_NUM-1):0] filter_data_ready_fast_dac;
    
     wire [31:0] spi_data[0:(AD5453_NUM-1)];
+    wire [31:0] filter_spi_data[0:(AD5453_NUM-1)];
     wire [31:0] host_spi_data[0:(AD5453_NUM-1)];
     wire [(AD5453_NUM-1):0] spi_host_trigger_fast_dac; 
 
@@ -923,6 +925,9 @@ module top_level_module(
     
     reg [13:0] last_ddr_read[0:(AD5453_NUM-1)];
     reg ddr_data_valid_norepeat[0:(AD5453_NUM-1)]; // Skip DAC update if the value is the same. Reduces digital switching noise. 
+    
+    wire [31:0] ep_wire_filtdata;
+    okWireIn wi_ad5453_filtdata (.okHE(okHE), .ep_addr(`AD5453_SERIES_RES_WIRE_IN), .ep_dataout(ep_wire_filtdata));
     
     genvar p;
     generate
@@ -954,8 +959,23 @@ module top_level_module(
         );
         
         assign data_ready_fast_dac[p] = spi_data[p][31]; // assign MUX output MSB to the data_ready signal. 
+        
+        mux8to1_32wide filter_spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
+            .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
+            .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
+            .datain_3({ddr_data_valid_norepeat[p], 17'b0, last_ddr_read[p]}), // 
+            .datain_4({write_en_adc_o[0], 15'b0, adc_val[0][15:0]}), // data from AD7961  
+            .datain_5({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961
+            .datain_6({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961
+            .datain_7({write_en_adc_o[3], 15'b0, adc_val[3][15:0]}), // data from AD7961
+            .sel(ep_wire_filtdata[(`AD5453_FILTER_DATA_SEL_GEN_BIT + p*`AD5453_FILTER_DATA_SEL_GEN_BIT_LEN) +: `AD5453_FILTER_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({filter_spi_data[p]})
+        );
+        
+        assign filter_data_ready_fast_dac[p] = filter_spi_data[p][31]; // assign MUX output MSB to the data_ready signal. 
             
-        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_BIT + p*19))spi_fifo0 (
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_BIT + p*20))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[p]), .mosi_0(d_sdi[p]), .sclk_0(d_sclk[p]), 
                  .data_rdy_0(data_ready_fast_dac[p]), 
@@ -971,7 +991,11 @@ module top_level_module(
                  .coeff_debug_out1(coeff_debug_out1[p]),
                  .coeff_debug_out2(coeff_debug_out2[p]),
                  .dac_val_out(dac_val_out[p]),
-                 .data_out_ready(dac_val_out_ready[p])
+                 .data_out_ready(dac_val_out_ready[p]),
+                 .filter_data_i(filter_spi_data[p]),
+                 .data_rdy_0_filt(filter_data_ready_fast_dac[p]),
+                 .downsample_en(ep_wire_filtdata[`AD5453_DOWNSAMPLE_ENABLE_GEN_BIT + p]),
+                 .sum_en(ep_wire_filtdata[`AD5453_SUMMATION_ENABLE_GEN_BIT + p])
                  );
         end
     endgenerate
@@ -991,7 +1015,7 @@ module top_level_module(
 
     generate
         for (i = 0; i < (I2C_DCARDS_NUM / 2); i = i + 1) begin : i2c_dc_wire_gen
-            okWireIn wi_i2c_dc0 (.okHE(okHE), .ep_addr(`I2CDC_WIRE_IN_GEN_ADDR + i), .ep_dataout({i2c_memdin[(i * 2) + 1], i2c_memdin[i * 2]}));
+            okWireIn wi_i2c_dc0 (.okHE(okHE), .ep_addr(`I2CDC_WIRE_IN + i), .ep_dataout({i2c_memdin[(i * 2) + 1], i2c_memdin[i * 2]}));
         end
     endgenerate
 

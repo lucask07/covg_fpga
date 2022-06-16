@@ -44,7 +44,12 @@ module spi_fifo_driven_filter_test #(parameter ADDR = 0) (
      output reg [23:0] dac_val_out,
      output reg data_out_ready,
      output wire [13:0] filter_out_modified,
-     output wire [13:0] filter_out_modified_2
+     output wire [13:0] filter_out_modified_2,
+     /*****Filter Data and Enable Separate from CMD signals*****/
+     input wire [23:0] filter_data_i,
+     input wire data_rdy_0_filt,
+     input wire downsample_en,
+     input wire sum_en
     );
     
       wire cmd_stb;
@@ -152,34 +157,43 @@ module spi_fifo_driven_filter_test #(parameter ADDR = 0) (
 	 .addrb({27'b0, read_address}), .clkb(clk), .doutb(coeff_bram_in), .enb(read_coeff)
 	 );
 	 
+	 wire [13:0] filter_out_scaled;
+     wire filter_out_ready;
+	 
 	 // Real-Time LPF
     Butter_pipelined u_Butterworth_0
      (
      .clk(clk),
-     .clk_enable(data_rdy_0 | write_enable | write_done),  // input data is registered when clk_enable is high 
+     .clk_enable(data_rdy_0_filt | write_enable | write_done),  // input data is registered when clk_enable is high 
      .reset(rst),
-     .filter_in(data_i[15:0]), 
+     .filter_in(filter_data_i[15:0]), 
      .write_enable(write_enable),
      .write_done(write_done),
      .write_address(write_address[3:0]),
      .coeffs_in(coeffs_in),
      .filter_out(filter_out),
-     .data_ready(filter_data_rdy)
+     .data_ready(filter_out_ready)
      //.coeff_debug_out1(coeff_debug_out1),
      //.coeff_debug_out2(coeff_debug_out2)
      );
      
-     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
-     .din(filter_out), .dout(filter_out_modified)
+//     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
+//     .din(filter_out), .dout(filter_out_modified)
+//     );
+     
+     LPF_data_scale #(.ADDR(ADDR)) u_dat_scale(
+     .clk(clk), .reset(rst), .ep_write(ep_write), .ep_address(ep_address), .regDataOut(ep_dataout_coeff),
+     .filter_data_in(filter_out), .filter_in_ready(filter_out_ready), .filter_data_out(filter_out_modified), .data_rdy(filter_data_rdy),
+     .cmd_data_in(data_i[13:0]), .cmd_in_ready(data_rdy_0), .downsample_en(downsample_en), .sum_en(sum_en)
      );
          
      // Non-folded 4th order Butterworth
      Butterworth u_Butterworth_1
               (
               .clk(clk),
-              .clk_enable(data_rdy_0 | write_enable | write_done),  // input data is registered when clk_enable is high 
+              .clk_enable(data_rdy_0_filt | write_enable | write_done),  // input data is registered when clk_enable is high 
               .reset(rst),
-              .filter_in(data_i[15:0]), 
+              .filter_in(filter_data_i[15:0]), 
               .write_enable(write_enable),
               .write_done(write_done),
               .write_address(write_address[3:0]),

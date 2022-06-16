@@ -105,6 +105,8 @@ class Endpoint:
         Whether to increment the address when incrementing the endpoint.
     """
 
+    # TODO: put MAX_WIDTH in a config file (YAML?) for the package and somehow read it from there, maybe when imported? __init__.py file?
+    MAX_WIDTH = 32  # Maximum bit width of an Endpoint. Used to wrap Endpoints to the next address when incrementing
     endpoints_from_defines = dict()
     I2CDAQ_level_shifted = dict()
     I2CDAQ_QW = dict()
@@ -374,8 +376,17 @@ class Endpoint:
         for key in endpoints_dict:
             endpoint = endpoints_dict[key]
             if endpoint.gen_bit:
-                endpoint.bit_index_low += endpoint.bit_width * advance_num
+                endpoint.bit_index_low += (endpoint.bit_width * advance_num)
+                if endpoint.bit_index_low > Endpoint.MAX_WIDTH:
+                    # Endpoint does not fit, wrap to next address
+                    endpoint.address += 1
+                    endpoint.bit_index_low %= Endpoint.MAX_WIDTH
                 endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
+                if endpoint.bit_index_high > Endpoint.MAX_WIDTH:
+                    # Endpoint split across two addresses -> move to next address, start at bit 0
+                    endpoint.address += 1
+                    endpoint.bit_index_low = 0
+                    endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
             if endpoint.gen_address:
                 endpoint.address += advance_num
         return endpoints_dict
@@ -1268,10 +1279,12 @@ class TMF8801(I2CController):
     ADDRESS = 0b0100_0001 << 1
     registers = Register.get_chip_registers('TMF8801')
     apps = {'measure': 0xC0, 'bootloader': 0x80}
-
+    MULTI_BYTE_ORDER = 'LSB_1st'
 
     def write(self, data, register_name):
-        """Write data to any register on the chip."""
+        """Write data to any register on the chip.
+            first reads to enable writing of (just) bit-fields within the register
+        """
 
         dev_addr = self.ADDRESS 
         register = self.registers[register_name]
@@ -1302,11 +1315,10 @@ class TMF8801(I2CController):
 
         dev_addr = self.ADDRESS 
         register = self.registers[register_name]
-        # Ex. 16-bit register: | Byte 1 [15:8] | Byte 0 [7:0] |
-        byte_number = register.bit_index_high // 8  # assumption is that this will be 1 or 0 
-        # 16-bit register = 2 bytes, i2c_read_long starts at the MSB so we read 2 bytes to get Byte 0
+        byte_number = (register.bit_index_high // 8) + 1  # This is the total number of bytes to read 
+        # e.g. 16-bit register = 2 bytes, i2c_read_long starts at the MSB so we read 2 bytes to get Byte 0
         if number_of_bytes is None:
-            number_of_bytes = 2 - byte_number
+            number_of_bytes = byte_number
         # print(f'Read slave address: 0x{dev_addr:02x}, reg addr 0x{register.address:02x}')
         read_back_list = self.i2c_read_long(
             dev_addr, [register.address], number_of_bytes)
@@ -1315,15 +1327,23 @@ class TMF8801(I2CController):
         read_back_data = 0
         if read_back_list == None:
             return None
-        # First byte in the list is the MSB, shift and append the next byte
-        for byte in read_back_list:
-            # print('Readback byte of 0x{:02X}'.format(byte))
-            read_back_data <<= 8
-            read_back_data |= byte
+
+        if self.MULTI_BYTE_ORDER == 'MSB_1st':
+            for byte in read_back_list:
+                # print('Readback byte of 0x{:02X}'.format(byte))
+                read_back_data <<= 8
+                read_back_data |= byte
+        elif self.MULTI_BYTE_ORDER == 'LSB_1st':
+            for byte in read_back_list[::-1]:  # flip list order 
+                # print('Readback byte of 0x{:02X}'.format(byte))
+                read_back_data <<= 8
+                read_back_data |= byte
+
+
         # Get only the bits for the specified register from what was read back.
         desired_bits = 0
         for bit in range(register.bit_index_high, register.bit_index_low - 1, -1):
-            desired_bits += 0x1 << bit
+            desired_bits += 0x1 << bit        
         desired_data = (read_back_data
                         & desired_bits) >> register.bit_index_low
 
@@ -1433,11 +1453,12 @@ class TMF8801(I2CController):
 
         vals = {'status': read_data[0],
                 'register_contents': read_data[1],
-                'tid': read_data[2],
+                'transaction_id': read_data[2],
                 'result_num': read_data[3],
                 'result_info': read_data[4],
                 'dist_mm': read_data[5] + (read_data[6]<<8),
                 'sys_clk': read_data[7] + (read_data[8]<<8) + (read_data[9]<<16) + (read_data[10]<<24)}
+        vals['sys_clk_seconds'] = vals['sys_clk']*0.2e-6
         return vals, read_data
 
 
@@ -3541,7 +3562,8 @@ class DDR3():
             
             adc_data = {}
             for i in range(4):
-                adc_data[i] = twos_comp(chan_data[i], 16)
+                # adc_data[i] = twos_comp(chan_data[i], 16)
+                adc_data[i] = chan_data[i]
             
             lsb = chan_data[6][0::5].astype(np.uint64)
             mid_b = ((chan_data[6][1::5].astype(np.uint64))<<16)
