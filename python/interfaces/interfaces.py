@@ -3562,7 +3562,8 @@ class DDR3():
             
             adc_data = {}
             for i in range(4):
-                adc_data[i] = twos_comp(chan_data[i], 16)
+                # adc_data[i] = twos_comp(chan_data[i], 16)
+                adc_data[i] = chan_data[i]
             
             lsb = chan_data[6][0::5].astype(np.uint64)
             mid_b = ((chan_data[6][1::5].astype(np.uint64))<<16)
