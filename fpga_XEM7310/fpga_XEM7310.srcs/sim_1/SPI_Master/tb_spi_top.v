@@ -404,7 +404,7 @@ module tb_spi_top;
 		#20;
 		$fclose(FileID_1);
 		$fclose(FileID);
-		$stop;
+		$finish;
 	end
 endmodule
 

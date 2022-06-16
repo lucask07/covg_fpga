@@ -82,6 +82,13 @@
 `define DDR3_ADC_WRITE_ENABLE 30 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 `define DDR3_ADC_TRANSFER_ENABLE 31 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
 
+`define AD5453_SERIES_RES_WIRE_IN 8'h04 // bit_width=32
+`define AD5453_FILTER_DATA_SEL_GEN_BIT 0 // address=AD5453_SERIES_RES_WIRE_IN bit_width=3
+// [2:0], [5:3], [8:6], [11:9], [14:12], [17:15]
+`define AD5453_FILTER_DATA_SEL_GEN_BIT_LEN 3 // address=AD5453_SERIES_RES_WIRE_IN bit_width=3
+`define AD5453_DOWNSAMPLE_ENABLE_GEN_BIT 18 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
+`define AD5453_SUMMATION_ENABLE_GEN_BIT 24 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
+
 `define FILTER_SEL_WIRE_IN 8'h11 // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define AD5453_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
