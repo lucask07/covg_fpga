@@ -10,6 +10,28 @@ import numpy as np
 from scipy.fft import rfft
 import datetime
 import sys
+import yaml
+import os
+
+home_dir = os.path.join(os.path.expanduser('~'), '.packagename')
+
+
+def create_yaml(yaml_dir=home_dir):
+    default_configs = {
+        'endpoint_max_width': 32,
+        'fpga_bitfile_dir': None,
+        'ep_defines_dir': None,
+        'registers_dir': None,
+    }
+
+    if not os.path.exists(yaml_dir):
+        os.mkdir(yaml_dir)
+
+    file_path = os.path.join(yaml_dir, 'config.yaml')
+
+    with open(file_path, mode='w') as file:
+        yaml.dump(default_configs, file)
+
 
 def rev_lookup(dd, val):
     key = next(key for key, value in dd.items() if value == val)
