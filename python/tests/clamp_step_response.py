@@ -23,6 +23,7 @@ from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
+import copy
 
 # The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -307,21 +308,6 @@ for i in range(6):
 file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
-# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-                                     blk_multiples=40)  # blk multiples multiple of 10
-
-# to get the deswizzled data of all repeats need to read the file
-_, chan_data = read_h5(data_dir, file_name=file_name.format(
-    idx) + '.h5', chan_list=np.arange(8))
-
-# Long data sequence -- entire file
-adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
-print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
-
-# Time in seconds
-t = np.arange(0, len(chan_data[0]))*1/FS
-
 # Try with different capacitors
 if feedback_resistors is None:
     feedback_resistors = [x for x in Clamp.configs['RF1_dict'].keys() if type(x) == int or type(x) == float] # RF1 Resistor values in kilo-ohms for Offset Adjust amplifier
@@ -334,10 +320,11 @@ voltage_data = dict([(x, None) for x in Clamp.configs['ADG_RES_dict'].keys() if 
 for key in voltage_data:
     voltage_data[key] = []  # Lists to hold voltage data at each resistor value
 
-dc_data = {}
+dc_data = {}    # To store voltage data for each configuration of each daughtercard
 for dc_num in DC_NUMS:
     # access data with dc_data[dc_num][fb_res][cap][res]
     dc_data[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
+errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store whether an error occurred on the DDR read
 
 for fb_res in feedback_resistors:
     for cap in capacitors:
@@ -378,13 +365,31 @@ for fb_res in feedback_resistors:
             _, chan_data = read_h5(data_dir, file_name=file_name.format(
                 idx) + '.h5', chan_list=np.arange(8))
 
+            adc_data, timestamp, dac_data, ads, reading_error = ddr.data_to_names(chan_data)
+            print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+
             # Store voltage in list; plot
             for dc_num in DC_NUMS:
                 dc_data[dc_num][fb_res][cap][res] = to_voltage(
-                    chan_data[dc_num], num_bits=16, voltage_range=10, use_twos_comp=True)
+                    adc_data[dc_num], num_bits=16, voltage_range=10, use_twos_comp=True)
+                errors[dc_num][fb_res][cap][res] = reading_error
 
-print('Data collected. Plotting...')
+print('Data collected. DDR read error report below.')
+print('|'.join([x.center(6, ' ') for x in ['dc_num', 'fb_res', 'cap', 'res', 'ERROR']]))
+error_cnt = 0
+for dc_num in errors:
+    for fb_res in errors[dc_num]:
+        for cap in errors[dc_num][fb_res]:
+            for res in errors[dc_num][fb_res][cap]:
+                if errors[dc_num][fb_res][cap][res]:
+                    # An error occurred in the DDR read
+                    print('|'.join([str(x).center(6, ' ') for x in [dc_num, fb_res, cap, res, 'ERROR']]))
+                    error_cnt += 1
+print('Total DDR read errors:', error_cnt)
+print('Plotting...')
 
+# Time in seconds
+t = np.arange(0, len(adc_data[0]))*1/FS
 for dc_num in DC_NUMS:
     for fb_res in dc_data[dc_num].keys():
         rows = ceil(len(capacitors)**(1/2))
