@@ -15,6 +15,11 @@ import time
 from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list, from_voltage
 import copy
 import h5py
+import yaml
+
+home_dir = os.path.join(os.path.expanduser('~'), '.packagename')
+with open(os.path.join(home_dir, 'config.yaml'), 'r') as file:
+    configs = yaml.safe_load(file)
 
 class Register:
     """Class for internal registers on a device.
@@ -50,21 +55,9 @@ class Register:
             return False
 
     @staticmethod
-    def get_chip_registers(sheet, workbook_path=None):
+    def get_chip_registers(sheet, workbook_path=configs['registers_path']):
         """Return a dictionary of Registers from a page in an Excel spreadsheet."""
-
-        if workbook_path == None:
-            workbook_path = os.getcwd()
-            # The Registers spreadsheet is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-            for i in range(15):
-                if os.path.basename(workbook_path) == 'covg_fpga':
-                    workbook_path = os.path.join(
-                        workbook_path, 'python', 'Registers.xlsx')
-                    break
-                else:
-                    # If we aren't in covg_fpga, move up a folder and check again
-                    workbook_path = os.path.dirname(workbook_path)
-
+        
         reg_dict = {}
         sheet_data = pd.read_excel(workbook_path, sheet)
         for row in range(len(sheet_data)):
@@ -105,8 +98,7 @@ class Endpoint:
         Whether to increment the address when incrementing the endpoint.
     """
 
-    # TODO: put MAX_WIDTH in a config file (YAML?) for the package and somehow read it from there, maybe when imported? __init__.py file?
-    MAX_WIDTH = 32  # Maximum bit width of an Endpoint. Used to wrap Endpoints to the next address when incrementing
+    MAX_WIDTH = configs['endpoint_max_width']  # Maximum bit width of an Endpoint. Used to wrap Endpoints to the next address when incrementing
     endpoints_from_defines = dict()
     I2CDAQ_level_shifted = dict()
     I2CDAQ_QW = dict()
@@ -135,24 +127,11 @@ class Endpoint:
             return False
 
     @staticmethod
-    def update_endpoints_from_defines(ep_defines_path=None):
+    def update_endpoints_from_defines(ep_defines_path=configs['ep_defines_path']):
         """Store and return a dictionary of Endpoints for each chip in ep_defines.v.
 
         Returns -1 if there is a naming collision in ep_defines.v
         """
-
-        # Find ep_defines.v path
-        if ep_defines_path == None:
-            ep_defines_path = os.getcwd()
-            # The Registers spreadsheet is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-            for i in range(15):
-                if os.path.basename(ep_defines_path) == 'covg_fpga':
-                    ep_defines_path = os.path.join(
-                        ep_defines_path, 'fpga_XEM7310', 'fpga_XEM7310.srcs', 'sources_1', 'ep_defines.v')
-                    break
-                else:
-                    # If we aren't in covg_fpga, move up a folder and check again
-                    ep_defines_path = os.path.dirname(ep_defines_path)
 
         # Get all lines
         with open(ep_defines_path, 'r') as file:
@@ -410,7 +389,7 @@ class FPGA:
     """
 
     # TODO: change to complete bitfile when Verilog is combined
-    def __init__(self, bitfile, debug=False):
+    def __init__(self, bitfile=configs['fpga_bitfile_path'], debug=False):
 
         self.bitfile = bitfile
         self.debug = debug

@@ -16,21 +16,24 @@ import os
 home_dir = os.path.join(os.path.expanduser('~'), '.packagename')
 
 
-def create_yaml(yaml_dir=home_dir):
+def create_yaml():
     default_configs = {
         'endpoint_max_width': 32,
-        'fpga_bitfile_dir': None,
-        'ep_defines_dir': None,
-        'registers_dir': None,
+        'fpga_bitfile_path': None,
+        'ep_defines_path': None,
+        'registers_path': None,
     }
 
-    if not os.path.exists(yaml_dir):
-        os.mkdir(yaml_dir)
+    if not os.path.exists(home_dir):
+        os.mkdir(home_dir)
 
-    file_path = os.path.join(yaml_dir, 'config.yaml')
+    file_path = os.path.join(home_dir, 'config.yaml')
 
     with open(file_path, mode='w') as file:
         yaml.dump(default_configs, file)
+    
+    print(f'YAML created at {file_path}')
+    return default_configs
 
 
 def rev_lookup(dd, val):
