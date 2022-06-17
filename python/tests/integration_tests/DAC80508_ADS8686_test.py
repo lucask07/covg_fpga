@@ -22,14 +22,17 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_fpga_path, 'python')
+interfaces_path = os.path.join(covg_fpga_path, 'python/src')
 sys.path.append(interfaces_path)
 
 top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
+sys.path.append(os.path.join(covg_fpga_path, 'python')) # To find Daq from boards.py
 
-from interfaces.interfaces import FPGA, DAC80508, ADS8686
-from interfaces.boards import Daq
+from boards import Daq
+from interfaces.interfaces import FPGA
+from interfaces.peripherals.DAC80508 import DAC80508
+from interfaces.peripherals.ADS8686 import ADS8686
 from interfaces.utils import to_voltage
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 

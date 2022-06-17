@@ -23,7 +23,7 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_path, 'python')
+interfaces_path = os.path.join(covg_path, 'python/src')
 sys.path.append(interfaces_path)
 
 top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
@@ -36,7 +36,8 @@ pytestmark = [pytest.mark.usable]
 @pytest.fixture(scope='module')
 def dut():
     global top_level_module_bitfile
-    from interfaces.interfaces import FPGA, UID_24AA025UID, Endpoint
+    from interfaces.interfaces import FPGA, Endpoint
+    from interfaces.peripherals.UID_24AA025UID import UID_24AA025UID
     f = FPGA(bitfile=top_level_module_bitfile)
     assert f.init_device()
     yield UID_24AA025UID(fpga=f,

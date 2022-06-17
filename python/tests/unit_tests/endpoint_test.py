@@ -20,7 +20,7 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_path, 'python')
+interfaces_path = os.path.join(covg_path, 'python/src')
 sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Endpoint
@@ -66,7 +66,7 @@ def test_str(address, bit_index_low, bit_width, gen_bit, gen_address):
 def test_update_endpoints_from_defines(test_params):
     # --- First, write the defines file in the current directory ---
     file_name = 'test_defines.v'
-    file_loc = os.path.join(interfaces_path, 'tests', 'unit_tests', file_name)
+    file_loc = os.path.join(covg_path, 'python', 'tests', 'unit_tests', file_name)
     file_text = ''
     # Group 1 - Addresses
     # Group 2 - Bits referenced to group 1

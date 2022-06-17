@@ -24,12 +24,13 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_path, 'python')
+interfaces_path = os.path.join(covg_path, 'python/src')
 sys.path.append(interfaces_path)
 top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
-from interfaces.interfaces import FPGA, DDR3
+from interfaces.interfaces import FPGA
+from interfaces.peripherals.DDR3 import DDR3
 from interfaces.utils import from_voltage, to_voltage, calc_impedance
 
 pytestmark = [pytest.mark.usable, pytest.mark.no_fpga]
