@@ -1,3 +1,4 @@
+from ..interfaces import Endpoint, Register
 from I2CController import I2CController
 
 

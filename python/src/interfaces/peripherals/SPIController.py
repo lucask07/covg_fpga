@@ -1,3 +1,7 @@
+from ..interfaces import Endpoint, Register
+import copy
+
+
 class SPIController:
     """Class for controllers on the FPGA using SPI protocol.
 

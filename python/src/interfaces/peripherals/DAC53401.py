@@ -1,3 +1,5 @@
+from ..interfaces import Endpoint, Register
+from ..utils import int_to_list, from_voltage
 from I2CController import I2CController
 
 class DAC53401(I2CController):

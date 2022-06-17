@@ -1,4 +1,6 @@
+from ..interfaces import Endpoint
 from SPIFifoDriven import SPIFifoDriven
+import numpy as np
 
 
 class AD5453(SPIFifoDriven):
@@ -75,6 +77,8 @@ class AD5453(SPIFifoDriven):
         # https://opalkelly.com/examples/setting-and-getting-multiple-registers/#tab-python
         loop_thru = np.arange(self.filter_offset, 1
                               + self.filter_offset + self.filter_len)
+
+        # ok should already be imported from Endpoint import
         regs = ok.okTRegisterEntries((len(loop_thru)))
 
         for i in loop_thru:  # TODO is this correct? and how to parameterize?

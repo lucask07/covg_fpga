@@ -1,4 +1,6 @@
+from ..interfaces import Endpoint, Register
 from I2CController import I2CController
+
 
 class TCA9555(I2CController):
     """Class for the I/O Expander TCA9555.

@@ -1,4 +1,7 @@
+from ..interfaces import Endpoint, Register
+from ..utils import int_to_list
 from I2CController import I2CController
+import time
 
 
 class TMF8801(I2CController):
@@ -220,7 +223,7 @@ class TMF8801(I2CController):
         count = 0
         while (cal_done != 0x0A) and (count < 20):
             cal_done = self.read('REGISTER_CONTENTS')
-            sleep(0.1)
+            time.sleep(0.1)
             count = count + 1
             print(f'Cal done 0x{cal_done:02x}')
 

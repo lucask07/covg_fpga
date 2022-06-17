@@ -1,3 +1,8 @@
+from ..interfaces import Endpoint
+import numpy as np
+import time
+
+
 class I2CController:
     """Class for controllers on the FPGA using I2C protocol.
 
