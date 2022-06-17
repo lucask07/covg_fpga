@@ -2,12 +2,12 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Thu Jun  2 12:22:28 2022
-# Process ID: 288
-# Current directory: C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1
+# Start of session at: Fri Jun 17 11:27:19 2022
+# Process ID: 4132
+# Current directory: C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1
 # Command line: vivado.exe -log fifo_w32_1024_r256_128.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source fifo_w32_1024_r256_128.tcl
-# Log file: C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/fifo_w32_1024_r256_128.vds
-# Journal file: C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1\vivado.jou
+# Log file: C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/fifo_w32_1024_r256_128.vds
+# Journal file: C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1\vivado.jou
 #-----------------------------------------------------------
 source fifo_w32_1024_r256_128.tcl -notrace
 Command: synth_design -top fifo_w32_1024_r256_128 -part xc7a75tfgg484-1 -mode out_of_context
@@ -15,11 +15,11 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 17336 
+INFO: Helper process launched with PID 7064 
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:05 . Memory (MB): peak = 363.027 ; gain = 100.598
+Starting RTL Elaboration : Time (s): cpu = 00:00:06 ; elapsed = 00:00:08 . Memory (MB): peak = 409.258 ; gain = 100.418
 ---------------------------------------------------------------------------------
-INFO: [Synth 8-638] synthesizing module 'fifo_w32_1024_r256_128' [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/synth/fifo_w32_1024_r256_128.vhd:76]
+INFO: [Synth 8-638] synthesizing module 'fifo_w32_1024_r256_128' [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/synth/fifo_w32_1024_r256_128.vhd:76]
 	Parameter C_COMMON_CLOCK bound to: 0 - type: integer 
 	Parameter C_SELECT_XPM bound to: 0 - type: integer 
 	Parameter C_COUNT_TYPE bound to: 0 - type: integer 
@@ -222,7 +222,7 @@ INFO: [Synth 8-638] synthesizing module 'fifo_w32_1024_r256_128' [c:/Users/iande
 	Parameter C_REG_SLICE_MODE_RACH bound to: 0 - type: integer 
 	Parameter C_REG_SLICE_MODE_RDCH bound to: 0 - type: integer 
 	Parameter C_REG_SLICE_MODE_AXIS bound to: 0 - type: integer 
-INFO: [Synth 8-3491] module 'fifo_generator_v13_2_2' declared at 'c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/hdl/fifo_generator_v13_2_vhsyn_rfs.vhd:38483' bound to instance 'U0' of component 'fifo_generator_v13_2_2' [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/synth/fifo_w32_1024_r256_128.vhd:546]
+INFO: [Synth 8-3491] module 'fifo_generator_v13_2_2' declared at 'c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/hdl/fifo_generator_v13_2_vhsyn_rfs.vhd:38483' bound to instance 'U0' of component 'fifo_generator_v13_2_2' [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/synth/fifo_w32_1024_r256_128.vhd:546]
 INFO: [Synth 8-6157] synthesizing module 'xpm_cdc_async_rst' [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/hdl/xpm_cdc.sv:1171]
 INFO: [Synth 8-5534] Detected attribute (* ASYNC_REG = "TRUE" *) [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/hdl/xpm_cdc.sv:1222]
 INFO: [Synth 8-6155] done synthesizing module 'xpm_cdc_async_rst' (1#1) [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/hdl/xpm_cdc.sv:1171]
@@ -234,7 +234,7 @@ INFO: [Synth 8-5534] Detected attribute (* ASYNC_REG = "TRUE" *) [C:/Xilinx/Viva
 INFO: [Synth 8-6155] done synthesizing module 'xpm_cdc_gray' (14#1) [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/hdl/xpm_cdc.sv:284]
 INFO: [Synth 8-6157] synthesizing module 'xpm_cdc_gray__parameterized0' [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/hdl/xpm_cdc.sv:284]
 INFO: [Synth 8-6155] done synthesizing module 'xpm_cdc_gray__parameterized0' (14#1) [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/hdl/xpm_cdc.sv:284]
-INFO: [Synth 8-256] done synthesizing module 'fifo_w32_1024_r256_128' (31#1) [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/synth/fifo_w32_1024_r256_128.vhd:76]
+INFO: [Synth 8-256] done synthesizing module 'fifo_w32_1024_r256_128' (31#1) [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/synth/fifo_w32_1024_r256_128.vhd:76]
 WARNING: [Synth 8-3331] design wr_dc_as has unconnected port SRST
 WARNING: [Synth 8-3331] design wr_status_flags_as has unconnected port WR_RST
 WARNING: [Synth 8-3331] design wr_status_flags_as has unconnected port SRST
@@ -337,7 +337,7 @@ WARNING: [Synth 8-3331] design rd_logic has unconnected port PROG_EMPTY_THRESH_A
 WARNING: [Synth 8-3331] design rd_logic has unconnected port PROG_EMPTY_THRESH_ASSERT[2]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 647.875 ; gain = 385.445
+Finished RTL Elaboration : Time (s): cpu = 00:00:56 ; elapsed = 00:00:58 . Memory (MB): peak = 694.672 ; gain = 385.832
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -350,10 +350,10 @@ Report Check Netlist:
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 647.875 ; gain = 385.445
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:56 ; elapsed = 00:00:59 . Memory (MB): peak = 694.672 ; gain = 385.832
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:32 ; elapsed = 00:00:34 . Memory (MB): peak = 647.875 ; gain = 385.445
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:56 ; elapsed = 00:00:59 . Memory (MB): peak = 694.672 ; gain = 385.832
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 14 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -362,14 +362,14 @@ INFO: [Project 1-570] Preparing netlist for logic optimization
 
 Processing XDC Constraints
 Initializing timing engine
-Parsing XDC File [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_ooc.xdc] for cell 'U0'
-Finished Parsing XDC File [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_ooc.xdc] for cell 'U0'
-Parsing XDC File [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xdc] for cell 'U0'
-Finished Parsing XDC File [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xdc] for cell 'U0'
-Parsing XDC File [C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/dont_touch.xdc]
-Finished Parsing XDC File [C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/dont_touch.xdc]
-Parsing XDC File [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_clocks.xdc] for cell 'U0'
-Finished Parsing XDC File [c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_clocks.xdc] for cell 'U0'
+Parsing XDC File [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_ooc.xdc] for cell 'U0'
+Finished Parsing XDC File [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_ooc.xdc] for cell 'U0'
+Parsing XDC File [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xdc] for cell 'U0'
+Finished Parsing XDC File [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xdc] for cell 'U0'
+Parsing XDC File [C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/dont_touch.xdc]
+Finished Parsing XDC File [C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/dont_touch.xdc]
+Parsing XDC File [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_clocks.xdc] for cell 'U0'
+Finished Parsing XDC File [c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128_clocks.xdc] for cell 'U0'
 Sourcing Tcl File [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.gic_rst.rst_rd_reg2_inst'
 Finished Sourcing Tcl File [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.gic_rst.rst_rd_reg2_inst'
 Sourcing Tcl File [C:/Xilinx/Vivado/2018.2/data/ip/xpm/xpm_cdc/tcl/xpm_cdc_async_rst.tcl] for cell 'U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst'
@@ -393,21 +393,21 @@ Completed Processing XDC Constraints
 INFO: [Project 1-111] Unisim Transformation Summary:
 No Unisim elements were transformed.
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.013 . Memory (MB): peak = 729.016 ; gain = 1.555
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.020 . Memory (MB): peak = 778.617 ; gain = 1.516
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:38 ; elapsed = 00:00:41 . Memory (MB): peak = 729.016 ; gain = 466.586
+Finished Constraint Validation : Time (s): cpu = 00:01:04 ; elapsed = 00:01:08 . Memory (MB): peak = 778.617 ; gain = 469.777
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:38 ; elapsed = 00:00:41 . Memory (MB): peak = 729.016 ; gain = 466.586
+Finished Loading Part and Timing Information : Time (s): cpu = 00:01:04 ; elapsed = 00:01:08 . Memory (MB): peak = 778.617 ; gain = 469.777
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
 ---------------------------------------------------------------------------------
-Applied set_property DONT_TOUCH = true for U0. (constraint file  C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/dont_touch.xdc, line 9).
+Applied set_property DONT_TOUCH = true for U0. (constraint file  C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/dont_touch.xdc, line 9).
 Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.rf /rstblk/\ngwrdrst.grst.g7serrst.gnsckt_wrst.gic_rst.rst_rd_reg2_inst . (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.rf /rstblk/\ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.rf /\gntv_or_sync_fifo.gcx.clkx /wr_pntr_cdc_inst. (constraint file  auto generated constraint, line ).
@@ -415,10 +415,10 @@ Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.
 Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.rf /rstblk/\ngwrdrst.grst.g7serrst.gnsckt_wrst.gic_rst.xpm_cdc_single_inst_rrst_wr . (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for U0/inst_fifo_gen/\gconvfifo.rf /\grf.rf /rstblk/\ngwrdrst.grst.g7serrst.gnsckt_wrst.gic_rst.xpm_cdc_single_inst_wrst_rd . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:38 ; elapsed = 00:00:41 . Memory (MB): peak = 729.016 ; gain = 466.586
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:01:04 ; elapsed = 00:01:08 . Memory (MB): peak = 778.617 ; gain = 469.777
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:38 ; elapsed = 00:00:41 . Memory (MB): peak = 729.016 ; gain = 466.586
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:01:05 ; elapsed = 00:01:09 . Memory (MB): peak = 778.617 ; gain = 469.777
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -541,7 +541,7 @@ Start Cross Boundary and Area Optimization
 ---------------------------------------------------------------------------------
 Warning: Parallel synthesis criteria is not met 
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:00:39 ; elapsed = 00:00:42 . Memory (MB): peak = 729.016 ; gain = 466.586
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:06 ; elapsed = 00:01:10 . Memory (MB): peak = 778.617 ; gain = 469.777
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -553,13 +553,13 @@ Report RTL Partitions:
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:00:44 ; elapsed = 00:00:47 . Memory (MB): peak = 764.660 ; gain = 502.230
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:13 ; elapsed = 00:01:18 . Memory (MB): peak = 815.047 ; gain = 506.207
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:00:44 ; elapsed = 00:00:47 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished Timing Optimization : Time (s): cpu = 00:01:13 ; elapsed = 00:01:18 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -571,7 +571,7 @@ Report RTL Partitions:
 Start Technology Mapping
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished Technology Mapping : Time (s): cpu = 00:01:13 ; elapsed = 00:01:18 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -595,7 +595,7 @@ Start Final Netlist Cleanup
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished IO Insertion : Time (s): cpu = 00:01:14 ; elapsed = 00:01:19 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -608,7 +608,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:14 ; elapsed = 00:01:19 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -620,25 +620,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:14 ; elapsed = 00:01:19 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished Renaming Generated Ports : Time (s): cpu = 00:01:14 ; elapsed = 00:01:19 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished Handling Custom Attributes : Time (s): cpu = 00:01:14 ; elapsed = 00:01:19 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished Renaming Generated Nets : Time (s): cpu = 00:01:14 ; elapsed = 00:01:19 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -711,11 +711,11 @@ Report Instance Areas:
 |37    |            \ngwrdrst.grst.g7serrst.gnsckt_wrst.gic_rst.xpm_cdc_single_inst_rrst_wr  |xpm_cdc_single                           |     4|
 +------+-------------------------------------------------------------------------------------+-----------------------------------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Finished Writing Synthesis Report : Time (s): cpu = 00:01:14 ; elapsed = 00:01:19 . Memory (MB): peak = 837.125 ; gain = 528.285
 ---------------------------------------------------------------------------------
 Synthesis finished with 0 errors, 0 critical warnings and 466 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:00:07 ; elapsed = 00:00:43 . Memory (MB): peak = 786.496 ; gain = 442.926
-Synthesis Optimization Complete : Time (s): cpu = 00:00:44 ; elapsed = 00:00:48 . Memory (MB): peak = 786.496 ; gain = 524.066
+Synthesis Optimization Runtime : Time (s): cpu = 00:00:12 ; elapsed = 00:01:12 . Memory (MB): peak = 837.125 ; gain = 444.340
+Synthesis Optimization Complete : Time (s): cpu = 00:01:14 ; elapsed = 00:01:19 . Memory (MB): peak = 837.125 ; gain = 528.285
 INFO: [Project 1-571] Translating synthesized netlist
 INFO: [Netlist 29-17] Analyzing 18 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -728,13 +728,13 @@ INFO: [Project 1-111] Unisim Transformation Summary:
 INFO: [Common 17-83] Releasing license: Synthesis
 31 Infos, 100 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:00:46 ; elapsed = 00:00:50 . Memory (MB): peak = 789.844 ; gain = 538.914
+synth_design: Time (s): cpu = 00:01:16 ; elapsed = 00:01:22 . Memory (MB): peak = 839.730 ; gain = 542.367
 WARNING: [Constraints 18-5210] No constraint will be written out.
-INFO: [Common 17-1381] The checkpoint 'C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/fifo_w32_1024_r256_128.dcp' has been generated.
-INFO: [Coretcl 2-1482] Added synthesis output to IP cache for IP c:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xci
+INFO: [Common 17-1381] The checkpoint 'C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/fifo_w32_1024_r256_128.dcp' has been generated.
+INFO: [Coretcl 2-1482] Added synthesis output to IP cache for IP c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xci
 INFO: [Coretcl 2-1174] Renamed 36 cell refs.
 WARNING: [Constraints 18-5210] No constraint will be written out.
-INFO: [Common 17-1381] The checkpoint 'C:/Users/iande/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/fifo_w32_1024_r256_128.dcp' has been generated.
+INFO: [Common 17-1381] The checkpoint 'C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/fifo_w32_1024_r256_128_synth_1/fifo_w32_1024_r256_128.dcp' has been generated.
 INFO: [runtcl-4] Executing : report_utilization -file fifo_w32_1024_r256_128_utilization_synth.rpt -pb fifo_w32_1024_r256_128_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.022 . Memory (MB): peak = 789.844 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Thu Jun  2 12:23:22 2022...
+report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.037 . Memory (MB): peak = 839.730 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Fri Jun 17 11:28:46 2022...

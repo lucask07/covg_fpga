@@ -1,10 +1,10 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-// Date        : Fri Jul 23 12:32:50 2021
-// Host        : FDC212-01 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub -rename_top blk_mem_gen_0 -prefix
-//               blk_mem_gen_0_ blk_mem_gen_0_stub.v
+// Date        : Fri Jun 17 11:21:10 2022
+// Host        : FDC212-05 running 64-bit major release  (build 9200)
+// Command     : write_verilog -force -mode synth_stub
+//               C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0_stub.v
 // Design      : blk_mem_gen_0
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a75tfgg484-1
