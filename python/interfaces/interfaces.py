@@ -2398,7 +2398,7 @@ class AD5453(SPIFifoDriven):
                                  13: 0,
                                  7: 0x7fffffff,
                                  6: 0,
-                                 15: 0x0000_2000} # offset=0, scale=1 
+                                 15: 0x0080_2000} # offset=0, scale=1 
         elif target == '100kHz':
             self.filter_coeff = {0: 0x0000_6f84,
                                  1: 0x20000000,
@@ -2413,7 +2413,7 @@ class AD5453(SPIFifoDriven):
                                  12: 0x86d2475f,
                                  13: 0x3a2447ec,
                                  7: 0x7fffffff, 
-                                 15: 0x0000_2000} # offset=0, scale=1  
+                                 15: 0x0000_1000} # offset=0, scale=1  
         elif target == '500kHz':
             self.filter_coeff = {0: 0x009e1586,
                                  1: 0x20000000,
@@ -2428,7 +2428,7 @@ class AD5453(SPIFifoDriven):
                                  12: 0xab762783,
                                  13: 0x287ecada,
                                  7: 0x7fffffff,
-                                 15: 0x0800_2000} # offset=0, scale=1  
+                                 15: 0x0000_2000} # offset=0, scale=1  
 
 
 class ADCDATA():

@@ -300,7 +300,7 @@ for dc_num in DC_NUMS:
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
-
+time.sleep(0.1)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
 time.sleep(1)
 
