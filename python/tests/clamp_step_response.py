@@ -36,6 +36,10 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(interfaces_path)
 
+# TODO: remove this when packaged
+# Fix for interfaces being moved to src folder
+sys.path.append(os.path.join(interfaces_path, 'src'))
+
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
@@ -43,10 +47,14 @@ from interfaces.utils import to_voltage, from_voltage
 from interfaces.interfaces import (
     FPGA,
     Endpoint,
-    DDR3,
+    # DDR3,
 )
+from interfaces.peripherals.DDR3 import DDR3
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
-from interfaces.boards import Daq, Clamp
+
+# TODO: deal with this when packaged
+# from interfaces.boards import Daq, Clamp
+from boards import Daq, Clamp
 
 
 def ddr_write_setup():
@@ -300,7 +308,7 @@ for dc_num in DC_NUMS:
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
-
+time.sleep(0.1)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
 time.sleep(1)
 

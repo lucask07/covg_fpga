@@ -1,5 +1,5 @@
 from ..interfaces import Endpoint, Register
-from I2CController import I2CController
+from .I2CController import I2CController
 
 
 class TCA9555(I2CController):

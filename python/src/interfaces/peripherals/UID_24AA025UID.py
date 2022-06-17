@@ -1,6 +1,6 @@
 from ..interfaces import Endpoint, Register
 from ..utils import int_to_list
-from I2CController import I2CController
+from .I2CController import I2CController
 
 class UID_24AA025UID(I2CController):
     """Class for the ID chip 24AA025UID.

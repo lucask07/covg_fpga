@@ -1,5 +1,5 @@
 from ..interfaces import Endpoint, Register
-from I2CController import I2CController
+from .I2CController import I2CController
 
 
 class DAC101C081(I2CController):

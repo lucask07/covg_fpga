@@ -1,6 +1,6 @@
 from ..interfaces import Endpoint
 from ..utils import gen_mask
-from ADCDATA import ADCDATA
+from .ADCDATA import ADCDATA
 import copy
 import time
 
