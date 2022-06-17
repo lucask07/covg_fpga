@@ -23,14 +23,15 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_path, 'python')
+interfaces_path = os.path.join(covg_path, 'python/src')
 sys.path.append(interfaces_path)
 
 top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
                                         'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
 from interfaces.utils import int_to_list
-from interfaces.interfaces import FPGA, TCA9555, Endpoint
+from interfaces.interfaces import FPGA, Endpoint
+from interfaces.peripherals.TCA9555 import TCA9555
 
 
 # Fixtures

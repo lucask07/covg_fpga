@@ -21,7 +21,7 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_path, 'python')
+interfaces_path = os.path.join(covg_path, 'python/src')
 sys.path.append(interfaces_path)
 
 from interfaces.interfaces import Register
@@ -58,7 +58,7 @@ def test_regs():
 @pytest.fixture(scope='module')
 def test_file():
     file_name = 'test_registers.xlsx'
-    file_loc = os.path.join(interfaces_path, 'tests', 'unit_tests', file_name)
+    file_loc = os.path.join(covg_path, 'python', 'tests', 'unit_tests', file_name)
     with pd.ExcelWriter(path=file_loc, engine='openpyxl') as writer:
         # Write the file so it is there when the tests go to use it
         for i in range(num_chips):
