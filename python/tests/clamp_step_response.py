@@ -38,7 +38,7 @@ sys.path.append(interfaces_path)
 
 # TODO: remove this when packaged
 # Fix for interfaces being moved to src folder
-sys.path.append(os.path.join(interfaces_path, 'src'))
+# sys.path.append(os.path.join(interfaces_path, 'src'))
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5
@@ -308,7 +308,7 @@ for dc_num in DC_NUMS:
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
-time.sleep(0.1)
+time.sleep(1)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
 time.sleep(1)
 
