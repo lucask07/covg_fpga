@@ -1,3 +1,8 @@
+from ..interfaces import Endpoint
+from ..utils import gen_mask
+import copy
+
+
 class SPIFifoDriven():
     """Class for SPI controllers on the FPGA driven by a FIFO.
 

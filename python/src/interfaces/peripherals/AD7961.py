@@ -1,4 +1,8 @@
+from ..interfaces import Endpoint
+from ..utils import gen_mask
 from ADCDATA import ADCDATA
+import copy
+import time
 
 class AD7961(ADCDATA):
     """An interface to the AD7961 ADC
