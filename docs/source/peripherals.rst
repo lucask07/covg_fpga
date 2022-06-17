@@ -1,43 +1,56 @@
-Peripherals
+peripherals
 ======================
 
-.. module:: interfaces.interfaces
-    :noindex:
+The :py:mod:`peripherals` subpackage contains a few base controllers and several specific controllers for different peripherals. The base controllers are used to reduce code repetition as many peripherals use common communication methods. Specific peripheral classes that use these communication methods are derived from the more general base classes.
+
+Base Controllers
+--------------------------
+.. automodule:: interfaces.peripherals.I2CController
+    :members:
+
+.. automodule:: interfaces.peripherals.SPIController
+    :members:
+
+.. automodule:: interfaces.peripherals.SPIFifoDriven
+    :members:
 
 Extends I2CController
 --------------------------
-.. autoclass:: TCA9555
+.. automodule:: interfaces.peripherals.TCA9555
     :members:
 
-.. autoclass:: UID_24AA025UID
+.. automodule:: interfaces.peripherals.UID_24AA025UID
     :members:
 
-.. autoclass:: DAC53401
+.. automodule:: interfaces.peripherals.DAC53401
     :members:
 
-.. autoclass:: TMF8801
+.. automodule:: interfaces.peripherals.TMF8801
     :members:
 
 
 Extends SPIController
 --------------------------
-.. autoclass:: ADS8686
+.. automodule:: interfaces.peripherals.ADS8686
     :members:
 
 
 Extends SPIFifoDriven
 --------------------------
-.. autoclass:: DAC80508
+.. automodule:: interfaces.peripherals.DAC80508
     :members:
 
-.. autoclass:: AD5453
+.. automodule:: interfaces.peripherals.AD5453
     :members:
 
 
 Miscellaneous
 ---------------
-.. autoclass:: AD7961
+.. automodule:: interfaces.peripherals.DDR3
     :members:
 
-.. autoclass:: ADCDATA
+.. automodule:: interfaces.peripherals.AD7961
+    :members:
+
+.. automodule:: interfaces.peripherals.ADCDATA
     :members:

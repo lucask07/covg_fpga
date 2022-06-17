@@ -16,7 +16,7 @@ import shlex
 import sphinx_rtd_theme
 
 # add one directory back to search path
-sys.path.insert(0, os.path.abspath('../../python/'))
+sys.path.insert(0, os.path.abspath('../../python/src'))
 print(sys.path)
 
 
