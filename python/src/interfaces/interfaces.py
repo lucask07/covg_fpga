@@ -8,19 +8,21 @@ Lucas Koerner, koer2434@stthomas.edu
 Abe Stroschein, ajstroschein@stthomas.edu
 """
 
-import ok
-import numpy as np
 import pandas as pd
 import os
-import time
-from interfaces.utils import gen_mask, twos_comp, test_bit, int_to_list, from_voltage
+import sys
+from interfaces.utils import gen_mask
 import copy
-import h5py
 import yaml
 
 home_dir = os.path.join(os.path.expanduser('~'), '.packagename')
 with open(os.path.join(home_dir, 'config.yaml'), 'r') as file:
     configs = yaml.safe_load(file)
+
+# TODO: make sure this path works for Windows, Mac, and Linux: https://docs.opalkelly.com/fpsdk/frontpanel-api/programming-languages/
+sys.path.append(os.path.join(configs['frontpanel_path'], 'API/Python/3.7/x64')) # Add path to ok.py to PATH for import
+os.add_dll_directory(os.path.join(configs['frontpanel_path'], 'API/lib/x64'))   # Make DLL (okFrontPanel.dll) available
+import ok
 
 class Register:
     """Class for internal registers on a device.
