@@ -67,7 +67,7 @@ module LPF_data_scale #(parameter ADDR = 0) (
             coeff_scale <= 14'b0;
             coeff_offset <= 14'b0;
         end
-        else if (ep_address == (ADDR + 32'h13)) begin
+        else if (ep_write && (ep_address == (ADDR + 32'h13))) begin
             coeff_scale <= regDataOut[13:0];
             coeff_offset <= regDataOut[27:14];
         end
