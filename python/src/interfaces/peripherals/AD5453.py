@@ -1,5 +1,5 @@
 from ..interfaces import Endpoint
-from SPIFifoDriven import SPIFifoDriven
+from .SPIFifoDriven import SPIFifoDriven
 import numpy as np
 
 

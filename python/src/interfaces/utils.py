@@ -16,18 +16,23 @@ import os
 home_dir = os.path.join(os.path.expanduser('~'), '.packagename')
 
 
-def create_yaml():
+def create_yaml(overwrite=False):
     default_configs = {
         'endpoint_max_width': 32,
         'fpga_bitfile_path': None,
         'ep_defines_path': None,
         'registers_path': None,
+        'frontpanel_path': 'C:/Program Files/Opal Kelly/FrontPanelUSB',
     }
 
     if not os.path.exists(home_dir):
         os.mkdir(home_dir)
 
     file_path = os.path.join(home_dir, 'config.yaml')
+
+    if os.path.exists(file_path) and not overwrite:
+        print('File already exists, run "create_yaml(overwrite=True)" to overwrite the file.')
+        return None
 
     with open(file_path, mode='w') as file:
         yaml.dump(default_configs, file)
