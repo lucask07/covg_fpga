@@ -1,6 +1,6 @@
 from ..interfaces import Endpoint, Register
 from ..utils import from_voltage
-from SPIFifoDriven import SPIFifoDriven
+from .SPIFifoDriven import SPIFifoDriven
 
 class DAC80508(SPIFifoDriven):
     """Class for SPI DAC chip DAC80508.
