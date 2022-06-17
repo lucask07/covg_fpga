@@ -261,3 +261,25 @@ def get_memory_usage():
 
     return sorted([(x, sys.getsizeof(globals().get(x))) for x in dir() if not x.startswith(
         '_') and x not in sys.modules and x not in ipython_vars], key=lambda x: x[1], reverse=True)
+
+def create_coefficients(fc, fs=5e6, order=4):
+    from scipy.signal import butter, zpk2sos
+    from numfi import numfi
+    
+    (z,p,k) = butter(order, fc/(fs/2), output='zpk')
+    sos = zpk2sos(z,p,1)
+
+    num_frac = 29
+    den_frac = 30
+    scale_frac = 31
+
+    coeffs = {}
+
+    for r in range(np.sahpe(sos)[0]):
+        for c in range(np.sahpe(sos)[1]):
+            if c < 2:
+                frac_val = num_frac
+            if c > 3:
+                frac_val = den_frac
+            t = numfi(sos[r,c], 1, 32, frac_val, fixed=True)
+            print("{0:#0{1}x}".format(int(t.base_repr(base=2)[0],2), 10))
