@@ -1973,7 +1973,6 @@ class SPIFifoDriven():
 
         Direct comes from the spi_fifo_driven data.
         """
-
         if operation == 'set':
             self.fpga.set_wire_bit(self.endpoints['FILTER_SEL'].address,
                                    self.endpoints['FILTER_SEL'].bit_index_low)
@@ -1983,7 +1982,32 @@ class SPIFifoDriven():
         else:
             print(f'Incorrect operation: {operation} for filter select \n')
 
-    def set_data_mux(self, source):
+
+    def filter_sum(self, operation='set'):
+        """Set whether Cmd data is summed with filter output
+        """
+        if operation == 'set':
+            self.fpga.set_wire_bit(self.endpoints['SUMMATION_ENABLE'].address,
+                                   self.endpoints['SUMMATION_ENABLE'].bit_index_low)
+        elif operation == 'clear':
+            self.fpga.clear_wire_bit(self.endpoints['SUMMATION_ENABLE'].address,
+                                     self.endpoints['SUMMATION_ENABLE'].bit_index_low)
+        else:
+            print(f'Incorrect operation: {operation} for filter sum \n')
+
+    def filter_downsample(self, operation='set'):
+        """Set whether filter output data is downsampled
+        """
+        if operation == 'set':
+            self.fpga.set_wire_bit(self.endpoints['DOWNSAMPLE_ENABLE'].address,
+                                   self.endpoints['DOWNSAMPLE_ENABLE'].bit_index_low)
+        elif operation == 'clear':
+            self.fpga.clear_wire_bit(self.endpoints['DOWNSAMPLE_ENABLE'].address,
+                                     self.endpoints['DOWNSAMPLE_ENABLE'].bit_index_low)
+        else:
+            print(f'Incorrect operation: {operation} for filter downsample \n')
+
+    def set_data_mux(self, source, filter_data=False):
         """Configure the MUX that routes data source to the SPI output.
 
         Parameters
@@ -1997,11 +2021,16 @@ class SPIFifoDriven():
             print(f'Set data mux failed, {source} not available')
             return -1
 
-        mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
-                              self.endpoints['DATA_SEL'].bit_index_high))
+        if filter_data: 
+            endpoint = 'FILTER_DATA_SEL'
+        else:
+            endpoint = 'DATA_SEL'
+
+        mask = gen_mask(range(self.endpoints[endpoint].bit_index_low,
+                              self.endpoints[endpoint].bit_index_high))
         data = (self.data_mux[source]
-                << self.endpoints['DATA_SEL'].bit_index_low)
-        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
+                << self.endpoints[endpoint].bit_index_low)
+        self.fpga.set_wire(self.endpoints[endpoint].address, data,
                            mask=mask)
         self.current_data_mux = source
 
@@ -2255,6 +2284,7 @@ class AD5453(SPIFifoDriven):
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
 
+        # TODO: cleanup! 500kHz is within set_filter_coeff
         self.filter_coeff = {0: 0x009e1586,
                              1: 0x20000000,
                              2: 0x40000000,
@@ -2267,7 +2297,8 @@ class AD5453(SPIFifoDriven):
                              11: 0x20000000,
                              12: 0xab762783,
                              13: 0x287ecada,
-                             7: 0x7fffffff}
+                             7: 0x7fffffff,
+                             15: 0x0000_2000} # offset=0, scale=1
 
         self.filter_offset = 4
         self.filter_len = np.max(
@@ -2366,7 +2397,8 @@ class AD5453(SPIFifoDriven):
                                  12: 0,
                                  13: 0,
                                  7: 0x7fffffff,
-                                 6: 0}
+                                 6: 0,
+                                 15: 0x0000_2000} # offset=0, scale=1 
         elif target == '100kHz':
             self.filter_coeff = {0: 0x0000_6f84,
                                  1: 0x20000000,
@@ -2380,7 +2412,8 @@ class AD5453(SPIFifoDriven):
                                  11: 0x20000000,
                                  12: 0x86d2475f,
                                  13: 0x3a2447ec,
-                                 7: 0x7fffffff}
+                                 7: 0x7fffffff, 
+                                 15: 0x0000_2000} # offset=0, scale=1  
         elif target == '500kHz':
             self.filter_coeff = {0: 0x009e1586,
                                  1: 0x20000000,
@@ -2394,7 +2427,8 @@ class AD5453(SPIFifoDriven):
                                  11: 0x20000000,
                                  12: 0xab762783,
                                  13: 0x287ecada,
-                                 7: 0x7fffffff}
+                                 7: 0x7fffffff,
+                                 15: 0x0800_2000} # offset=0, scale=1  
 
 
 class ADCDATA():

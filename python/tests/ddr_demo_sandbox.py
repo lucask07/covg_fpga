@@ -203,13 +203,15 @@ daq.TCA[1].configure_pins([0, 0])
 # fast DAC channel 0 and 1
 filt_type = '500kHz'
 #filt_type = 'passthru'
-for i in [0,1,2,3,4,5]:
+for i in [0]:
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
     daq.DAC[i].filter_select(operation="set")
     #daq.DAC[i].filter_select(operation="clear")
     # daq.DAC[i].write(int(0))
     daq.DAC[i].set_data_mux("DDR")
+    daq.DAC[i].set_data_mux("DDR", filter_data=True)
+    daq.DAC[i].filter_sum("clear")
     if i == 0:
         daq.DAC[i].change_filter_coeff(target=filt_type)
     if i == 1:
