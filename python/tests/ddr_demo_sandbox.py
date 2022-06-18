@@ -193,6 +193,7 @@ for dc_num in [0]:
 for chan in [0,1,2,3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 
+time.sleep(0.1)
 ad7961s[0].reset_wire(0)
 time.sleep(1)
 
@@ -253,7 +254,6 @@ def ddr_write_setup():
     ddr.clear_adc_write()
     ddr.reset_fifo(name='ALL')
     ddr.reset_mig_interface()
-    ad7961s[0].reset_trig()
 
 def ddr_write_finish():
      # reenable both DACs
@@ -294,7 +294,7 @@ if SLOW_DAC:
         ddr.data_arrays[i + 6] = sdac_sine
 
 ddr_write_setup()
-g_buf = ddr.write_channels()
+block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
 ddr.reset_mig_interface()
 ddr_write_finish()
 
@@ -309,13 +309,14 @@ print(output.head())
 output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 idx = 0
 
-REPEAT = True
+REPEAT = False
 if REPEAT:  # to repeat data capture without rewriting the DAC data
     ddr.clear_adc_read()
     ddr.clear_adc_write()
+    ddr.clear_dac_write()
 
-    ddr.reset_fifo(name='ADC_IN')
-    ddr.reset_fifo(name='ADC_TRANSFER')
+    ddr.reset_fifo(name='ALL')
+    # ddr.reset_fifo(name='ADC_TRANSFER')
     ddr.reset_mig_interface()
 
     ddr_write_finish()
@@ -339,16 +340,6 @@ t = np.arange(0,len(adc_data[0]))*1/FS
 crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
-# fast ADC. AD7961
-for ch in range(4):
-    fig,ax=plt.subplots()
-    y = adc_data[ch][crop_start:]
-    lbl = f'Ch{ch}'
-    ax.plot(t*1e6, y, marker = '+', label = lbl)
-    ax.legend()
-    ax.set_title('Fast ADC data')
-    ax.set_xlabel('s [us]')
-
 # DACs 
 t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
 #for dac_ch in range(4):
@@ -357,12 +348,23 @@ for dac_ch in [0]:
     y = dac_data[dac_ch][crop_start:]
     lbl = f'Ch{dac_ch}'
     ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
-    print(f'Min {np.min(y)}, Max {np.max(y)}')
+    print(f'Min {np.min(y[2:])}, Max {np.max(y)}') # skip the first 2 readings which are 0
     ax.legend()
     ax.set_title('Fast DAC data')
     ax.set_xlabel('s [us]')
 
 if 0:
+
+    # fast ADC. AD7961
+    for ch in range(4):
+        fig,ax=plt.subplots()
+        y = adc_data[ch][crop_start:]
+        lbl = f'Ch{ch}'
+        ax.plot(t*1e6, y, marker = '+', label = lbl)
+        ax.legend()
+        ax.set_title('Fast ADC data')
+        ax.set_xlabel('s [us]')
+
     # ADS8686 
     t_ads = t[crop_start::5] # ADS8686 data is saved every fifth 5 MSPS tick
     fig,ax=plt.subplots()
