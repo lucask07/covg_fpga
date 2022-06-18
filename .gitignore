@@ -135,3 +135,7 @@ python/tests/unit_tests/test_defines.v
 # For Blockdiagram
 !docs/block_diagram/*.tex
 !docs/block_diagram/*.pdf
+
+## exclude data 
+data/*
+covg/data/*
