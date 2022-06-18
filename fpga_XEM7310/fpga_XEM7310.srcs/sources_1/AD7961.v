@@ -132,7 +132,9 @@ assign tmsb_done_s      = (adc_tcyc_cnt == 32'd18) ? 1'b1 : 1'b0;
 assign buffer_reset_s   = (adc_tcyc_cnt == 32'd2) ? 1'b1 : 1'b0;
 */
 // Timing parameters with 200 MHz timing clock 
+//assign data_rd_rdy_o    = ((serial_read_done_s == 1'b1) && (adc_tcyc_cnt == 32'd15)) ? 1'b1 : 1'b0; 
 assign data_rd_rdy_o    = ((serial_read_done_s == 1'b1) && (adc_tcyc_cnt == 32'd19)) ? 1'b1 : 1'b0; 
+// experienced inconsistencies at 'd19 -- 2022/06/17
 // experienced issues (every other sample) when this was 32'd22
 // a few glitches at 'd20 (primarily on unused channels)
 // test 'd19
