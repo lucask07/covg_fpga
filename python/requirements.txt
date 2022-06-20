@@ -1,4 +1,5 @@
 numpy
+numfi
 matplotlib
 pandas
 openpyxl
