@@ -121,3 +121,4 @@ Repeat steps 1-5 for any remaining chips in your project. Be sure to create a ne
             Bit Index (Low): 10
 
 Here is the `completed register index <https://github.com/lucask07/covg_fpga/blob/daq_v2/examples/register_index_guide_completed_example.xlsx>`_ for this example. You can read the registers into pypanel using the :py:meth:`~interfaces.interfaces.Register.get_chip_registers` method.
+
