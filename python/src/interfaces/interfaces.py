@@ -391,13 +391,14 @@ class FPGA:
         General information about the FPGA.
     """
 
-    # TODO: change to complete bitfile when Verilog is combined
-    def __init__(self, bitfile=configs['fpga_bitfile_path'], debug=False):
 
-        self.bitfile = bitfile
+    def __init__(self, bitfile='default', debug=False):
+        if bitfile == 'default':
+            # Use bitfile from config.yaml fpga_bitfile_path
+            self.bitfile = configs['fpga_bitfile_path']
+        else:
+            self.bitfile = bitfile
         self.debug = debug
-        # self.pll = ok.PLL22150()
-        # I don't know why, but uncommenting this makes things fail
         return
 
     def init_device(self):
