@@ -1,6 +1,6 @@
 """Module containing general functions useful to interfaces.
 
-August 2021
+June 2022
 
 Lucas Koerner, koer2434@stthomas.edu
 Abe Stroschein, ajstroschein@stthomas.edu
@@ -17,6 +17,8 @@ home_dir = os.path.join(os.path.expanduser('~'), '.packagename')
 
 
 def create_yaml(overwrite=False):
+    """Create a default config.yaml file."""
+    
     default_configs = {
         'endpoint_max_width': 32,
         'fpga_bitfile_path': None,

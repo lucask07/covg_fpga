@@ -10,6 +10,7 @@ Welcome to covgDAQ's documentation!
    :maxdepth: 1
    :caption: Contents:
 
+   installation
    interfaces
    peripherals
    utils
