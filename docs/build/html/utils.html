@@ -1,0 +1,329 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>utils &mdash; covgDAQ 0.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Register Index Guide" href="register_index_guide.html" />
+    <link rel="prev" title="peripherals" href="peripherals.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> covgDAQ
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="interfaces.html">interfaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="peripherals.html">peripherals</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="register_index_guide.html">Register Index Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="endpoint_definitions_guide.html">Endpoint Definitions Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="new_peripheral_guide.html">New Peripheral Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tests.html">Tests</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example.html">Example</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">covgDAQ</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>utils</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/utils.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="utils">
+<h1>utils<a class="headerlink" href="#utils" title="Permalink to this headline">¶</a></h1>
+<p><code class="xref py py-mod docutils literal notranslate"><span class="pre">utils</span></code> contains several helpful methods used in peripheral classes that may be useful.</p>
+<span class="target" id="module-interfaces.utils"></span><p>Module containing general functions useful to interfaces.</p>
+<p>June 2022</p>
+<p>Lucas Koerner, <a class="reference external" href="mailto:koer2434&#37;&#52;&#48;stthomas&#46;edu">koer2434<span>&#64;</span>stthomas<span>&#46;</span>edu</a>
+Abe Stroschein, <a class="reference external" href="mailto:ajstroschein&#37;&#52;&#48;stthomas&#46;edu">ajstroschein<span>&#64;</span>stthomas<span>&#46;</span>edu</a></p>
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.calc_impedance">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">calc_impedance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resistance</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#calc_impedance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.calc_impedance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the impedance of an unknown component.</p>
+<p>It is assumed the voltage source is connect in series with both the resistor and the unknown component.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>numpy.ndarray</strong><span class="classifier">the array of impedances calculated.</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.count_bytes">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">count_bytes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#count_bytes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.count_bytes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Count the number of bytes in a number.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.create_yaml">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">create_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#create_yaml"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.create_yaml" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a default config.yaml file.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.from_voltage">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">from_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">voltage</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltage_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">with_negatives</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#from_voltage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.from_voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the float/int voltage into binary data.</p>
+<p>We use the bit-width and voltage range to determine the voltage per bit.
+Then we divide the voltage by the bit-voltage and round to an integer to
+find the binary data representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>int or float or list</strong><span class="classifier">voltage version of the binary data in similar form voltage was given in</span></dt><dd><p>int -&gt; int
+float -&gt; int
+list, numpy.ndarray -&gt; list(int)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.get_memory_usage">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">get_memory_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#get_memory_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.get_memory_usage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a sorted list of the objects and their sizes.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.int_to_list">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">int_to_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">integer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">byteorder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'little'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bytes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#int_to_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.int_to_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert an integer into a list of integers 1 byte long.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>integer</strong><span class="classifier">int</span></dt><dd><p>The integer to convert.</p>
+</dd>
+<dt><strong>byteorder</strong><span class="classifier">str</span></dt><dd><p>Either ‘little’ for little Endian (LSB first) or ‘big’ for big Endian
+(MSB first).</p>
+</dd>
+<dt><strong>num_bytes</strong><span class="classifier">int</span></dt><dd><p>The number of bytes to convert the number into. None means the
+function will return the minimum number of bytes necessary to
+represent the number.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.reverse_bits">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">reverse_bits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">number</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bit_width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#reverse_bits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.reverse_bits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an integer with the reversed bits of the input number.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.to_voltage">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">to_voltage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_bits</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">voltage_range</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_twos_comp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#to_voltage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.to_voltage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the binary read data into a float voltage.</p>
+<p>We use the bit-width of the data and the voltage range of the channel
+to determine the voltage per bit. Then we multiply the binary data by
+that voltage for the total voltage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>float or list</strong><span class="classifier">binary version of the voltage data in similar form data was given in</span></dt><dd><p>int -&gt; float
+list, numpy.ndarray -&gt; list(float)</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="interfaces.utils.twos_comp">
+<span class="sig-prename descclassname"><span class="pre">interfaces.utils.</span></span><span class="sig-name descname"><span class="pre">twos_comp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bits</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/interfaces/utils.html#twos_comp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#interfaces.utils.twos_comp" title="Permalink to this definition">¶</a></dt>
+<dd><p>compute the 2’s complement of int value val
+handle an array (list or numpy)</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="register_index_guide.html" class="btn btn-neutral float-right" title="Register Index Guide" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="peripherals.html" class="btn btn-neutral float-left" title="peripherals" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2022, University of St. Thomas CpE/EE Instrumentation Group.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
