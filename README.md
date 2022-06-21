@@ -1,5 +1,32 @@
 Verilog and Python for a general purpose data acquisition system using an OpalKelly FPGA as the main controller. The Python is designed to be a general purpose approach to interface with multiple peripheral components that contain register maps. 
 
+
+## Quick Start
+
+1. Install with pip
+
+```
+pip install PACKAGE_NAME
+```
+
+To use an FPGA and peripherals:
+
+
+2. Download [FrontPanel](https://pins.opalkelly.com/downloads) from OpalKelly
+
+3. Download [Registers.xlsx](https://github.com/lucask07/covg_fpga/blob/daq_v2/python/Registers.xlsx) from the GitHub
+
+4. Create config.yaml with create_yaml and edit fields as needed
+
+```python
+>>> from interfaces.utils import create_yaml
+>>> create_yaml()
+YAML created at C:/Users/username/.PACKAGE_NAME
+```
+
+See [Installation Guide]() for more information.
+
+
 ## Acknowledgements 
 
 ### The FPGA code is dervied from many open-source contributions. 
