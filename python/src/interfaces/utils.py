@@ -293,3 +293,68 @@ def get_memory_usage():
 
     return sorted([(x, sys.getsizeof(globals().get(x))) for x in dir() if not x.startswith(
         '_') and x not in sys.modules and x not in ipython_vars], key=lambda x: x[1], reverse=True)
+
+def create_filter_coefficients(fc, output_scale=0x2000, 
+                        output_offset=0x0000, fs=5e6):
+    from scipy.signal import butter, zpk2sos
+    from numfi import numfi
+    
+    order = 4  # eventually order could be an input parameter however the code is 
+    word_length = 32
+    num_frac = 29
+    den_frac = 30
+    scale_frac = 31
+
+    class Integer(int):
+        ''' same as an int except prints as hex with 8 characters (32 bit wide)
+            https://stackoverflow.com/questions/39095294/override-repr-or-pprint-for-int
+        '''
+        def __repr__(self):
+            num_hex_characters = 8
+            return "{0:#0{1}x}".format(self, num_hex_characters+2)
+
+    def print_get_int(fix_pt, debug_print=False):
+        # print the fixed point value and also return as an 
+        # overriden int with a __repr__ method that prints in hex 
+        val = Integer(int(t.base_repr(base=2)[0],2))
+        if debug_print:
+            print(val)
+        return val
+
+    if (fc == 'passthru') or (fc == 'passthrough'):
+        k = 1
+        sos = np.matrix([[1,0,0,1,0,0], 
+                         [1,0,0,1,0,0]])
+    else: # for any integer cutoff frequency 
+        (z,p,k) = butter(order, fc/(fs/2), output='zpk')
+        sos = zpk2sos(z,p,1)
+
+    coeffs = {}
+    coeff_idx = 0
+    # gain of filter scale 1 (coeff_idx 0)
+    t = numfi(k, 1, word_length, scale_frac, fixed=True)
+    coeffs[coeff_idx] = print_get_int(t)
+    coeff_idx += 1
+
+    for r in range(np.shape(sos)[0]):
+        for c in range(np.shape(sos)[1]):
+            if (r == 1) and (c == 0):
+                coeff_idx = 9 # advance to the second sos stage 
+            if c < 2:
+                frac_val = num_frac
+            if c > 3:
+                frac_val = den_frac
+            t = numfi(sos[r,c], 1, word_length, frac_val, fixed=True)
+            if c!=3:
+                coeffs[coeff_idx] = print_get_int(t)
+                coeff_idx+=1
+
+    # coefficients 7,8 are scale2, scale3 which are 1 
+    scale2_scale3_values = 1
+    t = numfi(scale2_scale3_values, 1, word_length, scale_frac, fixed=True)
+    coeffs[7] = print_get_int(t)
+    coeffs[8] = print_get_int(t)
+
+    coeffs[15] = Integer((output_offset << 14) + output_scale)
+
+    return coeffs
