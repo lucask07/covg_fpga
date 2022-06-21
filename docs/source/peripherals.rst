@@ -54,3 +54,4 @@ Miscellaneous
 
 .. automodule:: interfaces.peripherals.ADCDATA
     :members:
+

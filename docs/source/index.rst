@@ -17,7 +17,8 @@ Welcome to covgDAQ's documentation!
    register_index_guide
    endpoint_definitions_guide
    new_peripheral_guide
-
+   tests
+   example
 
 
 Indices and tables

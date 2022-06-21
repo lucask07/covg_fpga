@@ -112,4 +112,3 @@ Once your endpoint definitions file is complete, you can include the parameters 
     `include “ep_defines.v”
 
 To retrieve the endpoints through pypanel, use the :py:meth:`~interfaces.interfaces.Endpoint.get_chip_endpoints` method.
-
