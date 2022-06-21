@@ -193,6 +193,7 @@ for dc_num in [0]:
 for chan in [0,1,2,3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 
+time.sleep(0.1)
 ad7961s[0].reset_wire(0)
 time.sleep(1)
 
@@ -201,15 +202,17 @@ daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
 # fast DAC channel 0 and 1
-filt_type = '500kHz'
-#filt_type = 'passthru'
-for i in [0,1,2,3,4,5]:
+#filt_type = '500kHz'
+filt_type = 'passthru'
+for i in [0]:
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
     daq.DAC[i].filter_select(operation="set")
     #daq.DAC[i].filter_select(operation="clear")
     # daq.DAC[i].write(int(0))
     daq.DAC[i].set_data_mux("DDR")
+    daq.DAC[i].set_data_mux("DDR", filter_data=True)
+    daq.DAC[i].filter_sum("set")
     if i == 0:
         daq.DAC[i].change_filter_coeff(target=filt_type)
     if i == 1:
@@ -251,7 +254,6 @@ def ddr_write_setup():
     ddr.clear_adc_write()
     ddr.reset_fifo(name='ALL')
     ddr.reset_mig_interface()
-    ad7961s[0].reset_trig()
 
 def ddr_write_finish():
      # reenable both DACs
@@ -263,34 +265,36 @@ for i in range(7):
                                         offset=0x1000)
 
 # ---------- configure "slow" DAC DAC80508
-sdac_amp_volt = 1
-target_freq_sdac = 12000.0
-sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
+SLOW_DAC = False
+if SLOW_DAC:
+    sdac_amp_volt = 1
+    target_freq_sdac = 12000.0
+    sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
 
-# Data for the 2 DAC80508 "Slow DACs"
-sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq_sdac, offset=dac80508_offset)
+    # Data for the 2 DAC80508 "Slow DACs"
+    sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq_sdac, offset=dac80508_offset)
 
-# Specify output channel for DAC80508
-sdac_1_out_chan = 5
-sdac_2_out_chan = 5
+    # Specify output channel for DAC80508
+    sdac_1_out_chan = 5
+    sdac_2_out_chan = 5
 
-# Clear bits in the FDAC DDR stream that store the slow DAC channel
-for i in range(6):
-    ddr.data_arrays[i] = np.bitwise_and(ddr.data_arrays[i], 0x3fff)
+    # Clear bits in the FDAC DDR stream that store the slow DAC channel
+    for i in range(6):
+        ddr.data_arrays[i] = np.bitwise_and(ddr.data_arrays[i], 0x3fff)
 
-# Load data into DDR
-# Set channel bits
-ddr.data_arrays[0] = np.bitwise_or(ddr.data_arrays[0], (sdac_1_out_chan & 0b110) << 13)
-ddr.data_arrays[1] = np.bitwise_or(ddr.data_arrays[1], (sdac_1_out_chan & 0b001) << 14)
-ddr.data_arrays[2] = np.bitwise_or(ddr.data_arrays[2], (sdac_2_out_chan & 0b110) << 13)
-ddr.data_arrays[3] = np.bitwise_or(ddr.data_arrays[3], (sdac_2_out_chan & 0b001) << 14)
+    # Load data into DDR
+    # Set channel bits
+    ddr.data_arrays[0] = np.bitwise_or(ddr.data_arrays[0], (sdac_1_out_chan & 0b110) << 13)
+    ddr.data_arrays[1] = np.bitwise_or(ddr.data_arrays[1], (sdac_1_out_chan & 0b001) << 14)
+    ddr.data_arrays[2] = np.bitwise_or(ddr.data_arrays[2], (sdac_2_out_chan & 0b110) << 13)
+    ddr.data_arrays[3] = np.bitwise_or(ddr.data_arrays[3], (sdac_2_out_chan & 0b001) << 14)
 
-# load slow DAC sine-wave in DDR channels 7 and 8 
-for i in range(2):
-    ddr.data_arrays[i + 6] = sdac_sine
+    # load slow DAC sine-wave in DDR channels 7 and 8 
+    for i in range(2):
+        ddr.data_arrays[i + 6] = sdac_sine
 
 ddr_write_setup()
-g_buf = ddr.write_channels()
+block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
 ddr.reset_mig_interface()
 ddr_write_finish()
 
@@ -305,13 +309,14 @@ print(output.head())
 output.to_csv(os.path.join(data_dir, file_name + '.csv'))
 idx = 0
 
-REPEAT = True
+REPEAT = False
 if REPEAT:  # to repeat data capture without rewriting the DAC data
     ddr.clear_adc_read()
     ddr.clear_adc_write()
+    ddr.clear_dac_write()
 
-    ddr.reset_fifo(name='ADC_IN')
-    ddr.reset_fifo(name='ADC_TRANSFER')
+    ddr.reset_fifo(name='ALL')
+    # ddr.reset_fifo(name='ADC_TRANSFER')
     ddr.reset_mig_interface()
 
     ddr_write_finish()
@@ -335,53 +340,57 @@ t = np.arange(0,len(adc_data[0]))*1/FS
 crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
-# fast ADC. AD7961
-for ch in range(4):
-    fig,ax=plt.subplots()
-    y = adc_data[ch][crop_start:]
-    lbl = f'Ch{ch}'
-    ax.plot(t*1e6, y, marker = '+', label = lbl)
-    ax.legend()
-    ax.set_title('Fast ADC data')
-    ax.set_xlabel('s [us]')
-
 # DACs 
 t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
-for dac_ch in range(4):
+#for dac_ch in range(4):
+for dac_ch in [0]:
     fig,ax=plt.subplots()
     y = dac_data[dac_ch][crop_start:]
     lbl = f'Ch{dac_ch}'
     ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
+    print(f'Min {np.min(y[2:])}, Max {np.max(y)}') # skip the first 2 readings which are 0
     ax.legend()
     ax.set_title('Fast DAC data')
     ax.set_xlabel('s [us]')
 
-# ADS8686 
-t_ads = t[crop_start::5] # ADS8686 data is saved every fifth 5 MSPS tick
-fig,ax=plt.subplots()
-ax.plot(t_ads*1e6, ads['A'], marker = '+', label = 'ADS: A')
-ax.plot(t_ads*1e6, ads['B'], marker = '+', label = 'ADS: B')
-ax.legend()
-ax.set_xlabel('s [us]')
-ax.set_title('ADS8686 data')
+if 0:
 
-# ----- Check frequency of results ----------
-def check_fft(t, y, predicted_freq):
-    ffreq, famp, max_freq = calc_fft(y, 1/(t[1]-t[0]))
-    print(f'Frequency of maximum amplitude {max_freq} [Hz]')
-    print(f'Predicted frequency: {predicted_freq}')
-    rms = np.std(y)
-    print(f'RMS amplitude: {rms}, peak amplitude: {rms*1.414}')
-    print('-'*40)
+    # fast ADC. AD7961
+    for ch in range(4):
+        fig,ax=plt.subplots()
+        y = adc_data[ch][crop_start:]
+        lbl = f'Ch{ch}'
+        ax.plot(t*1e6, y, marker = '+', label = lbl)
+        ax.legend()
+        ax.set_title('Fast ADC data')
+        ax.set_xlabel('s [us]')
 
-# check AD7961 channel 0. Frequency from clamp board
-print('FFT of AD7961 channel 0')
-check_fft(t, adc_data[0], FAST_DAC_FREQ)
+    # ADS8686 
+    t_ads = t[crop_start::5] # ADS8686 data is saved every fifth 5 MSPS tick
+    fig,ax=plt.subplots()
+    ax.plot(t_ads*1e6, ads['A'], marker = '+', label = 'ADS: A')
+    ax.plot(t_ads*1e6, ads['B'], marker = '+', label = 'ADS: B')
+    ax.legend()
+    ax.set_xlabel('s [us]')
+    ax.set_title('ADS8686 data')
 
-# check AD7961 channel 1. Frequency from function generator 
-print('FFT of AD7961 channel 1')
-check_fft(t, adc_data[1], fg_freq)
+    # ----- Check frequency of results ----------
+    def check_fft(t, y, predicted_freq):
+        ffreq, famp, max_freq = calc_fft(y, 1/(t[1]-t[0]))
+        print(f'Frequency of maximum amplitude {max_freq} [Hz]')
+        print(f'Predicted frequency: {predicted_freq}')
+        rms = np.std(y)
+        print(f'RMS amplitude: {rms}, peak amplitude: {rms*1.414}')
+        print('-'*40)
 
-# check ADS8686 channel B. Frequency from ADC80508
-print('FFT of ADS8686 channel B: set by slow DAC')
-check_fft(t_ads, ads['B'], target_freq_sdac)
+    # check AD7961 channel 0. Frequency from clamp board
+    print('FFT of AD7961 channel 0')
+    check_fft(t, adc_data[0], FAST_DAC_FREQ)
+
+    # check AD7961 channel 1. Frequency from function generator 
+    print('FFT of AD7961 channel 1')
+    check_fft(t, adc_data[1], fg_freq)
+
+    # check ADS8686 channel B. Frequency from ADC80508
+    print('FFT of ADS8686 channel B: set by slow DAC')
+    check_fft(t_ads, ads['B'], target_freq_sdac)

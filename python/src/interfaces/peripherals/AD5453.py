@@ -20,6 +20,7 @@ class AD5453(SPIFifoDriven):
         # Default to clocking data into the shift register on the falling edge of the clock
         self.clk_edge_bits = 0b00
 
+        # TODO: cleanup! 500kHz is within set_filter_coeff
         self.filter_coeff = {0: 0x009e1586,
                              1: 0x20000000,
                              2: 0x40000000,
@@ -32,7 +33,8 @@ class AD5453(SPIFifoDriven):
                              11: 0x20000000,
                              12: 0xab762783,
                              13: 0x287ecada,
-                             7: 0x7fffffff}
+                             7: 0x7fffffff,
+                             15: 0x0000_2000}  # offset=0, scale=1
 
         self.filter_offset = 4
         self.filter_len = np.max(
@@ -133,7 +135,8 @@ class AD5453(SPIFifoDriven):
                                  12: 0,
                                  13: 0,
                                  7: 0x7fffffff,
-                                 6: 0}
+                                 6: 0,
+                                 15: 0x0080_2000} # offset=0, scale=1 
         elif target == '100kHz':
             self.filter_coeff = {0: 0x0000_6f84,
                                  1: 0x20000000,
@@ -147,7 +150,8 @@ class AD5453(SPIFifoDriven):
                                  11: 0x20000000,
                                  12: 0x86d2475f,
                                  13: 0x3a2447ec,
-                                 7: 0x7fffffff}
+                                 7: 0x7fffffff, 
+                                 15: 0x0000_1000} # offset=0, scale=1 
         elif target == '500kHz':
             self.filter_coeff = {0: 0x009e1586,
                                  1: 0x20000000,
@@ -161,4 +165,5 @@ class AD5453(SPIFifoDriven):
                                  11: 0x20000000,
                                  12: 0xab762783,
                                  13: 0x287ecada,
-                                 7: 0x7fffffff}
+                                 7: 0x7fffffff,
+                                 15: 0x0000_2000} # offset=0, scale=1 

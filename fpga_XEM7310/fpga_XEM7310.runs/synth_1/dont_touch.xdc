@@ -3,9 +3,6 @@
 
 # XDC: xem7310.xdc
 
-# IP: ip/clk_wiz_0/clk_wiz_0.xci
-set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==clk_wiz_0 || ORIG_REF_NAME==clk_wiz_0} -quiet] -quiet
-
 # IP: ip/fifo_w256_128_r32_1024/fifo_w256_128_r32_1024.xci
 set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==fifo_w256_128_r32_1024 || ORIG_REF_NAME==fifo_w256_128_r32_1024} -quiet] -quiet
 
@@ -15,14 +12,5 @@ set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==fifo_w128_512_r
 # IP: ip/ddr3_256_32/ddr3_256_32.xci
 set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==ddr3_256_32 || ORIG_REF_NAME==ddr3_256_32} -quiet] -quiet
 
-# IP: ip/fifo_ADS8686/fifo_ADS8686.xci
-set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==fifo_ADS8686 || ORIG_REF_NAME==fifo_ADS8686} -quiet] -quiet
-
-# IP: ip/blk_mem_gen_0/blk_mem_gen_0.xci
-set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==blk_mem_gen_0 || ORIG_REF_NAME==blk_mem_gen_0} -quiet] -quiet
-
-# IP: ip/fifo_w256_256_r128_512/fifo_w256_256_r128_512.xci
-set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==fifo_w256_256_r128_512 || ORIG_REF_NAME==fifo_w256_256_r128_512} -quiet] -quiet
-
-# IP: ip/mult_gen_0/mult_gen_0.xci
-set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==mult_gen_0 || ORIG_REF_NAME==mult_gen_0} -quiet] -quiet
+# IP: ip/clk_wiz_0/clk_wiz_0.xci
+set_property DONT_TOUCH TRUE [get_cells -hier -filter {REF_NAME==clk_wiz_0 || ORIG_REF_NAME==clk_wiz_0} -quiet] -quiet

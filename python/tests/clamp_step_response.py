@@ -24,36 +24,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 import copy
-
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-covg_fpga_path = os.getcwd()
-for i in range(15):
-    if os.path.basename(covg_fpga_path) == "covg_fpga":
-        interfaces_path = os.path.join(covg_fpga_path, "python")
-        break
-    else:
-        # If we aren't in covg_fpga, move up a folder and check again
-        covg_fpga_path = os.path.dirname(covg_fpga_path)
-sys.path.append(interfaces_path)
-
-# TODO: remove this when packaged
-# Fix for interfaces being moved to src folder
-# sys.path.append(os.path.join(interfaces_path, 'src'))
-
-from analysis.clamp_data import adjust_step2
-from analysis.adc_data import read_h5
-from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from interfaces.utils import to_voltage, from_voltage
 from interfaces.interfaces import (
     FPGA,
     Endpoint,
-    # DDR3,
 )
 from interfaces.peripherals.DDR3 import DDR3
-from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
-# TODO: deal with this when packaged
-# from interfaces.boards import Daq, Clamp
+# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+covg_fpga_path = os.getcwd()
+for i in range(15):
+    if os.path.basename(covg_fpga_path) == "covg_fpga":
+        boards_path = os.path.join(covg_fpga_path, "python")
+        break
+    else:
+        # If we aren't in covg_fpga, move up a folder and check again
+        covg_fpga_path = os.path.dirname(covg_fpga_path)
+sys.path.append(boards_path)
+
+
+from analysis.clamp_data import adjust_step2
+from analysis.adc_data import read_h5
+from filters.filter_tools import butter_lowpass_filter, delayseq_interp
+from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 
 
@@ -308,7 +301,7 @@ for dc_num in DC_NUMS:
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
-time.sleep(1)
+time.sleep(0.1)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
 time.sleep(1)
 

@@ -110,7 +110,31 @@ class SPIFifoDriven():
         else:
             print(f'Incorrect operation: {operation} for filter select \n')
 
-    def set_data_mux(self, source):
+    def filter_sum(self, operation='set'):
+        """Set whether Cmd data is summed with filter output
+        """
+        if operation == 'set':
+            self.fpga.set_wire_bit(self.endpoints['SUMMATION_ENABLE'].address,
+                                   self.endpoints['SUMMATION_ENABLE'].bit_index_low)
+        elif operation == 'clear':
+            self.fpga.clear_wire_bit(self.endpoints['SUMMATION_ENABLE'].address,
+                                     self.endpoints['SUMMATION_ENABLE'].bit_index_low)
+        else:
+            print(f'Incorrect operation: {operation} for filter sum \n')
+
+    def filter_downsample(self, operation='set'):
+        """Set whether filter output data is downsampled
+        """
+        if operation == 'set':
+            self.fpga.set_wire_bit(self.endpoints['DOWNSAMPLE_ENABLE'].address,
+                                   self.endpoints['DOWNSAMPLE_ENABLE'].bit_index_low)
+        elif operation == 'clear':
+            self.fpga.clear_wire_bit(self.endpoints['DOWNSAMPLE_ENABLE'].address,
+                                     self.endpoints['DOWNSAMPLE_ENABLE'].bit_index_low)
+        else:
+            print(f'Incorrect operation: {operation} for filter downsample \n')
+
+    def set_data_mux(self, source, filter_data=False):
         """Configure the MUX that routes data source to the SPI output.
 
         Parameters
@@ -124,11 +148,16 @@ class SPIFifoDriven():
             print(f'Set data mux failed, {source} not available')
             return -1
 
-        mask = gen_mask(range(self.endpoints['DATA_SEL'].bit_index_low,
-                              self.endpoints['DATA_SEL'].bit_index_high))
+        if filter_data:
+            endpoint = 'FILTER_DATA_SEL'
+        else:
+            endpoint = 'DATA_SEL'
+
+        mask = gen_mask(range(self.endpoints[endpoint].bit_index_low,
+                              self.endpoints[endpoint].bit_index_high))
         data = (self.data_mux[source]
-                << self.endpoints['DATA_SEL'].bit_index_low)
-        self.fpga.set_wire(self.endpoints['DATA_SEL'].address, data,
+                << self.endpoints[endpoint].bit_index_low)
+        self.fpga.set_wire(self.endpoints[endpoint].address, data,
                            mask=mask)
         self.current_data_mux = source
 

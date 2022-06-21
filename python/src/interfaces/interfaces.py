@@ -24,6 +24,7 @@ sys.path.append(os.path.join(configs['frontpanel_path'], 'API/Python/3.7/x64')) 
 os.add_dll_directory(os.path.join(configs['frontpanel_path'], 'API/lib/x64'))   # Make DLL (okFrontPanel.dll) available
 import ok
 
+
 class Register:
     """Class for internal registers on a device.
 
@@ -60,7 +61,7 @@ class Register:
     @staticmethod
     def get_chip_registers(sheet, workbook_path=configs['registers_path']):
         """Return a dictionary of Registers from a page in an Excel spreadsheet."""
-        
+
         reg_dict = {}
         sheet_data = pd.read_excel(workbook_path, sheet)
         for row in range(len(sheet_data)):
@@ -204,7 +205,8 @@ class Endpoint:
                 bit = int(pieces[2])
                 bit_width = int(pieces[5].split('=')[1])
 
-            endpoint = Endpoint(address=address, bit_index_low=bit, bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
+            endpoint = Endpoint(address=address, bit_index_low=bit,
+                                bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
 
             # Put defined endpoint in endpoints_from_defines dictionary
             if Endpoint.endpoints_from_defines.get(class_name) is None:
@@ -250,7 +252,8 @@ class Endpoint:
         none_to_neg_1 = {None: -1}
         # Make tuples of (address, bit) from each list, then concatenate the lists
         # The none_to_neg_1.get() translates None values of bit_index_low to -1 for sorting later
-        list_eps = [(ep.address, none_to_neg_1.get(ep.bit_index_low, ep.bit_index_low)) for ep in top_level_eps]
+        list_eps = [(ep.address, none_to_neg_1.get(
+            ep.bit_index_low, ep.bit_index_low)) for ep in top_level_eps]
         list_len = len(list_eps)
         set_len = len(set(list_eps))  # A set removes duplicates
 
@@ -354,7 +357,7 @@ class Endpoint:
         -------
         dict : the same dict of Endpoints given in endpoints_dict, now advanced
         """
-        
+
         for key in endpoints_dict:
             endpoint = endpoints_dict[key]
             if endpoint.gen_bit:
@@ -399,7 +402,7 @@ class FPGA:
         else:
             self.bitfile = bitfile
         self.debug = debug
-        return
+
 
     def init_device(self):
         """Initialize the FPGA for use and print device information.
