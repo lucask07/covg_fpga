@@ -25,10 +25,7 @@ import matplotlib.pyplot as plt
 import pickle as pkl
 import copy
 from interfaces.utils import to_voltage, from_voltage
-from interfaces.interfaces import (
-    FPGA,
-    Endpoint,
-)
+from interfaces.interfaces import FPGA, Endpoint
 from interfaces.peripherals.DDR3 import DDR3
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
@@ -232,15 +229,7 @@ elif pwr_setup == "3dual":
 
 
 # Initialize FPGA
-f = FPGA(
-    bitfile=os.path.join(
-        covg_fpga_path,
-        "fpga_XEM7310",
-        "fpga_XEM7310.runs",
-        "impl_1",
-        "top_level_module.bit",
-    )
-)
+f = FPGA()
 f.init_device()
 sleep(2)
 f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset

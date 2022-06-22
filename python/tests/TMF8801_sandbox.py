@@ -5,13 +5,15 @@ April 2022
 Lucas Koerner koer2434@stthomas.edu
 """
 
+from interfaces.interfaces import FPGA
+import logging
 import os, sys
 from time import sleep
 import numpy as np
 import matplotlib 
-matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
+matplotlib.use('TkAgg')
 plt.ion()
 
 # location of the hex FW patch file
@@ -117,28 +119,26 @@ def reset_i2c_fifo(tof_dev):
 bl_hex_lines = bl_intel_hex(hex_dir, filename='main_app_3v3_k2.hex')
 print(f'RAM patch is {len(bl_hex_lines)} lines long')
 
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
 for i in range(15):
     if os.path.basename(covg_fpga_path) == 'covg_fpga':
-        interfaces_path = os.path.join(covg_fpga_path, 'python')
+        boards_path = os.path.join(covg_fpga_path, 'python')
         break
     else:
         # If we aren't in covg_fpga, move up a folder and check again
         covg_fpga_path = os.path.dirname(covg_fpga_path)
-sys.path.append(interfaces_path)
+sys.path.append(boards_path)
 
-from interfaces.interfaces import FPGA, DAC53401, Endpoint
-from interfaces.boards import TOF
-import logging
+
+from boards import TOF
+
 
 logging.basicConfig(filename='DAC53401_test.log',
                     encoding='utf-8', level=logging.INFO)
 
 # Initialize FPGA
-top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
-                                        'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
-f = FPGA(bitfile=top_level_module_bitfile)
+f = FPGA()
 f.init_device()
 
 # Instantiate the TMF8801 controller.
