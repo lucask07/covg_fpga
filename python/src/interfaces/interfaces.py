@@ -20,8 +20,11 @@ with open(os.path.join(home_dir, 'config.yaml'), 'r') as file:
     configs = yaml.safe_load(file)
 
 # TODO: make sure this path works for Windows, Mac, and Linux: https://docs.opalkelly.com/fpsdk/frontpanel-api/programming-languages/
-sys.path.append(os.path.join(configs['frontpanel_path'], 'API/Python/3.7/x64')) # Add path to ok.py to PATH for import
-os.add_dll_directory(os.path.join(configs['frontpanel_path'], 'API/lib/x64'))   # Make DLL (okFrontPanel.dll) available
+if sys.platform == 'win32':
+    sys.path.append(os.path.join(configs['frontpanel_path'], 'API/Python/3.7/x64')) # Add path to ok.py to PATH for import
+    os.add_dll_directory(os.path.join(configs['frontpanel_path'], 'API/lib/x64'))   # Make DLL (okFrontPanel.dll) available
+elif sys.platform == 'darwin':
+    sys.path.append(os.path.join(configs['frontpanel_path'], 'API/Python3/')) # Add _ok.so to PATH for import
 import ok
 
 
