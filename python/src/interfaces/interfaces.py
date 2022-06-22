@@ -23,6 +23,8 @@ with open(os.path.join(home_dir, 'config.yaml'), 'r') as file:
 if sys.platform == 'win32':
     sys.path.append(os.path.join(configs['frontpanel_path'], 'API/Python/3.7/x64')) # Add path to ok.py to PATH for import
     os.add_dll_directory(os.path.join(configs['frontpanel_path'], 'API/lib/x64'))   # Make DLL (okFrontPanel.dll) available
+    os.environ.setdefault('PATH', '')
+    os.environ['PATH'] += os.pathsep + dll_dir
 elif sys.platform == 'darwin':
     sys.path.append(os.path.join(configs['frontpanel_path'], 'API/Python3/')) # Add _ok.so to PATH for import
 import ok
