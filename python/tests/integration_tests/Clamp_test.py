@@ -9,9 +9,10 @@ Abe Stroschein, ajstroschein@stthomas.edu
 import pytest
 import os
 import sys
+from interfaces.interfaces import FPGA, Endpoint
 
 
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 cwd = os.getcwd()
 if 'covg_fpga' in cwd:
     covg_fpga_index = cwd.index('covg_fpga')
@@ -19,21 +20,17 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_path, 'python')
-sys.path.append(interfaces_path)
+boards_path = os.path.join(covg_path, 'python')
+sys.path.append(boards_path)
+from boards import Clamp
 
-top_level_module_bitfile = os.path.join(interfaces_path, 'top_level_module.bit')
 
 # Fixtures
 @pytest.fixture(scope='module')
 def clamp():
-    global i2c_test_bitfile
-    from interfaces.interfaces import FPGA, Endpoint
-    from interfaces.boards import Clamp
-    f = FPGA(bitfile=top_level_module_bitfile)
+    f = FPGA()
     assert f.init_device()
-    Endpoint.update_endpoints_from_defines(
-        ep_defines_path='../../../fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ep_defines.v')
+    Endpoint.update_endpoints_from_defines()
     yield Clamp(fpga=f)
     # Teardown
     f.xem.Close()
@@ -41,8 +38,6 @@ def clamp():
 
 # Tests
 def test_multiple_instances():
-    from interfaces.interfaces import FPGA, Endpoint
-    from interfaces.boards import Clamp
     f = FPGA()
     clamps = []
     for i in range(4):
