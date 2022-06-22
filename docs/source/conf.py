@@ -16,7 +16,7 @@ import shlex
 import sphinx_rtd_theme
 
 # add one directory back to search path
-sys.path.insert(0, os.path.abspath('../../python/'))
+sys.path.insert(0, os.path.abspath('../../python/src'))
 print(sys.path)
 
 
@@ -96,3 +96,6 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# Show syntax color for code snippets
+pygments_style = 'sphinx'

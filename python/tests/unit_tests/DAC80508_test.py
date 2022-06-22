@@ -7,40 +7,28 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import pytest
-import os
-import sys
-
-
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-cwd = os.getcwd()
-if 'covg_fpga' in cwd:
-    covg_fpga_index = cwd.index('covg_fpga')
-    covg_path = cwd[:covg_fpga_index + len('covg_fpga') + 1]
-else:
-    print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
-    assert False
-interfaces_path = os.path.join(covg_path, 'python')
-sys.path.append(interfaces_path)
-
-# dac80508_test_bitfile =
+from regex import F
+from interfaces.interfaces import FPGA, Endpoint
+from interfaces.peripherals.DAC80508 import DAC80508
 
 
 # Fixtures
 @pytest.fixture(scope='module')
-def chip():
-    # global DAC80508_test_bitfile
-    from interfaces.interfaces import FPGA, DAC80508
+def f():
     f = FPGA()
     assert f.init_device()
-    yield DAC80508(f)
+    yield f
     # Teardown
     f.xem.Close()
 
 
+@pytest.fixture(scope='module')
+def chip(f):
+    yield DAC80508(f)
+
+
 # Tests
-def test_multiple_instances():
-    from interfaces.interfaces import FPGA, DAC80508, Endpoint
-    f = FPGA()
+def test_multiple_instances(f):
     group1 = [
         DAC80508(fpga=f, endpoints=Endpoint.get_chip_endpoints('DAC80508')),
         DAC80508(fpga=f, endpoints=Endpoint.get_chip_endpoints('DAC80508')),
@@ -64,9 +52,7 @@ def test_multiple_instances():
                          [pytest.param('a', marks=pytest.mark.xfail), pytest.param(0, marks=pytest.mark.xfail)] +
                          [x for x in range(1, 10)]
                          )
-def test_create_chips(number_of_chips):
-    from interfaces.interfaces import FPGA, DAC80508, Endpoint
-    f = FPGA()
+def test_create_chips(number_of_chips, f):
     # Update the endpoints so they get reset when this test runs multiple times
     Endpoint.update_endpoints_from_defines()
     chips = DAC80508.create_chips(fpga=f, number_of_chips=number_of_chips)

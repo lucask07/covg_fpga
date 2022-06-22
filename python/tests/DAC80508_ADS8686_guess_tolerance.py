@@ -14,9 +14,13 @@ Abe Stroschein, ajstroschein@stthomas.edu
 import os
 import sys
 import time
+from interfaces.interfaces import FPGA
+from interfaces.peripherals.DAC80508 import DAC80508
+from interfaces.peripherals.ADS8686 import ADS8686
+from interfaces.utils import to_voltage
 
 
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 cwd = os.getcwd()
 if 'covg_fpga' in cwd:
     covg_fpga_index = cwd.index('covg_fpga')
@@ -24,16 +28,12 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_fpga_path, 'python')
-sys.path.append(interfaces_path)
+boards_path = os.path.join(covg_fpga_path, 'python')
+sys.path.append(boards_path)
 
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
-from interfaces.utils import to_voltage
-from interfaces.boards import Daq
-from interfaces.interfaces import FPGA, DAC80508, ADS8686
+from boards import Daq
 
-top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
-                                        'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
 pwr_setup = '3dual'
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)  # 7V and +/-16.5V, None
@@ -44,7 +44,7 @@ NUM_REPEATS = 100    # Number of times to get the tolerance
 voltage = 5.0   # 5.0 Volts
 
 
-f = FPGA(bitfile=top_level_module_bitfile)
+f = FPGA()
 f.init_device()
 # Power on
 pwr = Daq.Power(f)

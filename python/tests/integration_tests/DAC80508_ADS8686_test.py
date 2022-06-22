@@ -12,9 +12,13 @@ import pytest
 import os
 import sys
 import time
+from interfaces.interfaces import FPGA
+from interfaces.peripherals.DAC80508 import DAC80508
+from interfaces.peripherals.ADS8686 import ADS8686
+from interfaces.utils import to_voltage
 
 
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 cwd = os.getcwd()
 if 'covg_fpga' in cwd:
     covg_fpga_index = cwd.index('covg_fpga')
@@ -22,22 +26,16 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_fpga_path, 'python')
-sys.path.append(interfaces_path)
+boards_path = os.path.join(covg_fpga_path, 'python')
+sys.path.append(boards_path)
 
-top_level_module_bitfile = os.path.join(covg_fpga_path, 'fpga_XEM7310',
-                                        'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
-from interfaces.interfaces import FPGA, DAC80508, ADS8686
-from interfaces.boards import Daq
-from interfaces.utils import to_voltage
-from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
+from boards import Daq
+
 
 pytestmark = [pytest.mark.usable]
 
 
-pwr_setup = '3dual'
-dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)  # 7V and +/-16.5V, None
 tolerance = 0.009765625
 dac_out = 7
 ads_in = 7
@@ -45,25 +43,18 @@ ads_in = 7
 
 # Fixtures
 @pytest.fixture(scope='module')
-def fpga():
+def fpga(power_supply):
     """Reused FPGA instance for DAC80508 and ADS8686.
     
     Also powers on the DAQ board so the other chips can do setup in their
     instantiations.
     """
 
-    global top_level_module_bitfile
-    f = FPGA(bitfile=top_level_module_bitfile)
+    f = FPGA()
     assert f.init_device()
     # Power on
     pwr = Daq.Power(f)
     pwr.all_off()
-
-    # Configure and turn on power supplies
-    config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
-    dc_pwr.set("out_state", "ON", configs={"chan": 1})  # +7V
-    for ch in [2, 3]:
-        dc_pwr.set("out_state", "ON", configs={"chan": ch}) # +/- 16.5V
 
     for name in ['1V8', '5V', '3V3']:
         pwr.supply_on(name)
@@ -77,8 +68,6 @@ def fpga():
     yield f
     # Teardown
     f.xem.Close()
-    # Power off
-    pwr_off([dc_pwr])
 
 
 @pytest.fixture(scope='module')
