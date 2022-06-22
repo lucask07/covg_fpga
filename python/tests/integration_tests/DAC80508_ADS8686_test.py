@@ -31,14 +31,11 @@ sys.path.append(boards_path)
 
 
 from boards import Daq
-from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 
 
 pytestmark = [pytest.mark.usable]
 
 
-pwr_setup = '3dual'
-dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)  # 7V and +/-16.5V, None
 tolerance = 0.009765625
 dac_out = 7
 ads_in = 7
@@ -46,7 +43,7 @@ ads_in = 7
 
 # Fixtures
 @pytest.fixture(scope='module')
-def fpga():
+def fpga(power_supply):
     """Reused FPGA instance for DAC80508 and ADS8686.
     
     Also powers on the DAQ board so the other chips can do setup in their
@@ -58,12 +55,6 @@ def fpga():
     # Power on
     pwr = Daq.Power(f)
     pwr.all_off()
-
-    # Configure and turn on power supplies
-    config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
-    dc_pwr.set("out_state", "ON", configs={"chan": 1})  # +7V
-    for ch in [2, 3]:
-        dc_pwr.set("out_state", "ON", configs={"chan": ch}) # +/- 16.5V
 
     for name in ['1V8', '5V', '3V3']:
         pwr.supply_on(name)
@@ -77,8 +68,6 @@ def fpga():
     yield f
     # Teardown
     f.xem.Close()
-    # Power off
-    pwr_off([dc_pwr])
 
 
 @pytest.fixture(scope='module')
