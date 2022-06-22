@@ -27,18 +27,22 @@ from boards import Clamp
 
 # Fixtures
 @pytest.fixture(scope='module')
-def clamp():
+def f():
     f = FPGA()
     assert f.init_device()
-    Endpoint.update_endpoints_from_defines()
-    yield Clamp(fpga=f)
+    yield f
     # Teardown
     f.xem.Close()
 
 
+@pytest.fixture(scope='module')
+def clamp(f):
+    Endpoint.update_endpoints_from_defines()
+    yield Clamp(fpga=f)
+
+
 # Tests
-def test_multiple_instances():
-    f = FPGA()
+def test_multiple_instances(f):
     clamps = []
     for i in range(4):
         clamps.append(Clamp(f))
@@ -50,10 +54,10 @@ def test_multiple_instances():
     # Make sure all the endpoints for chips within a Clamp are the same
     # Skip the first chip because that is what we will compare against
     for clamp in clamps:
-        assert all([chip.endpoints == clamp.TCA_0.endpoints for chip in [clamp.TCA_1, clamp.UID, clamp.DAC]])
+        assert all([chip.endpoints == clamp.TCA[0].endpoints for chip in [clamp.TCA[1], clamp.UID, clamp.DAC]])
 
     # Make sure the endpoints for different Clamps are different from using advance_endpoints()
     # Skip the first element in clamps because that is what we will compare against
-    # Can just use TCA_0 since we already checked that all the chips have the same endpoints
+    # Can just use TCA[0] since we already checked that all the chips have the same endpoints
     assert all(
-        [x.TCA_0.endpoints != clamps[0].TCA_0.endpoints for x in clamps[1:]])
+        [x.TCA[0].endpoints != clamps[0].TCA[0].endpoints for x in clamps[1:]])
