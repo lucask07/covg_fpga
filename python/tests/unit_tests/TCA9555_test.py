@@ -18,7 +18,7 @@ pytestmark = pytest.mark.Clamp
 
 # Fixtures
 @pytest.fixture(scope='module')
-def f():
+def f(power_supply):
     f = FPGA()
     assert f.init_device()
     yield f
