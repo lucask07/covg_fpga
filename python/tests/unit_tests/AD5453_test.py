@@ -6,31 +6,14 @@ August 2021
 Abe Stroschein, ajstroschein@stthomas.edu
 """
 
-from _pytest.outcomes import xfail
 import pytest
-import os
-import sys
-
-
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-cwd = os.getcwd()
-if 'covg_fpga' in cwd:
-    covg_fpga_index = cwd.index('covg_fpga')
-    covg_path = cwd[:covg_fpga_index + len('covg_fpga') + 1]
-else:
-    print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
-    assert False
-interfaces_path = os.path.join(covg_path, 'python')
-sys.path.append(interfaces_path)
-
-# ad5453_test_bitfile =
+from interfaces.interfaces import FPGA, Endpoint
+from interfaces.peripherals.AD5453 import AD5453
 
 
 # Fixtures
 @pytest.fixture(scope='module')
 def chip():
-    # global AD5453_test_bitfile
-    from interfaces.interfaces import FPGA, AD5453
     f = FPGA()
     assert f.init_device()
     yield AD5453(f)
@@ -40,7 +23,6 @@ def chip():
 
 # Tests
 def test_multiple_instances():
-    from interfaces.interfaces import FPGA, AD5453, Endpoint
     f = FPGA()
     group1 = [
         AD5453(fpga=f, endpoints=Endpoint.get_chip_endpoints('AD5453')),

@@ -8,26 +8,9 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import pytest
-import os
-import sys
+from interfaces.interfaces import FPGA, Endpoint
+from interfaces.peripherals.UID_24AA025UID import UID_24AA025UID
 
-# 24AA025UID chip is on the Clamp board
-# pytestmark = pytest.mark.Clamp
-
-
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-cwd = os.getcwd()
-if 'covg_fpga' in cwd:
-    covg_fpga_index = cwd.index('covg_fpga')
-    covg_path = cwd[:covg_fpga_index + len('covg_fpga') + 1]
-else:
-    print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
-    assert False
-interfaces_path = os.path.join(covg_path, 'python/src')
-sys.path.append(interfaces_path)
-
-top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',
-                                        'fpga_XEM7310.runs', 'impl_1', 'top_level_module.bit')
 
 pytestmark = [pytest.mark.usable]
 
@@ -35,10 +18,7 @@ pytestmark = [pytest.mark.usable]
 # Fixtures
 @pytest.fixture(scope='module')
 def dut():
-    global top_level_module_bitfile
-    from interfaces.interfaces import FPGA, Endpoint
-    from interfaces.peripherals.UID_24AA025UID import UID_24AA025UID
-    f = FPGA(bitfile=top_level_module_bitfile)
+    f = FPGA()
     assert f.init_device()
     yield UID_24AA025UID(fpga=f,
                          endpoints=Endpoint.advance_endpoints(
