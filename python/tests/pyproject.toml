@@ -1,8 +1,0 @@
-# pyproject.toml
-[tool.pytest.ini_options]
-markers = [
-    "usable: marks tests that are complete enough to use for testing",
-    "no_fpga: marks tests that do not require the FPGA",
-    "fpga_only: marks tests that require only the FPGA",
-    "Clamp: marks tests that require the Clamp board",
-]

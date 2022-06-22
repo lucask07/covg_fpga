@@ -24,29 +24,27 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 import copy
+from interfaces.utils import to_voltage, from_voltage
+from interfaces.interfaces import FPGA, Endpoint
+from interfaces.peripherals.DDR3 import DDR3
 
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
 for i in range(15):
     if os.path.basename(covg_fpga_path) == "covg_fpga":
-        interfaces_path = os.path.join(covg_fpga_path, "python")
+        boards_path = os.path.join(covg_fpga_path, "python")
         break
     else:
         # If we aren't in covg_fpga, move up a folder and check again
         covg_fpga_path = os.path.dirname(covg_fpga_path)
-sys.path.append(interfaces_path)
+sys.path.append(boards_path)
+
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
-from interfaces.utils import to_voltage, from_voltage
-from interfaces.interfaces import (
-    FPGA,
-    Endpoint,
-    DDR3,
-)
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
-from interfaces.boards import Daq, Clamp
+from boards import Daq, Clamp
 
 
 def ddr_write_setup():
@@ -231,15 +229,7 @@ elif pwr_setup == "3dual":
 
 
 # Initialize FPGA
-f = FPGA(
-    bitfile=os.path.join(
-        covg_fpga_path,
-        "fpga_XEM7310",
-        "fpga_XEM7310.runs",
-        "impl_1",
-        "top_level_module.bit",
-    )
-)
+f = FPGA()
 f.init_device()
 sleep(2)
 f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset

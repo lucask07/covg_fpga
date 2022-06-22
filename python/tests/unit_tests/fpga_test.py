@@ -19,7 +19,7 @@ if 'covg_fpga' in cwd:
 else:
     print('covg_fpga folder not found. Please navigate to the covg_fpga folder.')
     assert False
-interfaces_path = os.path.join(covg_path, 'python')
+interfaces_path = os.path.join(covg_path, 'python/src')
 sys.path.append(interfaces_path)
 
 top_level_module_bitfile = os.path.join(covg_path, 'fpga_XEM7310',

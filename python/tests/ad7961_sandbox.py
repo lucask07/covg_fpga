@@ -19,21 +19,8 @@ Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 
-from interfaces.boards import Daq, Clamp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import logging
-from interfaces.interfaces import (
-    FPGA,
-    AD5453,
-    Endpoint,
-    DAC80508,
-    AD7961,
-    disp_device,
-    DDR3,
-    TCA9555,
-)
-from interfaces.boards import Daq, Clamp
-from interfaces.utils import twos_comp, from_voltage
 import os
 import sys
 from time import sleep
@@ -44,31 +31,33 @@ from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import pickle as pkl
 import h5py
-from filters.filter_tools import butter_lowpass_filter, delayseq_interp
-from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv, idx_timerange
-from analysis.utils import calc_fft
+from interfaces.utils import from_voltage
+from interfaces.interfaces import FPGA, Endpoint
+from interfaces.peripherals.DDR3 import DDR3
 
-FS = 5e6
-SAMPLE_PERIOD = 1/FS
-dac80508_offset = 0x8000
 
-#import matplotlib
-
-# matplotlib.use("TkAgg")  # or "Qt5agg" depending on you version of Qt
-
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
 for i in range(15):
     if os.path.basename(covg_fpga_path) == "covg_fpga":
-        interfaces_path = os.path.join(covg_fpga_path, "python")
+        boards_path = os.path.join(covg_fpga_path, "python")
         break
     else:
         # If we aren't in covg_fpga, move up a folder and check again
         covg_fpga_path = os.path.dirname(covg_fpga_path)
-sys.path.append(interfaces_path)
+sys.path.append(boards_path)
 
+
+from boards import Daq, Clamp
+from filters.filter_tools import butter_lowpass_filter, delayseq_interp
+from analysis.adc_data import read_plot, read_h5, peak_area, get_impulse, im_conv, idx_timerange
+from analysis.utils import calc_fft
+
+
+FS = 5e6
+SAMPLE_PERIOD = 1/FS
+dac80508_offset = 0x8000
 eps = Endpoint.endpoints_from_defines
 
 data_dir_base = os.path.expanduser('~')
@@ -140,15 +129,7 @@ fg.set("output", "ON")
 atexit.register(fg.set, "output", "OFF")
 
 # Initialize FPGA
-f = FPGA(
-    bitfile=os.path.join(
-        covg_fpga_path,
-        "fpga_XEM7310",
-        "fpga_XEM7310.runs",
-        "impl_1",
-        "top_level_module.bit",
-    )
-)
+f = FPGA()
 f.init_device()
 sleep(2)
 f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset
