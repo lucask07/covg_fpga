@@ -1,29 +1,33 @@
 # AD7961 tests; test pattern and data saved to file
-import logging
+from interfaces.peripherals.AD5453 import AD5453
+from interfaces.interfaces import FPGA, Endpoint
+from interfaces.peripherals.DDR3 import DDR3
 import sys
 import os
 import time
 import datetime
 import numpy as np
-import matplotlib.pyplot as plt
 from instrbuilder.instrument_opening import open_by_name
 import atexit
-# The interfaces.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
+
+
+# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
 for i in range(15):
     if os.path.basename(covg_fpga_path) == 'covg_fpga':
-        interfaces_path = os.path.join(covg_fpga_path, 'python')
+        boards_path = os.path.join(covg_fpga_path, 'python')
         break
     else:
         # If we aren't in covg_fpga, move up a folder and check again
         covg_fpga_path = os.path.dirname(covg_fpga_path)
-sys.path.append(interfaces_path)
+sys.path.append(boards_path)
 
-from interfaces.interfaces import AD7961, AD5453, FPGA, Endpoint, disp_device, DDR3
-from interfaces.boards import Daq
+
+from boards import Daq
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
-eps = Endpoint.endpoints_from_defines
 
+
+eps = Endpoint.endpoints_from_defines
 today = datetime.datetime.today()
 # data_dir = '/Users/koer2434/Google Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/ad7961/{}{}{}'.format(today.year,
 #                                                                                                                    today.month,
