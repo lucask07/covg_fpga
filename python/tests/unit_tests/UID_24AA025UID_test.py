@@ -17,15 +17,20 @@ pytestmark = [pytest.mark.usable]
 
 # Fixtures
 @pytest.fixture(scope='module')
-def dut():
+def f():
     f = FPGA()
     assert f.init_device()
+    yield f
+    # Teardown
+    f.xem.Close()
+
+
+@pytest.fixture(scope='module')
+def dut(f):
     yield UID_24AA025UID(fpga=f,
                          endpoints=Endpoint.advance_endpoints(
                              Endpoint.get_chip_endpoints('I2CDAQ'), 1),
                          addr_pins=0b000)
-    # Teardown
-    f.xem.Close()
 
 
 # Tests
