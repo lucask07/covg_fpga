@@ -7,23 +7,28 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import pytest
+from regex import F
 from interfaces.interfaces import FPGA, Endpoint
 from interfaces.peripherals.DAC80508 import DAC80508
 
 
 # Fixtures
 @pytest.fixture(scope='module')
-def chip():
+def f():
     f = FPGA()
     assert f.init_device()
-    yield DAC80508(f)
+    yield f
     # Teardown
     f.xem.Close()
 
 
+@pytest.fixture(scope='module')
+def chip(f):
+    yield DAC80508(f)
+
+
 # Tests
-def test_multiple_instances():
-    f = FPGA()
+def test_multiple_instances(f):
     group1 = [
         DAC80508(fpga=f, endpoints=Endpoint.get_chip_endpoints('DAC80508')),
         DAC80508(fpga=f, endpoints=Endpoint.get_chip_endpoints('DAC80508')),
@@ -47,8 +52,7 @@ def test_multiple_instances():
                          [pytest.param('a', marks=pytest.mark.xfail), pytest.param(0, marks=pytest.mark.xfail)] +
                          [x for x in range(1, 10)]
                          )
-def test_create_chips(number_of_chips):
-    f = FPGA()
+def test_create_chips(number_of_chips, f):
     # Update the endpoints so they get reset when this test runs multiple times
     Endpoint.update_endpoints_from_defines()
     chips = DAC80508.create_chips(fpga=f, number_of_chips=number_of_chips)

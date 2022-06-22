@@ -13,17 +13,21 @@ from interfaces.peripherals.AD7961 import AD7961
 
 # Fixtures
 @pytest.fixture(scope='module')
-def chip():
+def f():
     f = FPGA()
     assert f.init_device()
-    yield AD7961(f)
+    yield f
     # Teardown
     f.xem.Close()
 
 
+@pytest.fixture(scope='module')
+def chip(f):
+    yield AD7961(f)
+
+
 # Tests
-def test_multiple_instances():
-    f = FPGA()
+def test_multiple_instances(f):
     group1 = [
         AD7961(fpga=f, endpoints=Endpoint.get_chip_endpoints('AD7961')),
         AD7961(fpga=f, endpoints=Endpoint.get_chip_endpoints('AD7961')),
@@ -47,8 +51,7 @@ def test_multiple_instances():
                          [pytest.param('a', marks=pytest.mark.xfail), pytest.param(0, marks=pytest.mark.xfail)] +
                          [x for x in range(1, 10)]
                          )
-def test_create_chips(number_of_chips):
-    f = FPGA()
+def test_create_chips(number_of_chips, f):
     # Update the endpoints so they get reset when this test runs multiple times
     Endpoint.update_endpoints_from_defines()
     chips = AD7961.create_chips(fpga=f, number_of_chips=number_of_chips)

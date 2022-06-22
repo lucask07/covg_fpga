@@ -13,17 +13,21 @@ from interfaces.peripherals.AD5453 import AD5453
 
 # Fixtures
 @pytest.fixture(scope='module')
-def chip():
+def f():
     f = FPGA()
     assert f.init_device()
-    yield AD5453(f)
+    yield f
     # Teardown
     f.xem.Close()
 
 
+@pytest.fixture(scope='module')
+def chip(f):
+    yield AD5453(f)
+
+
 # Tests
-def test_multiple_instances():
-    f = FPGA()
+def test_multiple_instances(f):
     group1 = [
         AD5453(fpga=f, endpoints=Endpoint.get_chip_endpoints('AD5453')),
         AD5453(fpga=f, endpoints=Endpoint.get_chip_endpoints('AD5453')),
@@ -48,9 +52,7 @@ def test_multiple_instances():
                          [pytest.param('a', marks=pytest.mark.xfail), pytest.param(0, marks=pytest.mark.xfail)] +
                          [x for x in range(1, 10)]
                          )
-def test_create_chips(number_of_chips):
-    from interfaces.interfaces import FPGA, AD5453, Endpoint
-    f = FPGA()
+def test_create_chips(number_of_chips, f):
     # Update the endpoints so they get reset when this test runs multiple times
     Endpoint.update_endpoints_from_defines()
     chips = AD5453.create_chips(fpga=f, number_of_chips=number_of_chips)

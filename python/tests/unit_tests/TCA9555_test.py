@@ -18,12 +18,18 @@ pytestmark = pytest.mark.Clamp
 
 # Fixtures
 @pytest.fixture(scope='module')
-def dut() -> TCA9555:
+def f():
     f = FPGA()
     assert f.init_device()
-    yield TCA9555(fpga=f, addr_pins=0b000, endpoints=Endpoint.get_chip_endpoints('I2CDAQ'))
+    yield f
     # Teardown
     f.xem.Close()
+
+
+@pytest.fixture(scope='module')
+def dut(f) -> TCA9555:
+    # On DAQ board, TCA9555 on I2C QW, which is one advancement from level shifted (base) I2CDAQ
+    yield TCA9555(fpga=f, addr_pins=0b000, endpoints=Endpoint.advance_endpoints(Endpoint.get_chip_endpoints('I2CDAQ')))
 
 
 # Tests
@@ -38,7 +44,7 @@ def test_power_up_defaults(dut: TCA9555, register_name):
     # Note: this test will likely fail if run after using the chip
     dev_addr = TCA9555.ADDRESS_HEADER | (dut.addr_pins << 1) | 0b1
     got = dut.i2c_read_long(dev_addr, [TCA9555.registers[register_name].address], 2)
-    expected = int_to_list(TCA9555.registers[register_name].default)
+    expected = int_to_list(TCA9555.registers[register_name].default, byteorder='big') * 2
     if len(expected) == 1:
         # Data was only 1 byte, read will return a list of 2 bytes
         expected.append(0)
@@ -66,7 +72,7 @@ def test_configure_pins(dut: TCA9555, data):
 def test_write_read(dut: TCA9555, data, register_name):
     dut.write(data, register_name)
     got = dut.read(register_name)
-    expected = int_to_list(integer=data, num_bytes=2)
+    expected = int_to_list(integer=data, num_bytes=2, byteorder='big')
     assert got == expected
 
 
@@ -74,7 +80,7 @@ def test_write_read(dut: TCA9555, data, register_name):
 def test_write_default_read(dut: TCA9555, data):
     dut.write(data)
     got = dut.read('OUTPUT')
-    expected = int_to_list(integer=data, num_bytes=2)
+    expected = int_to_list(integer=data, num_bytes=2, byteorder='big')
     assert got == expected
 
 
