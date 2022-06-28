@@ -10,17 +10,17 @@ Lucas Koerner, koer2434@stthomas.edu
 Abe Stroschein, ajstroschein@stthomas.edu
 """
 
-from interfaces.interfaces import Endpoint, Register
-from interfaces.peripherals.DDR3 import DDR3
-from interfaces.peripherals.TCA9555 import TCA9555
-from interfaces.peripherals.UID_24AA025UID import UID_24AA025UID
-from interfaces.peripherals.DAC101C081 import DAC101C081
-from interfaces.peripherals.DAC80508 import DAC80508
-from interfaces.peripherals.AD5453 import AD5453
-from interfaces.peripherals.ADS8686 import ADS8686
-from interfaces.peripherals.AD7961 import AD7961
-from interfaces.peripherals.TMF8801 import TMF8801
-from interfaces.utils import reverse_bits, test_bit, calc_impedance, from_voltage, to_voltage
+from pyripherals.core import Endpoint, Register
+from pyripherals.peripherals.DDR3 import DDR3
+from pyripherals.peripherals.TCA9555 import TCA9555
+from pyripherals.peripherals.UID_24AA025UID import UID_24AA025UID
+from pyripherals.peripherals.DAC101C081 import DAC101C081
+from pyripherals.peripherals.DAC80508 import DAC80508
+from pyripherals.peripherals.AD5453 import AD5453
+from pyripherals.peripherals.ADS8686 import ADS8686
+from pyripherals.peripherals.AD7961 import AD7961
+from pyripherals.peripherals.TMF8801 import TMF8801
+from pyripherals.utils import reverse_bits, test_bit, calc_impedance, from_voltage, to_voltage
 from scipy.fft import rfftfreq
 import matplotlib.pyplot as plt
 import time

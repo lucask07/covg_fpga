@@ -8,9 +8,9 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import pytest
-from interfaces.utils import int_to_list
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.TCA9555 import TCA9555
+from pyripherals.utils import int_to_list
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.TCA9555 import TCA9555
 
 # TCA9555 chip is on the Clamp board
 pytestmark = pytest.mark.Clamp

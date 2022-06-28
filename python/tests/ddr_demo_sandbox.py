@@ -18,9 +18,9 @@ Lucas Koerner, koerner.lucas@stthomas.edu
 import os
 import sys
 import logging
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
-from interfaces.utils import from_voltage
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DDR3 import DDR3
+from pyripherals.utils import from_voltage
 from time import sleep
 import datetime
 import time

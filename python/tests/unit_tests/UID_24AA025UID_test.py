@@ -8,8 +8,8 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import pytest
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.UID_24AA025UID import UID_24AA025UID
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.UID_24AA025UID import UID_24AA025UID
 
 
 pytestmark = [pytest.mark.usable]
@@ -49,7 +49,7 @@ def test_get_device_code(dut):
 
 @pytest.mark.parametrize('data', [(0b1 << (x + 1)) - 1 for x in range(0, 1024, 4)])
 def test_write_read(dut, data):
-    from interfaces.utils import count_bytes, int_to_list
+    from pyripherals.utils import count_bytes, int_to_list
     dut.write(data)
     got = dut.read(word_address=0, words_read=count_bytes(data))
     assert got == int_to_list(data)

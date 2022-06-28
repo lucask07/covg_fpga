@@ -19,14 +19,13 @@ from time import sleep
 import datetime
 import time
 import atexit
-from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 import copy
-from interfaces.utils import to_voltage, from_voltage
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
+from pyripherals.utils import to_voltage, from_voltage
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DDR3 import DDR3
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()

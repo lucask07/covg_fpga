@@ -5,7 +5,7 @@ April 2022
 Lucas Koerner koer2434@stthomas.edu
 """
 
-from interfaces.interfaces import FPGA
+from pyripherals.core import FPGA
 import logging
 import os, sys
 from time import sleep

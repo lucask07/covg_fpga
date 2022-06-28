@@ -9,7 +9,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 import pytest
 import os
 import sys
-from interfaces.interfaces import FPGA, Endpoint
+from pyripherals.core import FPGA, Endpoint
 
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
