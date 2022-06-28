@@ -3,38 +3,10 @@
 Protocol -> Sweeps -> Epochs
 """
 
-import pandas as pd
-import matplotlib.pyplot as plt
-from core import Epoch, Sweep, Protocol
+from core import Protocol
 
-df = pd.read_csv(filepath_or_buffer='protocol.csv')
-df.fillna(0)
-print(df)
-
-
-epochs = []
-first_column = True
-for col in df:
-    if first_column:
-        first_column = False
-        continue
-
-    column = df[col]
-    type, sample_rate, first_level, delta_level, first_duration, delta_duration = column
-    if type=='Off':
-        continue
-
-    e = Epoch(first_level=int(first_level), delta_level=int(delta_level), first_duration=int(first_duration),
-              delta_duration=int(delta_duration), type=type.capitalize(), sample_rate=sample_rate.capitalize())
-    epochs.append(e)
-
-sweep = Sweep(epochs=epochs)
-protocol = Protocol(sweep=sweep, num_sweeps=5)
-protocol_data = protocol.data()
-
-# Plot Protocol over time
-fig, ax = plt.subplots()
-ax.plot(protocol_data)
-plt.show()
-
+protocol = Protocol.create_from_csv(filepath='protocol.csv', num_sweeps=5)
 protocol.preview()
+
+protocol2 = Protocol.create_from_csv(filepath='protocol2.csv', num_sweeps=12)
+protocol2.preview()

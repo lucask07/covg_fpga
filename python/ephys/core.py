@@ -176,3 +176,41 @@ class Protocol:
             ax.plot(t, data, label=i)
         ax.legend()
         plt.show()
+
+    @staticmethod
+    def create_from_csv(filepath, num_sweeps):
+        """Create a Protocol from a CSV.
+        
+        Parameters
+        ----------
+        filepath : str, path object or file-like object
+            The path to the CSV.
+        num_sweeps : int
+            The number of sweeps to include.
+        
+        Returns
+        -------
+        protocol : Protocol
+            The Protocol generated from the CSV with the given number of sweeps.
+        """
+
+        import pandas as pd
+
+        df = pd.read_csv(filepath_or_buffer=filepath)
+        df = df.iloc[:, 1:]    # Skip labels column
+        df.fillna(0)
+
+        epochs = []
+        for col in df:
+            column = df[col]
+            type, sample_rate, first_level, delta_level, first_duration, delta_duration = column
+            if type == 'Off':
+                # No entry, skip
+                continue
+
+            e = Epoch(first_level=int(first_level), delta_level=int(delta_level), first_duration=int(first_duration),
+                    delta_duration=int(delta_duration), type=type.capitalize(), sample_rate=sample_rate.capitalize())
+            epochs.append(e)
+        sweep = Sweep(epochs=epochs)
+        protocol = Protocol(sweep=sweep, num_sweeps=num_sweeps)
+        return protocol
