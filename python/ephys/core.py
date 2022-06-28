@@ -3,6 +3,7 @@
 from typing import List
 import copy
 import numpy as np
+import matplotlib.pyplot as plt
 from pyripherals.core import FPGA
 from pyripherals.peripherals.DDR3 import DDR3
 
@@ -161,3 +162,17 @@ class Protocol:
         """
         duration = sum([s.duration() for s in self.sweeps])
         return duration
+
+    def preview(self):
+
+        fig, ax = plt.subplots()
+        ax.set_xlabel('Time (ms)')
+        ax.set_ylabel('Voltage (mV)')
+        for i in range(len(self.sweeps)):
+            data = self.sweeps[i].data()
+            if i == 0:
+                final_t = len(data) * ddr.parameters["update_period"] * 1e3   # Final time in milliseconds
+                t = np.arange(0, final_t, ddr.parameters["update_period"] * 1e3)
+            ax.plot(t, data, label=i)
+        ax.legend()
+        plt.show()
