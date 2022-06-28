@@ -36,3 +36,5 @@ protocol_data = protocol.data()
 fig, ax = plt.subplots()
 ax.plot(protocol_data)
 plt.show()
+
+protocol.preview()
