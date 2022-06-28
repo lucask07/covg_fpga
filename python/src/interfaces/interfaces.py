@@ -106,8 +106,6 @@ class Endpoint:
         Whether to increment the bits when incrementing the endpoint.
     gen_address : bool
         Whether to increment the address when incrementing the endpoint.
-    regbridge: bool
-        Whether this is a register bridge address offset which should be incremented but not wrapped.
     """
 
     MAX_WIDTH = configs['endpoint_max_width']  # Maximum bit width of an Endpoint. Used to wrap Endpoints to the next address when incrementing
@@ -115,7 +113,7 @@ class Endpoint:
     I2CDAQ_level_shifted = dict()
     I2CDAQ_QW = dict()
 
-    def __init__(self, address, bit_index_low, bit_width, gen_bit, gen_address, regbridge=False):
+    def __init__(self, address, bit_index_low, bit_width, gen_bit, gen_address):
         self.address = address
         self.bit_index_low = bit_index_low
         # Endpoints that are only containing addresses will be generated from ep_defines.v with bit_index_low = None
@@ -126,7 +124,6 @@ class Endpoint:
         self.bit_width = bit_width
         self.gen_bit = gen_bit
         self.gen_address = gen_address
-        self.regbridge = regbridge
 
     def __str__(self):
         str_rep = '0x{:0x}[{}:{}]'.format(
@@ -183,7 +180,6 @@ class Endpoint:
             remaining_name = remaining_name.replace('_GEN_ADDR', '')
             # If the remaining name is shorter it is because GEN_ADDR was replaced
             gen_address = len(remaining_name) < previous_len
-            regbridge = 'REGBRIDGE_OFFSET' in remaining_name
             # Endpoint name
             ep_name = remaining_name
             if ep_name == 'NUM_OUTGOING_EPS':
@@ -215,7 +211,7 @@ class Endpoint:
                 bit_width = int(pieces[5].split('=')[1])
 
             endpoint = Endpoint(address=address, bit_index_low=bit,
-                                bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address, regbridge=regbridge)
+                                bit_width=bit_width, gen_bit=gen_bit, gen_address=gen_address)
 
             # Put defined endpoint in endpoints_from_defines dictionary
             if Endpoint.endpoints_from_defines.get(class_name) is None:
@@ -371,18 +367,16 @@ class Endpoint:
             endpoint = endpoints_dict[key]
             if endpoint.gen_bit:
                 endpoint.bit_index_low += (endpoint.bit_width * advance_num)
-                if (endpoint.bit_index_low > Endpoint.MAX_WIDTH) and (not endpoint.regbridge):
+                if endpoint.bit_index_low > Endpoint.MAX_WIDTH:
                     # Endpoint does not fit, wrap to next address
                     endpoint.address += 1
                     endpoint.bit_index_low %= Endpoint.MAX_WIDTH
                 endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
-                if (endpoint.bit_index_high > Endpoint.MAX_WIDTH) and (not endpoint.regbridge):
+                if endpoint.bit_index_high > Endpoint.MAX_WIDTH:
                     # Endpoint split across two addresses -> move to next address, start at bit 0
                     endpoint.address += 1
                     endpoint.bit_index_low = 0
                     endpoint.bit_index_high = endpoint.bit_index_low + endpoint.bit_width
-                if endpoint.regbridge:
-                    pass # bit index low and bit index high are correctly setup by doing nothing
             if endpoint.gen_address:
                 endpoint.address += advance_num
         return endpoints_dict
