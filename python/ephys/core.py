@@ -164,6 +164,14 @@ class Protocol:
         return duration
 
     def preview(self):
+        """Plot a preview of the Protocol with different sweeps stacked on top of one another.
+
+        To show the plot, use matplotlib.pyplot.show.
+        
+        Returns
+        -------
+        ax : matplotlib.axes._subplots.AxesSubplot
+        """
 
         fig, ax = plt.subplots()
         ax.set_xlabel('Time (ms)')
@@ -175,7 +183,7 @@ class Protocol:
                 t = np.arange(0, final_t, ddr.parameters["update_period"] * 1e3)
             ax.plot(t, data, label=i)
         ax.legend()
-        plt.show()
+        return ax
 
     @staticmethod
     def create_from_csv(filepath, num_sweeps):
