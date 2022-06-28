@@ -180,6 +180,7 @@ class Endpoint:
             remaining_name = remaining_name.replace('_GEN_ADDR', '')
             # If the remaining name is shorter it is because GEN_ADDR was replaced
             gen_address = len(remaining_name) < previous_len
+
             # Endpoint name
             ep_name = remaining_name
             if ep_name == 'NUM_OUTGOING_EPS':
