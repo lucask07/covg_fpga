@@ -1,0 +1,7 @@
+Epoch Description,A,B,C,D,E,F
+Type,Step,Step,Step,Off,Off,Off
+Sample Rate,Fast,Fast,Fast,Fast,Fast,Fast
+First level (mV),-50,-80,-50,0,0,0
+Delta level (mV),0,20,0,0,0,0
+First duration (ms),20,200,40,0,0,0
+Delta duration (ms),0,0,0,0,0,0
