@@ -247,8 +247,11 @@ class Sequence:
 
     MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']
 
-    def __init__(self, protocols: List[Protocol]):
-        self.protocols = protocols
+    def __init__(self, protocols: Protocol or List[Protocol]):
+        if type(protocols) is Protocol:
+            self.protocols = [protocols]
+        else:
+            self.protocols = protocols
 
     def data(self):
         """Create and return the data for the Sequence.
@@ -301,7 +304,7 @@ class Experiment:
         The Sequence to be run in this Experiment.
     """
 
-    def __init__(self, sequence: Sequence):
+    def __init__(self, sequence: Sequence or Protocol):
 
         # Initialize FPGA
         self.endpoints = Endpoint.update_endpoints_from_defines()
@@ -312,7 +315,10 @@ class Experiment:
         self.pwr = Daq.Power(self.fpga)
         self.pwr.all_off()  # disable all power enables
         self.dc_pwr = []
-        self.sequence = sequence
+        if type(sequence) is Protocol:
+            self.sequence = Sequence(protocols=sequence)
+        else:
+            self.sequence = sequence
 
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
@@ -387,5 +393,39 @@ class Experiment:
         self.pwr.all_off()
         pwr_off(self.dc_pwr)
 
-    def run_sequence(self):
-        """Run the Sequence for this experiment."""
+    def write_sequence(self, clamp_num):
+        """Write the Sequence for this Experiment. 
+        
+        Write to the CMD channel of the specified Clamp board.
+        
+        Parameters
+        ----------
+        clamp_num : int or List[int]
+            Which Clamp to write to (0, 1, 2, or 3).
+        """
+
+        if type(clamp_num) is int:
+            clamp_nums = [clamp_num]
+        elif type(clamp_num) is list:
+            clamp_nums = clamp_num
+        else:
+            raise TypeError('write_sequence parameter clamp_num must be int or list of ints.')
+
+        dac_offset = 0x2000
+
+        # Create data
+        for clamp_num in clamp_nums:
+            cmd_ch = clamp_num * 2 + 1
+            cc_ch = clamp_num * 2
+            cmd_signal = from_voltage(voltage=self.sequence.data(), num_bits=16, voltage_range=10, with_negatives=True)
+            cc_signal = np.ones(len(cmd_signal)) * dac_offset
+            self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
+            self.daq.ddr.data_arrays[cc_ch] = cc_signal
+
+        # Write channels to the DDR
+        self.daq.ddr.write_setup()
+        block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
+        self.daq.ddr.reset_mig_interface()
+        self.daq.ddr.write_finish()
+
+    
