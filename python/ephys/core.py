@@ -4,13 +4,14 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 from typing import List, Dict
+import os
 import copy
 import time
 import numpy as np
 import matplotlib.pyplot as plt
 import atexit
 from pyripherals.core import FPGA, Endpoint
-from pyripherals.utils import from_voltage
+from pyripherals.utils import to_voltage, from_voltage, read_h5
 from pyripherals.peripherals.DDR3 import DDR3
 from ..instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from ..boards import Daq, Clamp
@@ -428,4 +429,48 @@ class Experiment:
         self.daq.ddr.reset_mig_interface()
         self.daq.ddr.write_finish()
 
-    
+    def read_response(self, clamp_num):
+        """Return the incoming data from the Daq board.
+        
+        Parameters
+        ----------
+        clamp_num : int or List[int]
+            Which Clamp to write to (0, 1, 2, or 3).
+        
+        Returns
+        -------
+        time, data : np.ndarray, np.ndarray
+            Time and Voltage data in ms and mV.
+        """
+
+        if type(clamp_num) is int:
+            clamp_nums = [clamp_num]
+        elif type(clamp_num) is list:
+            clamp_nums = clamp_num
+        else:
+            raise TypeError('write_sequence parameter clamp_num must be int or list of ints.')
+
+        data_dir = os.path.join(os.path.expanduser('~'), 'ephys_data')
+        if not os.path.exists(data_dir):
+            os.makedirs(data_dir)
+        file_name = time.strftime("%Y%m%d-%H%M%S.h5")
+
+        self.daq.ddr.repeat_setup()
+        # Get data
+        # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+        chan_data_one_repeat = ddr.save_data(data_dir, file_name, num_repeats=8,
+                                            blk_multiples=40)  # blk multiples multiple of 10
+
+        # to get the deswizzled data of all repeats need to read the file
+        _, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
+
+        adc_data, timestamp, dac_data, ads, reading_error = ddr.data_to_names(chan_data)
+        time = timestamp * 5e-6 # 5e-9 * 1000 for milliseconds
+        print(f'Timestamp spans {time[-1] - time[0]} [ms]')
+
+        data = {}
+        for clamp_num in clamp_nums:
+            # Multiply by 1e3 to get Voltage data in millivolts
+            data[clamp_num] = to_voltage(adc_data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True) * 1e3
+
+        return time, data
