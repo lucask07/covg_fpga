@@ -716,6 +716,7 @@ class Daq:
         # --- Return impedance at that frequency ---
         return impedance_arr[desired_index], frequency_found
 
+
     class Power:
 
         DEFAULT_PARAMETERS = dict(  # forces keys to string
