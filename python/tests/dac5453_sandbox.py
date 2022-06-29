@@ -1,7 +1,7 @@
 # AD7961 tests; test pattern and data saved to file
-from interfaces.peripherals.AD5453 import AD5453
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
+from pyripherals.peripherals.AD5453 import AD5453
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DDR3 import DDR3
 import sys
 import os
 import time

@@ -7,9 +7,8 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import pytest
-from regex import F
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DAC80508 import DAC80508
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DAC80508 import DAC80508
 
 
 # Fixtures

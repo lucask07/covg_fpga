@@ -7,8 +7,8 @@ Abe Stroschein, ajstroschein@stthomas.edu
 """
 
 import pytest
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.AD7961 import AD7961
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.AD7961 import AD7961
 
 
 # Fixtures

@@ -19,14 +19,13 @@ from time import sleep
 import datetime
 import time
 import atexit
-from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 import copy
-from interfaces.utils import to_voltage, from_voltage
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
+from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DDR3 import DDR3
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -332,7 +331,7 @@ for dc_num in DC_NUMS:
 errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store whether an error occurred on the DDR read
 
 # Set CMD and CC signals
-set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x400, cc_scale=0, cc_delay=0, fc=None,
+set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 for fb_res in feedback_resistors:
@@ -442,3 +441,98 @@ for dc_num in DC_NUMS:
         addr_pins_1=0b110,
         addr_pins_2=0b000,
     )
+
+#specify number of alpha values to loop through
+num_alphas = 10
+start_alpha = 0.5
+end_alpha = 0.95
+alpha = np.linspace(start_alpha, end_alpha, num_alphas)
+
+for alphas in range (num_alphas):
+
+    #define values for ADG_RES (in kilo-ohms), inamp gain, and DAC output amplitude (in millivolts)
+    ADG_RES_Val = 100
+    inamp_gain = 1
+    DAC_gain_amplitude = 500
+    correction_factor = 0.5*0.161
+    #scale value is calculated as:
+    #series_res_scale = (1/(ADG_RES_Val*1e3))*(1/0.308)*(1/inamp_gain)*1000*(8192/DAC_gain_amplitude)*(4096/DAC_gain_amplitude)*10*alpha[alphas]
+    series_res_scale = (1/(ADG_RES_Val*1e3))*(1/0.308)*(1/inamp_gain)*1000*(8192/DAC_gain_amplitude)*(correction_factor)*10*alpha[alphas]
+    print("scale value =", series_res_scale)
+
+    filter_coeff_generated = create_filter_coefficients(fc=500e3, output_scale=series_res_scale*2**13)
+    #for i in range (num_alphas):
+    #    filter_coeff_generated = create_filter_coefficients(fc=500e3, output_scale=series_res_scale[i]*2**13)
+    #    print(filter_coeff_generated)
+
+    for i in [1]:
+        daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
+        daq.DAC[i].set_spi_sclk_divide()
+        daq.DAC[i].filter_select(operation="set")
+        daq.DAC[i].write(int(0))
+        daq.DAC[i].set_data_mux("DDR")
+        daq.DAC[i].set_data_mux("ad7961_ch0", filter_data=True)
+        daq.DAC[i].filter_sum("set")
+        daq.DAC[i].filter_downsample("set")
+        daq.DAC[i].change_filter_coeff(target="generated", value=filter_coeff_generated)
+        daq.DAC[i].write_filter_coeffs()
+        daq.set_dac_gain(i, 500)  # 5V to see easier on oscilloscope
+
+    for i in [3]:
+        daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
+        daq.DAC[i].set_spi_sclk_divide()
+        daq.DAC[i].filter_select(operation="set")
+        daq.DAC[i].write(int(0))
+        daq.DAC[i].set_data_mux("DDR")
+        daq.DAC[i].set_data_mux("ad7961_ch1", filter_data=True)
+        daq.DAC[i].filter_sum("set")
+        daq.DAC[i].filter_downsample("set")
+        daq.DAC[i].change_filter_coeff(target="generated", value=filter_coeff_generated)
+        daq.DAC[i].write_filter_coeffs()
+        daq.set_dac_gain(i, 500)  # 5V to see easier on oscilloscope
+
+    ddr_repeat_setup()
+    # Get data
+    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+    chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+                                        blk_multiples=40)  # blk multiples multiple of 10
+
+    # to get the deswizzled data of all repeats need to read the file
+    _, chan_data = read_h5(data_dir, file_name=file_name.format(
+        idx) + '.h5', chan_list=np.arange(8))
+
+    # Long data sequence -- entire file
+    adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
+
+    # Shorter data sequence, just one of the repeats
+    # adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data_one_repeat)
+
+    t = np.arange(0,len(adc_data[0]))*1/FS
+
+    crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
+    print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+
+
+# DACs
+t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
+for dac_ch in range(4):
+    fig,ax=plt.subplots()
+    y = dac_data[dac_ch][crop_start:]
+    lbl = f'Ch{dac_ch}'
+    ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
+    print(f'Min {np.min(y[2:])}, Max {np.max(y)}') # skip the first 2 readings which are 0
+    ax.legend()
+    ax.set_title('Fast DAC data')
+    ax.set_xlabel('s [us]')
+
+# fast ADC. AD7961
+for ch in range(2):
+    fig,ax=plt.subplots()
+    # Store voltage in list; plot
+    y = to_voltage(adc_data[ch][crop_start:], num_bits=16, voltage_range=2**16, use_twos_comp=True)
+    lbl = f'Ch{ch}'
+    ax.plot(t*1e6, y, marker = '+', label = lbl)
+    ax.legend()
+    ax.set_title('Fast ADC data')
+    ax.set_xlabel('s [us]')
+    ax.set_ylabel('ADC codes')
