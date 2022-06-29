@@ -46,35 +46,6 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 
 
-def ddr_write_setup():
-    ddr.set_adcs_connected()
-    ddr.clear_dac_read()
-    ddr.clear_adc_write()
-    ddr.clear_adc_read()    # Stop putting data in outgoing FIFO for Pipe read
-    ddr.reset_fifo(name='ALL')
-    ddr.reset_mig_interface()
-
-
-def ddr_repeat_setup():
-    """Setup for reading new data without writing to the DDR again."""
-
-    # stop access to the FIFOs so that after reset of the FIFO(s) no new data is added/extracted
-    ddr.clear_adc_read()
-    ddr.clear_adc_write()
-    ddr.clear_dac_read()
-    ddr.reset_fifo(name='ALL')
-    ddr.reset_mig_interface()  # self.fpga.send_trig(self.endpoints['UI_RESET'])
-    # note that the MIG interface addresses are driven by the FIFOs so will idle
-    # until the FIFOs are reenable with ddr_write_finish()
-    ddr_write_finish()
-    time.sleep(0.01)
-
-
-def ddr_write_finish():
-    # reenable both DACs
-    ddr.set_adc_dac_simultaneous()  # enable DAC playback and ADC writing to DDR
-
-
 def get_cc_optimize(nums):
 
     data_dir_base = os.path.expanduser('~')
@@ -170,11 +141,11 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
         ddr.data_arrays[cmd_ch], ddr.data_arrays[cc_ch] = make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
     
     # write channels to the DDR
-    ddr_write_setup()
+    ddr.write_setup()
     # clear read, set write, etc. handled within write_channels
     block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
     ddr.reset_mig_interface()
-    ddr_write_finish()
+    ddr.write_finish()
 
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
@@ -360,7 +331,7 @@ for fb_res in feedback_resistors:
                     addr_pins_2=0b000,
                 )
 
-            ddr_repeat_setup()
+            ddr.repeat_setup()
             # Get data
             # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
             chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
