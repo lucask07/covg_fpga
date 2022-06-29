@@ -108,14 +108,14 @@ class Sweep:
         return data
 
     def duration(self):
-        """Calculate the actual duration of the Epoch.
-        
-        We will aim for the sum of the Epochs' first_duration values, but the actual duration may change slightly due to DDR constraints.
+        """Calculate the actual duration of the Sweep.
+
+        Calculated as sum of durations of Epochs.
         
         Returns
         -------
         duration : float
-            The actual duration of the Epoch in ms.
+            The actual duration of the Sweep in ms.
         """
         duration = sum([e.duration() for e in self.epochs])
         return duration
@@ -158,19 +158,20 @@ class Protocol:
 
         data = np.concatenate([s.data() for s in self.sweeps])
         if len(data) > ddr.parameters['sample_size']:
-            print(f'WARNING: Sweep data too long for DDR. {len(data) * ddr.parameters["update_period"] * 1e3} ms > max {Protocol.MAX_TIME * 1e3} ms')
+            print(f'WARNING: Protocol data too long for DDR. {len(data) * ddr.parameters["update_period"] * 1e3} ms > max {Protocol.MAX_TIME * 1e3} ms')
         return data
 
     def duration(self):
-        """Calculate the actual duration of the Epoch.
+        """Calculate the actual duration of the Protocol.
         
-        We will aim for the sum of the Epochs' first_duration values, but the actual duration may change slightly due to DDR constraints.
-        
+        Calculated from the sum of durations of each Sweep.
+
         Returns
         -------
         duration : float
-            The actual duration of the Epoch in ms.
+            The actual duration of the Protocol in ms.
         """
+
         duration = sum([s.duration() for s in self.sweeps])
         return duration
 
@@ -235,6 +236,48 @@ class Protocol:
         return protocol
 
 
+class Sequence:
+    """A sequence of Protocols.
+    
+    Attributes
+    ----------
+    protocols : List[Protocol]
+        List of all contained Protocols.
+    """
+
+    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']
+
+    def __init__(self, protocols: List[Protocol]):
+        self.protocols = protocols
+
+    def data(self):
+        """Create and return the data for the Sequence.
+        
+        Returns
+        -------
+        data : np.ndarray
+            The voltage data for the Sequence in V.
+        """
+
+        data = np.concatenate([p.data() for p in self.protocols])
+        if len(data) > ddr.parameters['sample_size']:
+            print(f'WARNING: Sequence data too long for DDR. {len(data) * ddr.parameters["update_period"] * 1e3} ms > max {Sequence.MAX_TIME * 1e3} ms')
+        return data
+
+    def duration(self):
+        """Calculate the actual duration of the Sequence.
+        
+        Calculated from the sum of the durations of each Protocol.
+
+        Returns
+        -------
+        duration : float
+            The actual duration of the Sequence in ms.
+        """
+
+        return sum([p.duration() for p in self.protocols])
+
+
 class Experiment:
     """Holds all objects needed for an Experiment.
     
@@ -254,9 +297,11 @@ class Experiment:
         Power for Daq board.
     dc_pwr : ???
         The power supply instances powering the Daq board.
+    sequence : Sequence
+        The Sequence to be run in this Experiment.
     """
 
-    def __init__(self):
+    def __init__(self, sequence: Sequence):
 
         # Initialize FPGA
         self.endpoints = Endpoint.update_endpoints_from_defines()
@@ -267,6 +312,7 @@ class Experiment:
         self.pwr = Daq.Power(self.fpga)
         self.pwr.all_off()  # disable all power enables
         self.dc_pwr = []
+        self.sequence = sequence
 
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
@@ -341,7 +387,5 @@ class Experiment:
         self.pwr.all_off()
         pwr_off(self.dc_pwr)
 
-    def record(self):
-        """Send out Sequence and record data back."""
-
-        pass
+    def run_sequence(self):
+        """Run the Sequence for this experiment."""
