@@ -1,6 +1,6 @@
 import numpy as np
 from instrbuilder.instrument_opening import open_by_name
-from interfaces.utils import get_timestamp
+from pyripherals.utils import get_timestamp
 
 def open_rigol_supply(setup=None):
     # set up DC power supply

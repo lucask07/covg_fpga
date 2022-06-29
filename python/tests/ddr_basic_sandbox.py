@@ -12,9 +12,9 @@ Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
-from interfaces.utils import from_voltage
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DDR3 import DDR3
+from pyripherals.utils import from_voltage
 import os
 import sys
 from time import sleep

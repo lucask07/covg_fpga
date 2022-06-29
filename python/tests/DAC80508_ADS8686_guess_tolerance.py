@@ -14,10 +14,10 @@ Abe Stroschein, ajstroschein@stthomas.edu
 import os
 import sys
 import time
-from interfaces.interfaces import FPGA
-from interfaces.peripherals.DAC80508 import DAC80508
-from interfaces.peripherals.ADS8686 import ADS8686
-from interfaces.utils import to_voltage
+from pyripherals.core import FPGA
+from pyripherals.peripherals.DAC80508 import DAC80508
+from pyripherals.peripherals.ADS8686 import ADS8686
+from pyripherals.utils import to_voltage
 
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.

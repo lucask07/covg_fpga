@@ -32,9 +32,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import h5py
-from interfaces.utils import from_voltage
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
+from pyripherals.utils import from_voltage
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DDR3 import DDR3
 
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.

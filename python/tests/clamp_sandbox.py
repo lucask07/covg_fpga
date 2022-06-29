@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 from scipy.optimize import minimize, basinhopping
 import pandas as pd
 import pickle as pkl
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DDR3 import DDR3
 
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
