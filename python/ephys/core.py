@@ -444,26 +444,11 @@ class Experiment:
             cmd_signal = self.sequence.data() * 1e-3
             cmd_signal = np.pad(cmd_signal, (0, target_len - len(cmd_signal)), 'constant')
             cmd_signal = [float(x) for x in cmd_signal]
-            fig, ax = plt.subplots()
-            ax.plot(cmd_signal, c='b')
             # TODO: determine voltage_range for AD5453
             cmd_signal = from_voltage(voltage=cmd_signal, num_bits=14, voltage_range=5, with_negatives=True)
-            ax.plot(cmd_signal, c='r')
-            ax.set_title('Before and after (b, r) from_voltage()')
-            plt.show()
             cc_signal = np.ones(len(cmd_signal)) * dac_offset
             self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
             self.daq.ddr.data_arrays[cc_ch] = cc_signal
-
-        # Preview data_arrays
-        fig, ax = plt.subplots(1, 2)
-        ax[0].plot(self.daq.ddr.data_arrays[cmd_ch], c='b', label='CMD')
-        ax[0].plot(self.daq.ddr.data_arrays[cc_ch], c='r', label='CC')
-        ax[0].set_title('DDR data_arrays preview')
-        ax[0].legend()
-        ax[1].plot(np.pad(self.sequence.data() * 1e-3, (0, target_len - len(self.sequence.data())), 'constant'))
-        ax[1].set_title('Sequence data preview')
-        plt.show()
 
         # Write channels to the DDR
         self.daq.ddr.write_setup()
@@ -499,7 +484,7 @@ class Experiment:
 
         # Get data
         # num_repeats=8 gets a 8.19000000000051 ms timestamp span. Adjust to get full sequence reading.
-        num_repeats = self.sequence.duration() / 8.191 * 8 * 4
+        num_repeats = np.ceil(self.sequence.duration() / 8.191 * 8)
         self.daq.ddr.repeat_setup()
         # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
         chan_data_one_repeat = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
