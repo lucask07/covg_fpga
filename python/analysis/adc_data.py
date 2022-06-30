@@ -267,3 +267,27 @@ def im_conv(x, cmd_impulse, cmd_step, cc_impulse, cc_step, adjust_func):
     """
     cc_step_adj = adjust_func(x, cc_step)  # adjust_step, adjust_step2
     return np.sum(np.abs(np.convolve(cmd_impulse, cmd_step, mode='valid') + np.convolve(cc_impulse, cc_step_adj, mode='valid')))
+
+
+def separate_ads_sequence(chan_list, ads_data, ads_seq_cnt):
+    '''
+    separate_ads_sequence(
+        [(0,0), (1,1), ('FIXED',2)], 
+        {'A':np.array([5,10,15,20,25,30]), 'B':np.array([2,4,6,8,9,11])}, 
+        np.array([1,2,3,4,5,6])
+        )
+    '''
+    num_seq_chan = len(chan_list)
+    ads_out = {}
+
+    for adc_chan in [('A', 0), ('B', 1)]:
+        letter = adc_chan[0]
+        ads_out[letter] = {}
+
+        for schan in range(num_seq_chan):
+            try:
+                ads_out[letter][int(chan_list[schan][adc_chan[1]])] = ads_data[letter][(ads_seq_cnt%num_seq_chan) == schan]
+            except:
+                ads_out[letter][chan_list[schan][adc_chan[1]]] = ads_data[letter][(ads_seq_cnt%num_seq_chan) == schan]
+
+    return ads_out

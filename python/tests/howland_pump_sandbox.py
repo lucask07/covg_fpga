@@ -131,4 +131,4 @@ daq.DAC_gp[1].write_voltage(1.457, 0)
 daq.DAC_gp[1].write_voltage(1.25, 1) 
 
 
-daq.DAC_gp[1].set_gain(2)
+daq.DAC_gp[1].set_gain(2, outputs=[0,1,2,3,4,5,6,7])
