@@ -5,6 +5,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 
 from typing import List, Dict
 import os
+import sys
 import copy
 import time
 import numpy as np
@@ -13,13 +14,26 @@ import atexit
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.utils import to_voltage, from_voltage, read_h5
 from pyripherals.peripherals.DDR3 import DDR3
-from ..instruments.power_supply import open_rigol_supply, pwr_off, config_supply
-from ..boards import Daq, Clamp
+
+# The boards.py file and instruments folder are located in the covg_fpga/python folder. If covg_fpga is not above the current directory, the program fails.
+covg_fpga_path = os.getcwd()
+for i in range(15):
+    if os.path.basename(covg_fpga_path) == "covg_fpga":
+        boards_path = os.path.join(covg_fpga_path, "python")
+        break
+    else:
+        # If we aren't in covg_fpga, move up a folder and check again
+        covg_fpga_path = os.path.dirname(covg_fpga_path)
+sys.path.append(boards_path)
+
+from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
+from boards import Daq, Clamp
 
 # Variables
 f = FPGA()
 f.init_device()
 ddr = DDR3(fpga=f)
+f.xem.Close()
 
 # Classes
 
@@ -189,11 +203,13 @@ class Protocol:
         fig, ax = plt.subplots()
         ax.set_xlabel('Time (ms)')
         ax.set_ylabel('Voltage (mV)')
+        ax.set_title('Protocol Preview')
         for i in range(len(self.sweeps)):
             data = self.sweeps[i].data()
             if i == 0:
-                final_t = len(data) * ddr.parameters["update_period"] * 1e3   # Final time in milliseconds
-                t = np.arange(0, final_t, ddr.parameters["update_period"] * 1e3)
+                # final_t = len(data) * ddr.parameters["update_period"] * 1e3   # Final time in milliseconds
+                # t = np.arange(0, final_t, ddr.parameters["update_period"] * 1e3)
+                t = np.linspace(0, len(data) - 1, len(data)) * ddr.parameters['update_period'] * 1e3
             ax.plot(t, data, label=i)
         ax.legend()
         return ax
@@ -310,8 +326,11 @@ class Experiment:
         # Initialize FPGA
         self.endpoints = Endpoint.update_endpoints_from_defines()
         self.fpga = FPGA()
+        # TODO: is there any way we can wait to fpga.init_device() until setup?
+        self.fpga.init_device()
         self.daq = Daq(self.fpga)
-        self.clamps = [Clamp(f, dc_num=dc_num) for dc_num in range(4)]
+        self.daq.ddr.parameters['data_version'] = 'TIMESTAMPS'
+        self.clamps = [Clamp(fpga=self.fpga, dc_num=dc_num) for dc_num in range(4)]
         self.gpio = Daq.GPIO(self.fpga)
         self.pwr = Daq.Power(self.fpga)
         self.pwr.all_off()  # disable all power enables
@@ -345,7 +364,7 @@ class Experiment:
                 self.dc_pwr[0].set("out_state", "ON", configs={"chan": ch})
 
         # Initialize the FPGA
-        f.init_device()
+        # f.init_device()   # Currently being done in __init__
         time.sleep(2)
         f.send_trig(self.endpoints["GP"]["SYSTEM_RESET"])  # system reset
         self.daq.ADC[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
@@ -392,7 +411,8 @@ class Experiment:
         """Close opened devices from setup."""
 
         self.pwr.all_off()
-        pwr_off(self.dc_pwr)
+        pwr_off([pwr for pwr in self.dc_pwr if pwr is not None])
+        self.fpga.xem.Close()
 
     def write_sequence(self, clamp_num):
         """Write the Sequence for this Experiment. 
@@ -413,19 +433,41 @@ class Experiment:
             raise TypeError('write_sequence parameter clamp_num must be int or list of ints.')
 
         dac_offset = 0x2000
+        target_len = len(self.daq.ddr.data_arrays[0])
 
         # Create data
         for clamp_num in clamp_nums:
             cmd_ch = clamp_num * 2 + 1
             cc_ch = clamp_num * 2
-            cmd_signal = from_voltage(voltage=self.sequence.data(), num_bits=16, voltage_range=10, with_negatives=True)
+            # Multiply data by 1e-3 because it is given in mV, need in V
+            # Pad with zeros to make correct size
+            cmd_signal = self.sequence.data() * 1e-3
+            cmd_signal = np.pad(cmd_signal, (0, target_len - len(cmd_signal)), 'constant')
+            cmd_signal = [float(x) for x in cmd_signal]
+            fig, ax = plt.subplots()
+            ax.plot(cmd_signal, c='b')
+            # TODO: determine voltage_range for AD5453
+            cmd_signal = from_voltage(voltage=cmd_signal, num_bits=14, voltage_range=5, with_negatives=True)
+            ax.plot(cmd_signal, c='r')
+            ax.set_title('Before and after (b, r) from_voltage()')
+            plt.show()
             cc_signal = np.ones(len(cmd_signal)) * dac_offset
             self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
             self.daq.ddr.data_arrays[cc_ch] = cc_signal
 
+        # Preview data_arrays
+        fig, ax = plt.subplots(1, 2)
+        ax[0].plot(self.daq.ddr.data_arrays[cmd_ch], c='b', label='CMD')
+        ax[0].plot(self.daq.ddr.data_arrays[cc_ch], c='r', label='CC')
+        ax[0].set_title('DDR data_arrays preview')
+        ax[0].legend()
+        ax[1].plot(np.pad(self.sequence.data() * 1e-3, (0, target_len - len(self.sequence.data())), 'constant'))
+        ax[1].set_title('Sequence data preview')
+        plt.show()
+
         # Write channels to the DDR
         self.daq.ddr.write_setup()
-        block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
+        block_pipe_return, speed_MBs = self.daq.ddr.write_channels(set_ddr_read=False)
         self.daq.ddr.reset_mig_interface()
         self.daq.ddr.write_finish()
 
@@ -455,22 +497,24 @@ class Experiment:
             os.makedirs(data_dir)
         file_name = time.strftime("%Y%m%d-%H%M%S.h5")
 
-        self.daq.ddr.repeat_setup()
         # Get data
+        # num_repeats=8 gets a 8.19000000000051 ms timestamp span. Adjust to get full sequence reading.
+        num_repeats = self.sequence.duration() / 8.191 * 8 * 4
+        self.daq.ddr.repeat_setup()
         # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-        chan_data_one_repeat = ddr.save_data(data_dir, file_name, num_repeats=8,
+        chan_data_one_repeat = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
                                             blk_multiples=40)  # blk multiples multiple of 10
 
         # to get the deswizzled data of all repeats need to read the file
         _, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
 
-        adc_data, timestamp, dac_data, ads, reading_error = ddr.data_to_names(chan_data)
-        time = timestamp * 5e-6 # 5e-9 * 1000 for milliseconds
-        print(f'Timestamp spans {time[-1] - time[0]} [ms]')
+        adc_data, timestamp, dac_data, ads, reading_error = self.daq.ddr.data_to_names(chan_data)
+        t = timestamp * 5e-6 # 5e-9 * 1000 for milliseconds
+        print(f'Timestamp spans {t[-1] - t[0]} [ms]')
 
         data = {}
         for clamp_num in clamp_nums:
             # Multiply by 1e3 to get Voltage data in millivolts
-            data[clamp_num] = to_voltage(adc_data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True) * 1e3
+            data[clamp_num] = np.array(to_voltage(adc_data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3
 
-        return time, data
+        return t, data
