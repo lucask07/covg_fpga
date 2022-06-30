@@ -381,6 +381,33 @@ module top_level_module(
    wire [31:0] ads_fifo_data;
    wire ads_pipe_read;
 
+    // ADS8686 convert start counter so that we can know what sequence in the sequencer we are in 
+   // Wireout of ADS8686 data for host driven SPI reads 
+   
+    // detect rising-edge of convert start
+    reg conv_start_pulse;
+    reg conv_start_reg;
+    always @(posedge clk_sys) begin
+        conv_start_reg <= ads_convst;
+    end
+    
+    // single clock widge pulse 
+    always @(posedge clk_sys) begin
+        conv_start_pulse <= (ads_convst & ~conv_start_reg);
+    end
+    
+    reg [4:0] ads_sequence_count; //max of 31
+    always @(posedge clk_sys) begin
+         if (ads_resetb==1'b0) begin
+              ads_sequence_count <=32'h0;
+         end
+         else if (conv_start_pulse==1'b1) begin 
+             if (ads_sequence_count == 5'd23) ads_sequence_count <= 5'd0; //24 allows for sequencer lengths of 1,2,3,4,6,8,12
+             else ads_sequence_count <= ads_sequence_count + 5'd1;        
+         end             
+     end    
+    
+
    fifo_ADS8686 ads8686_fifo ( //32 bit wide read and 32 bit wide write ports, 2048 deep
      .rst(ep40trig[`ADS8686_FIFO_RESET]),
      .wr_clk(clk_sys),
@@ -776,13 +803,13 @@ module top_level_module(
                 4'd8:    adc_ddr_data = {ads_last_read[31:16],      timestamp_snapshot[31:16], dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd7:    adc_ddr_data = {timestamp_snapshot[47:32], dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd6:    adc_ddr_data = {16'haa55,                  dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd5:    adc_ddr_data = {16'h28ab,                  dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd5:    adc_ddr_data = {{11'h28b, ads_sequence_count},                  dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
 
                 4'd4:    adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd3:    adc_ddr_data = {ads_last_read[31:16],      timestamp_snapshot[31:16], dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd2:    adc_ddr_data = {timestamp_snapshot[47:32], dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd1:    adc_ddr_data = {16'h77bb,                  dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd0:    adc_ddr_data = {16'h28ab,                  dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd0:    adc_ddr_data = { {11'h28c, ads_sequence_count},                  dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 
                 default: adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
             endcase 
