@@ -342,6 +342,16 @@ current_ax.plot(t * 1e6, [(v / res) * 1e3 for v in adc_data[0]], label=str(res) 
 # current_ax.set_xlim(6550, 6800)
 current_ax.set_ylim(-30, 30)
 
-ax[1].plot(t[::2] * 1e6, dac_data[0])            
-ax[2].plot(t[::15] * 1e6, ads_separate_data['A'][2], marker='.')
+tsub = t[::2]
+y = dac_data[1]
+tsub = tsub[0:len(y)]
+ax[1].plot(tsub * 1e6, y) 
+ax[1].set_title(f'CMD')
+ax[1].set_ylabel('CMD [DN]')
+
+tsub = t[::(5*len(ads_sequencer_setup))]
+y = ads_separate_data['A'][2]
+tsub=tsub[0:len(y)]
+ax[2].plot(tsub * 1e6, y, marker='.')
 ax[2].set_title(f'Vm')
+ax[2].set_ylabel('Vm [V]')
