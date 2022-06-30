@@ -47,7 +47,8 @@ t, data = experiment.read_response(clamp_num=clamp_nums)
 current_data = {}
 for key in data:
     # Voltage data in mV, want current data in uA, so multiply by 1e3
-    current_data[key] = data[key] / res * 1e3
+    # current_data[key] = data[key] / (res * 1e3) * 1e3
+    current_data[key] = data[key] / res
 fig, ax = plt.subplots(1, 2)
 for clamp_num in clamp_nums:
     # ax[clamp_num].plot(t, current_data[clamp_num])
