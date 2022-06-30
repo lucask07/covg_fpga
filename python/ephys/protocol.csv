@@ -3,5 +3,5 @@ Type,Step,Step,Step,Off,Off,Off
 Sample Rate,Fast,Fast,Fast,Fast,Fast,Fast
 First level (mV),-100,100,-100,0,0,0
 Delta level (mV),0,100,0,0,0,0
-First duration (ms),1,2,1,0,0,0
+First duration (ms),20,80,20,0,0,0
 Delta duration (ms),0,0,0,0,0,0
