@@ -206,7 +206,8 @@ pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
 
 daq = Daq(f)
-ddr = DDR3(f, data_version='TIMESTAMPS')
+ddr = daq.ddr    # Or reference as daq.ddr throughout the file
+ddr.parameters['data_version'] = 'TIMESTAMPS'
 ad7961s = daq.ADC
 ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
