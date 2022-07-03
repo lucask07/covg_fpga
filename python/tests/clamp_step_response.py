@@ -71,7 +71,6 @@ def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8
     np.ndarray, np.ndarray : the CMD signal data, the CC signal data.
     """
 
-    # TODO: move to Clamp board class in boards.py
     dac_offset = 0x2000
 
     cmd_signal = ddr.make_step(
