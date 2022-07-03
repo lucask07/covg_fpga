@@ -269,14 +269,38 @@ def im_conv(x, cmd_impulse, cmd_step, cc_impulse, cc_step, adjust_func):
     return np.sum(np.abs(np.convolve(cmd_impulse, cmd_step, mode='valid') + np.convolve(cc_impulse, cc_step_adj, mode='valid')))
 
 
-def separate_ads_sequence(chan_list, ads_data, ads_seq_cnt):
-    '''
-    separate_ads_sequence(
+def separate_ads_sequence(chan_list, ads_data, ads_seq_cnt, slider_value=4):
+    """ Put ADS data when the sequencer is running into the correct channels
+        Uses the CONV counter (0-23) on the FPGA that is read in the DDR data stream.
+        The ONLY works if the number of sequencer channels is an even divisor of 24.
+            E.g. 1,2,3,4,6,8,12,24
+        Does not account for repeating of the same channel within the sequence. Could reconstruct that later
+
+    Arguments
+    ---------
+    chan_list (list): list of tuples of sequencer channels 
+    ads_data (dict): dict of np.arrays of ADS data
+    ads_seq_cnt (ndarray): of the ADS conversion count
+    slider_value (int): subtracted from the ads_seq_cnt to correctly align (tested to work at =4 for sequencer lengths of 3,4,6,8)
+
+    Returns
+    -------
+    (dict) with keys of 'A', 'B'. Each key has a dict of np.arrays of ADS data
+
+    Example:
+    ads_data = separate_ads_sequence(
         [(0,0), (1,1), ('FIXED',2)], 
         {'A':np.array([5,10,15,20,25,30]), 'B':np.array([2,4,6,8,9,11])}, 
         np.array([1,2,3,4,5,6])
         )
-    '''
+    # Now we have 
+    ads_data['A'][0]
+    ads_data['A'][1] 
+    # etc
+    """    
+    # count may be ahead of sequencer. adjust with slider 
+    ads_seq_cnt = ads_seq_cnt - slider_value 
+
     num_seq_chan = len(chan_list)
     ads_out = {}
 
@@ -285,9 +309,9 @@ def separate_ads_sequence(chan_list, ads_data, ads_seq_cnt):
         ads_out[letter] = {}
 
         for schan in range(num_seq_chan):
-            try:
+            try: # if possible make the dict key an int 
                 ads_out[letter][int(chan_list[schan][adc_chan[1]])] = ads_data[letter][(ads_seq_cnt%num_seq_chan) == schan]
-            except:
+            except: # if the dict key must be a string (e.g. 'FIXED')
                 ads_out[letter][chan_list[schan][adc_chan[1]]] = ads_data[letter][(ads_seq_cnt%num_seq_chan) == schan]
 
     return ads_out

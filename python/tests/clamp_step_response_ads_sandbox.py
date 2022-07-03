@@ -24,9 +24,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 import copy
-from interfaces.utils import to_voltage, from_voltage
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
+from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
+from pyripherals.core import FPGA, Endpoint
+from pyripherals.peripherals.DDR3 import DDR3
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -38,7 +38,6 @@ for i in range(15):
         # If we aren't in covg_fpga, move up a folder and check again
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(boards_path)
-
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5
@@ -238,7 +237,9 @@ pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
 
 daq = Daq(f)
-ddr = DDR3(f, data_version='TIMESTAMPS')
+ddr = daq.ddr    # Or reference as daq.ddr throughout the file
+ddr.parameters['data_version'] = 'TIMESTAMPS'
+
 ads = daq.ADC_gp # ADS8686
 ad7961s = daq.ADC
 ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
@@ -250,8 +251,8 @@ for name in ["1V8", "5V", "3V3"]:
 
 # configure the SPI debug MUXs
 gpio = Daq.GPIO(f)
-gpio.spi_debug("dfast1")
-gpio.ads_misc("sdoa")  # do not care for this experiment
+gpio.spi_debug("ads")
+gpio.ads_misc("convst")  # do not care for this experiment
 
 # ------- COPIED FROM clamp_sandbox.py FOR CLAMP V1 BUG FIX -------
 # # configure clamp board Utility pin to be the offset voltage for the feedback
