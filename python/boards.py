@@ -501,6 +501,12 @@ class Daq:
             5: (1, 2),
         }
 
+        # ISEL bank: (I/O exapander number, nibble_number)
+        self.parameters["isel_expander_nibble"] = {
+            1: (1, 0),
+            2: (1, 1),
+        }
+
         self.parameters["dac_resistors"] = {
             "input": 49.9e3,
             "fixed": 243e3,
@@ -559,6 +565,39 @@ class Daq:
         gain = feedback / self.parameters["dac_resistors"]["input"]
         print(f"Expected gain of {gain}")
         return gain
+
+    def set_isel(self, port, channels):
+        """ set the gain of the TMUX6136 switch so that the Howland current source is the DAC_CAL output
+        Args:
+            port: The X in IX_SELn. Options are 1 or 2. Determine which general purpose DAC (of two) and which Howland pump is used
+            channels: channels to set as list or 'all'. Channels are [0,1,2,3]
+                      (channels not included will be cleared -- hence there is no clear function)
+        Returns:
+            result of i2c transaction to TCA io expander
+        """
+        tca_ch = self.parameters["isel_expander_nibble"][port][0]
+        tca_nibble = self.parameters["isel_expander_nibble"][port][1]
+
+        if channels == 'all':
+            val = 0xF
+        elif channels is None:
+            val = 0x0
+        elif isinstance(channels, list):
+            val = 0
+            for c in channels:
+                val += (1<<c)
+        else:
+            print(f'Error invalid channels for isel {channels}')
+            print("Must be a list, 'all' or None ")
+            return -1 
+
+        mask = 0xF << (tca_nibble * 4)
+        val = (val) << (tca_nibble * 4)
+        print(
+            "Setting I sel to = 0x{:02X} with mask = 0x{:02X}".format(
+                val, mask))
+
+        return self.TCA[tca_ch].write(val, mask=mask)
 
     def test_impedance(self, resistance, frequency, amplitude, dac80508_num=1, dac80508_chan=4, ads8686_chan_a=7, ads8686_chan_b=3, swap_chan=False, plot=False):
         """Calculate the impedance of a component that is in series with the given resistance.

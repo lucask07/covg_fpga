@@ -332,7 +332,6 @@ fig, ax = plt.subplots(3,1)
 t = np.arange(0, len(adc_data[0]))*1/FS
 
 current_ax = ax[0]
-current_ax.set_title(f'Current')
 current_ax.set_xlabel('Time (\N{GREEK SMALL LETTER MU}s)')
 current_ax.set_ylabel('Current (\N{GREEK SMALL LETTER MU}A)')
                 
@@ -346,12 +345,10 @@ tsub = t[::2]
 y = dac_data[1]
 tsub = tsub[0:len(y)]
 ax[1].plot(tsub * 1e6, y) 
-ax[1].set_title(f'CMD')
 ax[1].set_ylabel('CMD [DN]')
 
 tsub = t[::(5*len(ads_sequencer_setup))]
 y = ads_separate_data['A'][2]
 tsub=tsub[0:len(y)]
 ax[2].plot(tsub * 1e6, y, marker='.')
-ax[2].set_title(f'Vm')
 ax[2].set_ylabel('Vm [V]')

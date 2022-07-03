@@ -4,7 +4,7 @@ configure EN_IPUMP and ISEL
 measures at DAC2_CAL0
 which corresponds to DAC_gp[1] channel 0
 
-R = 2.358 kOhm 
+This was tested with a load resistor of R = 2.358 kOhm 
 
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
@@ -13,9 +13,9 @@ Lucas Koerner, koerner.lucas@stthomas.edu
 import os
 import sys
 import logging
-from interfaces.interfaces import FPGA, Endpoint
-from interfaces.peripherals.DDR3 import DDR3
-from interfaces.utils import from_voltage, to_voltage
+from pyripherals.core import FPGA, Endpoint 
+from pyripherals.peripherals.DDR3 import DDR3 
+from pyripherals.utils import from_voltage, to_voltage
 from time import sleep
 import datetime
 import time
@@ -116,7 +116,7 @@ daq.TCA[1].configure_pins([0, 0])
 daq.set_isel(port=2, channels=[0,1])
 
 # configure clamp board Utility pin to be the offset voltage for the feedback
-# at this point the slow DA Ccan be set by the host 
+# at this point the slow DAC can be set by the host 
 for i in range(2):
     # Reset the Wishbone controller and SPI core
     daq.DAC_gp[i].set_ctrl_reg(daq.DAC_gp[i].master_config)

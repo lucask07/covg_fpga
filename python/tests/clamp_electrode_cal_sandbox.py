@@ -151,9 +151,6 @@ FS = 5e6
 SAMPLE_PERIOD = 1/FS
 DC_NUMS = [0, 1, 2, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
-feedback_resistors = [2.1]                  # list of RF1 values; use None to get all options
-capacitors = [47, 200, 1000, 4700]          # list of CCOMP values; use None to get all options
-
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
 
@@ -341,8 +338,8 @@ print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
 # Configure for better oscilloscope viewing
 for dc_num in DC_NUMS:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        #ADC_SEL="CAL_SIG1",
-        ADC_SEL="CAL_SIG1",
+        ADC_SEL="CAL_SIG2",
+        #ADC_SEL="CAL_SIG12,
         DAC_SEL="drive_CAL2",
         #DAC_SEL="gnd_Both",
         CCOMP=47,
@@ -370,7 +367,7 @@ ddr.reset_mig_interface()
 ddr.write_finish()
 
 
-for i in range(1):
+for i in range(1):  # loop to allow for ensuring that the ADS data stays consistent
     ddr.repeat_setup()
     # Get data
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
@@ -397,27 +394,39 @@ for i in range(1):
     total_seq_cnt[1::2] = ads_seq_cnt[1]
     ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data, total_seq_cnt)
 
-    fig, ax = plt.subplots(3,1)
+    fig, ax = plt.subplots(2,1)
     # Time in seconds
     t = np.arange(0, len(adc_data[0]))*1/FS
 
     tsub = t[::(5*len(ads_sequencer_setup))]
     y = ads_separate_data['A'][0]
     tsub = tsub[0:len(y)]
-    ax[0].plot(tsub * 1e6, y) 
+    ax[0].plot(tsub * 1e6, y, marker='.', color='r') 
     ax[0].set_ylabel('CAL_ADC')
-    ax[0].set_xlabel('t [$\mu$ s]')
+    ax[0].set_xlabel('t [$\mu$s]')
 
     tsub = t[::(5*len(ads_sequencer_setup))]
-    y = ads_separate_data['A'][1]
+    y = ads_separate_data['A'][1] / (1+2.1/3.1)
     tsub=tsub[0:len(y)]
-    ax[1].plot(tsub * 1e6, y, marker='.')
+    ax[1].plot(tsub * 1e6, y, marker='.', color='g')
     ax[1].set_ylabel('AMP_OUT')
-    ax[1].set_xlabel('t [$\mu$ s]')
+    ax[1].set_xlabel('t [$\mu$s]')
+
+
+    fig, ax = plt.subplots()
+    # Time in seconds
+    t = np.arange(0, len(adc_data[0]))*1/FS
 
     tsub = t[::(5*len(ads_sequencer_setup))]
-    y = ads_separate_data['A'][2]
+    y = ads_separate_data['A'][0]
+    tsub = tsub[0:len(y)]
+    ax.plot(tsub * 1e6, y, marker='.', color='r') 
+    ax.set_ylabel('CAL_ADC')
+    ax.set_xlabel('t [$\mu$s]')
+
+    tsub = t[::(5*len(ads_sequencer_setup))]
+    y = ads_separate_data['A'][1] / (1+2.1/3.1)
     tsub=tsub[0:len(y)]
-    ax[2].plot(tsub * 1e6, y, marker='.')
-    ax[2].set_ylabel('AMP_OUT?')
-    ax[2].set_xlabel('t [$\mu$ s]')
+    ax.plot(tsub * 1e6, y, marker='.', color='g')
+    ax.set_ylabel('AMP_OUT')
+    ax.set_xlabel('t [$\mu$s]')
