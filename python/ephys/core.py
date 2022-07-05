@@ -584,7 +584,7 @@ class Experiment:
             raise TypeError(
                 'write_sequence parameter clamp_num must be int or list of ints.')
 
-        self.write_sequence(clamp_nums)
+        sequence_length = self.write_sequence(clamp_nums)
 
         # Split Sequence into Sweeps. Write full sequence but read each Sweep individually
         sweeps = np.concatenate([p.sweeps for p in self.sequence.protocols])
@@ -595,10 +595,6 @@ class Experiment:
         data = {}
         for i in range(4):  # 4 possible Clamp board data sets
             data[i] = np.array([])
-        # Voltage data in millivolts
-        voltage_data = {}
-        for clamp_num in clamp_nums:
-            voltage_data[clamp_num] = np.array([])
 
         data_dir = os.path.join(os.path.expanduser('~'), 'ephys_data')
         if not os.path.exists(data_dir):
@@ -607,54 +603,77 @@ class Experiment:
 
         nrows = 2 if len(clamp_nums) - 2 > 1 else 1    # 1-2 clamps -> 1 row; 3-4 clamps -> 2 rows
         ncols = 2 if len(clamp_nums) > 1 else 1
-        with plt.ion():
-            # squeeze=False to always return a 2d array so our accessing can be generalized for 1-4 clamps being used
-            fig, axes = plt.subplots(nrows, ncols, squeeze=False)
-            fig.suptitle('Experiment Recording...')
-            for ax_num in clamp_nums:
-                axes[ax_num // 2][ax_num % 2].set_xlabel('Time [ms]')
-                axes[ax_num // 2][ax_num % 2].set_ylabel('Current [\N{GREEK SMALL LETTER MU}A]')
-                axes[ax_num // 2][ax_num % 2].set_title(f'Clamp {ax_num}')
+        # squeeze=False to always return a 2d array so our accessing can be generalized for 1-4 clamps being used
+        plt.ion()
+        fig, axes = plt.subplots(nrows, ncols, squeeze=False)
+        fig.suptitle('Experiment Recording...')
+        for ax_num in clamp_nums:
+            axes[ax_num // 2][ax_num % 2].set_xlabel('Time [ms]')
+            axes[ax_num // 2][ax_num % 2].set_ylabel('Current [\N{GREEK SMALL LETTER MU}A]')
+            axes[ax_num // 2][ax_num % 2].set_title(f'Clamp {ax_num}')
 
-            for sweep_num in range(len(sweeps)):
-                sweep = sweeps[sweep_num]
-                # Get data
-                # TODO: determine num_repeats to read in exactly one Sweep given that Sweep's length
-                num_repeats = np.ceil(self.sequence.duration() / 8.191 * 8)
-                # self.daq.ddr.repeat_setup()
-                # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-                chan_data_one_repeat = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
-                                                    blk_multiples=40)  # blk multiples multiple of 10
+        # 4 possible clamps
+        leftover_data = [np.array([]) for i in range(4)]
+        for sweep_num in range(len(sweeps)):
+            sweep = sweeps[sweep_num]
+            print('SWEEP LEN:', len(sweep))
+            print('DURATION:', sweep.duration())
+            # blk_multiples = 40
+            # num_repeats = np.ceil(len(sweep) * 2 / (int(self.daq.ddr.parameters["BLOCK_SIZE"] * blk_multiples / (
+            #     self.daq.ddr.parameters['adc_channels']*2)) * 2/1024) / 1000)
+            blk_multiples = 1
+            # Only need len of leftover_data from one clamp board's data, so we just take the first
+            num_repeats = np.ceil((len(sweep) - len(leftover_data[clamp_nums[0]])) / 64)
+            # Get data
+            # TODO: determine num_repeats to read in exactly one Sweep given that Sweep's length
+            # num_repeats = np.ceil(sweep.duration() / 8.191 * 8)
+            # self.daq.ddr.repeat_setup()
+            # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+            chan_data_one_repeat = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
+                                                blk_multiples=blk_multiples)  # blk multiples multiple of 10
 
-                # to get the deswizzled data of all repeats need to read the file
-                t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
+            # to get the deswizzled data of all repeats need to read the file
+            _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
+            cutoff_len = len(sweep) * 2
+            spacing = _t[1] - _t[0]
+            # Only set up time axis once
+            if sweep_num == 0:
+                t = np.arange(cutoff_len * spacing, step=spacing)
 
-                adc_data, timestamp, dac_data, ads, reading_error = self.daq.ddr.data_to_names(chan_data)
-                if reading_error:
-                    print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
+            adc_data, timestamp, dac_data, ads, reading_error = self.daq.ddr.data_to_names(chan_data)
+            if reading_error:
+                print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
 
-                for i in range(len(adc_data)):
-                    data[i] = np.append(data[i], adc_data[i])
-                for clamp_num in clamp_nums:
-                    # Multiply by 1e3 to get Voltage data in millivolts
-                    voltage_data[clamp_num] = (np.array(to_voltage(adc_data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3)
-                    axes[clamp_num // 2][clamp_num % 2].plot(t * 1e3, voltage_data[clamp_num], label=f'Sweep {sweep_num + 1}')
-                # Add legend to last plot
-                axes[clamp_num // 2][clamp_num % 2].legend()
-                fig.canvas.draw()
-                fig.canvas.flush_events()
-
-            fig.suptitle('Experiment Recording')
+            for i in range(len(adc_data)):
+                data[i] = np.append(data[i], adc_data[i])
+            for clamp_num in clamp_nums:
+                # Need leftover_data to keep track of any data not part of the current sweep that came with the last read of data.
+                # That leftover_data contains data for the next sweep, so we keep it around.
+                combined_data = np.concatenate([leftover_data[clamp_num], adc_data[clamp_num]])
+                # Multiply by 1e3 to get Voltage data in millivolts
+                current_data = (np.array(to_voltage(combined_data, num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 33
+                leftover_data[clamp_num] = current_data[cutoff_len:]
+                current_data = current_data[:cutoff_len]
+                # Because we recalculate the length of data to read each sweep,
+                # the current_data in later sweeps may be a different length
+                # than initial sweeps, so we cut off time with current to
+                # prevent plotting ValueErrors due to shape differences.
+                axes[clamp_num // 2][clamp_num % 2].plot(t[:len(current_data)], current_data, label=f'Sweep {sweep_num + 1}')
+            # Add legend to last plot
+            axes[clamp_num // 2][clamp_num % 2].legend()
             fig.canvas.draw()
             fig.canvas.flush_events()
 
+        fig.suptitle('Experiment Recording')
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+
         # Save full data
+        print('Saving recorded data')
         full_data_name = os.path.join(data_dir, file_name)
+        stacked_data = np.vstack([data[i] for i in range(len(data))])
         with h5py.File(full_data_name, "w") as file:
-            data_set = file.create_dataset("adc", (self.daq.ddr.parameters['adc_channels'], 1), maxshape=(
-                self.daq.ddr.parameters['adc_channels'], None))
-            stacked_data = np.vstack([data[i] for i in range(len(data))])
-            data_set.resize((len(stacked_data), len(stacked_data[0])))
-            data_set[:] = stacked_data
+            data_set = file.create_dataset("adc", data=stacked_data)
         print(f'DDR data saved at {full_data_name}')
-        print(len(sweeps))
+        plt.ioff()
+        plt.show()
