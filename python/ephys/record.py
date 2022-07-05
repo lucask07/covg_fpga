@@ -10,7 +10,7 @@ protocol = Protocol.create_from_csv(filepath='protocol.csv', num_sweeps=5)
 plt.show()
 
 # Run experiment
-clamp_nums = [0, 1]
+clamp_nums = 0
 experiment = Experiment(protocol)
 experiment.setup()
 
@@ -38,5 +38,5 @@ for clamp_num in [0, 1]:
         addr_pins_2=0b000,
     )
 
-print('NUMBER OF SWEEPS:', len(experiment.sequence.protocols[0].sweeps))
-experiment.record([0, 1])
+experiment.record(clamp_nums)
+experiment.close()
