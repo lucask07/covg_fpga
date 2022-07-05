@@ -640,7 +640,7 @@ class Experiment:
             if sweep_num == 0:
                 t = np.arange(cutoff_len * spacing, step=spacing)
 
-            adc_data, timestamp, dac_data, ads, reading_error = self.daq.ddr.data_to_names(chan_data)
+            adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
             if reading_error:
                 print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
 

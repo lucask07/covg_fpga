@@ -524,7 +524,7 @@ if RS_COMP_TESTS:
         adc_data, timestamp, dac_data, ads_data_tmp, ads_seq, read_errors = ddr.data_to_names(chan_data)
 
         # Shorter data sequence, just one of the repeats
-        # adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data_one_repeat)
+        # adc_data, timestamp, dac_data, ads, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data_one_repeat)
 
         t = np.arange(0,len(adc_data[0]))*1/FS
 

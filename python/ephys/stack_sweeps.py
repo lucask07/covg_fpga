@@ -18,7 +18,8 @@ file_name = '20220701-114930.h5'
 data_dir = 'C:/Users/shog4177\Desktop/h5 file/new h5 abe'   # Path to the h5 file
 
 _, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
-adc_data, timestamp, dac_data, ads, reading_error = ddr.data_to_names(chan_data)
+adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = ddr.data_to_names(
+    chan_data)
 
 print(len(adc_data[0]))
 print(len(dac_data[1]))
