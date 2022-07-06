@@ -39,13 +39,13 @@
     <Option Name="WTVcsLaunchSim" Val="0"/>
     <Option Name="WTRivieraLaunchSim" Val="0"/>
     <Option Name="WTActivehdlLaunchSim" Val="0"/>
-    <Option Name="WTXSimExportSim" Val="70"/>
-    <Option Name="WTModelSimExportSim" Val="66"/>
-    <Option Name="WTQuestaExportSim" Val="66"/>
-    <Option Name="WTIesExportSim" Val="66"/>
-    <Option Name="WTVcsExportSim" Val="66"/>
-    <Option Name="WTRivieraExportSim" Val="66"/>
-    <Option Name="WTActivehdlExportSim" Val="66"/>
+    <Option Name="WTXSimExportSim" Val="75"/>
+    <Option Name="WTModelSimExportSim" Val="71"/>
+    <Option Name="WTQuestaExportSim" Val="71"/>
+    <Option Name="WTIesExportSim" Val="71"/>
+    <Option Name="WTVcsExportSim" Val="71"/>
+    <Option Name="WTRivieraExportSim" Val="71"/>
+    <Option Name="WTActivehdlExportSim" Val="71"/>
     <Option Name="GenerateIPUpgradeLog" Val="TRUE"/>
     <Option Name="XSimRadix" Val="hex"/>
     <Option Name="XSimTimeUnit" Val="ns"/>
@@ -440,6 +440,20 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PSRCDIR/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PSRCDIR/sources_1/ip/fifo_w256_256_r128_512/fifo_w256_256_r128_512.xci">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <Config>
         <Option Name="DesignMode" Val="RTL"/>
         <Option Name="TopModule" Val="top_level_module"/>
@@ -518,19 +532,6 @@
         <Option Name="xsim.simulate.runtime" Val="142.8us"/>
       </Config>
     </FileSet>
-    <FileSet Name="fifo_w32_1024_r256_128" Type="BlockSrcs" RelSrcDir="$PSRCDIR/fifo_w32_1024_r256_128">
-      <File Path="$PSRCDIR/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xci">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <Config>
-        <Option Name="TopModule" Val="fifo_w32_1024_r256_128"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
     <FileSet Name="fifo_i2c_pipe" Type="BlockSrcs" RelSrcDir="$PSRCDIR/fifo_i2c_pipe">
       <File Path="$PSRCDIR/sources_1/ip/fifo_i2c_pipe/fifo_i2c_pipe.xci">
         <FileInfo>
@@ -554,19 +555,6 @@
       </File>
       <Config>
         <Option Name="TopModule" Val="fifo_ADS8686"/>
-        <Option Name="UseBlackboxStub" Val="1"/>
-      </Config>
-    </FileSet>
-    <FileSet Name="fifo_w256_256_r128_512" Type="BlockSrcs" RelSrcDir="$PSRCDIR/fifo_w256_256_r128_512">
-      <File Path="$PSRCDIR/sources_1/ip/fifo_w256_256_r128_512/fifo_w256_256_r128_512.xci">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <Config>
-        <Option Name="TopModule" Val="fifo_w256_256_r128_512"/>
         <Option Name="UseBlackboxStub" Val="1"/>
       </Config>
     </FileSet>
@@ -631,17 +619,13 @@
   <Runs Version="1" Minor="10">
     <Run Id="synth_1" Type="Ft3:Synth" SrcSet="sources_1" Part="xc7a75tfgg484-1" ConstrsSet="constrs_1" Description="Vivado Synthesis Defaults" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-    </Run>
-    <Run Id="fifo_w32_1024_r256_128_synth_1" Type="Ft3:Synth" SrcSet="fifo_w32_1024_r256_128" Part="xc7a75tfgg484-1" ConstrsSet="fifo_w32_1024_r256_128" Description="Vivado Synthesis Defaults" WriteIncrSynthDcp="false" Dir="$PRUNDIR/fifo_w32_1024_r256_128_synth_1" IncludeInArchive="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
-        <Step Id="synth_design"/>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018">
+          <Desc>Vivado Synthesis Defaults</Desc>
+        </StratHandle>
+        <Step Id="synth_design">
+          <Option Id="RepFanoutThreshold">2000</Option>
+          <Option Id="ReTiming">1</Option>
+        </Step>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
@@ -657,15 +641,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
     <Run Id="fifo_ADS8686_synth_1" Type="Ft3:Synth" SrcSet="fifo_ADS8686" Part="xc7a75tfgg484-1" ConstrsSet="fifo_ADS8686" Description="Vivado Synthesis Defaults" WriteIncrSynthDcp="false" Dir="$PRUNDIR/fifo_ADS8686_synth_1" IncludeInArchive="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
-        <Step Id="synth_design"/>
-      </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
-      <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-    </Run>
-    <Run Id="fifo_w256_256_r128_512_synth_1" Type="Ft3:Synth" SrcSet="fifo_w256_256_r128_512" Part="xc7a75tfgg484-1" ConstrsSet="fifo_w256_256_r128_512" Description="Vivado Synthesis Defaults" WriteIncrSynthDcp="false" Dir="$PRUNDIR/fifo_w256_256_r128_512_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
         <Step Id="synth_design"/>
@@ -694,42 +669,28 @@
     </Run>
     <Run Id="mult_gen_1_synth_1" Type="Ft3:Synth" SrcSet="mult_gen_1" Part="xc7a75tfgg484-1" ConstrsSet="mult_gen_1" Description="Vivado Synthesis Defaults" WriteIncrSynthDcp="false" Dir="$PRUNDIR/mult_gen_1_synth_1" IncludeInArchive="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018">
-          <Desc>Vivado Synthesis Defaults</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2018"/>
         <Step Id="synth_design"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2018"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
-    <Run Id="fifo_w32_1024_r256_128_impl_1" Type="Ft2:EntireDesign" Part="xc7a75tfgg484-1" ConstrsSet="fifo_w32_1024_r256_128" Description="Default settings for Implementation." WriteIncrSynthDcp="false" SynthRun="fifo_w32_1024_r256_128_synth_1" IncludeInArchive="false" GenFullBitstream="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2018"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-    </Run>
     <Run Id="impl_1" Type="Ft2:EntireDesign" Part="xc7a75tfgg484-1" ConstrsSet="constrs_1" Description="Default settings for Implementation." WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/impl_1" SynthRun="synth_1" IncludeInArchive="true" GenFullBitstream="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018"/>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018">
+          <Desc>Default settings for Implementation.</Desc>
+        </StratHandle>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
         <Step Id="place_design"/>
         <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design" EnableStepBool="1"/>
+        <Step Id="phys_opt_design" EnableStepBool="1">
+          <Option Id="Directive">2</Option>
+        </Step>
         <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
+        <Step Id="post_route_phys_opt_design" EnableStepBool="1"/>
         <Step Id="write_bitstream"/>
       </Strategy>
       <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
@@ -753,22 +714,6 @@
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
     </Run>
     <Run Id="fifo_ADS8686_impl_1" Type="Ft2:EntireDesign" Part="xc7a75tfgg484-1" ConstrsSet="fifo_ADS8686" Description="Default settings for Implementation." WriteIncrSynthDcp="false" SynthRun="fifo_ADS8686_synth_1" IncludeInArchive="false" GenFullBitstream="true">
-      <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018"/>
-        <Step Id="init_design"/>
-        <Step Id="opt_design"/>
-        <Step Id="power_opt_design"/>
-        <Step Id="place_design"/>
-        <Step Id="post_place_power_opt_design"/>
-        <Step Id="phys_opt_design"/>
-        <Step Id="route_design"/>
-        <Step Id="post_route_phys_opt_design"/>
-        <Step Id="write_bitstream"/>
-      </Strategy>
-      <ReportStrategy Name="Vivado Implementation Default Reports" Flow="Vivado Implementation 2018"/>
-      <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
-    </Run>
-    <Run Id="fifo_w256_256_r128_512_impl_1" Type="Ft2:EntireDesign" Part="xc7a75tfgg484-1" ConstrsSet="fifo_w256_256_r128_512" Description="Default settings for Implementation." WriteIncrSynthDcp="false" SynthRun="fifo_w256_256_r128_512_synth_1" IncludeInArchive="false" GenFullBitstream="true">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018"/>
         <Step Id="init_design"/>
@@ -818,9 +763,7 @@
     </Run>
     <Run Id="mult_gen_1_impl_1" Type="Ft2:EntireDesign" Part="xc7a75tfgg484-1" ConstrsSet="mult_gen_1" Description="Default settings for Implementation." WriteIncrSynthDcp="false" SynthRun="mult_gen_1_synth_1" IncludeInArchive="false" GenFullBitstream="true">
       <Strategy Version="1" Minor="2">
-        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018">
-          <Desc>Default settings for Implementation.</Desc>
-        </StratHandle>
+        <StratHandle Name="Vivado Implementation Defaults" Flow="Vivado Implementation 2018"/>
         <Step Id="init_design"/>
         <Step Id="opt_design"/>
         <Step Id="power_opt_design"/>
