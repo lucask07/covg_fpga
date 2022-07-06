@@ -548,7 +548,7 @@ class Experiment:
         # to get the deswizzled data of all repeats need to read the file
         _, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
 
-        adc_data, timestamp, dac_data, ads, reading_error = self.daq.ddr.data_to_names(chan_data)
+        adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
         t = timestamp * 5e-6 # 5e-9 * 1000 for milliseconds
         print(f'Timestamp spans {t[-1] - t[0]} [ms]')
 
@@ -640,7 +640,7 @@ class Experiment:
             if sweep_num == 0:
                 t = np.arange(cutoff_len * spacing, step=spacing)
 
-            adc_data, timestamp, dac_data, ads, reading_error = self.daq.ddr.data_to_names(chan_data)
+            adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
             if reading_error:
                 print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
 
