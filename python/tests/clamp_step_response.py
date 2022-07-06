@@ -251,6 +251,23 @@ ads.set_fpga_mode()
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
+# configure General Purpose DACs, ensure not as a current source
+# DAC_gp[1] channel 0 is connected to bottom plate of Membrane capacitor
+for i in range(2):
+    daq.set_isel(port=i+1, channels=None)
+    # Reset the Wishbone controller and SPI core
+    daq.DAC_gp[i].set_ctrl_reg(daq.DAC_gp[i].master_config)
+    daq.DAC_gp[i].set_spi_sclk_divide()
+    daq.DAC_gp[i].filter_select(operation="clear")
+    daq.DAC_gp[i].set_data_mux("host")
+    daq.DAC_gp[i].set_config_bin(0x00)
+    print('Outputs powered on')
+
+#DAC2_CAL0, DAC2_CAL1 
+# daq.DAC_gp[1].write_voltage(1.457, 0) 
+daq.DAC_gp[1].write_voltage(0.635, 0) # 50 mV offset 
+daq.DAC_gp[1].set_gain(2, outputs=[0,1,2,3,4,5,6,7])
+
 # fast DAC channels setup
 for i in range(6):
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
@@ -392,6 +409,7 @@ if 1:
                 if i == 0:
                     fig.legend(loc='lower right')
 
+rs = 100
 print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
 # Configure for better oscilloscope viewing
 for dc_num in DC_NUMS:
@@ -400,12 +418,12 @@ for dc_num in DC_NUMS:
         DAC_SEL="drive_CAL2",
         CCOMP=47,
         RF1=2.1,  # feedback circuit
-        ADG_RES=100,
+        ADG_RES=rs,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
         P1_CAL_CTRL=0, 
         P2_E_CTRL=0,
-        P2_CAL_CTRL=1, # close just for this demonstration of the ADS CAL_ADC
+        P2_CAL_CTRL=0, # close just for this demonstration of the ADS CAL_ADC
         gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
