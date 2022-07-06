@@ -239,7 +239,7 @@ ads.setup()
 ads.set_range(5)
 ads.set_lpf(376)
 # 4B - clear sine wave set by the Slow DAC
-ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2','2')]
+ads_sequencer_setup = [('0', '0'), ('1', '1')]
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge(clk_div=200) 
 ads.set_fpga_mode()
@@ -266,8 +266,10 @@ for i in range(2):
 
 #DAC2_CAL0, DAC2_CAL1 
 # daq.DAC_gp[1].write_voltage(1.457, 0) 
-daq.DAC_gp[1].write_voltage(0.6265, 0) 
+daq.DAC_gp[1].write_voltage(0.635, 0) # 50 mV offset 
 daq.DAC_gp[1].set_gain(2, outputs=[0,1,2,3,4,5,6,7])
+
+res = 100 # in kOhm
 
 print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
 # Configure for better oscilloscope viewing
@@ -275,14 +277,14 @@ for dc_num in DC_NUMS:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG2",
         #ADC_SEL="CAL_SIG12,
-        DAC_SEL="drive_CAL2",
+        DAC_SEL="noDrive",
         #DAC_SEL="gnd_Both",
         CCOMP=47,
         RF1=2.1,  # feedback circuit
         ADG_RES=res,
         PClamp_CTRL=0, # keep open (not passive clamp)
         P1_E_CTRL=0, #open 
-        P1_CAL_CTRL=1, #close for cal
+        P1_CAL_CTRL=0, #close for cal
         P2_E_CTRL=1, #open
         P2_CAL_CTRL=1, #close for cal
         gain=1,  # instrumentation amplifier
@@ -294,11 +296,11 @@ for dc_num in DC_NUMS:
         addr_pins_2=0b000,
     )
 
-
-
+# adjust with 
+dc_num = 0
+clamps[dc_num].DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
 
 ###################################### 
-
 
 # fast DAC channels setup
 for i in range(6):
@@ -310,7 +312,6 @@ for i in range(6):
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
-
 
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
@@ -324,92 +325,14 @@ ad7961s[0].reset_trig() # this IS required because it resets the timing generato
 file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
-# --- Write to the DDR ---
-# [0:13]    FDAC_1 [14:15] ADDR SDAC_1
-# [16:29]   FDAC_2 [31:32] ADDR SDAC_1 and SDAC_2
-# [32:45]   FDAC_3 [46:47] ADDR SDAC_2
-# [48:61]   FDAC_4 [62:63] 0's
-# [64:77]   FDAC_5 [78:79] 0's
-# [80:93]   FDAC_6 [94:95] 0's
-# [96:111]  SDAC_1
-# [112:127] SDAC_2
-
-sdac_1_out_chan = 0
-sdac_2_out_chan = 0  # Do not care
-fdac_amp_volt = 1
-sdac_amp_volt = 1
-target_freq = 1e3
-
-# TODO: figure out what the voltage range should be for fdac, 3.3 is just a guess
-fdac_amp_code = from_voltage(voltage=fdac_amp_volt, num_bits=14, voltage_range=3.3, with_negatives=False)
-sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
-
-# Data for the 6 AD5453 "Fast DACs"
-fdac_sine, fdac_freq = ddr.make_sine_wave(amplitude=0, frequency=target_freq)
-
-# Data for the 2 DAC80508 "Slow DACs"
-dac80508_offset = 0x8000
-
-WAVE='SINE'
-
-if WAVE=='SINE':
-    sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=1e3, offset=dac80508_offset)
-elif WAVE=='SQ':
-    sdac_sine = ddr.make_step(low=dac80508_offset-0x1000,  high=dac80508_offset+0x1000, length = int(2.5e6/10e3))
-
-# Clear channel bits
-fdac_sine = np.bitwise_and(fdac_sine, 0x3fff)
-
-# Load data into DDR
-# Set channel bits
-ddr.data_arrays[0] = np.bitwise_or(fdac_sine, (sdac_1_out_chan & 0b110) << 13)
-ddr.data_arrays[1] = np.bitwise_or(fdac_sine, (sdac_1_out_chan & 0b001) << 14)
-ddr.data_arrays[2] = np.bitwise_or(fdac_sine, (sdac_2_out_chan & 0b110) << 13)
-ddr.data_arrays[3] = np.bitwise_or(fdac_sine, (sdac_2_out_chan & 0b001) << 14)
-for i in range(2):
-    ddr.data_arrays[i + 4] = fdac_sine
-for i in range(2):
-    ddr.data_arrays[i + 6] = sdac_sine
-
-daq.set_isel(port=1, channels=None)
-daq.set_isel(port=2, channels=None)
-
-res = 100 # in kOhm
-
-print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
-# Configure for better oscilloscope viewing
-for dc_num in DC_NUMS:
-    log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG2",
-        #ADC_SEL="CAL_SIG12,
-        DAC_SEL="drive_CAL2",
-        #DAC_SEL="gnd_Both",
-        CCOMP=47,
-        RF1=2.1,  # feedback circuit
-        ADG_RES=res,
-        PClamp_CTRL=0, # keep open (not passive clamp)
-        P1_E_CTRL=0, #open 
-        P1_CAL_CTRL=1, #close for cal
-        P2_E_CTRL=1, #open
-        P2_CAL_CTRL=1, #close for cal
-        gain=1,  # instrumentation amplifier
-        FDBK=1,
-        mode="voltage",
-        EN_ipump=0,
-        RF_1_Out=1,
-        addr_pins_1=0b110,
-        addr_pins_2=0b000,
-    )
-
-# write channels to the DDR
+# write channels to the DDR -- all empty 
 ddr.write_setup()
 # clear read, set write, etc. handled within write_channels
 block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
 ddr.reset_mig_interface()
 ddr.write_finish()
 
-
-for i in range(1):  # loop to allow for ensuring that the ADS data stays consistent
+def read_data(PLT_CURRENT=False):
     ddr.repeat_setup()
     # Get data
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
@@ -453,22 +376,24 @@ for i in range(1):  # loop to allow for ensuring that the ADS data stays consist
     ax[1].plot(tsub * 1e6, y, marker='.', color='g')
     ax[1].set_ylabel('AMP_OUT')
     ax[1].set_xlabel('t [$\mu$s]')
+    amp_out_mean = np.mean(y)
+    print(f'Amp out average {np.mean(y)}')
+
+    # fast ADC. AD7961
+    ch = 0
+    # Store voltage in list; plot
+    y = to_voltage(adc_data[ch], num_bits=16, voltage_range=2**16, use_twos_comp=True)
+    lbl = f'Ch{ch}'
+
+    if PLT_CURRENT:
+        fig,ax=plt.subplots()
+        ax.plot(t*1e6, y, marker = '+', label = lbl)
+        ax.legend()
+        ax.set_title('Fast ADC data')
+        ax.set_xlabel('s [us]')
+        ax.set_ylabel('ADC codes')
+
+    print(f'Average current {np.mean(y)}')
 
 
-    fig, ax = plt.subplots()
-    # Time in seconds
-    t = np.arange(0, len(adc_data[0]))*1/FS
-
-    tsub = t[::(5*len(ads_sequencer_setup))]
-    y = ads_separate_data['A'][0]
-    tsub = tsub[0:len(y)]
-    ax.plot(tsub * 1e6, y, marker='.', color='r') 
-    ax.set_ylabel('CAL_ADC')
-    ax.set_xlabel('t [$\mu$s]')
-
-    tsub = t[::(5*len(ads_sequencer_setup))]
-    y = ads_separate_data['A'][1] / (1+2.1/3.1)
-    tsub=tsub[0:len(y)]
-    ax.plot(tsub * 1e6, y, marker='.', color='g')
-    ax.set_ylabel('AMP_OUT')
-    ax.set_xlabel('t [$\mu$s]')
+    return amp_out_mean
