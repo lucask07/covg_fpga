@@ -146,7 +146,7 @@ def run_test(repeat=False, num_repeats=8, blk_multiples=40, PLT=False, KEEP_DAC_
     _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
 
     # Long data sequence read back entire file 
-    adc_data, timestamp, dac_data, ads, reading_error = ddr.data_to_names(chan_data)
+    adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
 
     print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
     if reading_error:
