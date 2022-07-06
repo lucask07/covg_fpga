@@ -20,8 +20,7 @@ file_name = '20220630-155747.h5'
 data_dir = 'C:/Users/shog4177\Desktop/h5 file/'   # Path to the h5 file
 
 _, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
-adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = ddr.data_to_names(
-    chan_data)
+adc_data, timestamp, dac_data, ads, reading_error = ddr.data_to_names(chan_data)
 
 print(len(adc_data[0]))
 print(len(dac_data[1]))
@@ -60,16 +59,24 @@ sweep_pos = sweep_length
 xOffset = 0
 incrementalColumn = 0
 ATFfile = np.array([])
+# Dac_ADC_DF = []
+# df2 = pd.DataFrame(Dac_ADC_DF)
+# df2.insert(0, column = "Trace #1 (μA)", value = current_data_reduced)
+# df2.insert(1, column= "Trace #1 (vm)", value = Cmd_voltage_data)
+# df2.to_csv("Simple.csv", index = False)
 
 for i in range(len(protocol.sweeps)):
     #Plot time vs current in sweep length range
     sweep = current_data[previousSweep:sweep_pos]
     ATFFile = np.append(ATFfile, sweep)
+    Cmd_Sweep = Cmd_voltage_data[previousSweep:sweep_pos]
     xAxis = _[previousSweep:sweep_pos]
     plt.plot(xAxis + xOffset, sweep)
     ##increment upper and lower sweep bounds by sweep length
-    ## offset the next graph by sweep length
+    ## offset the next graph by sweep length (sweeplength = _[35000] in this example)
+    #print ("Sweep length " + str(sweep_pos))
     sweep_pos += sweep_length
+    #print ("previous sweep " + str(previousSweep))
     previousSweep += sweep_length
     xOffset -= _[sweep_length]
     print("Iavg for sweep " + str(i + 1) + " is " + str(np.average(current_data[initialBaseline:incrementalBaseline])))
@@ -78,8 +85,14 @@ for i in range(len(protocol.sweeps)):
     #35000 extrapolated from 0.007 offset to set sweep. 65000 from 35000+incrementalBaseline(30000)
     initialBaseline += 35000
     incrementalBaseline += 65000
+    #df.insert(incrementalColumn, column = "Trace #" + str(incrementalColumn + 1) + " (μA)", value  = sweep)
+    #df.insert(incrementalColumn, column = "Trace #" + str(incrementalColumn + 1) + " (vm)", value = Cmd_Sweep)
     incrementalColumn += 1
 
+#df.insert(0, column = "Time (ms)", value = xAxis)
+
+print(ATFfile)
+#atf.write(out_file='copy.atf', out_atf=current_data)
 #df.to_csv("Testfile.csv", index = False)
 
 print(len(Voltage_data_reduced))
@@ -90,6 +103,9 @@ plt.xlim(0, 0.007)
 fig, (ax1, ax2)  = plt.subplots(2, sharex = 'col', sharey=False)
 ax1.plot(current_data_reduced)
 ax2.plot(Cmd_voltage_data)
+
+
+#[0::2]
 plt.show()
 
 # Use current_data and sweep_length to stack the sweeps on top of one another in the plot
