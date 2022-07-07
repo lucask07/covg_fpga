@@ -396,11 +396,12 @@ for ch in [0,1]:
     for i_inj in currents_to_inj:
 
         # Store voltage in list; plot
-        y = to_voltage(dc_data[ch][i_inj], num_bits=16, voltage_range=2**16, use_twos_comp=True)
+        y = to_voltage(dc_data[ch][i_inj], num_bits=16, voltage_range=4.096, use_twos_comp=True)
         y_filt = butter_lowpass_filter(y, 10e3, FS, order=5)
+        # y_filt = np.array(y)
         t = np.arange(0,len(y_filt))*1/FS
         lbl = f'{i_inj} [nA]'
-        ax[0].plot(t*1e6, y_filt/rs, marker = '+', label = lbl)
+        ax[0].plot(t*1e6, y_filt/rs*1e3*(1500+120)/499, marker = '+', label = lbl)
 
         # AMP OUT : observing (buffered/amplified) electrode P1 -- represents estimate of Vmembrane
         if ch == 0:
