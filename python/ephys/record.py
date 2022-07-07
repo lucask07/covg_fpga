@@ -10,14 +10,14 @@ protocol = Protocol.create_from_csv(filepath='protocol.csv', num_sweeps=5)
 plt.show()
 
 # Run experiment
-clamp_nums = 0
+clamp_nums = [0, 1]
 experiment = Experiment(protocol)
 experiment.setup()
 
 cap = 47
 fb_res = 2.1
 res = 33
-for clamp_num in [0, 1]:
+for clamp_num in clamp_nums:
     log_info, config_dict = experiment.clamps[clamp_num].configure_clamp(
         ADC_SEL="CAL_SIG1",
         DAC_SEL="drive_CAL2",
@@ -38,5 +38,5 @@ for clamp_num in [0, 1]:
         addr_pins_2=0b000,
     )
 
-experiment.record(clamp_nums)
+experiment.record(clamp_num=clamp_nums, inject_current=True, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1)
 experiment.close()

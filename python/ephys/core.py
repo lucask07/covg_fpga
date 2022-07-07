@@ -458,15 +458,31 @@ class Experiment:
         pwr_off([pwr for pwr in self.dc_pwr if pwr is not None])
         self.fpga.xem.Close()
 
-    def write_sequence(self, clamp_num):
+    def write_sequence(self, clamp_num, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
         """Write the Sequence for this Experiment. 
         
-        Write to the CMD channel of the specified Clamp board.
+        Write to the CMD channel of the specified Clamp board with the option
+        to write a corresponding injected current to pins 16, 18 of J11 on the
+        DAQ board.
         
         Parameters
         ----------
         clamp_num : int or List[int]
             Which Clamp to write to (0, 1, 2, or 3).
+        inject_current : bool
+            Whether to include a corresponding injected current.
+        low_scaling_factor : float
+            The scaling factor (uA/mV) for current when the CMD voltage is
+            less than the cutoff.
+            current = voltage * low_scaling_factor  * 1e3.
+        cutoff : float
+            The voltage in millivolts at which to switch from the
+            low_scaling_factor to the high_scaling_factor for the injected
+            current.
+        high_scaling_factor : float
+            The scaling factor (uA/mV) for current when the CMD voltage is
+            greater than or equal to the cutoff.
+            current = voltage * low_scaling_factor  * 1e3.
 
         Returns
         -------
@@ -493,13 +509,23 @@ class Experiment:
             # Multiply data by 1e-3 because it is given in mV, need in V
             # Pad with zeros to make correct size
             cmd_signal = sequence_data
-            cmd_signal = np.pad(cmd_signal, (0, target_len - len(cmd_signal)), 'constant')
+            cmd_signal = np.pad(cmd_signal, (0, target_len - len(cmd_signal)), 'constant', constant_values=0)
             cmd_signal = [float(x) for x in cmd_signal]
             # TODO: determine voltage_range for AD5453
             cmd_signal = from_voltage(voltage=cmd_signal, num_bits=14, voltage_range=5, with_negatives=True)
             cc_signal = np.ones(len(cmd_signal)) * dac_offset
             self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
             self.daq.ddr.data_arrays[cc_ch] = cc_signal
+
+        # Create injected current data
+        if inject_current:
+            # sequence_data in V, cutoff in mV, scaling factors in uA/mv, current needs to be in nA
+            current = np.where(
+                sequence_data < cutoff * 1e-3,
+                sequence_data * 1e3 * low_scaling_factor * 1e3,
+                sequence_data * 1e3 * high_scaling_factor * 1e3
+            )
+            self.inject_current(current=current, write_ddr=False)
 
         # Write channels to the DDR
         self.daq.ddr.write_setup()
@@ -508,6 +534,70 @@ class Experiment:
         self.daq.ddr.write_finish()
 
         return sequence_len
+
+    def inject_current(self, current, write_ddr=False):
+        """Write current data to a DAC80508 controlling a current pump.
+
+        This function expects that the Experiment has already been setup with
+        Experiment.setup(). The current will be written to DAC2_CAL0 and
+        DAC2_CAL1 (Pins 16 and 18 on J11 on the DAQ board).
+        
+        Parameters
+        ----------
+        current : np.ndarray
+            The current data in nanoamps (nA).
+        write_ddr : bool
+            Whether to write to the DDR after creating the data. If False, the
+            data will still be in the ddr.data_arrays variable and will be
+            written next time the DDR is written.
+        """
+
+        na_per_lsb = 796.6/2**15   # nA/LSB scaling factor for current to binary
+        offset = 0x8000
+        sdac_1_out_chan = 7  # Do not care for this experiment -- able to connect DAC1_OUT7 to the scope. Have voltage mirror current
+        sdac_2_out_chan = 0  # Howland current source -- connecting to DAC2_CAL0
+
+        for i in range(2):
+            self.daq.set_isel(port=i+1, channels=None)
+            # Reset the Wishbone controller and SPI core
+            self.daq.DAC_gp[i].set_ctrl_reg(self.daq.DAC_gp[i].master_config)
+            self.daq.DAC_gp[i].set_spi_sclk_divide()
+            self.daq.DAC_gp[i].filter_select(operation="clear")
+            self.daq.DAC_gp[i].set_data_mux("host")
+            self.daq.DAC_gp[i].set_config_bin(0x00)
+            print('Outputs powered on')
+
+        # Use DAC2_CAL0 as a current source driven by the DDR
+        # DAC2_CAL1 is available as a repeat of the same current.
+        self.daq.set_isel(port=2, channels=[0, 1])
+        # -3.5 V to 3.5 V out from the bipolar amplifier with gain of x1.
+        # Howland current pump gain is Vin*1/4.7e6
+        self.daq.DAC_gp[1].set_gain(1, outputs=[0, 1])
+
+        self.daq.DAC_gp[0].set_data_mux("DDR")
+        self.daq.DAC_gp[1].set_data_mux("DDR")
+
+        # Clear channel bits
+        for i in range(4):
+            self.daq.ddr.data_arrays[i] = np.bitwise_and(ddr.data_arrays[i], 0x3fff)
+        # Set channel bits for the General purpose DAC
+        self.daq.ddr.data_arrays[0] = np.bitwise_or(self.daq.ddr.data_arrays[0], (sdac_1_out_chan & 0b110) << 13)
+        self.daq.ddr.data_arrays[1] = np.bitwise_or(self.daq.ddr.data_arrays[1], (sdac_1_out_chan & 0b001) << 14)
+        self.daq.ddr.data_arrays[2] = np.bitwise_or(self.daq.ddr.data_arrays[2], (sdac_2_out_chan & 0b110) << 13)
+        self.daq.ddr.data_arrays[3] = np.bitwise_or(self.daq.ddr.data_arrays[3], (sdac_2_out_chan & 0b001) << 14)
+
+        # Set current data with offset
+        target_len = len(self.daq.ddr.data_arrays[6])
+        current_data = current // na_per_lsb + offset
+        self.daq.ddr.data_arrays[6] = np.pad(current_data, (0, target_len - len(current_data)), mode='constant', constant_values=offset)
+        self.daq.ddr.data_arrays[7] = self.daq.ddr.data_arrays[6]
+
+        if write_ddr:
+            # Write channels to the DDR
+            self.daq.ddr.write_setup()
+            block_pipe_return, speed_MBs = self.daq.ddr.write_channels(set_ddr_read=False)
+            self.daq.ddr.reset_mig_interface()
+            self.daq.ddr.write_finish()
 
     def read_response(self, clamp_num):
         """Return the incoming data from the Daq board.
@@ -559,16 +649,32 @@ class Experiment:
 
         return t, data
 
-    def record(self, clamp_num):
+    def record(self, clamp_num, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
         """Send out Sequence and display updating graph.
         
         We read back the data by Sweep so we can update the graph in pieces,
-        with each new Sweep being overlaid in a new color.
+        with each new Sweep being overlaid in a new color. We have the option
+        to send out an injected current on pins 16, 18 of J11 on the DAQ board
+        as well.
 
         Parameters
         ----------
         clamp_num : int or List[int]
             Which Clamp to write to (0, 1, 2, or 3).
+        inject_current : bool
+            Whether to include a corresponding injected current.
+        low_scaling_factor : float
+            The scaling factor (uA/mV) for current when the CMD voltage is
+            less than the cutoff.
+            current = voltage * low_scaling_factor  * 1e3.
+        cutoff : float
+            The voltage in millivolts at which to switch from the
+            low_scaling_factor to the high_scaling_factor for the injected
+            current.
+        high_scaling_factor : float
+            The scaling factor (uA/mV) for current when the CMD voltage is
+            greater than or equal to the cutoff.
+            current = voltage * low_scaling_factor  * 1e3.
         
         Returns
         -------
@@ -584,7 +690,7 @@ class Experiment:
             raise TypeError(
                 'write_sequence parameter clamp_num must be int or list of ints.')
 
-        sequence_length = self.write_sequence(clamp_nums)
+        sequence_length = self.write_sequence(clamp_num=clamp_nums, inject_current=inject_current, low_scaling_factor=low_scaling_factor, cutoff=cutoff, high_scaling_factor=high_scaling_factor)
 
         # Split Sequence into Sweeps. Write full sequence but read each Sweep individually
         sweeps = np.concatenate([p.sweeps for p in self.sequence.protocols])
@@ -616,14 +722,10 @@ class Experiment:
         leftover_data = [np.array([]) for i in range(4)]
         for sweep_num in range(len(sweeps)):
             sweep = sweeps[sweep_num]
-            print('SWEEP LEN:', len(sweep))
-            print('DURATION:', sweep.duration())
-            # blk_multiples = 40
-            # num_repeats = np.ceil(len(sweep) * 2 / (int(self.daq.ddr.parameters["BLOCK_SIZE"] * blk_multiples / (
-            #     self.daq.ddr.parameters['adc_channels']*2)) * 2/1024) / 1000)
-            blk_multiples = 1
             # Only need len of leftover_data from one clamp board's data, so we just take the first
-            num_repeats = np.ceil((len(sweep) - len(leftover_data[clamp_nums[0]])) / 64)
+            blk_multiples = 40
+            num_repeats = np.ceil(len(sweep) / 64 / blk_multiples)
+            # num_repeats = np.ceil((len(sweep) - len(leftover_data[clamp_nums[0]])) / 64 / blk_multiples)
             # Get data
             # TODO: determine num_repeats to read in exactly one Sweep given that Sweep's length
             # num_repeats = np.ceil(sweep.duration() / 8.191 * 8)
@@ -650,10 +752,9 @@ class Experiment:
                 # Need leftover_data to keep track of any data not part of the current sweep that came with the last read of data.
                 # That leftover_data contains data for the next sweep, so we keep it around.
                 combined_data = np.concatenate([leftover_data[clamp_num], adc_data[clamp_num]])
+                leftover_data[clamp_num] = combined_data[cutoff_len:]
                 # Multiply by 1e3 to get Voltage data in millivolts
-                current_data = (np.array(to_voltage(combined_data, num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 33
-                leftover_data[clamp_num] = current_data[cutoff_len:]
-                current_data = current_data[:cutoff_len]
+                current_data = (np.array(to_voltage(combined_data[:cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 33
                 # Because we recalculate the length of data to read each sweep,
                 # the current_data in later sweeps may be a different length
                 # than initial sweeps, so we cut off time with current to
@@ -663,6 +764,7 @@ class Experiment:
             axes[clamp_num // 2][clamp_num % 2].legend()
             fig.canvas.draw()
             fig.canvas.flush_events()
+            print('NUM_REPEATS:', num_repeats)
 
         fig.suptitle('Experiment Recording')
         fig.canvas.draw()
