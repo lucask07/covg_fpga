@@ -28,7 +28,12 @@ for i in range(15):
 sys.path.append(boards_path)
 
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
+from analysis.adc_data import separate_ads_sequence
 from boards import Daq, Clamp
+
+# Constants
+FS = 5e6
+ADS_FS = 1e6
 
 # Variables
 f = FPGA()
@@ -387,6 +392,11 @@ class Experiment:
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
 
+        # TODO: either get this from the first Protocol in the Sequence, or
+        # as an Experiment attribute
+        # Epoch first_level given in mV, convert to V
+        holding_voltage = self.sequence.protocols[0].sweeps[0].epochs[0].first_level * 1e-3
+
         # Set up power supplies
         pwr_setup = "3dual"
         self.dc_pwr = open_rigol_supply(setup=pwr_setup)
@@ -429,12 +439,18 @@ class Experiment:
             self.clamps[dc_num].DAC.write(data=from_voltage(voltage=0.9940/1.6662,
                             num_bits=10, voltage_range=5, with_negatives=False))
 
-        # --------  Enable fast ADCs  --------
-        for chan in [0, 1, 2, 3]:
-            self.daq.ADC[chan].power_up_adc()  # standard sampling
-        time.sleep(0.1)
-        self.daq.ADC[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
-        time.sleep(1)
+
+        # -------- configure the ADS8686
+        ads_voltage_range = 5  # need this for to_voltage later 
+        self.daq.ADC_gp.hw_reset(val=False)
+        self.daq.ADC_gp.set_host_mode()
+        self.daq.ADC_gp.setup()
+        self.daq.ADC_gp.set_range(ads_voltage_range) # TODO: make an self.daq.ADC_gp.current_voltage_range a property of the ADS so we always know it
+        self.daq.ADC_gp.set_lpf(376)
+        ads_sequencer_setup = [('1', '1'), ('2', '2')]
+        codes = self.daq.ADC_gp.setup_sequencer(chan_list=ads_sequencer_setup)
+        self.daq.ADC_gp.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value of 1000 which is 200 ksps)
+        self.daq.ADC_gp.set_fpga_mode()
 
         # TODO: are the TCA pins already configured in Clamp.configure_clamp()?
         self.daq.TCA[0].configure_pins([0, 0])
@@ -445,11 +461,17 @@ class Experiment:
             self.daq.DAC[i].set_ctrl_reg(self.daq.DAC[i].master_config)
             self.daq.DAC[i].set_spi_sclk_divide()
             self.daq.DAC[i].filter_select(operation="clear")
-            self.daq.DAC[i].write(int(0))
+            self.daq.DAC[i].write(from_voltage(voltage=holding_voltage, num_bits=14, voltage_range=5, with_negatives=True))
             self.daq.DAC[i].set_data_mux("DDR")
             self.daq.DAC[i].change_filter_coeff(target="passthru")
             self.daq.DAC[i].write_filter_coeffs()
             self.daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
+
+        # --------  Enable fast ADCs  --------
+        for chan in [0, 1, 2, 3]:
+            self.daq.ADC[chan].power_up_adc()  # standard sampling
+        self.daq.ADC[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
+        self.daq.ADC[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
 
     def close(self):
         """Close opened devices from setup."""
@@ -522,16 +544,20 @@ class Experiment:
             # sequence_data in V, cutoff in mV, scaling factors in uA/mv, current needs to be in nA
             current = np.where(
                 sequence_data < cutoff * 1e-3,
-                sequence_data * 1e3 * low_scaling_factor * 1e3,
-                sequence_data * 1e3 * high_scaling_factor * 1e3
+                sequence_data * 1e3 * low_scaling_factor,
+                sequence_data * 1e3 * high_scaling_factor
             )
             self.inject_current(current=current, write_ddr=False)
 
         # Write channels to the DDR
+        for fdac in self.daq.DAC:
+            fdac.set_data_mux('host')
         self.daq.ddr.write_setup()
         block_pipe_return, speed_MBs = self.daq.ddr.write_channels(set_ddr_read=False)
         self.daq.ddr.reset_mig_interface()
         self.daq.ddr.write_finish()
+        for fdac in self.daq.DAC:
+            fdac.set_data_mux('DDR')
 
         return sequence_len
 
@@ -558,7 +584,7 @@ class Experiment:
         sdac_2_out_chan = 0  # Howland current source -- connecting to DAC2_CAL0
 
         for i in range(2):
-            self.daq.set_isel(port=i+1, channels=None)
+            # self.daq.set_isel(port=i+1, channels=None)
             # Reset the Wishbone controller and SPI core
             self.daq.DAC_gp[i].set_ctrl_reg(self.daq.DAC_gp[i].master_config)
             self.daq.DAC_gp[i].set_spi_sclk_divide()
@@ -631,7 +657,6 @@ class Experiment:
         # Get data
         # num_repeats=8 gets a 8.19000000000051 ms timestamp span. Adjust to get full sequence reading.
         num_repeats = np.ceil(self.sequence.duration() / 8.191 * 8)
-        self.daq.ddr.repeat_setup()
         # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
         chan_data_one_repeat = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
                                             blk_multiples=40)  # blk multiples multiple of 10
@@ -706,40 +731,41 @@ class Experiment:
             os.makedirs(data_dir)
         file_name = time.strftime("%Y%m%d-%H%M%S.h5")
 
-        nrows = 2 if len(clamp_nums) - 2 > 1 else 1    # 1-2 clamps -> 1 row; 3-4 clamps -> 2 rows
-        ncols = 2 if len(clamp_nums) > 1 else 1
+        # Graph membrane current on top row, membrane voltage on bottom row,
+        # each clamp board gets a different column.
+        nrows = 2
+        ncols = len(clamp_nums)
         # squeeze=False to always return a 2d array so our accessing can be generalized for 1-4 clamps being used
         plt.ion()
-        fig, axes = plt.subplots(nrows, ncols, squeeze=False)
+        fig, axes = plt.subplots(nrows, ncols, sharex='all', sharey='row', squeeze=False)
         fig.suptitle('Experiment Recording...')
-        for ax_num in clamp_nums:
-            axes[ax_num // 2][ax_num % 2].set_xlabel('Time [ms]')
-            axes[ax_num // 2][ax_num % 2].set_ylabel('Current [\N{GREEK SMALL LETTER MU}A]')
-            axes[ax_num // 2][ax_num % 2].set_title(f'Clamp {ax_num}')
+        for col in range(ncols):
+            axes[0][col].set_title(f'Clamp {clamp_nums[col]}')
+            # Only label bottom since shared axis
+            axes[1][col].set_xlabel('Time [ms]')
+        # Only label first since shared axis
+        axes[0][0].set_ylabel('Membrane Current [\N{GREEK SMALL LETTER MU}A]')
+        axes[1][0].set_ylabel('Membrane Voltage [mV]')
 
         # 4 possible clamps
-        leftover_data = [np.array([]) for i in range(4)]
+        leftover_adc_data = [np.array([]) for i in range(4)]
+        leftover_ads_data = [np.array([]) for i in range(4)]
         for sweep_num in range(len(sweeps)):
             sweep = sweeps[sweep_num]
-            # Only need len of leftover_data from one clamp board's data, so we just take the first
+            # Only need len of leftover_adc_data from one clamp board's data, so we just take the first
             blk_multiples = 40
             num_repeats = np.ceil(len(sweep) / 64 / blk_multiples)
-            # num_repeats = np.ceil((len(sweep) - len(leftover_data[clamp_nums[0]])) / 64 / blk_multiples)
+            # num_repeats = np.ceil((len(sweep) - len(leftover_adc_data[clamp_nums[0]])) / 64 / blk_multiples)
             # Get data
             # TODO: determine num_repeats to read in exactly one Sweep given that Sweep's length
-            # num_repeats = np.ceil(sweep.duration() / 8.191 * 8)
-            # self.daq.ddr.repeat_setup()
             # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
             chan_data_one_repeat = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
                                                 blk_multiples=blk_multiples)  # blk multiples multiple of 10
 
             # to get the deswizzled data of all repeats need to read the file
             _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
-            cutoff_len = len(sweep) * 2
-            spacing = _t[1] - _t[0]
-            # Only set up time axis once
-            if sweep_num == 0:
-                t = np.arange(cutoff_len * spacing, step=spacing) * 1e3 # _t in seconds, t in milliseconds
+            adc_cutoff_len = len(sweep) * 2
+            ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS))
 
             adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
             if reading_error:
@@ -747,20 +773,43 @@ class Experiment:
 
             for i in range(len(adc_data)):
                 data[i] = np.append(data[i], adc_data[i])
+
+            ############### extract the ADS data ############
+            ads_voltage_range = 5
+            ads_sequencer_setup = [('1', '1'), ('2', '2')]
+            ads_data_v = {}
+            for letter in ['A', 'B']:
+                ads_data_v[letter] = np.array(to_voltage(
+                    ads[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
+
+            total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
+            total_seq_cnt[::2] = ads_seq_cnt[0]
+            total_seq_cnt[1::2] = ads_seq_cnt[1]
+            ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+
             for clamp_num in clamp_nums:
-                # Need leftover_data to keep track of any data not part of the current sweep that came with the last read of data.
-                # That leftover_data contains data for the next sweep, so we keep it around.
-                combined_data = np.concatenate([leftover_data[clamp_num], adc_data[clamp_num]])
-                leftover_data[clamp_num] = combined_data[cutoff_len:]
+                # Need leftover_adc_data to keep track of any data not part of the current sweep that came with the last read of data.
+                # That leftover_adc_data contains data for the next sweep, so we keep it around.
+                combined_adc_data = np.concatenate([leftover_adc_data[clamp_num], adc_data[clamp_num]])
+                leftover_adc_data[clamp_num] = combined_adc_data[adc_cutoff_len:]
+                combined_ads_data = np.concatenate([leftover_ads_data[clamp_num], ads_separate_data['A'][clamp_num + 1]])
+                leftover_ads_data[clamp_num] = combined_ads_data[ads_cutoff_len:]
                 # Multiply by 1e3 to get Voltage data in millivolts
-                current_data = (np.array(to_voltage(combined_data[:cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 3000
+                current_data = (np.array(to_voltage(combined_adc_data[:adc_cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 3000
+                # Create time in milliseconds
+                t = np.arange(0, len(current_data))*1/FS * 1e3
+
+
+                vm = combined_ads_data[:ads_cutoff_len]
+                t_ads = np.arange(len(vm))*1/(ADS_FS / len(ads_sequencer_setup)) * 1e3
                 # Because we recalculate the length of data to read each sweep,
                 # the current_data in later sweeps may be a different length
                 # than initial sweeps, so we cut off time with current to
                 # prevent plotting ValueErrors due to shape differences.
-                axes[clamp_num // 2][clamp_num % 2].plot(t[:len(current_data)], current_data, label=f'Sweep {sweep_num + 1}')
+                axes[0][clamp_nums.index(clamp_num)].plot(t, current_data, label=f'Sweep {sweep_num + 1}')
+                axes[1][clamp_nums.index(clamp_num)].plot(t_ads, vm, label=f'Sweep {sweep_num + 1}')
             # Add legend to last plot
-            axes[clamp_num // 2][clamp_num % 2].legend()
+            axes[1][-1].legend(loc='lower right')
             fig.canvas.draw()
             fig.canvas.flush_events()
 
@@ -778,5 +827,5 @@ class Experiment:
         plt.ioff()
         plt.show()
 
-        t = np.arange(len(data[clamp_nums[0]]) * spacing, step=spacing)
+        t = np.arange(0, len(data[clamp_nums[0]]))*1/FS * 1e3
         return t * 1e3, np.array([to_voltage(data=data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True) for clamp_num in clamp_nums]) * 1e3

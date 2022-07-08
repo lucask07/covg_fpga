@@ -38,15 +38,5 @@ for clamp_num in clamp_nums:
         addr_pins_2=0b000,
     )
 
-t, data = experiment.record(clamp_num=clamp_nums, inject_current=True, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1)
-# experiment.close()
-
-# fig, ax = plt.subplots(2, 2)
-# for clamp_num in clamp_nums:
-#     ax[clamp_num // 2][clamp_num % 2].plot(t, data[clamp_num])
-#     ax[clamp_num // 2][clamp_num % 2].set_title(f'Clamp {clamp_num}')
-# plt.show()
-
-# fig, ax = plt.subplots()
-# ax.plot(experiment.daq.ddr.data_arrays[1])
-# plt.show()
+t, data = experiment.record(clamp_num=clamp_nums, inject_current=True, low_scaling_factor=0, cutoff=-10, high_scaling_factor=10)
+experiment.close()
