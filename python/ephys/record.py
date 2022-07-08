@@ -47,6 +47,6 @@ t, data = experiment.record(clamp_num=clamp_nums, inject_current=True, low_scali
 #     ax[clamp_num // 2][clamp_num % 2].set_title(f'Clamp {clamp_num}')
 # plt.show()
 
-fig, ax = plt.subplots()
-ax.plot(experiment.daq.ddr.data_arrays[1])
-plt.show()
+# fig, ax = plt.subplots()
+# ax.plot(experiment.daq.ddr.data_arrays[1])
+# plt.show()

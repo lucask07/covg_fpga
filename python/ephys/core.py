@@ -512,8 +512,8 @@ class Experiment:
             cmd_signal = np.pad(cmd_signal, (0, target_len - len(cmd_signal)), 'constant', constant_values=0)
             cmd_signal = [float(x) for x in cmd_signal]
             # TODO: determine voltage_range for AD5453
-            cmd_signal = from_voltage(voltage=cmd_signal, num_bits=14, voltage_range=5, with_negatives=True)
-            cc_signal = np.ones(len(cmd_signal)) * dac_offset
+            cmd_signal = np.array(from_voltage(voltage=cmd_signal, num_bits=14, voltage_range=5, with_negatives=True), dtype=np.uint16)
+            cc_signal = np.ones(len(cmd_signal), dtype=np.uint16) * dac_offset
             self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
             self.daq.ddr.data_arrays[cc_ch] = cc_signal
 
@@ -579,7 +579,8 @@ class Experiment:
 
         # Clear channel bits
         for i in range(4):
-            self.daq.ddr.data_arrays[i] = np.bitwise_and(ddr.data_arrays[i], 0x3fff)
+            self.daq.ddr.data_arrays[i] = np.bitwise_and(self.daq.ddr.data_arrays[i], 0x3fff)
+        
         # Set channel bits for the General purpose DAC
         self.daq.ddr.data_arrays[0] = np.bitwise_or(self.daq.ddr.data_arrays[0], (sdac_1_out_chan & 0b110) << 13)
         self.daq.ddr.data_arrays[1] = np.bitwise_or(self.daq.ddr.data_arrays[1], (sdac_1_out_chan & 0b001) << 14)
@@ -694,8 +695,6 @@ class Experiment:
 
         # Split Sequence into Sweeps. Write full sequence but read each Sweep individually
         sweeps = np.concatenate([p.sweeps for p in self.sequence.protocols])
-        # Create time data in milliseconds
-        # t = np.arange(0, sweeps.duration(), 0.2)    # Data points coming out are spaced 200ns
 
         # Raw data from DDR
         data = {}
@@ -740,7 +739,7 @@ class Experiment:
             spacing = _t[1] - _t[0]
             # Only set up time axis once
             if sweep_num == 0:
-                t = np.arange(cutoff_len * spacing, step=spacing)
+                t = np.arange(cutoff_len * spacing, step=spacing) * 1e3 # _t in seconds, t in milliseconds
 
             adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
             if reading_error:
@@ -764,7 +763,6 @@ class Experiment:
             axes[clamp_num // 2][clamp_num % 2].legend()
             fig.canvas.draw()
             fig.canvas.flush_events()
-            print('NUM_REPEATS:', num_repeats)
 
         fig.suptitle('Experiment Recording')
         fig.canvas.draw()
