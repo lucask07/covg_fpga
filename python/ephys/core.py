@@ -754,7 +754,7 @@ class Experiment:
                 combined_data = np.concatenate([leftover_data[clamp_num], adc_data[clamp_num]])
                 leftover_data[clamp_num] = combined_data[cutoff_len:]
                 # Multiply by 1e3 to get Voltage data in millivolts
-                current_data = (np.array(to_voltage(combined_data[:cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 33
+                current_data = (np.array(to_voltage(combined_data[:cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 3000
                 # Because we recalculate the length of data to read each sweep,
                 # the current_data in later sweeps may be a different length
                 # than initial sweeps, so we cut off time with current to
@@ -779,3 +779,6 @@ class Experiment:
         print(f'DDR data saved at {full_data_name}')
         plt.ioff()
         plt.show()
+
+        t = np.arange(len(data[clamp_nums[0]]) * spacing, step=spacing)
+        return t * 1e3, np.array([to_voltage(data=data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True) for clamp_num in clamp_nums]) * 1e3

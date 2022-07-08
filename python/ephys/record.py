@@ -16,7 +16,7 @@ experiment.setup()
 
 cap = 47
 fb_res = 2.1
-res = 33
+res = 3000
 for clamp_num in clamp_nums:
     log_info, config_dict = experiment.clamps[clamp_num].configure_clamp(
         ADC_SEL="CAL_SIG1",
@@ -38,5 +38,15 @@ for clamp_num in clamp_nums:
         addr_pins_2=0b000,
     )
 
-experiment.record(clamp_num=clamp_nums, inject_current=True, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1)
-experiment.close()
+t, data = experiment.record(clamp_num=clamp_nums, inject_current=True, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1)
+# experiment.close()
+
+# fig, ax = plt.subplots(2, 2)
+# for clamp_num in clamp_nums:
+#     ax[clamp_num // 2][clamp_num % 2].plot(t, data[clamp_num])
+#     ax[clamp_num // 2][clamp_num % 2].set_title(f'Clamp {clamp_num}')
+# plt.show()
+
+fig, ax = plt.subplots()
+ax.plot(experiment.daq.ddr.data_arrays[1])
+plt.show()
