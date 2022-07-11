@@ -392,6 +392,8 @@ class Experiment:
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
 
+        dac_offset = 0x2000
+
         # TODO: either get this from the first Protocol in the Sequence, or
         # as an Experiment attribute
         # Epoch first_level given in mV, convert to V
@@ -461,8 +463,8 @@ class Experiment:
             self.daq.DAC[i].set_ctrl_reg(self.daq.DAC[i].master_config)
             self.daq.DAC[i].set_spi_sclk_divide()
             self.daq.DAC[i].filter_select(operation="clear")
-            self.daq.DAC[i].write(from_voltage(voltage=holding_voltage, num_bits=14, voltage_range=5, with_negatives=True))
-            self.daq.DAC[i].set_data_mux("DDR")
+            self.daq.DAC[i].write(from_voltage(voltage=holding_voltage, num_bits=14, voltage_range=5, with_negatives=True) + dac_offset)
+            # self.daq.DAC[i].set_data_mux("DDR")
             self.daq.DAC[i].change_filter_coeff(target="passthru")
             self.daq.DAC[i].write_filter_coeffs()
             self.daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
@@ -534,7 +536,7 @@ class Experiment:
             cmd_signal = np.pad(cmd_signal, (0, target_len - len(cmd_signal)), 'constant', constant_values=0)
             cmd_signal = [float(x) for x in cmd_signal]
             # TODO: determine voltage_range for AD5453
-            cmd_signal = np.array(from_voltage(voltage=cmd_signal, num_bits=14, voltage_range=5, with_negatives=True), dtype=np.uint16)
+            cmd_signal = np.array(from_voltage(voltage=cmd_signal, num_bits=14, voltage_range=5, with_negatives=True), dtype=np.uint16) + dac_offset
             cc_signal = np.ones(len(cmd_signal), dtype=np.uint16) * dac_offset
             self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
             self.daq.ddr.data_arrays[cc_ch] = cc_signal
@@ -550,14 +552,13 @@ class Experiment:
             self.inject_current(current=current, write_ddr=False)
 
         # Write channels to the DDR
-        for fdac in self.daq.DAC:
-            fdac.set_data_mux('host')
         self.daq.ddr.write_setup()
         block_pipe_return, speed_MBs = self.daq.ddr.write_channels(set_ddr_read=False)
+        for i in range(6):
+            self.daq.DAC[i].set_data_mux("DDR")
+        time.sleep(0.2) # Let Vm stabalize
         self.daq.ddr.reset_mig_interface()
         self.daq.ddr.write_finish()
-        for fdac in self.daq.DAC:
-            fdac.set_data_mux('DDR')
 
         return sequence_len
 
@@ -625,6 +626,8 @@ class Experiment:
             block_pipe_return, speed_MBs = self.daq.ddr.write_channels(set_ddr_read=False)
             self.daq.ddr.reset_mig_interface()
             self.daq.ddr.write_finish()
+            for i in range(6):
+                self.daq.DAC[i].set_data_mux("DDR")
 
     def read_response(self, clamp_num):
         """Return the incoming data from the Daq board.
