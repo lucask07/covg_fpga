@@ -392,7 +392,7 @@ class Experiment:
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
 
-        dac_offset = 0x2000
+        dac_offset = 0x1E00
 
         # TODO: either get this from the first Protocol in the Sequence, or
         # as an Experiment attribute
@@ -521,7 +521,7 @@ class Experiment:
         else:
             raise TypeError('write_sequence parameter clamp_num must be int or list of ints.')
 
-        dac_offset = 0x2000
+        dac_offset = 0x1E00
         target_len = len(self.daq.ddr.data_arrays[0])
 
         # Create data
