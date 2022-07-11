@@ -726,7 +726,7 @@ class Experiment:
         # Raw data from DDR
         data = {}
         for i in range(4):  # 4 possible Clamp board data sets
-            data[i] = np.array([])
+            data[i] = np.array([], dtype=int)
 
         data_dir = os.path.join(os.path.expanduser('~'), 'ephys_data')
         if not os.path.exists(data_dir):
@@ -750,7 +750,7 @@ class Experiment:
         axes[1][0].set_ylabel('Membrane Voltage [mV]')
 
         # 4 possible clamps
-        leftover_adc_data = [np.array([]) for i in range(4)]
+        leftover_adc_data = [np.array([], dtype=int) for i in range(4)]
         leftover_ads_data = [np.array([]) for i in range(4)]
         for sweep_num in range(len(sweeps)):
             sweep = sweeps[sweep_num]
@@ -790,7 +790,8 @@ class Experiment:
             for clamp_num in clamp_nums:
                 # Need leftover_adc_data to keep track of any data not part of the current sweep that came with the last read of data.
                 # That leftover_adc_data contains data for the next sweep, so we keep it around.
-                combined_adc_data = np.concatenate([leftover_adc_data[clamp_num], adc_data[clamp_num]])
+                # use dtype=int so to_voltage function works
+                combined_adc_data = np.concatenate([leftover_adc_data[clamp_num], adc_data[clamp_num]], dtype=int)
                 leftover_adc_data[clamp_num] = combined_adc_data[adc_cutoff_len:]
                 combined_ads_data = np.concatenate([leftover_ads_data[clamp_num], ads_separate_data['A'][clamp_num + 1]])
                 leftover_ads_data[clamp_num] = combined_ads_data[ads_cutoff_len:]
@@ -828,4 +829,4 @@ class Experiment:
         plt.show()
 
         t = np.arange(0, len(data[clamp_nums[0]]))*1/FS * 1e3
-        return t * 1e3, np.array([to_voltage(data=data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True) for clamp_num in clamp_nums]) * 1e3
+        return t * 1e3, np.array(to_voltage(data=data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3
