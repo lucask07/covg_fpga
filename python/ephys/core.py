@@ -716,6 +716,8 @@ class Experiment:
             raise TypeError(
                 'write_sequence parameter clamp_num must be int or list of ints.')
 
+        ads_voltage_range = 5
+        ads_sequencer_setup = [('1', '1'), ('2', '2')]
         sequence_length = self.write_sequence(clamp_num=clamp_nums, inject_current=inject_current, low_scaling_factor=low_scaling_factor, cutoff=cutoff, high_scaling_factor=high_scaling_factor)
 
         # Split Sequence into Sweeps. Write full sequence but read each Sweep individually
@@ -765,7 +767,7 @@ class Experiment:
             # to get the deswizzled data of all repeats need to read the file
             _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
             adc_cutoff_len = len(sweep) * 2
-            ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS))
+            ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS) / len(ads_sequencer_setup))
 
             adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
             if reading_error:
@@ -775,8 +777,6 @@ class Experiment:
                 data[i] = np.append(data[i], adc_data[i])
 
             ############### extract the ADS data ############
-            ads_voltage_range = 5
-            ads_sequencer_setup = [('1', '1'), ('2', '2')]
             ads_data_v = {}
             for letter in ['A', 'B']:
                 ads_data_v[letter] = np.array(to_voltage(
