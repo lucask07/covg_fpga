@@ -79,9 +79,9 @@ set rc [catch {
   read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/ddr3_256_32/ddr3_256_32.xci
   read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/clk_wiz_0/clk_wiz_0.xci
   read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w32_1024_r256_128/fifo_w32_1024_r256_128.xci
+  read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w256_256_r128_512/fifo_w256_256_r128_512.xci
   read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_i2c_pipe/fifo_i2c_pipe.xci
   read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_ADS8686/fifo_ADS8686.xci
-  read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w256_256_r128_512/fifo_w256_256_r128_512.xci
   read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/mult_gen_0/mult_gen_0.xci
   read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/blk_mem_gen_0/blk_mem_gen_0.xci
   read_ip -quiet C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/mult_gen_1/mult_gen_1.xci
@@ -140,7 +140,7 @@ start_step phys_opt_design
 set ACTIVE_STEP phys_opt_design
 set rc [catch {
   create_msg_db phys_opt_design.pb
-  phys_opt_design 
+  phys_opt_design -directive AggressiveExplore
   write_checkpoint -force top_level_module_physopt.dcp
   close_msg_db -file phys_opt_design.pb
 } RESULT]
@@ -152,6 +152,7 @@ if {$rc} {
   unset ACTIVE_STEP 
 }
 
+  set_msg_config -source 4 -id {Route 35-39} -severity "critical warning" -new_severity warning
 start_step route_design
 set ACTIVE_STEP route_design
 set rc [catch {
@@ -162,7 +163,7 @@ set rc [catch {
   create_report "impl_1_route_report_methodology_0" "report_methodology -file top_level_module_methodology_drc_routed.rpt -pb top_level_module_methodology_drc_routed.pb -rpx top_level_module_methodology_drc_routed.rpx"
   create_report "impl_1_route_report_power_0" "report_power -file top_level_module_power_routed.rpt -pb top_level_module_power_summary_routed.pb -rpx top_level_module_power_routed.rpx"
   create_report "impl_1_route_report_route_status_0" "report_route_status -file top_level_module_route_status.rpt -pb top_level_module_route_status.pb"
-  create_report "impl_1_route_report_timing_summary_0" "report_timing_summary -max_paths 10 -file top_level_module_timing_summary_routed.rpt -pb top_level_module_timing_summary_routed.pb -rpx top_level_module_timing_summary_routed.rpx -warn_on_violation "
+  create_report "impl_1_route_report_timing_summary_0" "report_timing_summary -max_paths 10 -file top_level_module_timing_summary_routed.rpt -pb top_level_module_timing_summary_routed.pb -rpx top_level_module_timing_summary_routed.rpx"
   create_report "impl_1_route_report_incremental_reuse_0" "report_incremental_reuse -file top_level_module_incremental_reuse_routed.rpt"
   create_report "impl_1_route_report_clock_utilization_0" "report_clock_utilization -file top_level_module_clock_utilization_routed.rpt"
   create_report "impl_1_route_report_bus_skew_0" "report_bus_skew -warn_on_violation -file top_level_module_bus_skew_routed.rpt -pb top_level_module_bus_skew_routed.pb -rpx top_level_module_bus_skew_routed.rpx"
@@ -174,6 +175,24 @@ if {$rc} {
   return -code error $RESULT
 } else {
   end_step route_design
+  unset ACTIVE_STEP 
+}
+
+start_step post_route_phys_opt_design
+set ACTIVE_STEP post_route_phys_opt_design
+set rc [catch {
+  create_msg_db post_route_phys_opt_design.pb
+  phys_opt_design 
+  write_checkpoint -force top_level_module_postroute_physopt.dcp
+  create_report "impl_1_post_route_phys_opt_report_timing_summary_0" "report_timing_summary -max_paths 10 -warn_on_violation -file top_level_module_timing_summary_postroute_physopted.rpt -pb top_level_module_timing_summary_postroute_physopted.pb -rpx top_level_module_timing_summary_postroute_physopted.rpx"
+  create_report "impl_1_post_route_phys_opt_report_bus_skew_0" "report_bus_skew -warn_on_violation -file top_level_module_bus_skew_postroute_physopted.rpt -pb top_level_module_bus_skew_postroute_physopted.pb -rpx top_level_module_bus_skew_postroute_physopted.rpx"
+  close_msg_db -file post_route_phys_opt_design.pb
+} RESULT]
+if {$rc} {
+  step_failed post_route_phys_opt_design
+  return -code error $RESULT
+} else {
+  end_step post_route_phys_opt_design
   unset ACTIVE_STEP 
 }
 

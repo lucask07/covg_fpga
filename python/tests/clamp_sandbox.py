@@ -344,7 +344,8 @@ for dv in [2**6, 2**8, 2**9]:
     _, chan_data = read_h5(data_dir, file_name=file_name.format(idx) + '.h5', chan_list=np.arange(8))
 
     # Long data sequence -- entire file 
-    adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
+    adc_data, timestamp, dac_data, ads, ads_seq_cnt, read_errors = ddr.data_to_names(
+        chan_data)
 
     # Shorter data sequence, just one of the repeats
     # adc_data, timestamp, read_check, dac_data, ads = ddr.data_to_names(chan_data_one_repeat)
