@@ -1,18 +1,18 @@
 // Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
-// Date        : Fri Jun 17 11:20:43 2022
-// Host        : FDC212-05 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode funcsim
-//               C:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/fifo_w256_256_r128_512/fifo_w256_256_r128_512_sim_netlist.v
-// Design      : fifo_w256_256_r128_512
+// Date        : Sat Feb 26 14:31:42 2022
+// Host        : FDC212-01 running 64-bit major release  (build 9200)
+// Command     : write_verilog -force -mode funcsim -rename_top fifo_w256_256_r128_512 -prefix
+//               fifo_w256_256_r128_512_ fifo_w256_128_r128_256_1_sim_netlist.v
+// Design      : fifo_w256_128_r128_256_1
 // Purpose     : This verilog netlist is a functional simulation representation of the design and should not be modified
 //               or synthesized. This netlist cannot be used for SDF annotated simulation.
 // Device      : xc7a75tfgg484-1
 // --------------------------------------------------------------------------------
 `timescale 1 ps / 1 ps
 
-(* CHECK_LICENSE_TYPE = "fifo_w256_256_r128_512,fifo_generator_v13_2_2,{}" *) (* downgradeipidentifiedwarnings = "yes" *) (* x_core_info = "fifo_generator_v13_2_2,Vivado 2018.2" *) 
+(* CHECK_LICENSE_TYPE = "fifo_w256_128_r128_256_1,fifo_generator_v13_2_2,{}" *) (* downgradeipidentifiedwarnings = "yes" *) (* x_core_info = "fifo_generator_v13_2_2,Vivado 2018.2" *) 
 (* NotValidForBitStream *)
 module fifo_w256_256_r128_512
    (rst,
@@ -613,10 +613,9 @@ module fifo_w256_256_r128_512
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* DEST_SYNC_FF = "2" *) (* INIT_SYNC_FF = "0" *) (* ORIG_REF_NAME = "xpm_cdc_gray" *) 
-(* REG_OUTPUT = "1" *) (* SIM_ASSERT_CHK = "0" *) (* SIM_LOSSLESS_GRAY_CHK = "0" *) 
-(* VERSION = "0" *) (* WIDTH = "8" *) (* XPM_MODULE = "TRUE" *) 
-(* xpm_cdc = "GRAY" *) 
+(* DEST_SYNC_FF = "2" *) (* INIT_SYNC_FF = "0" *) (* REG_OUTPUT = "1" *) 
+(* SIM_ASSERT_CHK = "0" *) (* SIM_LOSSLESS_GRAY_CHK = "0" *) (* VERSION = "0" *) 
+(* WIDTH = "8" *) (* XPM_MODULE = "TRUE" *) (* xpm_cdc = "GRAY" *) 
 module fifo_w256_256_r128_512_xpm_cdc_gray
    (src_clk,
     src_in_bin,
@@ -1393,9 +1392,9 @@ module fifo_w256_256_r128_512_xpm_cdc_gray__parameterized0
         .R(1'b0));
 endmodule
 
-(* DEST_SYNC_FF = "5" *) (* INIT_SYNC_FF = "0" *) (* ORIG_REF_NAME = "xpm_cdc_single" *) 
-(* SIM_ASSERT_CHK = "0" *) (* SRC_INPUT_REG = "0" *) (* VERSION = "0" *) 
-(* XPM_MODULE = "TRUE" *) (* xpm_cdc = "SINGLE" *) 
+(* DEST_SYNC_FF = "5" *) (* INIT_SYNC_FF = "0" *) (* SIM_ASSERT_CHK = "0" *) 
+(* SRC_INPUT_REG = "0" *) (* VERSION = "0" *) (* XPM_MODULE = "TRUE" *) 
+(* xpm_cdc = "SINGLE" *) 
 module fifo_w256_256_r128_512_xpm_cdc_single
    (src_clk,
     src_in,
@@ -1524,8 +1523,8 @@ module fifo_w256_256_r128_512_xpm_cdc_single__1
 endmodule
 
 (* DEF_VAL = "1'b1" *) (* DEST_SYNC_FF = "5" *) (* INIT = "1" *) 
-(* INIT_SYNC_FF = "0" *) (* ORIG_REF_NAME = "xpm_cdc_sync_rst" *) (* SIM_ASSERT_CHK = "0" *) 
-(* VERSION = "0" *) (* XPM_MODULE = "TRUE" *) (* xpm_cdc = "SYNC_RST" *) 
+(* INIT_SYNC_FF = "0" *) (* SIM_ASSERT_CHK = "0" *) (* VERSION = "0" *) 
+(* XPM_MODULE = "TRUE" *) (* xpm_cdc = "SYNC_RST" *) 
 module fifo_w256_256_r128_512_xpm_cdc_sync_rst
    (src_rst,
     dest_clk,
@@ -1669,7 +1668,6 @@ module fifo_w256_256_r128_512_xpm_cdc_sync_rst__1
         .R(1'b0));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_generic_cstr" *) 
 module fifo_w256_256_r128_512_blk_mem_gen_generic_cstr
    (ENA_dly_D,
     dout,
@@ -1767,7 +1765,6 @@ module fifo_w256_256_r128_512_blk_mem_gen_generic_cstr
         .wr_clk(wr_clk));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_prim_width" *) 
 module fifo_w256_256_r128_512_blk_mem_gen_prim_width
    (dout,
     rd_clk,
@@ -2100,7 +2097,6 @@ module fifo_w256_256_r128_512_blk_mem_gen_prim_width__parameterized2
         .wr_clk(wr_clk));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_prim_wrapper" *) 
 module fifo_w256_256_r128_512_blk_mem_gen_prim_wrapper
    (dout,
     rd_clk,
@@ -3152,7 +3148,6 @@ module fifo_w256_256_r128_512_blk_mem_gen_prim_wrapper__parameterized2
         .O(ENB_I));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_top" *) 
 module fifo_w256_256_r128_512_blk_mem_gen_top
    (ENA_dly_D,
     dout,
@@ -3215,7 +3210,6 @@ module fifo_w256_256_r128_512_blk_mem_gen_top
         .wr_clk(wr_clk));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_v8_4_1" *) 
 module fifo_w256_256_r128_512_blk_mem_gen_v8_4_1
    (ENA_dly_D,
     dout,
@@ -3278,7 +3272,6 @@ module fifo_w256_256_r128_512_blk_mem_gen_v8_4_1
         .wr_clk(wr_clk));
 endmodule
 
-(* ORIG_REF_NAME = "blk_mem_gen_v8_4_1_synth" *) 
 module fifo_w256_256_r128_512_blk_mem_gen_v8_4_1_synth
    (ENA_dly_D,
     dout,
@@ -3341,7 +3334,6 @@ module fifo_w256_256_r128_512_blk_mem_gen_v8_4_1_synth
         .wr_clk(wr_clk));
 endmodule
 
-(* ORIG_REF_NAME = "clk_x_pntrs" *) 
 module fifo_w256_256_r128_512_clk_x_pntrs
    (S,
     WR_PNTR_RD,
@@ -3588,7 +3580,6 @@ module fifo_w256_256_r128_512_clk_x_pntrs
         .src_in_bin(\gic0.gc0.count_d2_reg[7] ));
 endmodule
 
-(* ORIG_REF_NAME = "compare" *) 
 module fifo_w256_256_r128_512_compare
    (ram_empty_fb_i_reg,
     v1_reg,
@@ -3693,7 +3684,6 @@ module fifo_w256_256_r128_512_compare_0
         .S({\NLW_gmux.gm[4].gms.ms_CARRY4_S_UNCONNECTED [3:1],\dest_out_bin_ff_reg[7] }));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_ramfifo" *) 
 module fifo_w256_256_r128_512_fifo_generator_ramfifo
    (rd_rst_busy,
     wr_rst_busy,
@@ -3848,7 +3838,6 @@ module fifo_w256_256_r128_512_fifo_generator_ramfifo
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_top" *) 
 module fifo_w256_256_r128_512_fifo_generator_top
    (SR,
     wr_rst_busy,
@@ -3978,7 +3967,7 @@ endmodule
 (* C_WR_DEPTH_WRCH = "16" *) (* C_WR_FREQ = "1" *) (* C_WR_PNTR_WIDTH = "8" *) 
 (* C_WR_PNTR_WIDTH_AXIS = "10" *) (* C_WR_PNTR_WIDTH_RACH = "4" *) (* C_WR_PNTR_WIDTH_RDCH = "10" *) 
 (* C_WR_PNTR_WIDTH_WACH = "4" *) (* C_WR_PNTR_WIDTH_WDCH = "10" *) (* C_WR_PNTR_WIDTH_WRCH = "4" *) 
-(* C_WR_RESPONSE_LATENCY = "1" *) (* ORIG_REF_NAME = "fifo_generator_v13_2_2" *) 
+(* C_WR_RESPONSE_LATENCY = "1" *) 
 module fifo_w256_256_r128_512_fifo_generator_v13_2_2
    (backup,
     backup_marker,
@@ -4981,7 +4970,6 @@ module fifo_w256_256_r128_512_fifo_generator_v13_2_2
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "fifo_generator_v13_2_2_synth" *) 
 module fifo_w256_256_r128_512_fifo_generator_v13_2_2_synth
    (rd_rst_busy,
     wr_rst_busy,
@@ -5044,7 +5032,6 @@ module fifo_w256_256_r128_512_fifo_generator_v13_2_2_synth
         .wr_rst_busy(wr_rst_busy));
 endmodule
 
-(* ORIG_REF_NAME = "memory" *) 
 module fifo_w256_256_r128_512_memory
    (ENA_dly_D,
     dout,
@@ -5107,7 +5094,6 @@ module fifo_w256_256_r128_512_memory
         .wr_clk(wr_clk));
 endmodule
 
-(* ORIG_REF_NAME = "rd_bin_cntr" *) 
 module fifo_w256_256_r128_512_rd_bin_cntr
    (Q,
     v1_reg,
@@ -5412,7 +5398,6 @@ module fifo_w256_256_r128_512_rd_bin_cntr
         .O(\rd_dc_i_reg[4] ));
 endmodule
 
-(* ORIG_REF_NAME = "rd_dc_as" *) 
 module fifo_w256_256_r128_512_rd_dc_as
    (rd_data_count,
     \gc0.count_d1_reg[0] ,
@@ -5537,7 +5522,6 @@ module fifo_w256_256_r128_512_rd_dc_as
         .R(SR));
 endmodule
 
-(* ORIG_REF_NAME = "rd_handshaking_flags" *) 
 module fifo_w256_256_r128_512_rd_handshaking_flags
    (valid,
     SR,
@@ -5563,7 +5547,6 @@ module fifo_w256_256_r128_512_rd_handshaking_flags
         .R(SR));
 endmodule
 
-(* ORIG_REF_NAME = "rd_logic" *) 
 module fifo_w256_256_r128_512_rd_logic
    (empty,
     out,
@@ -5656,7 +5639,6 @@ module fifo_w256_256_r128_512_rd_logic
         .v1_reg_0(\c1/v1_reg ));
 endmodule
 
-(* ORIG_REF_NAME = "rd_status_flags_as" *) 
 module fifo_w256_256_r128_512_rd_status_flags_as
    (empty,
     out,
@@ -5748,7 +5730,6 @@ module fifo_w256_256_r128_512_rd_status_flags_as
         .S(SR));
 endmodule
 
-(* ORIG_REF_NAME = "reset_blk_ramfifo" *) 
 module fifo_w256_256_r128_512_reset_blk_ramfifo
    (\syncstages_ff_reg[0] ,
     SR,
@@ -5985,7 +5966,6 @@ module fifo_w256_256_r128_512_reset_blk_ramfifo
         .src_rst(rst));
 endmodule
 
-(* ORIG_REF_NAME = "wr_bin_cntr" *) 
 module fifo_w256_256_r128_512_wr_bin_cntr
    (\wr_data_count_i_reg[7] ,
     Q,
@@ -6350,7 +6330,6 @@ module fifo_w256_256_r128_512_wr_bin_cntr
         .O(ram_full_fb_i_reg));
 endmodule
 
-(* ORIG_REF_NAME = "wr_dc_as" *) 
 module fifo_w256_256_r128_512_wr_dc_as
    (wr_data_count,
     Q,
@@ -6468,7 +6447,6 @@ module fifo_w256_256_r128_512_wr_dc_as
         .R(\ngwrdrst.grst.g7serrst.gsckt_wrst.gic_rst.sckt_wr_rst_ic_reg ));
 endmodule
 
-(* ORIG_REF_NAME = "wr_logic" *) 
 module fifo_w256_256_r128_512_wr_logic
    (full,
     Q,
@@ -6561,7 +6539,6 @@ module fifo_w256_256_r128_512_wr_logic
         .\wr_data_count_i_reg[7] ({wpntr_n_0,wpntr_n_1,wpntr_n_2,wpntr_n_3}));
 endmodule
 
-(* ORIG_REF_NAME = "wr_status_flags_as" *) 
 module fifo_w256_256_r128_512_wr_status_flags_as
    (full,
     ENA_I,
