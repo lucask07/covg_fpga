@@ -34,15 +34,14 @@ for i=1:length(freq)
     filter_input = 8191*sin(2*pi*freq(i)*t)+8192;
     filename = ['BodePlotData\test', num2str(freq(i)), 'Hz.h5'];
     y = hdf5read(filename,'/adc');
-    gain = [gain, (max(y(1:2:end,5)) - min(y(1:2:end,5)))/(max(filter_input) - min(filter_input))];
-    %gain_RMS = ((rms(y(1:2:end,5) - mean(y(1:2:end,5))))*sqrt(2))/((rms(y(:,3) - mean(y(:,3))))*sqrt(2));
+    gain = [gain, (max(y(501:2:end,5)) - min(y(501:2:end,5)))/(max(filter_input) - min(filter_input))];
     %gain_RMS = ((rms(y(1:2:end,5) - mean(y(1:2:end,5))))*sqrt(2))/((rms(filter_input - mean(filter_input)))*sqrt(2));
     %gain_RMS_array = [gain_RMS_array, gain_RMS];
 end
 
 figure(1);
 %semilogx(freq, 20*log(gain_RMS_array/max(gain_RMS_array)), '-*', 'LineWidth', 2);
-semilogx(freq, 20*log(gain/max(gain)), '*', 'LineWidth', 2);
+semilogx(freq, 20*log(gain/max(gain)), '-*', 'LineWidth', 2);
 hold on;
 grid on;
 ylim([-80 10]);
