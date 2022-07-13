@@ -20,6 +20,7 @@ import atexit
 from instrbuilder.instrument_opening import open_by_name
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import cm
 import pickle as pkl
 import copy
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
@@ -39,39 +40,10 @@ sys.path.append(boards_path)
 
 
 from analysis.clamp_data import adjust_step2
-from analysis.adc_data import read_h5
+from analysis.adc_data import read_h5, separate_ads_sequence
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
-
-
-def ddr_write_setup():
-    ddr.set_adcs_connected()
-    ddr.clear_dac_read()
-    ddr.clear_adc_write()
-    ddr.clear_adc_read()    # Stop putting data in outgoing FIFO for Pipe read
-    ddr.reset_fifo(name='ALL')
-    ddr.reset_mig_interface()
-
-
-def ddr_repeat_setup():
-    """Setup for reading new data without writing to the DDR again."""
-
-    # stop access to the FIFOs so that after reset of the FIFO(s) no new data is added/extracted
-    ddr.clear_adc_read()
-    ddr.clear_adc_write()
-    ddr.clear_dac_read()
-    ddr.reset_fifo(name='ALL')
-    ddr.reset_mig_interface()  # self.fpga.send_trig(self.endpoints['UI_RESET'])
-    # note that the MIG interface addresses are driven by the FIFOs so will idle
-    # until the FIFOs are reenable with ddr_write_finish()
-    ddr_write_finish()
-    time.sleep(0.01)
-
-
-def ddr_write_finish():
-    # reenable both DACs
-    ddr.set_adc_dac_simultaneous()  # enable DAC playback and ADC writing to DDR
 
 
 def get_cc_optimize(nums):
@@ -169,14 +141,64 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
         ddr.data_arrays[cmd_ch], ddr.data_arrays[cc_ch] = make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
     
     # write channels to the DDR
-    ddr_write_setup()
+    ddr.write_setup()
     # clear read, set write, etc. handled within write_channels
     block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
     ddr.reset_mig_interface()
-    ddr_write_finish()
+    ddr.write_finish()
+
+
+def plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha, fig, ax, dc_num=0):
+
+    t = np.arange(0,len(adc_data[0]))*1/FS
+    crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
+
+    if fig is None:
+        fig, ax = plt.subplots(3,1)
+
+    # DACs
+    t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
+    y = dac_data[dc_num*2 + 1][crop_start:] # CMD signal is on channels 1 and 3 for DCs 0 and 1
+    lbl = f'Alpha={alpha}'
+    ax[0].plot(t_dacs*1e6, y, marker = '+', label = lbl)
+
+    # ADCs 
+    y = to_voltage(adc_data[dc_num][crop_start:], num_bits=16, voltage_range=2**16, use_twos_comp=True)
+    lbl = f'Alpha={alpha}'
+    ax[1].plot(t*1e6, y, marker = '+', label = lbl)
+
+    ############### extract the ADS data just for the last run and plot as a demonstration ############
+    ads_data_v = {}
+    for letter in ['A', 'B']:
+        ads_data_v[letter] = np.array(to_voltage(
+            ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
+
+    total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
+    total_seq_cnt[::2] = ads_seq_cnt[0]
+    total_seq_cnt[1::2] = ads_seq_cnt[1]
+    ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+
+    # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
+    t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
+    ax[2].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
+    
+    return fig, ax
+
+def decorate_3by1_plot(ax):
+    ax[0].legend()
+    ax[0].set_title('Fast DAC data')
+    ax[0].set_xlabel('s [us]')
+
+    ax[1].legend()
+    ax[1].set_title('Fast ADC data')
+    ax[1].set_xlabel('s [us]')
+    ax[1].set_ylabel('ADC codes')
+
+    ax[2].set_ylabel('P1 (tracks Vm) [V]')
 
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
+ADS_FS = 1e6
 DC_NUMS = [0, 1, 2, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 feedback_resistors = [2.1]                  # list of RF1 values; use None to get all options
@@ -195,7 +217,7 @@ elif sys.platform == "win32":
     if os.path.exists('C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data'):
         data_dir_covg = 'C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data/{}{:02d}{:02d}'
     else:
-        data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
+        data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/rs_comp/{}{:02d}{:02d}')
 
 today = datetime.datetime.today()
 data_dir = data_dir_covg.format(
@@ -247,6 +269,7 @@ daq = Daq(f)
 ddr = DDR3(f, data_version='TIMESTAMPS')
 ad7961s = daq.ADC
 ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
+ads = daq.ADC_gp
 
 # power supply turn on via FPGA enables
 for name in ["1V8", "5V", "3V3"]:
@@ -267,19 +290,37 @@ for dc_num in DC_NUMS:
     clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
     clamps[dc_num] = clamp
 
+
+# -------- configure the ADS8686
+ads_voltage_range = 5  # need this for to_voltage later 
+ads.hw_reset(val=False)
+ads.set_host_mode()
+ads.setup()
+ads.set_range(ads_voltage_range) # TODO: make an ads.current_voltage_range a property of the ADS so we always know it
+ads.set_lpf(376)
+# 4B - clear sine wave set by the Slow DAC
+ads_sequencer_setup = [('0', '0'), ('1', '1')]
+codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
+ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
+ads.set_fpga_mode()
+
+
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 time.sleep(0.1)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
 time.sleep(1)
+time.sleep(1)
+ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
+
 
 # TODO: are the TCA pins already configured in Clamp.configure_clamp()?
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
 # ------ Collect Data --------------
-file_name = time.strftime("%Y%m%d-%H%M%S")
+file_name = time.strftime("%Y%m%d-%H%M%S") + '_{}' # to append index 
 idx = 0
 
 # Set CMD and CC signals
@@ -314,6 +355,8 @@ num_alphas = 20
 start_alpha = 0
 end_alpha = 0.95
 alpha = np.linspace(start_alpha, end_alpha, num_alphas)
+
+color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
 
 for alphas in range (num_alphas):
 
@@ -358,15 +401,15 @@ for alphas in range (num_alphas):
         daq.set_dac_gain(2, 5)  # 5V to see easier on oscilloscope
 
     time.sleep(0.1)
-    ddr_repeat_setup()
+    ddr.repeat_setup()
     # Get data
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
     chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
                                         blk_multiples=40)  # blk multiples multiple of 10
 
+    # oscilloscope data capture
     osc.set('single_acq')
     time.sleep(0.1)
-
     # general measure -- input measure type
     #for ch in [1,4]:
     #    time.sleep(0.01)
@@ -377,7 +420,9 @@ for alphas in range (num_alphas):
 
     # save a PNG screen-shot to host computer
     series_res_file_name = "alpha_equals_" + str(round(alpha[alphas], 2))
-    t = osc.save_display_data(os.path.join(r"C:\Users\delg5279\OneDrive - University of St. Thomas\SeriesResistanceTests", series_res_file_name))
+    # t = osc.save_display_data(os.path.join(r"C:\Users\delg5279\OneDrive - University of St. Thomas\SeriesResistanceTests", series_res_file_name))
+    t = osc.save_display_data(os.path.join(r"C:\Users\koer2434\Documents\covg\data\rs_comp", series_res_file_name))
+
     time.sleep(0.1)
     osc.set('run_acq')
 
@@ -386,18 +431,24 @@ for alphas in range (num_alphas):
         idx) + '.h5', chan_list=np.arange(8))
 
     # Long data sequence -- entire file
-    adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data)
-
-    # Shorter data sequence, just one of the repeats
-    # adc_data, timestamp, dac_data, ads, read_errors = ddr.data_to_names(chan_data_one_repeat)
-
-    t = np.arange(0,len(adc_data[0]))*1/FS
-
-    crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
+    adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
     print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
+    if idx in [0, 5, 10, 15]:
+        clr = next(color)
+        if idx == 0:
+            fig = None
+            ax = None
+        fig, ax = plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha[alphas], fig, ax, dc_num=0)
+    idx = idx + 1
+
+# add legend and labels to the 3x1 plot
+decorate_3by1_plot(ax)
+
+crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
 
 # DACs
+t = np.arange(0,len(adc_data[0]))*1/FS
 t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
 for dac_ch in range(4):
     fig,ax=plt.subplots()
@@ -424,3 +475,33 @@ for ch in range(2):
     ax.set_title('Fast ADC data')
     ax.set_xlabel('s [us]')
     ax.set_ylabel('ADC codes')
+
+############### extract the ADS data just for the last run and plot as a demonstration ############
+ads_data_v = {}
+for letter in ['A', 'B']:
+    ads_data_v[letter] = np.array(to_voltage(
+        ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
+
+total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
+total_seq_cnt[::2] = ads_seq_cnt[0]
+total_seq_cnt[1::2] = ads_seq_cnt[1]
+ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+
+fig, ax = plt.subplots(2,1)
+fig.suptitle('ADS data')
+# AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
+t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
+ax[0].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
+ax[0].set_ylabel('P1 (tracks Vm) [V]')
+# CAL ADC : observing electrode P2 (configured by CAL_SIG2)
+t_ads = np.arange(len(ads_separate_data['A'][0]))*1/(ADS_FS / len(ads_sequencer_setup))
+ax[1].plot(t_ads*1e6, ads_separate_data['A'][0], marker='.')
+ax[1].set_ylabel('P2 [V]')
+
+for ax_s in ax:
+    ax_s.set_xlabel('t [$\mu$s]')
+
+def ads_plot_zoom(ax):
+    for ax_s in ax:
+        ax_s.set_xlim([3250, 3330])
+        ax_s.grid('on')
