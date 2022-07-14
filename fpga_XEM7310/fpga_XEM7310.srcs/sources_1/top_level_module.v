@@ -915,7 +915,7 @@ module top_level_module(
         
         assign data_ready_ds[k] = ds_spi_data[k][31];
             
-        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_BIT + k*20))spi_fifo1 (
+        spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_ADDR + k*20))spi_fifo1 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
                  .data_rdy_0(data_ready_ds[k]), 
@@ -1002,7 +1002,7 @@ module top_level_module(
         
         assign filter_data_ready_fast_dac[p] = filter_spi_data[p][31]; // assign MUX output MSB to the data_ready signal. 
             
-        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_BIT + p*20))spi_fifo0 (
+        spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_ADDR + p*20))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
                  .ss_0(d_csb[p]), .mosi_0(d_sdi[p]), .sclk_0(d_sclk[p]), 
                  .data_rdy_0(data_ready_fast_dac[p]), 
@@ -1106,6 +1106,17 @@ module top_level_module(
 	 okPipeOut i2c_qw_po (.okHE(okHE), .okEH(okEHx[ 28*65 +: 65 ]), .ep_addr(`I2CDAQ_PIPE_OUT_GEN_ADDR+1), 
 	                           .ep_read(i2c_qw_po_re), .ep_datain(fifo_i2c_data));
 
+    // The FIFO rst signal needs to be at least 3 (slowest) clock cycles wide
+    wire i2c_fifo_reset;
+    reg [3:0] i2c_fifo_reset_cnt;    
+    // stretch the reset signal 
+    always @(posedge clk_sys) begin         
+        if (ep41trig[`I2CDAQ_FIFO_RESET_GEN_BIT+1] == 1'b1) i2c_fifo_reset_cnt = 4'b0;
+        else if (i2c_fifo_reset_cnt < 4'd15) i2c_fifo_reset_cnt = i2c_fifo_reset_cnt + 1'b1;        
+    end // reset_cnt will idle at 15 
+    
+    assign i2c_fifo_reset = (i2c_fifo_reset_cnt < 4'd15);
+
 	// QW 3.3v I2C bus (used for auxiliary I2C. e.g. TOF controller)
     i2cController_wPipe i2c_controller_5 (
         .clk (clk_sys),
@@ -1123,7 +1134,7 @@ module top_level_module(
         
         // additional for FIFO output pipe
         .ok_clk(okClk),
-        .fifo_rst(ep41trig[`I2CDAQ_FIFO_RESET_GEN_BIT+1]),
+        .fifo_rst(i2c_fifo_reset),
         .fifo_rd_en(i2c_qw_po_re),
         .fifo_empty(),
         .fifo_data(fifo_i2c_data)
