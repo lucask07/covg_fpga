@@ -154,7 +154,7 @@ def plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha, fi
     crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
 
     if fig is None:
-        fig, ax = plt.subplots(3,1)
+        fig, ax = plt.subplots(4,1)
 
     # DACs
     t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
@@ -181,6 +181,7 @@ def plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha, fi
     # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
     t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
     ax[2].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
+    ax[3].plot(t_ads*1e6, ads_separate_data['B'][1], marker='.')
     
     return fig, ax
 
@@ -299,7 +300,7 @@ ads.setup()
 ads.set_range(ads_voltage_range) # TODO: make an ads.current_voltage_range a property of the ADS so we always know it
 ads.set_lpf(376)
 # 4B - clear sine wave set by the Slow DAC
-ads_sequencer_setup = [('0', '0'), ('1', '1')]
+ads_sequencer_setup = [('0', '4'), ('1', '1')]
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
 ads.set_fpga_mode()
@@ -369,7 +370,7 @@ for alphas in range (num_alphas):
     series_res_scale = (1/(ADG_RES_Val*1e3))*(1/0.308)*(1/inamp_gain)*1000*(8192/DAC_gain_amplitude)*(fbck_gain*0.5)*10*alpha[alphas]
     print("scale value =", series_res_scale)
 
-    filter_coeff_generated = create_filter_coefficients(fc=500e3, output_scale=series_res_scale*2**13)
+    filter_coeff_generated = create_filter_coefficients(fc=500e3, output_scale=int(series_res_scale*2**13))
     #for i in range (num_alphas):
     #    filter_coeff_generated = create_filter_coefficients(fc=500e3, output_scale=series_res_scale[i]*2**13)
     #    print(filter_coeff_generated)
@@ -420,8 +421,8 @@ for alphas in range (num_alphas):
 
     # save a PNG screen-shot to host computer
     series_res_file_name = "alpha_equals_" + str(round(alpha[alphas], 2))
-    # t = osc.save_display_data(os.path.join(r"C:\Users\delg5279\OneDrive - University of St. Thomas\SeriesResistanceTests", series_res_file_name))
-    t = osc.save_display_data(os.path.join(r"C:\Users\koer2434\Documents\covg\data\rs_comp", series_res_file_name))
+    t = osc.save_display_data(os.path.join(r"C:\Users\delg5279\OneDrive - University of St. Thomas\SeriesResistanceTests", series_res_file_name))
+    # t = osc.save_display_data(os.path.join(r"C:\Users\koer2434\Documents\covg\data\rs_comp", series_res_file_name))
 
     time.sleep(0.1)
     osc.set('run_acq')
@@ -494,8 +495,8 @@ t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_
 ax[0].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
 ax[0].set_ylabel('P1 (tracks Vm) [V]')
 # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-t_ads = np.arange(len(ads_separate_data['A'][0]))*1/(ADS_FS / len(ads_sequencer_setup))
-ax[1].plot(t_ads*1e6, ads_separate_data['A'][0], marker='.')
+t_ads = np.arange(len(ads_separate_data['B'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
+ax[1].plot(t_ads*1e6, ads_separate_data['B'][1], marker='.')
 ax[1].set_ylabel('P2 [V]')
 
 for ax_s in ax:
