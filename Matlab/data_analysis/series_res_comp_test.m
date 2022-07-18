@@ -102,9 +102,11 @@ for alpha = (0:0.05:0.75)
 
     % Special case for α=0 .h5 file
     if(alpha == 0)
-        y = hdf5read(['SeriesResData\alpha_0.0_data.h5'],'/adc');
+%         y = hdf5read(['SeriesResData\alpha_0.0_data.h5'],'/adc');
+        y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.0_data.h5'],'/adc');
     else
-        y = hdf5read(['SeriesResData\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
+%         y = hdf5read(['SeriesResData\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
+        y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
     end
 
     % Grab CMD, Im, P1, and Vm data from .h5 file
@@ -114,14 +116,17 @@ for alpha = (0:0.05:0.75)
     current_data = typecast(uint16(bin2dec(current_data)), 'int16');
     current_data = double(current_data);
     p1_data = dec2bin(y(1:10:end,8));
+%     p1_data = dec2bin(y(1:5:end,8));
     p1_data = typecast(uint16(bin2dec(p1_data)), 'int16');
     p1_data = double(p1_data);
     vm_data = dec2bin(y(2:10:end,8));
+%     vm_data = dec2bin(y(2:5:end,8));
     vm_data = typecast(uint16(bin2dec(vm_data)), 'int16');
     vm_data = double(vm_data);
 
     % 1 MSPS time array
     t3 = (1:length(p1_data))*2000e-3;
+%     t3 = (1:length(p1_data))*1000e-3;
     t3 = t3-3277.2;
     
     if(isempty(setdiff(round(alpha,2), alphas)))
@@ -139,24 +144,27 @@ for alpha = (0:0.05:0.75)
         
         % Plot P1 for current α
         axes(c);
-        plot(t3, p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
+        plot(t3(1:length(p1_data)), p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
         xlim([-75 175]);
         hold on;
     
         % Plot Vm for current α
         axes(d)
-        plot(t3, vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
+        plot(t3(1:length(vm_data)), vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
         xlim([-75 175]);
         hold on;
     
         %display step response metrics for Vm
-        rise_time = risetime(vm_data(1000:3000), t3(1000:3000));
+        rise_time = risetime(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000));
+%         rise_time = risetime(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000));
         disp(['For α=',num2str(alpha,2), ' Vm rise time is: ', num2str(rise_time, 4), ' us']);
 
-        over_shoot = overshoot(vm_data(1000:3000), t3(1000:3000));
+        over_shoot = overshoot(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000));
+%         over_shoot = overshoot(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000));
         disp(['For α=',num2str(alpha,2), ' Vm overshoot is: ', num2str(over_shoot, 4), ' %']);
 
-        [s,slev,sinst] = settlingtime(vm_data(1000:3000), t3(1000:3000), 500, 'Tolerance', 5);
+        [s,slev,sinst] = settlingtime(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000), 500, 'Tolerance', 5);
+%         [s,slev,sinst] = settlingtime(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000), 500, 'Tolerance', 5);
         disp(['For α=',num2str(alpha,2), ' Vm settling time is: ', num2str(sinst, 4), ' us']);
         fprintf('\n');
     end
@@ -201,3 +209,35 @@ lgd.Location = 'northeastoutside';
 grid on;
 
 saveas(figure(3), 'series_res_comp_data_full.png');
+
+%% Plot Function Generator Data
+
+figure(4);
+
+ADS_to_V = (ADS_amplitude_Gain/(2^15*1000));
+fn_gen_data = y(6:10:end,8);
+plot(t3, fn_gen_data*ADS_to_V);
+xlim([-175 175]);
+title('Function Generator Data');
+xlabel('t (μs)');
+ylabel('Voltage (V)');
+
+%% FFT of Function Generator Data
+
+figure(5);
+Fs = 500e3;
+
+Y = fft(fn_gen_data*ADS_to_V);
+L = length(fn_gen_data);
+P2 = abs(Y/L);
+P1 = P2(1:L/2+1);
+P1(2:end-1) = 2*P1(2:end-1);
+
+f = Fs*(0:(L/2))/L;
+plot(f,P1) 
+title('Single-Sided Amplitude Spectrum of X(t)')
+xlabel('f (Hz)')
+ylabel('|P1(f)|')
+
+
+
