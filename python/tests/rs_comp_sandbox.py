@@ -159,12 +159,12 @@ def plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha, fi
     # DACs
     t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
     y = dac_data[dc_num*2 + 1][crop_start:] # CMD signal is on channels 1 and 3 for DCs 0 and 1
-    lbl = f'Alpha={alpha}'
+    lbl = f'Alpha={round(alpha, 2)}'
     ax[0].plot(t_dacs*1e6, y, marker = '+', label = lbl)
 
     # ADCs 
     y = to_voltage(adc_data[dc_num][crop_start:], num_bits=16, voltage_range=2**16, use_twos_comp=True)
-    lbl = f'Alpha={alpha}'
+    lbl = f'Alpha={round(alpha, 2)}'
     ax[1].plot(t*1e6, y, marker = '+', label = lbl)
 
     ############### extract the ADS data just for the last run and plot as a demonstration ############
@@ -182,6 +182,9 @@ def plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha, fi
     t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
     ax[2].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
     ax[3].plot(t_ads*1e6, ads_separate_data['B'][1], marker='.')
+    #t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
+    #ax[2].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
+    #ax[3].plot(t_ads*1e6, ads_separate_data['B'][4], marker='.')
     
     return fig, ax
 
@@ -257,6 +260,19 @@ osc.set('chan_display', 0, configs={"chan": 4})
 osc.set('chan_display', 0, configs={'chan': 2})
 osc.set('chan_display', 0, configs={"chan": 3})
 
+# --------  function generator  --------
+fg_freq = 10e3
+fg_v = 2
+fg = open_by_name("new_function_gen")
+fg.set("load", "INF")
+fg.set("offset", 2)
+fg.set("v", fg_v)
+fg.set("function", "SIN")
+fg.set("freq", fg_freq)
+fg.set("output", "ON")
+
+atexit.register(fg.set, "output", "OFF")
+
 # Initialize FPGA
 f = FPGA()
 f.init_device()
@@ -300,7 +316,8 @@ ads.setup()
 ads.set_range(ads_voltage_range) # TODO: make an ads.current_voltage_range a property of the ADS so we always know it
 ads.set_lpf(376)
 # 4B - clear sine wave set by the Slow DAC
-ads_sequencer_setup = [('0', '4'), ('1', '1')]
+ads_sequencer_setup = [('5', '4'), ('1', '1')]
+#ads_sequencer_setup = [('1', '4')]
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
 ads.set_fpga_mode()
@@ -405,7 +422,9 @@ for alphas in range (num_alphas):
     ddr.repeat_setup()
     # Get data
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-    chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+    #chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+    #                                    blk_multiples=40)  # blk multiples multiple of 10
+    chan_data_one_repeat = ddr.save_data(r"C:\Users\delg5279\OneDrive - University of St. Thomas\clamp test files", 'alpha_'+str(round(alpha[alphas], 2)) + '_data.h5', num_repeats=8,
                                         blk_multiples=40)  # blk multiples multiple of 10
 
     # oscilloscope data capture
@@ -428,8 +447,8 @@ for alphas in range (num_alphas):
     osc.set('run_acq')
 
     # to get the deswizzled data of all repeats need to read the file
-    _, chan_data = read_h5(data_dir, file_name=file_name.format(
-        idx) + '.h5', chan_list=np.arange(8))
+    _, chan_data = read_h5(r"C:\Users\delg5279\OneDrive - University of St. Thomas\clamp test files", file_name='alpha_'+str(round(alpha[alphas], 2)) 
+    + '_data.h5', chan_list=np.arange(8))
 
     # Long data sequence -- entire file
     adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
@@ -497,6 +516,8 @@ ax[0].set_ylabel('P1 (tracks Vm) [V]')
 # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
 t_ads = np.arange(len(ads_separate_data['B'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
 ax[1].plot(t_ads*1e6, ads_separate_data['B'][1], marker='.')
+#t_ads = np.arange(len(ads_separate_data['B'][4]))*1/(ADS_FS / len(ads_sequencer_setup))
+#ax[1].plot(t_ads*1e6, ads_separate_data['B'][4], marker='.')
 ax[1].set_ylabel('P2 [V]')
 
 for ax_s in ax:
