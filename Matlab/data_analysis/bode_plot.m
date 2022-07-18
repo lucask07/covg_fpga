@@ -35,17 +35,17 @@ for i=1:length(freq)
     filename = ['BodePlotData\test', num2str(freq(i)), 'Hz.h5'];
     y = hdf5read(filename,'/adc');
     gain = [gain, (max(y(501:2:end,5)) - min(y(501:2:end,5)))/(max(filter_input) - min(filter_input))];
-    %gain_RMS = ((rms(y(1:2:end,5) - mean(y(1:2:end,5))))*sqrt(2))/((rms(filter_input - mean(filter_input)))*sqrt(2));
-    %gain_RMS_array = [gain_RMS_array, gain_RMS];
+    gain_RMS = ((rms(y(501:2:end,5) - mean(y(501:2:end,5))))*sqrt(2))/((rms(filter_input - mean(filter_input)))*sqrt(2));
+    gain_RMS_array = [gain_RMS_array, gain_RMS];
 end
 
 figure(1);
-%semilogx(freq, 20*log(gain_RMS_array/max(gain_RMS_array)), '-*', 'LineWidth', 2);
-semilogx(freq, 20*log(gain/max(gain)), '-*', 'LineWidth', 2);
+%semilogx(freq, 20*log10(gain_RMS_array/max(gain_RMS_array)), '-*', 'LineWidth', 2);
+semilogx(freq, 20*log10(gain/max(gain)), '*', 'LineWidth', 2);
 hold on;
 grid on;
-ylim([-80 10]);
-yticks(-80:4:10);
+ylim([-36 10]);
+yticks(-36:2:10);
 title('4th Order IIR Bode Plot');
 xlabel('Frequency (Hz)');
 ylabel('Magnitude (dB)');
@@ -54,6 +54,6 @@ Hideal = 20*log10(abs(hideal));
 plot(f, Hideal, 'LineWidth', 2);
 hold on;
 yline(-3, '--');
-legend('DDR Bench Meas', 'Matlab', 'Location', 'southwest');
+legend('Measured', 'MATLAB', 'Location', 'southwest');
 
 saveas(figure(1), '4thOrderButterWorthBode.png');
