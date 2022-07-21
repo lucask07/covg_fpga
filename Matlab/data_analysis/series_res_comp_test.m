@@ -5,7 +5,8 @@ clc;
 %% Plot CMD Signal
 
 %Grab CMD data from .h5 file
-y = hdf5read('SeriesResData\alpha_0.7_data.h5','/adc');
+% y = hdf5read('SeriesResData\alpha_0.7_data.h5','/adc');
+y = hdf5read('C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.7_data.h5','/adc');
 cmd_data = y(2:2:end,5);
 t = (1:length(cmd_data))*400e-3;
 
@@ -261,5 +262,69 @@ title('Single-Sided Amplitude Spectrum of X(t)');
 xlabel('f (Hz)');
 ylabel('|P1(f)|');
 
+%% From Dr. Secord's Vm Control Driver Script
 
+% VARIABLE AND PARAMETER DEFINITIONS - REFER TO SCHEMATIC (p 137 in notebook)
+%--------------------------------------------------------------------------
+Cma = 33e-9;
+Rpc = 5e3;
+Rsa = 1e3;
+Vp2Lim = 10;
+
+% Plant model with Vm as output
+A = [-1/((Rpc + Rsa)*Cma)];
+B = [1/((Rpc + Rsa)*Cma)];
+C = [1];
+D = [0];
+
+% True dynamics (will differ from above in practice)
+% For now, assume our model of A and B is perfect
+AT = A;
+BT = B;
+
+% Define output that represents actual measurements
+% y = [Vm Im]'
+rhoA = Rsa/(Rpc+Rsa);
+gamma = 1/(Rpc+Rsa);
+Cmeas = [1-rhoA;-gamma];
+Dmeas = [rhoA;gamma];
+
+% Augmented model with integrator
+Atilde = [A 0;-C 0];
+Btilde = [B;-D];
+
+% Find state gain and integrator gain with LQI method
+sys = ss(A,B,C,D);
+Qvm = 1e-5;    % State penalty for large Vm
+Qint = 1e6;   % Penalty on large integrator values
+R = 1e-7;      % Penalty on Vp2 control input magnitude
+Q = diag([Qvm Qint]);
+
+K = lqi(sys,Q,R); % [Kvm Ki]
+Kvm = K(1)
+Ki = K(2)
+
+% Observer pole placement as multiplicative factor on plant pole
+speedFactor = 10;
+pObs = speedFactor*eig(A);
+L = place(A',Cmeas',pObs)';
+
+%% Setting Inputs to Simulink Observer Model
+
+Vp2 = [t3.', ((cmd_data(1:5:end)-8192)*DAC_to_mV)];
+Vp1_Im = [t3.', (p1_data*ADS_to_mV*(1/fbck_gain)), (current_data(1:10:end)*ADC_to_uA)];
+
+simResults = sim('control_system_observer', t3.');
+Vm_estimate = simResults.Vm_estimate.Data;
+
+plot(t3, vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
+xlim([-75 175]);
+hold on;
+plot(t3, Vm_estimate, '-*', 'LineWidth', 2);
+hold on;
+plot(t3, p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
+title('Vm vs Vm Estimate');
+xlabel('t (μs)');
+ylabel('Voltage (mV)');
+legend('Vm', 'Observer Estimate', 'Vp1', 'Location', 'northeast');
 
