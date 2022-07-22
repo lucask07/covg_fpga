@@ -301,26 +301,28 @@ R = 1e-7;      % Penalty on Vp2 control input magnitude
 Q = diag([Qvm Qint]);
 
 K = lqi(sys,Q,R); % [Kvm Ki]
-Kvm = K(1)
-Ki = K(2)
+Kvm = K(1);
+Ki = K(2);
 
 % Observer pole placement as multiplicative factor on plant pole
 speedFactor = 10;
 pObs = speedFactor*eig(A);
 L = place(A',Cmeas',pObs)';
 
-%% Setting Inputs to Simulink Observer Model
+%% Setting Inputs to Simulink Observer Model and Plotting Simulation Output
+
+Ts = 2; % sampling time in us
 
 Vp2 = [t3.', ((cmd_data(1:5:end)-8192)*DAC_to_mV)];
 Vp1_Im = [t3.', (p1_data*ADS_to_mV*(1/fbck_gain)), (current_data(1:10:end)*ADC_to_uA)];
 
-simResults = sim('control_system_observer', t3.');
+simResults = sim('control_system_observer');
 Vm_estimate = simResults.Vm_estimate.Data;
 
 plot(t3, vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
 xlim([-75 175]);
 hold on;
-plot(t3, Vm_estimate, '-*', 'LineWidth', 2);
+plot(t3(1:length(Vm_estimate)), Vm_estimate, '-*', 'LineWidth', 2);
 hold on;
 plot(t3, p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
 title('Vm vs Vm Estimate');
