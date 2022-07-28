@@ -76,14 +76,16 @@ saveas(figure(2), 'FilterLatencyMeasMATLAB.png');
 %% Plot CMD, Im, P1, and Vm
 
 f = figure(3);
+LineStyles = {'-o','-+','-v','-s','-x','-d','-*','->','-h','-^'};
+LineStyleIdx = 1;
 t = t-3277.2;
 t2 = t2-3277.2;
 set(gcf, 'Position', get(0, 'Screensize'));
-tiledlayout('flow', 'TileSpacing', 'compact')
+tiledlayout(3, 1, 'TileSpacing', 'compact')
 a = nexttile;
 b = nexttile;
 c = nexttile;
-d = nexttile;
+% d = nexttile;
 
 % Constants for calculating voltage/current conversion from DAC/ADC codes
 ADG_RES = 100000; % Ohms
@@ -136,29 +138,32 @@ for alpha = (0:0.05:0.75)
     t3 = t3-3277.2;
     
     if(isempty(setdiff(round(alpha,2), alphas)))
+
         % Plot CMD for current α
         axes(a);
-        plot(t, (cmd_data-8192)*DAC_to_mV, '-*', 'LineWidth', 2);
-        xlim([-75 175]);
+        plot(t, (cmd_data-8192)*DAC_to_mV, LineStyles{LineStyleIdx}, 'LineWidth', 2);
+        xlim([-25 175]);
         hold on;
         
         % Plot Im for current α
         axes(b)
-        plot(t2, current_data*ADC_to_uA, '-*', 'LineWidth', 2);
-        xlim([-75 175]);
+        plot(t2, current_data*ADC_to_uA, LineStyles{LineStyleIdx}, 'LineWidth', 2);
+        xlim([-25 175]);
+        hold on;
+
+        % Plot Vm for current α
+        axes(c)
+        plot(t3(1:length(vm_data)), vm_data*ADS_to_mV, LineStyles{LineStyleIdx}, 'LineWidth', 2);
+        xlim([-25 175]);
         hold on;
         
         % Plot P1 for current α
-        axes(c);
-        plot(t3(1:length(p1_data)), p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
-        xlim([-75 175]);
-        hold on;
-    
-        % Plot Vm for current α
-        axes(d)
-        plot(t3(1:length(vm_data)), vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
-        xlim([-75 175]);
-        hold on;
+%         axes(d);
+%         plot(t3(1:length(p1_data)), p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
+%         xlim([-75 175]);
+%         hold on;
+
+        LineStyleIdx = LineStyleIdx + 1;
     
         %display step response metrics for Vm
 %         rise_time = risetime(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000));
@@ -193,18 +198,19 @@ xlabel('t (μs)');
 ylabel('Current (μA)');
 grid on;
 
-% Axes label for P1
+% Axes label for Vm
 axes(c);
-title('P1 (tracks Vm)');
+title('Vm');
 xlabel('t (μs)');
 ylabel('Voltage (mV)');
 grid on;
 
-% Axes label for Vm
-axes(d);
-title('Vm');
-xlabel('t (μs)');
-ylabel('Voltage (mV)');
+% Axes label for P1
+% axes(d);
+% title('P1 (tracks Vm)');
+% xlabel('t (μs)');
+% ylabel('Voltage (mV)');
+% grid on;
 
 % Shared Legend
 legend_array = {};

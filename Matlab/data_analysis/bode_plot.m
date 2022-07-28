@@ -54,6 +54,6 @@ Hideal = 20*log10(abs(hideal));
 plot(f, Hideal, 'LineWidth', 2);
 hold on;
 yline(-3, '--');
-legend('Measured', 'MATLAB', 'Location', 'southwest');
+legend('Measured', 'Theoretical', 'Location', 'southwest');
 
 saveas(figure(1), '4thOrderButterWorthBode.png');
