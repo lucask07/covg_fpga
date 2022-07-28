@@ -186,7 +186,7 @@ end
 
 % Axes label for CMD
 axes(a);
-title('CMD');
+title('Vcmd(t)');
 xlabel('t (μs)');
 ylabel('Voltage (mV)');
 grid on;
@@ -227,14 +227,15 @@ saveas(figure(3), 'series_res_comp_data_full.png');
 
 %% Table with Step Response Metrics
 
-f = figure(4);
-f.Units = 'normalized';
-f.Position = [0.5 0.5 .236 .111 ];
-
+% Define table data entries
 data = horzcat(risetimes, overshoots, settlingtimes);
-rs_table = uitable(f, 'Units', 'normalized', 'Data', data, 'ColumnName', {'Rise Time [us] ', 'Percent Overshoot ', ...
-    'Settling Time [us] '}, 'RowName', legend_array, 'Position', [0 0 1 1]);
-saveas(figure(4), 'std_rs_comp_step_response_metrics.png');
+
+% Create table from the data matrix
+rs_table = array2table(data, 'VariableNames', {'RiseTime [$\mu$s]', 'Percent Overshoot', ...
+'Settling Time [$\mu$s]'}, 'RowNames', legend_array);
+
+% Create .tex file from MATLAB table (output to the same directory as this script)
+table2latex(rs_table, 'StepResponseMetrics');
 
 %% Observer Definitions and Matrices - Code is based off Dr. Secord's Vm Control Driver Script
 
