@@ -230,6 +230,9 @@ saveas(figure(3), 'series_res_comp_data_full.png');
 % Define table data entries
 data = horzcat(risetimes, overshoots, settlingtimes);
 
+% Replace legend labels with LaTeX compatible character for α
+legend_array = replace(legend_array, 'α', '$\alpha$');
+
 % Create table from the data matrix
 rs_table = array2table(data, 'VariableNames', {'RiseTime [$\mu$s]', 'Percent Overshoot', ...
 'Settling Time [$\mu$s]'}, 'RowNames', legend_array);
