@@ -92,20 +92,15 @@ def ads(fpga):
     print(f'Setup Sequencer Codes: {codes}')
     ads.write_reg_bridge()
     ads.set_fpga_mode()
+
+    # TODO: make this possible without the AD7961
+    from pyripherals.peripherals.AD7961 import AD7961
+    ad7961 = AD7961(fpga=fpga)
+    ad7961.reset_trig()
     return ads
 
 
 # Tests
-
-
-def test_delay(dac: DAC80508, ads: ADS8686):
-    dac.write_voltage(5, outputs=dac_out)
-    print(f'Waiting for ADS8686 to yield nonzero data (max wait 23s)...')
-    time_increment = 0.25
-    for i in range(int(23 / time_increment) + 1):
-        if ads.read_last()['A'][0] == 0:
-            time.sleep(time_increment)
-    print(f'Waited {i * time_increment} seconds')
 
 
 @pytest.mark.parametrize('gain_code, expected_gain', [

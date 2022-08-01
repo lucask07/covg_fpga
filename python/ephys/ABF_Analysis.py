@@ -1,8 +1,9 @@
+'''Graphs DAC and ADC data with current average (Iavg) and standard deviation'''
 import pyabf
 import matplotlib.pyplot as plt
 import numpy as np
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import Y, filedialog
 
 #plt.ion()
 
@@ -27,6 +28,19 @@ for sweepNumber in abf.sweepList:
     ax2.plot(abf.sweepX, abf.sweepC)
     print("Sweep " + str(sweepNumber) + " current average is " + str(np.average(abf.sweepY[594:610])))
     print("with a standard deviation of " + str(np.std(abf.sweepY[594:610])))
+
+#Frequency [Hz]
+print("Recorded at " + str(abf.dataRate / 1000) + "Hz")
+
+#TODO: Rise time
+print(np.array(abf.sweepC))
+print(abf.holdingCommand[0])
+
+#y = 0
+#for i in np.array(abf.sweepC):
+ #   if (i != abf.holdingCommand[0]):
+  #      print (i)
+
 
 #plt.xlim(0.05, 0.16)
 #plt.ylim(-5, 8)

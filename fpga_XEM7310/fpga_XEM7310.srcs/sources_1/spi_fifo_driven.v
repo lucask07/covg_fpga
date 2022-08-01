@@ -180,7 +180,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 //     );
      
      LPF_data_scale #(.ADDR(ADDR)) u_dat_scale(
-     .clk(clk), .reset(rst), .ep_write(ep_write), .ep_address(ep_address), .regDataOut(ep_dataout_coeff),
+     .clk(clk), .okClk(fifoclk), .reset(rst), .ep_write(ep_write), .ep_address(ep_address), .regDataOut(ep_dataout_coeff),
      .filter_data_in(filter_out), .filter_in_ready(filter_out_ready), .filter_data_out(filter_out_modified), .data_rdy(filter_data_rdy),
      .cmd_data_in(data_i[13:0]), .cmd_in_ready(data_rdy_0), .downsample_en(downsample_en), .sum_en(sum_en)
      );

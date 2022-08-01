@@ -24,6 +24,7 @@
 
 module LPF_data_scale #(parameter ADDR = 0) (
     input wire clk,
+    input wire okClk,
     input wire reset,
     //Register Bridge Signals
     input wire ep_write,
@@ -61,13 +62,12 @@ module LPF_data_scale #(parameter ADDR = 0) (
     //Xilinx Multiplier IP instantiation
     mult_gen_1 mult1(.CLK(clk), .A(A), .B(B), .P(P));
 
+    initial coeff_scale = 14'h2000;
+    initial coeff_offset = 14'h0000;
+
     //scaling coeff assignment process
-    always @ (posedge clk) begin
-        if (reset == 1'b1) begin
-            coeff_scale <= 14'b0;
-            coeff_offset <= 14'b0;
-        end
-        else if (ep_write && (ep_address == (ADDR + 32'h13))) begin
+    always @ (posedge okClk) begin
+        if (ep_write && (ep_address == (ADDR + 32'h13))) begin
             coeff_scale <= regDataOut[13:0];
             coeff_offset <= regDataOut[27:14];
         end
