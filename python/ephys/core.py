@@ -766,26 +766,12 @@ class Experiment:
 
             # to get the deswizzled data of all repeats need to read the file
             _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
-            print('CHAN_DATA:', chan_data)
             adc_cutoff_len = len(sweep) * 2
             ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS) / len(ads_sequencer_setup))
 
             adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
             if reading_error:
                 print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
-
-            # possible_datas = [adc_data[0], adc_data[1], adc_data[2], adc_data[3], timestamp,
-            #                   dac_data[0], dac_data[1], dac_data[2], dac_data[3],
-            #                   ads['A'], ads['B'], ads_seq_cnt[0], ads_seq_cnt[1]]
-            # possible_datas_names = ["adc_data[0]", "adc_data[1]", "adc_data[2]", "adc_data[3]", "timestamp",
-            #                         "dac_data[0]", "dac_data[1]", "dac_data[2]", "dac_data[3]",
-            #                         "ads['A']", "ads['B']", "ads_seq_cnt[0]", "ads_seq_cnt[1]"]
-            # fig, ax = plt.subplots(4, 4)
-            # for i in range(13):
-            #     d = possible_datas[i]
-            #     ax[i // 4][i % 4].plot(d, label=possible_datas_names[i])
-            #     ax[i // 4][i % 4].legend(loc='lower right')
-            # plt.show()
 
             # Resize data array for new data, append new data
             chan_data_arr = np.ones((data.shape[0], chan_data[0].shape[0]), dtype=data.dtype)
@@ -840,12 +826,8 @@ class Experiment:
         full_data_name = os.path.join(data_dir, file_name)
         with h5py.File(full_data_name, "w") as file:
             data_set = file.create_dataset("adc", data=data)
-            print(data_set)
-            print(data)
-            print((data_set == data).all())
         print(f'DDR data saved at {full_data_name}')
         plt.ioff()
         plt.show()
 
-        t = np.arange(0, len(data[clamp_nums[0]]))*1/FS * 1e3
-        return t * 1e3, np.array(to_voltage(data=data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3, data_dir, file_name, data
+        return data_dir, file_name

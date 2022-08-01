@@ -41,51 +41,32 @@ for clamp_num in clamp_nums:
         addr_pins_2=0b000,
     )
 
-t, data, data_dir, file_name, stacked_data = experiment.record(clamp_num=clamp_nums, inject_current=True, low_scaling_factor=0, cutoff=-10, high_scaling_factor=10)
+data_dir, file_name = experiment.record(clamp_num=clamp_nums, inject_current=True, low_scaling_factor=0, cutoff=-10, high_scaling_factor=10)
 experiment.close()
 
-# _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
+_, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
 
-for i in range(1):
-    # Copy another channel's data into channel 7
-    # stacked_data[7] = stacked_data[i]
-    # print('Swapped 7 with', i)
+adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = experiment.daq.ddr.data_to_names(chan_data)
 
-    adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = experiment.daq.ddr.data_to_names(stacked_data.astype(np.uint16))
+t = np.arange(len(adc_data[0]))
+plt.plot(t, to_voltage(adc_data[0], 16, 10, True) / res)
+plt.show()
 
-    possible_datas = [adc_data[0], adc_data[1], adc_data[2], adc_data[3], timestamp,
-                    dac_data[0], dac_data[1], dac_data[2], dac_data[3],
-                    ads['A'], ads['B'], ads_seq_cnt[0], ads_seq_cnt[1]]
-    possible_datas_names = ["adc_data[0]", "adc_data[1]", "adc_data[2]", "adc_data[3]", "timestamp",
-                            "dac_data[0]", "dac_data[1]", "dac_data[2]", "dac_data[3]",
-                            "ads['A']", "ads['B']", "ads_seq_cnt[0]", "ads_seq_cnt[1]"]
-    fig, ax = plt.subplots(4, 4)
-    for i in range(13):
-        d = possible_datas[i]
-        ax[i // 4][i % 4].plot(d, label=possible_datas_names[i])
-        ax[i // 4][i % 4].legend(loc='lower right')
-    plt.show()
+import os, sys
+sys.path.append(os.path.join(os.getcwd().split('covg_fpga')[0], 'covg_fpga/python'))
+from analysis.adc_data import separate_ads_sequence
+ads_sequencer_setup = [('1', '1'), ('2', '2')]
+ads_voltage_range = 5
 
+ads_data_v = {}
+for letter in ['A', 'B']:
+    ads_data_v[letter] = np.array(to_voltage(ads[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
 
-    t = np.arange(len(adc_data[0]))
-    plt.plot(t, to_voltage(adc_data[0], 16, 10, True) / res)
-    plt.show()
+total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
+total_seq_cnt[::2] = ads_seq_cnt[0]
+total_seq_cnt[1::2] = ads_seq_cnt[1]
 
-    import os, sys
-    sys.path.append(os.path.join(os.getcwd().split('covg_fpga')[0], 'covg_fpga/python'))
-    from analysis.adc_data import separate_ads_sequence
-    ads_sequencer_setup = [('1', '1'), ('2', '2')]
-    ads_voltage_range = 5
-
-    ads_data_v = {}
-    for letter in ['A', 'B']:
-        ads_data_v[letter] = np.array(to_voltage(ads[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
-
-    total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
-    total_seq_cnt[::2] = ads_seq_cnt[0]
-    total_seq_cnt[1::2] = ads_seq_cnt[1]
-
-    ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
-    t_ads = np.linspace(0, len(adc_data[0]), len(ads_separate_data['A'][1]))
-    plt.plot(t_ads, ads_separate_data['A'][1], label="['A'][1]")
-    plt.show()
+ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+t_ads = np.linspace(0, len(adc_data[0]), len(ads_separate_data['A'][1]))
+plt.plot(t_ads, ads_separate_data['A'][1], label="['A'][1]")
+plt.show()
