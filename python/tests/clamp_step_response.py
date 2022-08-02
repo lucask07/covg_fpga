@@ -251,28 +251,6 @@ ads.set_fpga_mode()
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
-# configure General Purpose DACs, ensure not as a current source
-# DAC_gp[1] channel 0 is connected to bottom plate of Membrane capacitor
-for i in range(2):
-    daq.set_isel(port=i+1, channels=None)
-    # Reset the Wishbone controller and SPI core
-    daq.DAC_gp[i].set_ctrl_reg(daq.DAC_gp[i].master_config)
-    daq.DAC_gp[i].set_spi_sclk_divide()
-    daq.DAC_gp[i].filter_select(operation="clear")
-    daq.DAC_gp[i].set_data_mux("host")
-    daq.DAC_gp[i].set_config_bin(0x00)
-    print('Outputs powered on')
-
-#DAC2_CAL0, DAC2_CAL1 
-daq.DAC_gp[1].write_voltage(0.635, 0) # 50 mV offset 
-daq.DAC_gp[1].set_gain(2, outputs=[0,1,2,3,4,5,6,7])
-
-# Use DAC2_CAL1 as a current source driven by the DDR 
-daq.set_isel(port=2, channels=[1])
-# -3.5 V to 3.5 V out from the bipolar amplifier.
-# Howland current pump gain is Vin*1/4.7e6
-daq.DAC_gp[1].set_gain(1, outputs=[1])
-
 # fast DAC channels setup
 for i in range(6):
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
@@ -325,30 +303,6 @@ errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store
 # Set CMD and CC signals
 set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
-
-CURRENT_INJECT = True
-if CURRENT_INJECT:
-    sdac_1_out_chan = 7  # Do not care for this experiment -- able to connect DAC1_OUT7 to the scope. Have voltage mirror current
-    sdac_2_out_chan = 1  # Howland current source -- connecting to DAC2_CAL1 
-
-    # Clear channel bits
-    for i in range(4):
-        ddr.data_arrays[i] = np.bitwise_and(ddr.data_arrays[i], 0x3fff)
-
-    # Set channel bits for the General purpose DAC
-    ddr.data_arrays[0] = np.bitwise_or(fdac_sine, (sdac_1_out_chan & 0b110) << 13)
-    ddr.data_arrays[1] = np.bitwise_or(fdac_sine, (sdac_1_out_chan & 0b001) << 14)
-    ddr.data_arrays[2] = np.bitwise_or(fdac_sine, (sdac_2_out_chan & 0b110) << 13)
-    ddr.data_arrays[3] = np.bitwise_or(fdac_sine, (sdac_2_out_chan & 0b001) << 14)
-
-    # CMD is DDR channels 1, 3. Derive current source value from the CMD signal 
-    i_na_per_lsb = 796.6/2**15   # nA/LSB 
-
-    # Fast DAC offset is 0x2000 
-    on_current = 500 # nA 
-    cmd_signal = ddr.data_arrays[1] 
-    ddr.data_arrays[5] = np.where(cmd_signal > 0x2000, int(on_current/i_na_per_lsb), 0) + 0x8000
-    ddr.data_arrays[6] = ddr.data_arrays[5]  # could observe on the oscilloscope 
 
 if 1:
     for fb_res in feedback_resistors:
@@ -438,7 +392,6 @@ if 1:
                 if i == 0:
                     fig.legend(loc='lower right')
 
-rs = 100
 print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
 # Configure for better oscilloscope viewing
 for dc_num in DC_NUMS:
@@ -447,12 +400,12 @@ for dc_num in DC_NUMS:
         DAC_SEL="drive_CAL2",
         CCOMP=47,
         RF1=2.1,  # feedback circuit
-        ADG_RES=rs,
+        ADG_RES=100,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
         P1_CAL_CTRL=0, 
         P2_E_CTRL=0,
-        P2_CAL_CTRL=0, # close just for this demonstration of the ADS CAL_ADC
+        P2_CAL_CTRL=1, # close just for this demonstration of the ADS CAL_ADC
         gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",

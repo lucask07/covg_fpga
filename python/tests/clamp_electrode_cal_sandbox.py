@@ -248,58 +248,6 @@ ads.set_fpga_mode()
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
-# configure clamp board Utility pin to be the offset voltage for the feedback
-# at this point the slow DAC can be set by the host 
-for i in range(2):
-    daq.set_isel(port=i+1, channels=None)
-    # Reset the Wishbone controller and SPI core
-    daq.DAC_gp[i].set_ctrl_reg(daq.DAC_gp[i].master_config)
-    daq.DAC_gp[i].set_spi_sclk_divide()
-    daq.DAC_gp[i].filter_select(operation="clear")
-    daq.DAC_gp[i].set_data_mux("host")
-    daq.DAC_gp[i].set_config_bin(0x00)
-    print('Outputs powered on')
-    if i == 0:
-        daq.DAC_gp[i].set_data_mux("DDR")
-    else:
-        pass # keep as host driven 
-
-#DAC2_CAL0, DAC2_CAL1 
-# daq.DAC_gp[1].write_voltage(1.457, 0) 
-daq.DAC_gp[1].write_voltage(0.6265, 0) 
-daq.DAC_gp[1].set_gain(2, outputs=[0,1,2,3,4,5,6,7])
-
-print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
-# Configure for better oscilloscope viewing
-for dc_num in DC_NUMS:
-    log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG2",
-        #ADC_SEL="CAL_SIG12,
-        DAC_SEL="drive_CAL2",
-        #DAC_SEL="gnd_Both",
-        CCOMP=47,
-        RF1=2.1,  # feedback circuit
-        ADG_RES=res,
-        PClamp_CTRL=0, # keep open (not passive clamp)
-        P1_E_CTRL=0, #open 
-        P1_CAL_CTRL=1, #close for cal
-        P2_E_CTRL=1, #open
-        P2_CAL_CTRL=1, #close for cal
-        gain=1,  # instrumentation amplifier
-        FDBK=1,
-        mode="voltage",
-        EN_ipump=0,
-        RF_1_Out=1,
-        addr_pins_1=0b110,
-        addr_pins_2=0b000,
-    )
-
-
-
-
-###################################### 
-
-
 # fast DAC channels setup
 for i in range(6):
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
@@ -311,6 +259,17 @@ for i in range(6):
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
 
+# configure clamp board Utility pin to be the offset voltage for the feedback
+# at this point the slow DA Ccan be set by the host 
+for i in range(2):
+    # Reset the Wishbone controller and SPI core
+    daq.DAC_gp[i].set_ctrl_reg(daq.DAC_gp[i].master_config)
+    daq.DAC_gp[i].set_spi_sclk_divide()
+    daq.DAC_gp[i].filter_select(operation="clear")
+    daq.DAC_gp[i].set_data_mux("host")
+    daq.DAC_gp[i].set_config_bin(0x00)
+    print('Outputs powered on')
+    daq.DAC_gp[i].set_data_mux("DDR")
 
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
