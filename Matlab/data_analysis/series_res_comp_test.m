@@ -2,6 +2,7 @@
 clear all;
 close all;
 clc;
+
 %% Plot CMD Signal
 
 %Grab CMD data from .h5 file
@@ -75,14 +76,16 @@ saveas(figure(2), 'FilterLatencyMeasMATLAB.png');
 %% Plot CMD, Im, P1, and Vm
 
 f = figure(3);
+LineStyles = {'-o','-+','-v','-s','-x','-d','-*','->','-h','-^'};
+LineStyleIdx = 1;
 t = t-3277.2;
 t2 = t2-3277.2;
 set(gcf, 'Position', get(0, 'Screensize'));
-tiledlayout('flow', 'TileSpacing', 'compact')
+tiledlayout(3, 1, 'TileSpacing', 'compact')
 a = nexttile;
 b = nexttile;
 c = nexttile;
-d = nexttile;
+% d = nexttile;
 
 % Constants for calculating voltage/current conversion from DAC/ADC codes
 ADG_RES = 100000; % Ohms
@@ -95,10 +98,10 @@ ADS_amplitude_Gain = 5000; % mV
 
 % ADC/DAC code to voltage/current conversion factors
 ADC_to_uA = (1/8)*(1/(ADG_RES*1e-6))*(1/inamp_gain)*(1/AD7961_driver_gain)*1e-3;
-DAC_to_mV = (1/fbck_gain)*(DAC_amplitude_gain/2^13)*DAQ_to_DC_gain;
+DAC_to_mV = (DAC_amplitude_gain/2^13)*DAQ_to_DC_gain;
 ADS_to_mV = (ADS_amplitude_Gain/2^15);
 
-alphas = [0.0, 0.25, 0.5, 0.55, 0.6, 0.65, 0.75];
+alphas = [0.0, 0.25, 0.5, 0.75];
 risetimes = [];
 overshoots = [];
 settlingtimes = [];
@@ -119,59 +122,62 @@ for alpha = (0:0.05:0.75)
     cmd_data = double(cmd_data);
     current_data = dec2bin(y(:,1));
     current_data = typecast(uint16(bin2dec(current_data)), 'int16');
-    current_data = double(current_data);
-    p1_data = dec2bin(y(1:10:end,8));
-%     p1_data = dec2bin(y(1:5:end,8));
+    current_data = double(-current_data);
+%     p1_data = dec2bin(y(1:10:end,8));
+    p1_data = dec2bin(y(1:5:end,8));
     p1_data = typecast(uint16(bin2dec(p1_data)), 'int16');
     p1_data = double(p1_data);
-    vm_data = dec2bin(y(2:10:end,8));
-%     vm_data = dec2bin(y(2:5:end,8));
+%     vm_data = dec2bin(y(2:10:end,8));
+    vm_data = dec2bin(y(2:5:end,8));
     vm_data = typecast(uint16(bin2dec(vm_data)), 'int16');
     vm_data = double(vm_data);
 
     % 1 MSPS time array
-    t3 = (1:length(p1_data))*2000e-3;
-%     t3 = (1:length(p1_data))*1000e-3;
+%     t3 = (1:length(p1_data))*2000e-3;
+    t3 = (1:length(p1_data))*1000e-3;
     t3 = t3-3277.2;
     
     if(isempty(setdiff(round(alpha,2), alphas)))
+
         % Plot CMD for current α
         axes(a);
-        plot(t, (cmd_data-8192)*DAC_to_mV, '-*', 'LineWidth', 2);
-        xlim([-75 175]);
+        plot(t, (cmd_data-8192)*DAC_to_mV, LineStyles{LineStyleIdx}, 'LineWidth', 2);
+        xlim([-25 175]);
         hold on;
         
         % Plot Im for current α
         axes(b)
-        plot(t2, current_data*ADC_to_uA, '-*', 'LineWidth', 2);
-        xlim([-75 175]);
+        plot(t2, current_data*ADC_to_uA, LineStyles{LineStyleIdx}, 'LineWidth', 2);
+        xlim([-25 175]);
+        hold on;
+
+        % Plot Vm for current α
+        axes(c)
+        plot(t3(1:length(vm_data)), vm_data*ADS_to_mV, LineStyles{LineStyleIdx}, 'LineWidth', 2);
+        xlim([-25 175]);
         hold on;
         
         % Plot P1 for current α
-        axes(c);
-        plot(t3(1:length(p1_data)), p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
-        xlim([-75 175]);
-        hold on;
-    
-        % Plot Vm for current α
-        axes(d)
-        plot(t3(1:length(vm_data)), vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
-        xlim([-75 175]);
-        hold on;
+%         axes(d);
+%         plot(t3(1:length(p1_data)), p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
+%         xlim([-75 175]);
+%         hold on;
+
+        LineStyleIdx = LineStyleIdx + 1;
     
         %display step response metrics for Vm
-        rise_time = risetime(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000));
-%         rise_time = risetime(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000));
+%         rise_time = risetime(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000));
+        rise_time = risetime(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000));
         risetimes = [risetimes; rise_time];
         disp(['For α=',num2str(alpha,2), ' Vm rise time is: ', num2str(rise_time, 4), ' us']);
 
-        over_shoot = overshoot(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000));
-%         over_shoot = overshoot(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000));
+%         over_shoot = overshoot(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000));
+        over_shoot = overshoot(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000));
         overshoots = [overshoots; over_shoot];
         disp(['For α=',num2str(alpha,2), ' Vm overshoot is: ', num2str(over_shoot, 4), ' %']);
 
-        [s,slev,sinst] = settlingtime(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000), 500, 'Tolerance', 5);
-%         [s,slev,sinst] = settlingtime(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000), 500, 'Tolerance', 5);
+%         [s,slev,sinst] = settlingtime(vm_data(1000:3000)*ADS_to_mV, t3(1000:3000), 500, 'Tolerance', 5);
+        [s,slev,sinst] = settlingtime(vm_data(1000:6000)*ADS_to_mV, t3(1000:6000), 500, 'Tolerance', 5);
         settlingtimes = [settlingtimes; sinst];
         disp(['For α=',num2str(alpha,2), ' Vm settling time is: ', num2str(sinst, 4), ' us']);
         fprintf('\n');
@@ -180,7 +186,7 @@ end
 
 % Axes label for CMD
 axes(a);
-title('CMD');
+title('Vcmd(t)');
 xlabel('t (μs)');
 ylabel('Voltage (mV)');
 grid on;
@@ -192,18 +198,19 @@ xlabel('t (μs)');
 ylabel('Current (μA)');
 grid on;
 
-% Axes label for P1
+% Axes label for Vm
 axes(c);
-title('P1 (tracks Vm)');
+title('Vm');
 xlabel('t (μs)');
 ylabel('Voltage (mV)');
 grid on;
 
-% Axes label for Vm
-axes(d);
-title('Vm');
-xlabel('t (μs)');
-ylabel('Voltage (mV)');
+% Axes label for P1
+% axes(d);
+% title('P1 (tracks Vm)');
+% xlabel('t (μs)');
+% ylabel('Voltage (mV)');
+% grid on;
 
 % Shared Legend
 legend_array = {};
@@ -220,113 +227,61 @@ saveas(figure(3), 'series_res_comp_data_full.png');
 
 %% Table with Step Response Metrics
 
-f = figure(4);
-f.Units = 'normalized';
-f.Position = [0.5 0.5 .236 .18 ];
-
+% Define table data entries
 data = horzcat(risetimes, overshoots, settlingtimes);
-rs_table = uitable(f, 'Units', 'normalized', 'Data', data, 'ColumnName', {'Rise Time [us] ', 'Percent Overshoot ', ...
-    'Settling Time [us] '}, 'RowName', legend_array, 'Position', [0 0 1 1]);
-saveas(figure(4), 'std_rs_comp_step_response_metrics.png');
 
-%% Plot Function Generator Data
+% Replace legend labels with LaTeX compatible character for α
+legend_array = replace(legend_array, 'α', '$\alpha$');
 
-figure(5);
+% Create table from the data matrix
+rs_table = array2table(data, 'VariableNames', {'RiseTime [$\mu$s]', 'Percent Overshoot', ...
+'Settling Time [$\mu$s]'}, 'RowNames', legend_array);
 
-ADS_to_V = (ADS_amplitude_Gain/(2^15*1000));
-fn_gen_data = double(y(6:10:end,8));
-risetime(fn_gen_data*ADS_to_V, t3);
-title('Function Generator Data');
-xlabel('t (μs)');
-ylabel('Voltage (V)');
+% Create .tex file from MATLAB table (output to the same directory as this script)
+table2latex(rs_table, 'StepResponseMetrics');
 
-rise_time = risetime(fn_gen_data*ADS_to_V, t3);
-disp(['Rise time is: ', num2str(mean(rise_time), 4), ' us']);
-fprintf('\n');
-disp(['Magnitude is: ', num2str((max(fn_gen_data*ADS_to_V) - min(fn_gen_data*ADS_to_V))/2)]);
+%% Observer Definitions and Matrices - Code is based off Dr. Secord's Vm Control Driver Script
 
-%% FFT of Function Generator Data
-
-figure(6);
-Fs = 500e3;
-
-Y = fft(fn_gen_data*ADS_to_V);
-L = length(fn_gen_data);
-P2 = abs(Y/L);
-P1 = P2(1:L/2+1);
-P1(2:end-1) = 2*P1(2:end-1);
-
-f = Fs*(0:(L/2))/L;
-plot(f,P1); 
-title('Single-Sided Amplitude Spectrum of X(t)');
-xlabel('f (Hz)');
-ylabel('|P1(f)|');
-
-%% From Dr. Secord's Vm Control Driver Script
-
-% VARIABLE AND PARAMETER DEFINITIONS - REFER TO SCHEMATIC (p 137 in notebook)
-%--------------------------------------------------------------------------
+% VARIABLE AND PARAMETER DEFINITIONS
+%-----------------------------------
 Cma = 33e-9;
 Rpc = 5e3;
 Rsa = 1e3;
-Vp2Lim = 10;
+Rcc = 7.12e3;
+Ccc = 4.7e-9;
 
-% Plant model with Vm as output
-A = [-1/((Rpc + Rsa)*Cma)];
-B = [1/((Rpc + Rsa)*Cma)];
-C = [1];
-D = [0];
+Ts = 1; % sampling time in us
 
-% True dynamics (will differ from above in practice)
-% For now, assume our model of A and B is perfect
-AT = A;
-BT = B;
-
-% Define output that represents actual measurements
-% y = [Vm Im]'
-rhoA = Rsa/(Rpc+Rsa);
-gamma = 1/(Rpc+Rsa);
-Cmeas = [1-rhoA;-gamma];
-Dmeas = [rhoA;gamma];
-
-% Augmented model with integrator
-Atilde = [A 0;-C 0];
-Btilde = [B;-D];
-
-% Find state gain and integrator gain with LQI method
-sys = ss(A,B,C,D);
-Qvm = 1e-5;    % State penalty for large Vm
-Qint = 1e6;   % Penalty on large integrator values
-R = 1e-7;      % Penalty on Vp2 control input magnitude
-Q = diag([Qvm Qint]);
-
-K = lqi(sys,Q,R); % [Kvm Ki]
-Kvm = K(1);
-Ki = K(2);
+A = [-1/(Rsa*Cma) 0; 0 -1/(Rcc*Ccc)]*Ts*1e-6 + [1 0; 0 1];
+B = [1/(Rsa*Cma); 1/(Rcc*Ccc)]*Ts*1e-6;
+Cmeas = [-1/Rsa -1/Rcc];
+Dmeas = (1/Rsa + 1/Rcc);
 
 % Observer pole placement as multiplicative factor on plant pole
-speedFactor = 10;
+speedFactor = 3;
 pObs = speedFactor*eig(A);
-L = place(A',Cmeas',pObs)';
+L = place(A',Cmeas',pObs)'*Ts*1e-6;
 
 %% Setting Inputs to Simulink Observer Model and Plotting Simulation Output
 
-Ts = 2; % sampling time in us
+% Defining Inputs to Observer
+Im = [(t3 + 3277.2).', (current_data(1:5:end)*ADC_to_uA)*1e-3];
+Vp1 = [(t3 + 3277.2).', (p1_data*ADS_to_mV*(1/fbck_gain))];
 
-Vp2 = [t3.', ((cmd_data(1:5:end)-8192)*DAC_to_mV)];
-Vp1_Im = [t3.', (p1_data*ADS_to_mV*(1/fbck_gain)), (current_data(1:10:end)*ADC_to_uA)];
-
+% Run Simulink Simulation and Grab Observer Output
 simResults = sim('control_system_observer');
 Vm_estimate = simResults.Vm_estimate.Data;
+Im_estimate = simResults.Im_estimate.Data;
+Observer_error = simResults.Observer_error.Data;
 
+% Plot Actual Measured Vm vs Estimator Vm
+figure(5);
+grid on;
 plot(t3, vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
 xlim([-75 175]);
 hold on;
 plot(t3(1:length(Vm_estimate)), Vm_estimate, '-*', 'LineWidth', 2);
-hold on;
-plot(t3, p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
 title('Vm vs Vm Estimate');
 xlabel('t (μs)');
 ylabel('Voltage (mV)');
-legend('Vm', 'Observer Estimate', 'Vp1', 'Location', 'northeast');
-
+legend('Vm Actual', 'Estimated', 'Location', 'southeast');
