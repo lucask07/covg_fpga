@@ -48,7 +48,9 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire [23:0] filter_data_i,
      input wire data_rdy_0_filt,
      input wire downsample_en,
-     input wire sum_en
+     input wire sum_en,
+     /*****Filter mux select signal to allow for special case of selecting ADS data*****/
+     input wire [2:0] filter_data_mux_sel
     );
     
       wire cmd_stb;
@@ -157,14 +159,38 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 wire [13:0] filter_out_scaled;
      wire filter_out_ready;
+     
+     /*****Special case of selecting ADS data (Direct Vm Feedback for PI control)*****/
+     reg data_rdy_filter_mux;
+     reg [15:0] filter_mux_data;
+     
+     always @(posedge clk) begin
+        if(rst == 1'b1)begin
+            data_rdy_filter_mux <= 1'b0;
+            filter_mux_data <= 16'b0;
+        end
+        else if(data_rdy_0_filt == 1'b1)begin
+           if(filter_data_mux_sel == 3'b010)begin
+               filter_mux_data <= {((data_i[13:0] - 14'h1fff) - filter_data_i[15:2]), 2'b00};
+               data_rdy_filter_mux <= 1'b1;
+           end
+           else begin
+               filter_mux_data <= filter_data_i[15:0];
+               data_rdy_filter_mux <= 1'b1;
+           end
+        end
+        else begin
+            data_rdy_filter_mux <= 1'b0;
+        end
+     end
 	 
 	 // Real-Time LPF
        Butter_pipelined u_Butterworth_0
          (
          .clk(clk),
-         .clk_enable(data_rdy_0_filt | write_enable | write_done),  // input data is registered when clk_enable is high 
+         .clk_enable(data_rdy_filter_mux | write_enable | write_done),  // input data is registered when clk_enable is high 
          .reset(rst),
-         .filter_in(filter_data_i[15:0]), 
+         .filter_in(filter_mux_data),
          .write_enable(write_enable),
          .write_done(write_done),
          .write_address(write_address[3:0]),
