@@ -1022,7 +1022,8 @@ module top_level_module(
                  .filter_data_i(filter_spi_data[p]),
                  .data_rdy_0_filt(filter_data_ready_fast_dac[p]),
                  .downsample_en(ep_wire_filtdata[`AD5453_DOWNSAMPLE_ENABLE_GEN_BIT + p]),
-                 .sum_en(ep_wire_filtdata[`AD5453_SUMMATION_ENABLE_GEN_BIT + p])
+                 .sum_en(ep_wire_filtdata[`AD5453_SUMMATION_ENABLE_GEN_BIT + p]),
+                 .filter_data_mux_sel(ep_wire_filtdata[(`AD5453_FILTER_DATA_SEL_GEN_BIT + p*`AD5453_FILTER_DATA_SEL_GEN_BIT_LEN) +: `AD5453_FILTER_DATA_SEL_GEN_BIT_LEN])
                  );
         end
     endgenerate
