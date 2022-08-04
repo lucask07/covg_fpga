@@ -30,6 +30,7 @@ sys.path.append(boards_path)
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from analysis.adc_data import separate_ads_sequence
 from boards import Daq, Clamp
+from filters.filter_tools import butter_lowpass_filter
 
 # Constants
 FS = 5e6
@@ -700,7 +701,7 @@ class Experiment:
 
         return t, data
 
-    def record(self, clamp_num, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
+    def record(self, clamp_num, filter_current=None, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
         """Send out Sequence and display updating graph.
         
         We read back the data by Sweep so we can update the graph in pieces,
@@ -712,6 +713,10 @@ class Experiment:
         ----------
         clamp_num : int or List[int]
             Which Clamp to write to (0, 1, 2, or 3).
+        filter_current : float or None
+            The cutoff frequency in Hertz for a Low Pass Filter (LPF) to
+            apply to the current data. None to apply no filter. Defaults to
+            None.
         inject_current : bool
             Whether to include a corresponding injected current.
         low_scaling_factor : float
@@ -822,6 +827,9 @@ class Experiment:
                 leftover_ads_data[clamp_num] = combined_ads_data[ads_cutoff_len:]
                 # Multiply by 1e3 to get Voltage data in millivolts
                 current_data = (np.array(to_voltage(combined_adc_data[:adc_cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 3000 * 1620/500
+                if filter_current is not None:
+                    # Should filter the current data using a LPF with given cutoff frequency in Hz
+                    current_data = butter_lowpass_filter(data=current_data, cutoff=filter_current, fs=ADS_FS)
                 # Create time in milliseconds
                 t = np.arange(0, len(current_data))*1/FS * 1e3
 

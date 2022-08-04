@@ -42,7 +42,7 @@ for clamp_num in clamp_nums:
     )
 
 # For scaling factors, keep in mind our current injection range is only ~ [-0.8, 0.8] uA
-data_dir, file_name = experiment.record(clamp_num=clamp_nums, inject_current=True, low_scaling_factor=0, cutoff=50, high_scaling_factor=0.8/100)
+data_dir, file_name = experiment.record(clamp_num=clamp_nums, filter_current=500, inject_current=True, low_scaling_factor=0, cutoff=50, high_scaling_factor=0.8/100)
 # experiment.close()
 
 _, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
