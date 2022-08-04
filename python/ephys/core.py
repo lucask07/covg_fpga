@@ -87,10 +87,10 @@ class Epoch:
         Returns
         -------
         data : np.ndarray
-            The voltage data points for the Epoch in V.
+            The voltage data points for the Epoch in mV.
         """
 
-        data = self.first_level * np.ones(shape=len(self), dtype=np.int16)
+        data = self.first_level * np.ones(shape=len(self), dtype=float)
         return data
 
     def duration(self):
@@ -141,7 +141,7 @@ class Sweep:
         Returns
         -------
         data : np.ndarray
-            The voltage data points for the Sweep in V.
+            The voltage data points for the Sweep in mV.
         """
 
         data = np.concatenate([e.data() for e in self.epochs])
@@ -206,7 +206,7 @@ class Protocol:
         Returns
         -------
         data : np.ndarray
-            The voltage data for the Protocol in V.
+            The voltage data for the Protocol in mV.
         """
 
         data = np.concatenate([s.data() for s in self.sweeps])
@@ -325,7 +325,7 @@ class Sequence:
         Returns
         -------
         data : np.ndarray
-            The voltage data for the Sequence in V.
+            The voltage data for the Sequence in mV.
         """
 
         data = np.concatenate([p.data() for p in self.protocols])
@@ -506,7 +506,7 @@ class Experiment:
         high_scaling_factor : float
             The scaling factor (uA/mV) for current when the CMD voltage is
             greater than or equal to the cutoff.
-            current = voltage * low_scaling_factor  * 1e3.
+            current = voltage * high_scaling_factor  * 1e3.
 
         Returns
         -------
@@ -521,22 +521,30 @@ class Experiment:
         else:
             raise TypeError('write_sequence parameter clamp_num must be int or list of ints.')
 
+        # Offset adjust gain k is multiply by 3k/feedback resistor. To counteract this we multiply by feedback resistor/3k
+        fb_res = 2.1
+        offset_adjust_k = 1 + fb_res / 3    # fb_res is already in kOhms, so 3 instead of 3e3
         dac_offset = 0x1E00
         target_len = len(self.daq.ddr.data_arrays[0])
 
         # Create data
+        # Multiply data by 1e-3 because sequence data is given in mV, need in V for from_voltage conversion
         sequence_data = self.sequence.data() * 1e-3
         sequence_len = len(sequence_data)
         for clamp_num in clamp_nums:
             cmd_ch = clamp_num * 2 + 1
             cc_ch = clamp_num * 2
-            # Multiply data by 1e-3 because it is given in mV, need in V
+
+            # In addition to the offset adjust amplifier, the CMD signal is
+            # attennuated 10x from the DAQ board to the daughtercard so we
+            # have to multiply our signal by 10 to get it back to what we want
+            # cmd_voltage = sequence_data * offset_adjust_k * 10
+            cmd_voltage = sequence_data * 10
+            # cmd_voltage = sequence_data * offset_adjust_k
             # Pad with zeros to make correct size
-            cmd_signal = sequence_data
-            cmd_signal = np.pad(cmd_signal, (0, target_len - len(cmd_signal)), 'constant', constant_values=0)
-            cmd_signal = [float(x) for x in cmd_signal]
+            cmd_voltage = np.pad(cmd_voltage, (0, target_len - len(cmd_voltage)), 'constant', constant_values=0)
             # TODO: determine voltage_range for AD5453
-            cmd_signal = np.array(from_voltage(voltage=cmd_signal, num_bits=14, voltage_range=5, with_negatives=True), dtype=np.uint16) + dac_offset
+            cmd_signal = np.array(from_voltage(voltage=cmd_voltage, num_bits=14, voltage_range=5, with_negatives=True), dtype=np.uint16) + dac_offset
             cc_signal = np.ones(len(cmd_signal), dtype=np.uint16) * dac_offset
             self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
             self.daq.ddr.data_arrays[cc_ch] = cc_signal
@@ -546,8 +554,8 @@ class Experiment:
             # sequence_data in V, cutoff in mV, scaling factors in uA/mv, current needs to be in nA
             current = np.where(
                 sequence_data < cutoff * 1e-3,
-                sequence_data * 1e3 * low_scaling_factor,
-                sequence_data * 1e3 * high_scaling_factor
+                sequence_data * 1e3 * low_scaling_factor * 1e3,
+                sequence_data * 1e3 * high_scaling_factor * 1e3
             )
             self.inject_current(current=current, write_ddr=False)
 
@@ -579,6 +587,10 @@ class Experiment:
             written next time the DDR is written.
         """
 
+        # DAC80508 output to bipolar amplifier to Howland current pump
+        # Bipolar Amplifier: OUT = 3*IN – 3/2*VREF
+        # Howland Current Pump: IOUT = VIN/4.7e6
+        # DAC gain of x1 makes bipolar output symmetric about zero
         na_per_lsb = 796.6/2**15   # nA/LSB scaling factor for current to binary
         offset = 0x8000
         sdac_1_out_chan = 7  # Do not care for this experiment -- able to connect DAC1_OUT7 to the scope. Have voltage mirror current
@@ -597,7 +609,7 @@ class Experiment:
         # Use DAC2_CAL0 as a current source driven by the DDR
         # DAC2_CAL1 is available as a repeat of the same current.
         self.daq.set_isel(port=2, channels=[0, 1])
-        # -3.5 V to 3.5 V out from the bipolar amplifier with gain of x1.
+        # -3.5 V to 3.5 V out from the bipolar amplifier with gain of x1. ~ [-0.8, 0.8] uA
         # Howland current pump gain is Vin*1/4.7e6
         self.daq.DAC_gp[1].set_gain(1, outputs=[0, 1])
 
@@ -616,7 +628,17 @@ class Experiment:
 
         # Set current data with offset
         target_len = len(self.daq.ddr.data_arrays[6])
-        current_data = current // na_per_lsb + offset
+        v_ref = 2.5
+        # For current output to be bidirectional, our range gets shifted down
+        # to the halfway point being zero. Add half to everything before
+        # converting so we use the right binary codes.
+        # Add half scale nA to split our [-0.8, 0.8] uA == [-800, 800] nA range
+        current += ((3*1.25 - (3/2)*(v_ref)) / 4.7e6) * 1e9
+        dac_voltage = (current * 1e-9 * 4.7e6 + (3/2) * v_ref) / 3  # Use bipolar amp and current pump equations to get needed voltage
+        current_data = from_voltage(dac_voltage, 16, 2.5, False)    # DEBUG
+        np.savetxt("current.csv", current, delimiter=",")
+        np.savetxt("dac_v.csv", dac_voltage, delimiter=",")
+        np.savetxt("dac_data.csv", current_data, delimiter=",")
         self.daq.ddr.data_arrays[6] = np.pad(current_data, (0, target_len - len(current_data)), mode='constant', constant_values=offset)
         self.daq.ddr.data_arrays[7] = self.daq.ddr.data_arrays[6]
 
@@ -799,12 +821,12 @@ class Experiment:
                 combined_ads_data = np.concatenate([leftover_ads_data[clamp_num], ads_separate_data['A'][clamp_num + 1]])
                 leftover_ads_data[clamp_num] = combined_ads_data[ads_cutoff_len:]
                 # Multiply by 1e3 to get Voltage data in millivolts
-                current_data = (np.array(to_voltage(combined_adc_data[:adc_cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 3000
+                current_data = (np.array(to_voltage(combined_adc_data[:adc_cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 3000 * 1620/500
                 # Create time in milliseconds
                 t = np.arange(0, len(current_data))*1/FS * 1e3
 
-
-                vm = combined_ads_data[:ads_cutoff_len]
+                # Multiply by 1e3 to put in mV units
+                vm = combined_ads_data[:ads_cutoff_len] * 1e3
                 t_ads = np.arange(len(vm))*1/(ADS_FS / len(ads_sequencer_setup)) * 1e3
                 # Because we recalculate the length of data to read each sweep,
                 # the current_data in later sweeps may be a different length
