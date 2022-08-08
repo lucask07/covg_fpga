@@ -846,14 +846,25 @@ class Experiment:
                 leftover_ads_data[clamp_num] = combined_ads_data[ads_cutoff_len:]
                 # Multiply by 1e3 to get Voltage data in millivolts
                 current_data = (np.array(to_voltage(combined_adc_data[:adc_cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 332 * 1620/500
+
+                # Apply offset current on graph to adjust output current readings to 0
+                if sweep_num == 0:
+                    # Only calculate offset on first sweep, then apply to all data
+                    first_index = int(0.1 * len(sweep.epochs[0]))
+                    last_index = int(0.9 * len(sweep.epochs[0]))
+                    current_offset = np.mean(current_data[first_index:last_index])
+                current_data = current_data - current_offset
+
                 if filter_current is not None:
                     # Should filter the current data using a LPF with given cutoff frequency in Hz
                     current_data = butter_lowpass_filter(data=current_data, cutoff=filter_current, fs=ADS_FS)
+
                 # Create time in milliseconds
                 t = np.arange(0, len(current_data))*1/FS * 1e3
 
                 # Multiply by 1e3 to put in mV units
                 vm = combined_ads_data[:ads_cutoff_len] * 1e3 / 1.7
+
                 t_ads = np.arange(len(vm))*1/(ADS_FS / len(ads_sequencer_setup)) * 1e3
                 # Because we recalculate the length of data to read each sweep,
                 # the current_data in later sweeps may be a different length
