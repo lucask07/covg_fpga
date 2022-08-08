@@ -798,6 +798,7 @@ class Experiment:
         # 4 possible clamps
         leftover_adc_data = [np.array([], dtype=int) for i in range(4)]
         leftover_ads_data = [np.array([]) for i in range(4)]
+        current_offset = []
         for sweep_num in range(len(sweeps)):
             sweep = sweeps[sweep_num]
             # Only need len of leftover_adc_data from one clamp board's data, so we just take the first
@@ -852,8 +853,8 @@ class Experiment:
                     # Only calculate offset on first sweep, then apply to all data
                     first_index = int(0.1 * len(sweep.epochs[0]))
                     last_index = int(0.9 * len(sweep.epochs[0]))
-                    current_offset = np.mean(current_data[first_index:last_index])
-                current_data = current_data - current_offset
+                    current_offset.append(np.mean(current_data[first_index:last_index]))
+                current_data = current_data - current_offset[clamp_num]
 
                 if filter_current is not None:
                     # Should filter the current data using a LPF with given cutoff frequency in Hz
