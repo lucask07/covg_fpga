@@ -653,11 +653,7 @@ class Experiment:
         # to the halfway point being zero. Add half to everything before
         # converting so we use the right binary codes.
         # Add half scale nA to split our [-0.8, 0.8] uA == [-800, 800] nA range
-        dac_voltage = (current * 1e-9 * 4.7e6 + (3/2) * v_ref) / 3  # Use bipolar amp and current pump equations to get needed voltage
         current_data = amps_to_lsb(current * 1e-9)  # Current given in nA, convert to A before converting to binary
-        np.savetxt("current.csv", current, delimiter=",")
-        np.savetxt("dac_v.csv", dac_voltage, delimiter=",")
-        np.savetxt("dac_data.csv", current_data, delimiter=",")
         offset = 0x8000
         self.daq.ddr.data_arrays[6] = np.pad(current_data, (0, target_len - len(current_data)), mode='constant', constant_values=offset)
         self.daq.ddr.data_arrays[7] = self.daq.ddr.data_arrays[6]
