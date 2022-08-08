@@ -7,10 +7,10 @@ import numpy as np
 from core import Protocol, Experiment
 
 protocol = Protocol.create_from_csv(filepath='protocol.csv', num_sweeps=11)
-# protocol.preview()
+protocol.preview()
 
 # Pause to show user preview
-# plt.show()
+plt.show(block=True)
 
 # Run experiment
 clamp_nums = [0, 1]
@@ -19,7 +19,7 @@ experiment.setup()
 
 cap = 47
 fb_res = 2.1
-res = 3000
+res = 332
 for clamp_num in clamp_nums:
     log_info, config_dict = experiment.clamps[clamp_num].configure_clamp(
         ADC_SEL="CAL_SIG1",

@@ -3,7 +3,7 @@
 Abe Stroschein, ajstroschein@stthomas.edu
 """
 
-from typing import List, Dict
+from typing import List
 import os
 import sys
 import copy
@@ -539,9 +539,7 @@ class Experiment:
             # In addition to the offset adjust amplifier, the CMD signal is
             # attennuated 10x from the DAQ board to the daughtercard so we
             # have to multiply our signal by 10 to get it back to what we want
-            # cmd_voltage = sequence_data * offset_adjust_k * 10
-            cmd_voltage = sequence_data * 10
-            # cmd_voltage = sequence_data * offset_adjust_k
+            cmd_voltage = sequence_data * offset_adjust_k * 10
             # Pad with zeros to make correct size
             cmd_voltage = np.pad(cmd_voltage, (0, target_len - len(cmd_voltage)), 'constant', constant_values=0)
             # TODO: determine voltage_range for AD5453
@@ -592,8 +590,30 @@ class Experiment:
         # Bipolar Amplifier: OUT = 3*IN – 3/2*VREF
         # Howland Current Pump: IOUT = VIN/4.7e6
         # DAC gain of x1 makes bipolar output symmetric about zero
-        na_per_lsb = 796.6/2**15   # nA/LSB scaling factor for current to binary
-        offset = 0x8000
+        v_ref = 2.5
+        max_current = ((3*2.5 - (3/2)*(v_ref)) / 4.7e6)
+        min_current = ((3*0 - (3/2)*(v_ref)) / 4.7e6)
+        current_range = max_current - min_current
+        lsb_range = 0xffff - 0x0000
+        amps_per_lsb = current_range / (lsb_range + 1)
+        def amps_to_lsb(amp_data, limit=True):
+            if type(amp_data) is np.ndarray:
+                lsb_data = ((amp_data - min_current) / amps_per_lsb).astype(int)
+                if limit:
+                    # Limit values to [0x0000, 0xFFFF] range
+                    lsb_data = np.where(lsb_data > 0xFFFF, 0xFFFF, lsb_data)
+                    lsb_data = np.where(lsb_data < 0x0000, 0x0000, lsb_data)
+            elif type(amp_data) is float or type(amp_data) is int:
+                lsb_data = int((amp_data - min_current) / amps_per_lsb)
+                if limit:
+                    if lsb_data > 0xFFFF:
+                        lsb_data = 0xFFFF
+                    elif lsb_data < 0x0000:
+                        lsb_data = 0x0000
+            else:
+                raise TypeError(f'amps_to_lsb expected amp_data of type np.ndarray or float or int. Got {type(amp_data)}.')
+            return lsb_data
+            
         sdac_1_out_chan = 7  # Do not care for this experiment -- able to connect DAC1_OUT7 to the scope. Have voltage mirror current
         sdac_2_out_chan = 0  # Howland current source -- connecting to DAC2_CAL0
 
@@ -629,17 +649,16 @@ class Experiment:
 
         # Set current data with offset
         target_len = len(self.daq.ddr.data_arrays[6])
-        v_ref = 2.5
         # For current output to be bidirectional, our range gets shifted down
         # to the halfway point being zero. Add half to everything before
         # converting so we use the right binary codes.
         # Add half scale nA to split our [-0.8, 0.8] uA == [-800, 800] nA range
-        current += ((3*1.25 - (3/2)*(v_ref)) / 4.7e6) * 1e9
         dac_voltage = (current * 1e-9 * 4.7e6 + (3/2) * v_ref) / 3  # Use bipolar amp and current pump equations to get needed voltage
-        current_data = from_voltage(dac_voltage, 16, 2.5, False)    # DEBUG
+        current_data = amps_to_lsb(current * 1e-9)  # Current given in nA, convert to A before converting to binary
         np.savetxt("current.csv", current, delimiter=",")
         np.savetxt("dac_v.csv", dac_voltage, delimiter=",")
         np.savetxt("dac_data.csv", current_data, delimiter=",")
+        offset = 0x8000
         self.daq.ddr.data_arrays[6] = np.pad(current_data, (0, target_len - len(current_data)), mode='constant', constant_values=offset)
         self.daq.ddr.data_arrays[7] = self.daq.ddr.data_arrays[6]
 
@@ -826,7 +845,7 @@ class Experiment:
                 combined_ads_data = np.concatenate([leftover_ads_data[clamp_num], ads_separate_data['A'][clamp_num + 1]])
                 leftover_ads_data[clamp_num] = combined_ads_data[ads_cutoff_len:]
                 # Multiply by 1e3 to get Voltage data in millivolts
-                current_data = (np.array(to_voltage(combined_adc_data[:adc_cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 3000 * 1620/500
+                current_data = (np.array(to_voltage(combined_adc_data[:adc_cutoff_len], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 332 * 1620/500
                 if filter_current is not None:
                     # Should filter the current data using a LPF with given cutoff frequency in Hz
                     current_data = butter_lowpass_filter(data=current_data, cutoff=filter_current, fs=ADS_FS)
@@ -834,7 +853,7 @@ class Experiment:
                 t = np.arange(0, len(current_data))*1/FS * 1e3
 
                 # Multiply by 1e3 to put in mV units
-                vm = combined_ads_data[:ads_cutoff_len] * 1e3
+                vm = combined_ads_data[:ads_cutoff_len] * 1e3 / 1.7
                 t_ads = np.arange(len(vm))*1/(ADS_FS / len(ads_sequencer_setup)) * 1e3
                 # Because we recalculate the length of data to read each sweep,
                 # the current_data in later sweeps may be a different length
