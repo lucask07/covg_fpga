@@ -179,8 +179,8 @@ def plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha, fi
     #t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
     #ax[2].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
     #ax[3].plot(t_ads*1e6, ads_separate_data['B'][1], marker='.')
-    t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
-    ax[2].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
+    t_ads = np.arange(len(ads_separate_data['A'][5]))*1/(ADS_FS / len(ads_sequencer_setup))
+    ax[2].plot(t_ads*1e6, ads_separate_data['A'][5], marker='.')
     ax[3].plot(t_ads*1e6, ads_separate_data['B'][4], marker='.')
     
     return fig, ax
@@ -291,7 +291,7 @@ ads.set_range(ads_voltage_range) # TODO: make an ads.current_voltage_range a pro
 ads.set_lpf(376)
 # 4B - clear sine wave set by the Slow DAC
 #ads_sequencer_setup = [('5', '4'), ('1', '1')]
-ads_sequencer_setup = [('1', '4')]
+ads_sequencer_setup = [('5', '4')]
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
 ads.set_fpga_mode()
@@ -345,47 +345,46 @@ for dc_num in DC_NUMS:
 color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
 
 PI_coeff = {0: 0x80000000,
-            1: 0xaebe76c9,
-            2: 0x4ebe76c9,
-            3: 0,
+            1: 0x96e147ae,
+            2: 0x36e147ae,
+            3: 0x00000000,
             4: 0xc0000000,
-            5: 0,
+            5: 0x00000000,
             8: 0x7fffffff,
             9: 0x20000000,
-            10: 0,
-            11: 0,
-            12: 0,
-            13: 0,
+            10: 0x00000000,
+            11: 0x00000000,
+            12: 0x00000000,
+            13: 0x00000000,
             7: 0x7fffffff,
-            6: 0,
-            15: 0x0000_3fff} # offset=0, scale=1 
+            15: 0x0000_0200}
 
 for i in [1]:
-        daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
-        daq.DAC[i].set_spi_sclk_divide()
-        daq.DAC[i].filter_select(operation="set")
-        daq.DAC[i].write(int(0))
-        daq.DAC[i].set_data_mux("DDR")
-        daq.DAC[i].set_data_mux("ADS", filter_data=True)
-        daq.DAC[i].filter_sum("clear")
-        daq.DAC[i].filter_downsample("clear")
-        daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
-        daq.DAC[i].write_filter_coeffs()
-        daq.set_dac_gain(0, 5)  # 5V to see easier on oscilloscope
+    daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
+    daq.DAC[i].set_spi_sclk_divide()
+    daq.DAC[i].filter_select(operation="set")
+    daq.DAC[i].write(int(0))
+    daq.DAC[i].set_data_mux("DDR")
+    daq.DAC[i].set_data_mux("ads8686_chA", filter_data=True)
+    daq.DAC[i].filter_sum("clear")
+    daq.DAC[i].filter_downsample("clear")
+    daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
+    #daq.DAC[i].change_filter_coeff(target="passthru")
+    daq.DAC[i].write_filter_coeffs()
+    daq.set_dac_gain((i-1), 5)  # 5V to see easier on oscilloscope
 
-if (0):
-    for i in [3]:
-        daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
-        daq.DAC[i].set_spi_sclk_divide()
-        daq.DAC[i].filter_select(operation="set")
-        daq.DAC[i].write(int(0))
-        daq.DAC[i].set_data_mux("DDR")
-        daq.DAC[i].set_data_mux("ad7961_ch1", filter_data=True)
-        daq.DAC[i].filter_sum("set")
-        daq.DAC[i].filter_downsample("set")
-        daq.DAC[i].change_filter_coeff(target="generated", value=filter_coeff_generated)
-        daq.DAC[i].write_filter_coeffs()
-        daq.set_dac_gain(2, 5)  # 5V to see easier on oscilloscope
+for i in [3]:
+    daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
+    daq.DAC[i].set_spi_sclk_divide()
+    daq.DAC[i].filter_select(operation="set")
+    daq.DAC[i].write(int(0))
+    #daq.DAC[i].set_data_mux("DDR")
+    #daq.DAC[i].set_data_mux("ads8686_chA", filter_data=True)
+    #daq.DAC[i].filter_sum("set")
+    #daq.DAC[i].filter_downsample("set")
+    #daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
+    #daq.DAC[i].write_filter_coeffs()
+    #daq.set_dac_gain((i-1), 5)  # 5V to see easier on oscilloscope
 
 time.sleep(0.1)
 ddr.repeat_setup()
@@ -426,10 +425,10 @@ for dac_ch in range(4):
     lbl = f'Ch{dac_ch}'
     ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
     print(f'Min {np.min(y[2:])}, Max {np.max(y)}') # skip the first 2 readings which are 0
-    if (dac_ch == 1 or dac_ch == 3):
-        y = to_voltage(adc_data[round((dac_ch-1)/2)][crop_start:], num_bits=16, voltage_range=2**14, use_twos_comp=True)
-        lbl = f'Ch{round((dac_ch-1)/2)}'
-        ax.plot(t*1e6, y, marker = '+', label = lbl)
+    #if (dac_ch == 1 or dac_ch == 3):
+    #    y = to_voltage(adc_data[round((dac_ch-1)/2)][crop_start:], num_bits=16, voltage_range=2**14, use_twos_comp=True)
+    #    lbl = f'Ch{round((dac_ch-1)/2)}'
+    #    ax.plot(t*1e6, y, marker = '+', label = lbl)
     ax.legend()
     ax.set_title('Fast DAC data')
     ax.set_xlabel('s [us]')
@@ -460,8 +459,8 @@ ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total
 fig, ax = plt.subplots(2,1)
 fig.suptitle('ADS data')
 # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
-ax[0].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
+t_ads = np.arange(len(ads_separate_data['A'][5]))*1/(ADS_FS / len(ads_sequencer_setup))
+ax[0].plot(t_ads*1e6, ads_separate_data['A'][5], marker='.')
 ax[0].set_ylabel('P1 (tracks Vm) [V]')
 # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
 #t_ads = np.arange(len(ads_separate_data['B'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
