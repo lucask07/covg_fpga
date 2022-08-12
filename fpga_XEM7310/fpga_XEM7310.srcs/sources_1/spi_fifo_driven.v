@@ -161,34 +161,112 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      wire filter_out_ready;
      
      /*****Special case of selecting ADS data (Direct Vm Feedback for PI control)*****/
-     reg data_rdy_filter_mux;
+     reg data_rdy_pi_error;
+     reg [15:0] pi_error_signal;
+     reg signed [13:0] temp1;
+     reg signed [13:0] temp2;
+     reg signed [13:0] temp3;
+     reg signed [13:0] temp4;
+     reg signed [13:0] temp5;
      reg [15:0] filter_mux_data;
+     reg filter_mux_data_rdy;
+     reg [3:0] cnt;
      
      always @(posedge clk) begin
         if(rst == 1'b1)begin
-            data_rdy_filter_mux <= 1'b0;
-            filter_mux_data <= 16'b0;
+            pi_error_signal <= 16'b0;
+            temp1 <= 14'b0;
+            temp2 <= 14'b0;
+            temp3 <= 14'b0;
+            temp4 <= 14'b0;
+            temp5 <= 14'b0;
+            cnt <= 4'b0;
         end
         else if(data_rdy_0_filt == 1'b1)begin
-           if(filter_data_mux_sel == 3'b010)begin
-               filter_mux_data <= {((data_i[13:0] - 14'h1fff) - filter_data_i[15:2]), 2'b00};
-               data_rdy_filter_mux <= 1'b1;
-           end
-           else begin
-               filter_mux_data <= filter_data_i[15:0];
-               data_rdy_filter_mux <= 1'b1;
-           end
+            cnt <= 4'b0;
+        end
+        else if(cnt <= 4'd6)begin
+            cnt <= cnt + 1'b1;
         end
         else begin
-            data_rdy_filter_mux <= 1'b0;
+            cnt <= cnt;
         end
+        case(cnt)
+            0: begin
+                pi_error_signal <= 16'b0;
+                temp1 <= 14'b0;
+                temp2 <= 14'b0;
+                temp3 <= 14'b0;
+                temp4 <= 14'b0;
+                temp5 <= 14'b0;
+            end
+            1: begin
+                temp1 <= (data_i[13:0] - 14'h1fff);
+                temp2 <= filter_data_i[15:2];
+                temp3 <= temp3;
+                temp4 <= temp4;
+                temp5 <= temp5;
+            end
+            2: begin
+                temp3 <= (temp1>>>1);
+                temp4 <= (temp2<<3);
+                temp1 <= temp1;
+                temp2 <= temp2;
+                temp5 <= temp5;
+            end
+            3: begin
+                temp5 <= (temp3 - temp4);
+                temp1 <= temp1;
+                temp2 <= temp2;
+                temp3 <= temp3;
+                temp4 <= temp4;
+            end
+            4: begin
+                pi_error_signal <= {temp5, 2'b00};
+                temp1 <= temp1;
+                temp2 <= temp2;
+                temp3 <= temp3;
+                temp4 <= temp4;
+                temp5 <= temp5;
+            end
+            default: begin
+                temp1 <= temp1;
+                temp2 <= temp2;
+                temp3 <= temp3;
+                temp4 <= temp4;
+                temp5 <= temp5;
+            end
+        endcase
+     end
+     
+     //PI controller error signal data ready process
+     always @ (posedge clk) begin
+         if (rst == 1'b1) begin
+             data_rdy_pi_error <= 1'b0;
+         end
+         else if (cnt == 4'd5) begin
+             data_rdy_pi_error <= 1'b1;
+         end
+         else begin
+             data_rdy_pi_error <= 1'b0;
+         end
+     end
+     
+     always @(*) begin
+         if (filter_data_mux_sel == 3'b010) filter_mux_data = pi_error_signal;
+         else filter_mux_data = filter_data_i[15:0];
+     end
+     
+     always @(*) begin
+         if (filter_data_mux_sel == 3'b010) filter_mux_data_rdy = data_rdy_pi_error;
+         else filter_mux_data_rdy = data_rdy_0_filt;
      end
 	 
 	 // Real-Time LPF
        Butter_pipelined u_Butterworth_0
          (
          .clk(clk),
-         .clk_enable(data_rdy_filter_mux | write_enable | write_done),  // input data is registered when clk_enable is high 
+         .clk_enable(filter_mux_data_rdy | write_enable | write_done),  // input data is registered when clk_enable is high 
          .reset(rst),
          .filter_in(filter_mux_data),
          .write_enable(write_enable),
