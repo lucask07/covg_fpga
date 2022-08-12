@@ -6,14 +6,14 @@ import os
 import numpy as np
 from core import Protocol, Experiment
 
-protocol = Protocol.create_from_csv(filepath='protocol.csv', num_sweeps=11)
+protocol = Protocol.create_from_csv(filepath='protocol.csv', num_sweeps=14)
 protocol.preview()
 
 # Pause to show user preview
 plt.show(block=True)
 
 # Run experiment
-clamp_nums = [0, 1]
+clamp_nums = [0]
 experiment = Experiment(protocol)
 experiment.setup()
 
