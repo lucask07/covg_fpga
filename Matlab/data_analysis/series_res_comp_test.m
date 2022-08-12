@@ -7,7 +7,8 @@ clc;
 
 %Grab CMD data from .h5 file
 % y = hdf5read('SeriesResData\alpha_0.7_data.h5','/adc');
-y = hdf5read('C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.7_data.h5','/adc');
+% y = hdf5read('C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.7_data.h5','/adc');
+y = hdf5read('/home/delg/OneDrive/clamp test files/alpha_0.7_data.h5','/adc');
 cmd_data = y(2:2:end,5);
 t = (1:length(cmd_data))*400e-3;
 
@@ -111,10 +112,12 @@ for alpha = (0:0.05:0.75)
     % Special case for α=0 .h5 file
     if(alpha == 0)
 %         y = hdf5read(['SeriesResData\alpha_0.0_data.h5'],'/adc');
-        y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.0_data.h5'],'/adc');
+%         y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.0_data.h5'],'/adc');
+        y = hdf5read(['/home/delg/OneDrive/clamp test files/alpha_0.0_data.h5'],'/adc');
     else
 %         y = hdf5read(['SeriesResData\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
-        y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
+%         y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
+        y = hdf5read(['/home/delg/OneDrive/clamp test files/alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
     end
 
     % Grab CMD, Im, P1, and Vm data from .h5 file
@@ -234,7 +237,7 @@ data = horzcat(risetimes, overshoots, settlingtimes);
 legend_array = replace(legend_array, 'α', '$\alpha$');
 
 % Create table from the data matrix
-rs_table = array2table(data, 'VariableNames', {'RiseTime [$\mu$s]', 'Percent Overshoot', ...
+rs_table = array2table(round(data,1), 'VariableNames', {'RiseTime [$\mu$s]', 'Percent Overshoot', ...
 'Settling Time [$\mu$s]'}, 'RowNames', legend_array);
 
 % Create .tex file from MATLAB table (output to the same directory as this script)
