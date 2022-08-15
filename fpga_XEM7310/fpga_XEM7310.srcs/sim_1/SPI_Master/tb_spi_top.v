@@ -94,7 +94,8 @@ module tb_spi_top;
 		.filter_data_i(filter_in),
 		.data_rdy_0_filt(data_rdy),
 		.downsample_en(1'b0),
-		.sum_en(1'b0)
+		.sum_en(1'b0),
+		.filter_data_mux_sel(3'b010)
 	);
 	
 	// Generate clock
@@ -110,7 +111,7 @@ module tb_spi_top;
 	
 	//reg data_rdy = 1'b0;
     always@(posedge clk)begin
-        if(count_enable == 8'd39)begin
+        if(count_enable == 8'd199)begin
             data_rdy = 1'b1;
             count_enable = 5'b0;
         end
@@ -172,6 +173,7 @@ module tb_spi_top;
 		trigger = 1'b0;
 		regTrigger = 1'b0;
 		filter_in = 16'h0;
+		cmd_in = 16'h0;
 		ep_write = 1'b0;
 		ep_address = 32'h0;
 		ep_dataout_coeff = 32'h0;
@@ -195,27 +197,30 @@ module tb_spi_top;
       trigger = 1'b0;
       ep_write = 1'b1;
       ep_address = 32'h00000000 + 8'h19;
-      ep_dataout_coeff = 32'h009e1586;
-      //ep_dataout_coeff = 32'h7fff_ffff;
+//      ep_dataout_coeff = 32'h009e1586;
+      ep_dataout_coeff = 32'h7fff_ffff;
       #10;
       ep_address = 32'h00000001 + 8'h19;
       ep_dataout_coeff = 32'h20000000;
+//      ep_dataout_coeff = 32'haebe76c9;
       #10;
       ep_address = 32'h00000002 + 8'h19;
-      ep_dataout_coeff = 32'h40000000;
-      //ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'h40000000;
+      ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'h4ebe76c9;
       #10;
       ep_address = 32'h00000003 + 8'h19;
-      ep_dataout_coeff = 32'h20000000;
-      //ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'h20000000;
+      ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h00000004 + 8'h19;
-      ep_dataout_coeff = 32'hbce3be9a;
-      //ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'hbce3be9a;
+      ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'hc0000000;
       #10;
       ep_address = 32'h00000005 + 8'h19;
-      ep_dataout_coeff = 32'h12f3f6b0;
-      //ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'h12f3f6b0;
+      ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h00000008 + 8'h19;
       ep_dataout_coeff = 32'h7fffffff;
@@ -224,26 +229,26 @@ module tb_spi_top;
       ep_dataout_coeff = 32'h20000000;
       #10;
       ep_address = 32'h0000000a + 8'h19;
-      ep_dataout_coeff = 32'h40000000;
-      //ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'h40000000;
+      ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h0000000b + 8'h19;
-      ep_dataout_coeff = 32'h20000000;
-      //ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'h20000000;
+      ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h0000000c + 8'h19;
-      ep_dataout_coeff = 32'hab762783;
-      //ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'hab762783;
+      ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h0000000d + 8'h19;
-      ep_dataout_coeff = 32'h287ecada;
-      //ep_dataout_coeff = 32'h00000000;
+//      ep_dataout_coeff = 32'h287ecada;
+      ep_dataout_coeff = 32'h00000000;
       #10;
       ep_address = 32'h00000007 + 8'h19;
       ep_dataout_coeff = 32'h7fffffff;
       #10;
       ep_address = 32'h0000000f + 8'h19;
-      ep_dataout_coeff = 32'h00000800;
+      ep_dataout_coeff = 32'h00002200;
       #10;
       ep_write = 1'b0;
       #5;
@@ -401,7 +406,7 @@ module tb_spi_top;
 		readFifo = 1'b1;
 		#1350;
 		readFifo = 1'b0;
-		#20;
+		#200000000;
 		$fclose(FileID_1);
 		$fclose(FileID);
 		$finish;

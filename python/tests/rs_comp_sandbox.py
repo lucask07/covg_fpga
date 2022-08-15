@@ -374,7 +374,7 @@ start_alpha = 0
 end_alpha = 0.95
 alpha = np.linspace(start_alpha, end_alpha, num_alphas)
 
-color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
+color = iter(cm.rainbow(np.linspace(0, 1, 6))) 
 
 for alphas in range (num_alphas):
 
@@ -403,20 +403,22 @@ for alphas in range (num_alphas):
         daq.DAC[i].filter_downsample("set")
         daq.DAC[i].change_filter_coeff(target="generated", value=filter_coeff_generated)
         daq.DAC[i].write_filter_coeffs()
-        daq.set_dac_gain(0, 5)  # 5V to see easier on oscilloscope
+        daq.set_dac_gain((i-1), 5)  # 5V to see easier on oscilloscope
+
+    time.sleep(0.1)
 
     for i in [3]:
         daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
         daq.DAC[i].set_spi_sclk_divide()
         daq.DAC[i].filter_select(operation="set")
         daq.DAC[i].write(int(0))
-        daq.DAC[i].set_data_mux("DDR")
-        daq.DAC[i].set_data_mux("ad7961_ch1", filter_data=True)
-        daq.DAC[i].filter_sum("set")
-        daq.DAC[i].filter_downsample("set")
-        daq.DAC[i].change_filter_coeff(target="generated", value=filter_coeff_generated)
-        daq.DAC[i].write_filter_coeffs()
-        daq.set_dac_gain(2, 5)  # 5V to see easier on oscilloscope
+        #daq.DAC[i].set_data_mux("DDR")
+        #daq.DAC[i].set_data_mux("ad7961_ch1", filter_data=True)
+        #daq.DAC[i].filter_sum("set")
+        #daq.DAC[i].filter_downsample("set")
+        #daq.DAC[i].change_filter_coeff(target="generated", value=filter_coeff_generated)
+        #daq.DAC[i].write_filter_coeffs()
+        #daq.set_dac_gain((i-1), 5)  # 5V to see easier on oscilloscope
 
     time.sleep(0.1)
     ddr.repeat_setup()
@@ -428,8 +430,8 @@ for alphas in range (num_alphas):
                                         blk_multiples=40)  # blk multiples multiple of 10
 
     # oscilloscope data capture
-    osc.set('single_acq')
-    time.sleep(0.1)
+    #osc.set('single_acq')
+    #time.sleep(0.1)
     # general measure -- input measure type
     #for ch in [1,4]:
     #    time.sleep(0.01)
@@ -439,8 +441,8 @@ for alphas in range (num_alphas):
     #    #data[f'amp_{ch}'] = va
 
     # save a PNG screen-shot to host computer
-    series_res_file_name = "alpha_equals_" + str(round(alpha[alphas], 2))
-    t = osc.save_display_data(os.path.join(r"C:\Users\delg5279\OneDrive - University of St. Thomas\SeriesResistanceTests", series_res_file_name))
+    #series_res_file_name = "alpha_equals_" + str(round(alpha[alphas], 2))
+    #t = osc.save_display_data(os.path.join(r"C:\Users\delg5279\OneDrive - University of St. Thomas\SeriesResistanceTests", series_res_file_name))
     # t = osc.save_display_data(os.path.join(r"C:\Users\koer2434\Documents\covg\data\rs_comp", series_res_file_name))
 
     time.sleep(0.1)
@@ -476,10 +478,10 @@ for dac_ch in range(4):
     lbl = f'Ch{dac_ch}'
     ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
     print(f'Min {np.min(y[2:])}, Max {np.max(y)}') # skip the first 2 readings which are 0
-    if (dac_ch == 1 or dac_ch == 3):
-        y = to_voltage(adc_data[round((dac_ch-1)/2)][crop_start:], num_bits=16, voltage_range=2**14, use_twos_comp=True)
-        lbl = f'Ch{round((dac_ch-1)/2)}'
-        ax.plot(t*1e6, y, marker = '+', label = lbl)
+    #if (dac_ch == 1 or dac_ch == 3):
+    #    y = to_voltage(adc_data[round((dac_ch-1)/2)][crop_start:], num_bits=16, voltage_range=2**14, use_twos_comp=True)
+    #    lbl = f'Ch{round((dac_ch-1)/2)}'
+    #    ax.plot(t*1e6, y, marker = '+', label = lbl)
     ax.legend()
     ax.set_title('Fast DAC data')
     ax.set_xlabel('s [us]')
