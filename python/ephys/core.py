@@ -460,11 +460,12 @@ class Experiment:
         self.daq.TCA[1].configure_pins([0, 0])
 
         # fast DAC channels setup
+        holding_voltage_code = (from_voltage(voltage=holding_voltage, num_bits=14, voltage_range=5, with_negatives=True) + dac_offset) & 0x3FFF
         for i in range(6):
             self.daq.DAC[i].set_ctrl_reg(self.daq.DAC[i].master_config)
             self.daq.DAC[i].set_spi_sclk_divide()
             self.daq.DAC[i].filter_select(operation="clear")
-            self.daq.DAC[i].write((from_voltage(voltage=holding_voltage, num_bits=14, voltage_range=5, with_negatives=True) + dac_offset) & 0x3FFF)
+            self.daq.DAC[i].write(holding_voltage_code)
             self.daq.DAC[i].change_filter_coeff(target="passthru")
             self.daq.DAC[i].write_filter_coeffs()
             self.daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
@@ -558,13 +559,22 @@ class Experiment:
             self.inject_current(current=current, write_ddr=False)
 
         # Write channels to the DDR
+        self.daq.DAC[cmd_ch].write(int(self.daq.ddr.data_arrays[cmd_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+        self.daq.DAC[cc_ch].write(int(self.daq.ddr.data_arrays[cc_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+
         self.daq.ddr.write_setup()
         block_pipe_return, speed_MBs = self.daq.ddr.write_channels(set_ddr_read=False)
-        for i in range(6):
-            self.daq.DAC[i].write(int(self.daq.ddr.data_arrays[cmd_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
-            self.daq.DAC[i].set_data_mux("DDR")
+        # self.daq.DAC[cmd_ch].write(int(self.daq.ddr.data_arrays[cmd_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+        # self.daq.DAC[cc_ch].write(int(self.daq.ddr.data_arrays[cc_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
         self.daq.ddr.reset_mig_interface()
-        self.daq.ddr.write_finish()
+        self.daq.ddr.reset_fifo('ALL')
+        # self.daq.ddr.write_finish()
+        # DEBUG
+        bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
+                self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
+        self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [1, 1])
+        for i in range(6):
+            self.daq.DAC[i].set_data_mux("DDR")
 
         return sequence_len
 
@@ -796,7 +806,13 @@ class Experiment:
         current_offset = []
         fig_x, ax_x = plt.subplots()
         fig_x.suptitle('dac_data')
+        time.sleep(0.110 * 15)
+        bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
+                self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
+        self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [0, 0])
+        self.daq.ddr.fpga.set_wire_bit(self.daq.ddr.endpoints['ADC_TRANSFER_ENABLE'].address, self.daq.ddr.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
         for sweep_num in range(len(sweeps)):
+            time.sleep(0.050)
             sweep = sweeps[sweep_num]
             # Only need len of leftover_adc_data from one clamp board's data, so we just take the first
             blk_multiples = 40
