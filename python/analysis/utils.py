@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.fftpack
 import matplotlib.pyplot as plt
+from scipy.signal.windows import hann
+
 
 def find_nearest(array, target):
     """ find value in an array nearest to a target value
@@ -36,24 +38,29 @@ def find_closest_row(df, target_dict, prefilter = ('peak_area', 7e5)):
     return idx
 
 
-def calc_fft(data, FS, plot=True):
+def calc_fft(data, FS, plot=True, WINDOW='hann'):
     # Number of samplepoints
     N = len(data)
+    if WINDOW=='hann':
+        window = hann(len(data), sym=False)
+    else:
+        window = np.ones(len(data))
 
-    yf = np.fft.fft(data)
+    scale = np.mean(window)
+    yf = np.fft.fft(data*window/scale)
 
     freq = np.fft.fftfreq(N, d=1/FS)
 
     if plot:
         fig, ax = plt.subplots()
-        ax.loglog(freq[:N//2], 2.0/N * np.abs(yf[:N//2]), marker='.')
+        ax.loglog(freq[:N//2], 2.0/N * np.abs(yf[:N//2]), marker='.', color='k')
         ax.set_xlabel('f [Hz]')
         ax.set_ylabel('|A|')
 
     # determine maximum frequency bin (outside of DC)
     max_idx = np.argmax(np.abs(yf[1:N//2]))
     max_freq = freq[1:N//2][max_idx]
-    return freq, yf, max_freq
+    return freq, yf, max_freq, fig, ax
 
 
 def get_impulse(data_dir, filename, t_offset_idx, t0=6400e-6):
@@ -78,6 +85,3 @@ def get_impulse(data_dir, filename, t_offset_idx, t0=6400e-6):
     #  seems better to simply take the derivative ... this gives the impulse response
     imp_resp_d = np.gradient(y, t[1]-t[0])
     return imp_resp_d
-
-
-

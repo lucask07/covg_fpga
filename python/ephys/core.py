@@ -120,7 +120,7 @@ class Sweep:
         The duration of the Sweep in ms.
     """
 
-    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']
+    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']  # In seconds
 
     def __init__(self, epochs: List[Epoch]):
         self.epochs = epochs
@@ -177,7 +177,7 @@ class Protocol:
         The duration of the Protocol in ms.
     """
 
-    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']
+    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']  # In seconds
 
     def __init__(self, sweep: Sweep, num_sweeps):
         self.sweeps = [sweep]
@@ -301,7 +301,7 @@ class Sequence:
         List of all contained Protocols.
     """
 
-    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']
+    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']  # In seconds
 
     def __init__(self, protocols: Protocol or List[Protocol]):
         if type(protocols) is Protocol:
@@ -460,12 +460,12 @@ class Experiment:
         self.daq.TCA[1].configure_pins([0, 0])
 
         # fast DAC channels setup
+        holding_voltage_code = (from_voltage(voltage=holding_voltage, num_bits=14, voltage_range=5, with_negatives=True) + dac_offset) & 0x3FFF
         for i in range(6):
             self.daq.DAC[i].set_ctrl_reg(self.daq.DAC[i].master_config)
             self.daq.DAC[i].set_spi_sclk_divide()
             self.daq.DAC[i].filter_select(operation="clear")
-            self.daq.DAC[i].write(from_voltage(voltage=holding_voltage, num_bits=14, voltage_range=5, with_negatives=True) + dac_offset)
-            # self.daq.DAC[i].set_data_mux("DDR")
+            self.daq.DAC[i].write(holding_voltage_code)
             self.daq.DAC[i].change_filter_coeff(target="passthru")
             self.daq.DAC[i].write_filter_coeffs()
             self.daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
@@ -540,8 +540,8 @@ class Experiment:
             # attennuated 10x from the DAQ board to the daughtercard so we
             # have to multiply our signal by 10 to get it back to what we want
             cmd_voltage = sequence_data * offset_adjust_k * 10
-            # Pad with zeros to make correct size
-            cmd_voltage = np.pad(cmd_voltage, (0, target_len - len(cmd_voltage)), 'constant', constant_values=0)
+            # Pad with zeros to make correct size. TODO: make constant_values the holding voltage for the Protocol. For now, assuming the Protocol begins at the holding voltage and use its first value.
+            cmd_voltage = np.pad(cmd_voltage, (0, target_len - len(cmd_voltage)), 'constant', constant_values=cmd_voltage[0])
             # TODO: determine voltage_range for AD5453
             cmd_signal = np.array(from_voltage(voltage=cmd_voltage, num_bits=14, voltage_range=5, with_negatives=True), dtype=np.uint16) + dac_offset
             cc_signal = np.ones(len(cmd_signal), dtype=np.uint16) * dac_offset
@@ -559,13 +559,22 @@ class Experiment:
             self.inject_current(current=current, write_ddr=False)
 
         # Write channels to the DDR
+        self.daq.DAC[cmd_ch].write(int(self.daq.ddr.data_arrays[cmd_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+        self.daq.DAC[cc_ch].write(int(self.daq.ddr.data_arrays[cc_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+
         self.daq.ddr.write_setup()
         block_pipe_return, speed_MBs = self.daq.ddr.write_channels(set_ddr_read=False)
+        # self.daq.DAC[cmd_ch].write(int(self.daq.ddr.data_arrays[cmd_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+        # self.daq.DAC[cc_ch].write(int(self.daq.ddr.data_arrays[cc_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+        self.daq.ddr.reset_mig_interface()
+        self.daq.ddr.reset_fifo('ALL')
+        # self.daq.ddr.write_finish()
+        # DEBUG
+        bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
+                self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
+        self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [1, 1])
         for i in range(6):
             self.daq.DAC[i].set_data_mux("DDR")
-        time.sleep(0.2) # Let Vm stabalize
-        self.daq.ddr.reset_mig_interface()
-        self.daq.ddr.write_finish()
 
         return sequence_len
 
@@ -795,14 +804,20 @@ class Experiment:
         leftover_adc_data = [np.array([], dtype=int) for i in range(4)]
         leftover_ads_data = [np.array([]) for i in range(4)]
         current_offset = []
+        fig_x, ax_x = plt.subplots()
+        fig_x.suptitle('dac_data')
+        time.sleep(0.110 * 15)
+        bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
+                self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
+        self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [0, 0])
+        self.daq.ddr.fpga.set_wire_bit(self.daq.ddr.endpoints['ADC_TRANSFER_ENABLE'].address, self.daq.ddr.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
         for sweep_num in range(len(sweeps)):
+            time.sleep(0.050)
             sweep = sweeps[sweep_num]
             # Only need len of leftover_adc_data from one clamp board's data, so we just take the first
             blk_multiples = 40
             num_repeats = np.ceil(len(sweep) / 64 / blk_multiples)
-            # num_repeats = np.ceil((len(sweep) - len(leftover_adc_data[clamp_nums[0]])) / 64 / blk_multiples)
             # Get data
-            # TODO: determine num_repeats to read in exactly one Sweep given that Sweep's length
             # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
             chan_data_one_repeat = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
                                                 blk_multiples=blk_multiples)  # blk multiples multiple of 10
@@ -815,6 +830,9 @@ class Experiment:
             adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
             if reading_error:
                 print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
+            
+            ax_x.plot(dac_data[1])
+            plt.show()
 
             # Resize data array for new data, append new data
             chan_data_arr = np.ones((data.shape[0], chan_data[0].shape[0]), dtype=data.dtype)
