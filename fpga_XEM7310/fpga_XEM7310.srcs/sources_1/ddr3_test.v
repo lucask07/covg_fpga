@@ -57,12 +57,17 @@ module ddr3_test
 	(* KEEP = "TRUE" *)output reg           app_wdf_wren,
 	(* KEEP = "TRUE" *)output reg  [255:0]  app_wdf_data,
 	(* KEEP = "TRUE" *)output reg           app_wdf_end,
-	(* KEEP = "TRUE" *)output wire [31:0]   app_wdf_mask
+	(* KEEP = "TRUE" *)output wire [31:0]   app_wdf_mask,
+	
+    (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_wr,
+    (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_rd,
+    (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_wr2,
+    (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_rd2
 	);
 
-localparam FIXED_INDEX = 30'h7f_ff_f8;
+localparam FIXED_INDEX = 30'h3_7f_ff_f8;
 localparam FIXED_INDEX2 = 30'hf_ff_ff_f8;
-localparam FIXED_INDEX2_START = 30'h80_00_00;
+localparam FIXED_INDEX2_START = 30'h3_80_00_00;
 
 localparam OUTGOING_PIPE_FIFO_SIZE           = 128;  // this is the size of the 256 wide side. 1024*32 and 256*128=32678 
 localparam HALF_FIFO_SIZE      = 128;  // ADC data to DDR; and DAC data from DDR
@@ -70,10 +75,7 @@ localparam HALF_FIFO_SIZE      = 128;  // ADC data to DDR; and DAC data from DDR
 localparam BURST_UI_WORD_COUNT = 2'd1; //(WORD_SIZE*BURST_MODE/UI_SIZE) = BURST_UI_WORD_COUNT : 32*8/256 = 1  // burst per address value 
 localparam ADDRESS_INCREMENT   = 5'd8; // UI Address is a word address. BL8 Burst Mode = 8.
 
-(* KEEP = "TRUE" *)reg  [29:0] cmd_byte_addr_wr;
-(* KEEP = "TRUE" *)reg  [29:0] cmd_byte_addr_rd;
-(* KEEP = "TRUE" *)reg  [29:0] cmd_byte_addr_wr2;
-(* KEEP = "TRUE" *)reg  [29:0] cmd_byte_addr_rd2;
+
 
 (* KEEP = "TRUE" *)reg  [1:0]  burst_count;
 
