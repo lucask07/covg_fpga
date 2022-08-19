@@ -67,7 +67,7 @@ module ddr3_test
 
 localparam FIXED_INDEX = 30'h3_7f_ff_f8;
 localparam FIXED_INDEX2 = 30'hf_ff_ff_f8;
-localparam FIXED_INDEX2_START = 30'h4_00_00_00;
+localparam FIXED_INDEX2_START = 30'h3_80_00_00;
 
 localparam OUTGOING_PIPE_FIFO_SIZE           = 128;  // this is the size of the 256 wide side. 1024*32 and 256*128=32678 
 localparam HALF_FIFO_SIZE      = 128;  // ADC data to DDR; and DAC data from DDR
