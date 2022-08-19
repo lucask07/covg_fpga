@@ -18,11 +18,6 @@
 // Additional Comments:
 //
 // 
-//  To-do: The DAC ddr data is read from a clock divider (e.g. 2.5 MSPS) 
-//   but we need to synchronize to the AD7961 
-//   the AD7961 uses a slower clock (100 MHz for timing) -- how does this impact synchronization?  -- valid out is from the fast_clk 250 MHz 
-//          can this be switched to the 200 MHz clock? 
-//   find the thread about the poor AD7961 design 
 //////////////////////////////////////////////////////////////////////////////////
 // Clocks:
 //    clk_sys  - 200 MHz system clock
@@ -144,7 +139,9 @@ module top_level_module(
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
 	.reset(ep40trig[`AD7961_PLL_RESET]),
-	.clk_out1(adc_clk), //out at 250 MHz .locked(adc_pll_locked));
+	.clk_out1(adc_clk), //out at 250 MHz 
+	.locked(adc_pll_locked));
+	
 	wire adc_sync_rst;
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
     wire [(FADC_NUM-1):0]write_en_adc_o;
@@ -164,7 +161,7 @@ module top_level_module(
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst);
     assign led[7] = 1'b0;
     
-    reg [31:0] bitfile_version = 32'd00_00_02	// 00.00.02
+    reg [31:0] bitfile_version = 32'd00_00_02;	// 00.00.02
     okWireOut bitfile_version_wo (.okHE(okHE), .okEH(okEHx[ 33*65 +: 65 ]), .ep_addr(`GP_BITFILE_VERSION), .ep_datain(bitfile_version));
 
     // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
@@ -487,11 +484,12 @@ module top_level_module(
         .dco(dco[i]),
         .adc_serial_data(adc_serial_data[i])        
         );
-
+/*
           //pipeOut for data from AD7961
           okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(5+i)*65 +: 65]),
                     .ep_addr(`AD7961_PIPE_OUT_GEN_ADDR + i), .ep_read(adc_pipe_ep_read[i]),
                     .ep_datain(adc_pipe_ep_datain[i])); 
+*/
      end
      endgenerate
 
