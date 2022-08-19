@@ -449,9 +449,9 @@ class Experiment:
         self.daq.ADC_gp.set_host_mode()
         self.daq.ADC_gp.setup()
         self.daq.ADC_gp.set_range(ads_voltage_range) # TODO: make an self.daq.ADC_gp.current_voltage_range a property of the ADS so we always know it
-        self.daq.ADC_gp.set_lpf(376)
+        self.daq.ADC_gp.set_lpf(39)
         ads_sequencer_setup = [('1', '1'), ('2', '2')]
-        codes = self.daq.ADC_gp.setup_sequencer(chan_list=ads_sequencer_setup)
+        codes = self.daq.ADC_gp.setup_sequencer(chan_list=ads_sequencer_setup, lpf=39)
         self.daq.ADC_gp.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value of 1000 which is 200 ksps)
         self.daq.ADC_gp.set_fpga_mode()
 
@@ -772,6 +772,7 @@ class Experiment:
         ads_voltage_range = 5
         ads_sequencer_setup = [('1', '1'), ('2', '2')]
         sequence_length = self.write_sequence(clamp_num=clamp_nums, inject_current=inject_current, low_scaling_factor=low_scaling_factor, cutoff=cutoff, high_scaling_factor=high_scaling_factor)
+        start = time.time()
 
         # Split Sequence into Sweeps. Write full sequence but read each Sweep individually
         sweeps = np.concatenate([p.sweeps for p in self.sequence.protocols])
@@ -806,13 +807,17 @@ class Experiment:
         current_offset = []
         fig_x, ax_x = plt.subplots()
         fig_x.suptitle('dac_data')
-        time.sleep(0.110 * 15)
+        wrap_time = 838.862 * 1e-3              # Time it takes for the DDR to wrap around to the beginning
+        natural_delay = 0.23539209365844727     # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
+        time.sleep(self.sequence.duration() * 1e-3 - natural_delay + wrap_time)
         bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
                 self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
         self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [0, 0])
         self.daq.ddr.fpga.set_wire_bit(self.daq.ddr.endpoints['ADC_TRANSFER_ENABLE'].address, self.daq.ddr.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
+        end = time.time()
+        print(f'Time between starting DAC data and stopping DAC data and ADC write = {end - start}')
         for sweep_num in range(len(sweeps)):
-            time.sleep(0.050)
+            # time.sleep(0.050)
             sweep = sweeps[sweep_num]
             # Only need len of leftover_adc_data from one clamp board's data, so we just take the first
             blk_multiples = 40
@@ -827,7 +832,7 @@ class Experiment:
             adc_cutoff_len = len(sweep) * 2
             ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS) / len(ads_sequencer_setup))
 
-            adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data)
+            adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data, self.daq.ddr.fpga.bitfile_version)
             if reading_error:
                 print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
             
