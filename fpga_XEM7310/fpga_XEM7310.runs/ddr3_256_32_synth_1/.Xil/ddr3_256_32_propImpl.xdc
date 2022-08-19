@@ -1,4 +1,4 @@
-set_property SRC_FILE_INFO {cfile:c:/Users/delg5279/covg_fpga_project/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/ddr3_256_32/ddr3_256_32/user_design/constraints/ddr3_256_32.xdc rfile:../../../fpga_XEM7310.srcs/sources_1/ip/ddr3_256_32/ddr3_256_32/user_design/constraints/ddr3_256_32.xdc id:1 order:EARLY} [current_design]
+set_property SRC_FILE_INFO {cfile:c:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/ddr3_256_32/ddr3_256_32/user_design/constraints/ddr3_256_32.xdc rfile:../../../fpga_XEM7310.srcs/sources_1/ip/ddr3_256_32/ddr3_256_32/user_design/constraints/ddr3_256_32.xdc id:1 order:EARLY} [current_design]
 set_property src_info {type:XDC file:1 line:38 export:INPUT save:INPUT read:READ} [current_design]
 set_property PACKAGE_PIN N18 [get_ports {ddr3_dq[0]}]
 set_property src_info {type:XDC file:1 line:44 export:INPUT save:INPUT read:READ} [current_design]
