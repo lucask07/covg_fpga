@@ -2,8 +2,8 @@
 # Vivado v2018.2 (64-bit)
 # SW Build 2258646 on Thu Jun 14 20:03:12 MDT 2018
 # IP Build 2256618 on Thu Jun 14 22:10:49 MDT 2018
-# Start of session at: Fri Aug 19 12:35:41 2022
-# Process ID: 7804
+# Start of session at: Fri Aug 19 14:45:16 2022
+# Process ID: 13948
 # Current directory: C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1
 # Command line: vivado.exe -log top_level_module.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source top_level_module.tcl
 # Log file: C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.vds
@@ -15,15 +15,19 @@ Starting synth_design
 Attempting to get a license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: [Common 17-349] Got license for feature 'Synthesis' and/or device 'xc7a75t'
 INFO: Launching helper process for spawning children vivado processes
-INFO: Helper process launched with PID 7296 
+INFO: Helper process launched with PID 12692 
 WARNING: [Synth 8-2490] overwriting previous definition of module xpm_cdc_async_rst [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okCoreHarness.v:15361]
-WARNING: [Synth 8-2306] macro DDR3_INIT_CALIB_COMPLETE redefined [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ep_defines.v:186]
+WARNING: [Synth 8-2306] macro DDR3_INIT_CALIB_COMPLETE redefined [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ep_defines.v:191]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:32]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:33]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:34]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:35]
 WARNING: [Synth 8-2644] root scope declaration is not allowed in verilog 95/2K mode [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:36]
 WARNING: [Synth 8-992] okHE is already implicitly declared earlier [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:212]
+WARNING: [Synth 8-2254] instance name 'ddr_dac_wr' matches net/port name [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:726]
+WARNING: [Synth 8-2254] instance name 'ddr_dac_rd' matches net/port name [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:727]
+WARNING: [Synth 8-2254] instance name 'ddr_adc_wr' matches net/port name [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:728]
+WARNING: [Synth 8-2254] instance name 'ddr_adc_rd' matches net/port name [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:729]
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:43]
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:45]
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:46]
@@ -44,7 +48,7 @@ WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:117]
 WARNING: [Synth 8-2507] parameter declaration becomes local in read_fifo_to_spi_cmd with formal parameter declaration list [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:118]
 ---------------------------------------------------------------------------------
-Starting RTL Elaboration : Time (s): cpu = 00:00:03 ; elapsed = 00:00:04 . Memory (MB): peak = 457.473 ; gain = 110.121
+Starting RTL Elaboration : Time (s): cpu = 00:00:04 ; elapsed = 00:00:04 . Memory (MB): peak = 457.961 ; gain = 110.988
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-6157] synthesizing module 'top_level_module' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:38]
 	Parameter BLOCK_SIZE bound to: 512 - type: integer 
@@ -126,18 +130,18 @@ INFO: [Synth 8-6157] synthesizing module 'realTimeLPF_readwrite_coeff' [C:/Users
 	Parameter INIT bound to: 5'b10010 
 	Parameter CHECK bound to: 5'b10011 
 INFO: [Synth 8-6155] done synthesizing module 'realTimeLPF_readwrite_coeff' (10#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/realTimeLPF_readwrite_coeff.v:23]
-INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7804-FDC214-01/realtime/blk_mem_gen_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (11#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7804-FDC214-01/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'blk_mem_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-13948-FDC214-01/realtime/blk_mem_gen_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'blk_mem_gen_0' (11#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-13948-FDC214-01/realtime/blk_mem_gen_0_stub.v:6]
 WARNING: [Synth 8-689] width (32) of port connection 'addrb' does not match port width (4) of module 'blk_mem_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:157]
 INFO: [Synth 8-6157] synthesizing module 'Butter_pipelined' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/dsp_filters/Butter_pipelined.v:55]
-INFO: [Synth 8-6157] synthesizing module 'mult_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7804-FDC214-01/realtime/mult_gen_0_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'mult_gen_0' (12#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7804-FDC214-01/realtime/mult_gen_0_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'mult_gen_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-13948-FDC214-01/realtime/mult_gen_0_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'mult_gen_0' (12#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-13948-FDC214-01/realtime/mult_gen_0_stub.v:6]
 WARNING: [Synth 8-6014] Unused sequential element done_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/dsp_filters/Butter_pipelined.v:247]
 INFO: [Synth 8-6155] done synthesizing module 'Butter_pipelined' (13#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/dsp_filters/Butter_pipelined.v:55]
 INFO: [Synth 8-6157] synthesizing module 'LPF_data_scale' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/LPF_data_scale.v:25]
 	Parameter ADDR bound to: 5 - type: integer 
-INFO: [Synth 8-6157] synthesizing module 'mult_gen_1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7804-FDC214-01/realtime/mult_gen_1_stub.v:6]
-INFO: [Synth 8-6155] done synthesizing module 'mult_gen_1' (14#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7804-FDC214-01/realtime/mult_gen_1_stub.v:6]
+INFO: [Synth 8-6157] synthesizing module 'mult_gen_1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-13948-FDC214-01/realtime/mult_gen_1_stub.v:6]
+INFO: [Synth 8-6155] done synthesizing module 'mult_gen_1' (14#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-13948-FDC214-01/realtime/mult_gen_1_stub.v:6]
 WARNING: [Synth 8-6014] Unused sequential element cmd_sum_rdy_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/LPF_data_scale.v:134]
 INFO: [Synth 8-6155] done synthesizing module 'LPF_data_scale' (15#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/LPF_data_scale.v:25]
 INFO: [Synth 8-6157] synthesizing module 'hbexec' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/hbexec.v:74]
@@ -154,7 +158,7 @@ INFO: [Synth 8-6155] done synthesizing module 'spi_top' (19#1) [C:/Users/koer243
 WARNING: [Synth 8-3848] Net coeff_debug_out1 in module/entity spi_fifo_driven does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:42]
 WARNING: [Synth 8-3848] Net coeff_debug_out2 in module/entity spi_fifo_driven does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:43]
 INFO: [Synth 8-6155] done synthesizing module 'spi_fifo_driven' (20#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
-WARNING: [Synth 8-350] instance 'spi_fifo1' of module 'spi_fifo_driven' requires 24 connections, but only 16 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:916]
+WARNING: [Synth 8-350] instance 'spi_fifo1' of module 'spi_fifo_driven' requires 24 connections, but only 16 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:931]
 INFO: [Synth 8-6157] synthesizing module 'spi_fifo_driven__parameterized0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
 	Parameter ADDR bound to: 25 - type: integer 
 INFO: [Synth 8-6157] synthesizing module 'read_fifo_to_spi_cmd__parameterized0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:21]
@@ -187,7 +191,7 @@ INFO: [Synth 8-6155] done synthesizing module 'LPF_data_scale__parameterized0' (
 WARNING: [Synth 8-3848] Net coeff_debug_out1 in module/entity spi_fifo_driven__parameterized0 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:42]
 WARNING: [Synth 8-3848] Net coeff_debug_out2 in module/entity spi_fifo_driven__parameterized0 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:43]
 INFO: [Synth 8-6155] done synthesizing module 'spi_fifo_driven__parameterized0' (20#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
-WARNING: [Synth 8-350] instance 'spi_fifo1' of module 'spi_fifo_driven' requires 24 connections, but only 16 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:916]
+WARNING: [Synth 8-350] instance 'spi_fifo1' of module 'spi_fifo_driven' requires 24 connections, but only 16 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:931]
 INFO: [Synth 8-6157] synthesizing module 'spi_fifo_driven__parameterized1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
 	Parameter ADDR bound to: 45 - type: integer 
 INFO: [Synth 8-6157] synthesizing module 'read_fifo_to_spi_cmd__parameterized1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:21]
@@ -220,9 +224,9 @@ INFO: [Synth 8-6155] done synthesizing module 'LPF_data_scale__parameterized1' (
 WARNING: [Synth 8-3848] Net coeff_debug_out1 in module/entity spi_fifo_driven__parameterized1 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:42]
 WARNING: [Synth 8-3848] Net coeff_debug_out2 in module/entity spi_fifo_driven__parameterized1 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:43]
 INFO: [Synth 8-6155] done synthesizing module 'spi_fifo_driven__parameterized1' (20#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
-WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1007]
-WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1020]
-WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1003]
+WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1022]
+WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized1' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1035]
+WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1018]
 INFO: [Synth 8-6157] synthesizing module 'spi_fifo_driven__parameterized2' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
 	Parameter ADDR bound to: 65 - type: integer 
 INFO: [Synth 8-6157] synthesizing module 'read_fifo_to_spi_cmd__parameterized2' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:21]
@@ -255,9 +259,9 @@ INFO: [Synth 8-6155] done synthesizing module 'LPF_data_scale__parameterized2' (
 WARNING: [Synth 8-3848] Net coeff_debug_out1 in module/entity spi_fifo_driven__parameterized2 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:42]
 WARNING: [Synth 8-3848] Net coeff_debug_out2 in module/entity spi_fifo_driven__parameterized2 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:43]
 INFO: [Synth 8-6155] done synthesizing module 'spi_fifo_driven__parameterized2' (20#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
-WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized2' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1007]
-WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized2' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1020]
-WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1003]
+WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized2' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1022]
+WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized2' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1035]
+WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1018]
 INFO: [Synth 8-6157] synthesizing module 'spi_fifo_driven__parameterized3' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
 	Parameter ADDR bound to: 85 - type: integer 
 INFO: [Synth 8-6157] synthesizing module 'read_fifo_to_spi_cmd__parameterized3' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:21]
@@ -290,9 +294,9 @@ INFO: [Synth 8-6155] done synthesizing module 'LPF_data_scale__parameterized3' (
 WARNING: [Synth 8-3848] Net coeff_debug_out1 in module/entity spi_fifo_driven__parameterized3 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:42]
 WARNING: [Synth 8-3848] Net coeff_debug_out2 in module/entity spi_fifo_driven__parameterized3 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:43]
 INFO: [Synth 8-6155] done synthesizing module 'spi_fifo_driven__parameterized3' (20#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
-WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized3' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1007]
-WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized3' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1020]
-WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1003]
+WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized3' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1022]
+WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized3' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1035]
+WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1018]
 INFO: [Synth 8-6157] synthesizing module 'spi_fifo_driven__parameterized4' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
 	Parameter ADDR bound to: 105 - type: integer 
 INFO: [Synth 8-6157] synthesizing module 'read_fifo_to_spi_cmd__parameterized4' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:21]
@@ -325,9 +329,9 @@ INFO: [Synth 8-6155] done synthesizing module 'LPF_data_scale__parameterized4' (
 WARNING: [Synth 8-3848] Net coeff_debug_out1 in module/entity spi_fifo_driven__parameterized4 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:42]
 WARNING: [Synth 8-3848] Net coeff_debug_out2 in module/entity spi_fifo_driven__parameterized4 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:43]
 INFO: [Synth 8-6155] done synthesizing module 'spi_fifo_driven__parameterized4' (20#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
-WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized4' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1007]
-WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized4' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1020]
-WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1003]
+WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized4' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1022]
+WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized4' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1035]
+WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1018]
 INFO: [Synth 8-6157] synthesizing module 'spi_fifo_driven__parameterized5' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
 	Parameter ADDR bound to: 125 - type: integer 
 INFO: [Synth 8-6157] synthesizing module 'read_fifo_to_spi_cmd__parameterized5' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:21]
@@ -360,9 +364,9 @@ INFO: [Synth 8-6155] done synthesizing module 'LPF_data_scale__parameterized5' (
 WARNING: [Synth 8-3848] Net coeff_debug_out1 in module/entity spi_fifo_driven__parameterized5 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:42]
 WARNING: [Synth 8-3848] Net coeff_debug_out2 in module/entity spi_fifo_driven__parameterized5 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:43]
 INFO: [Synth 8-6155] done synthesizing module 'spi_fifo_driven__parameterized5' (20#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
-WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized5' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1007]
-WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized5' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1020]
-WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1003]
+WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized5' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1022]
+WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized5' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1035]
+WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1018]
 INFO: [Synth 8-6157] synthesizing module 'spi_fifo_driven__parameterized6' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
 	Parameter ADDR bound to: 145 - type: integer 
 INFO: [Synth 8-6157] synthesizing module 'read_fifo_to_spi_cmd__parameterized6' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/read_fifo_to_spi_cmd.v:21]
@@ -395,9 +399,9 @@ INFO: [Synth 8-6155] done synthesizing module 'LPF_data_scale__parameterized6' (
 WARNING: [Synth 8-3848] Net coeff_debug_out1 in module/entity spi_fifo_driven__parameterized6 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:42]
 WARNING: [Synth 8-3848] Net coeff_debug_out2 in module/entity spi_fifo_driven__parameterized6 does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:43]
 INFO: [Synth 8-6155] done synthesizing module 'spi_fifo_driven__parameterized6' (20#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/spi_fifo_driven.v:23]
-WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized6' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1007]
-WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized6' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1020]
-WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1003]
+WARNING: [Synth 8-689] width (32) of port connection 'data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized6' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1022]
+WARNING: [Synth 8-689] width (32) of port connection 'filter_data_i' does not match port width (24) of module 'spi_fifo_driven__parameterized6' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1035]
+WARNING: [Synth 8-350] instance 'spi_fifo0' of module 'spi_fifo_driven' requires 24 connections, but only 23 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1018]
 INFO: [Synth 8-6157] synthesizing module 'GND' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
 INFO: [Synth 8-6155] done synthesizing module 'GND' (21#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:4945]
 INFO: [Synth 8-6157] synthesizing module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cController.v:54]
@@ -451,14 +455,14 @@ INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/koer
 INFO: [Synth 8-6155] done synthesizing module 'i2cTokenizer' (26#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cTokenizer.v:34]
 INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cController.v:216]
 INFO: [Synth 8-6155] done synthesizing module 'i2cController' (27#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cController.v:54]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1068]
-WARNING: [Synth 8-350] instance 'i2c_controller_0' of module 'i2cController' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1059]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1068]
-WARNING: [Synth 8-350] instance 'i2c_controller_0' of module 'i2cController' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1059]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1068]
-WARNING: [Synth 8-350] instance 'i2c_controller_0' of module 'i2cController' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1059]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1068]
-WARNING: [Synth 8-350] instance 'i2c_controller_0' of module 'i2cController' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1059]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1083]
+WARNING: [Synth 8-350] instance 'i2c_controller_0' of module 'i2cController' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1074]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1083]
+WARNING: [Synth 8-350] instance 'i2c_controller_0' of module 'i2cController' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1074]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1083]
+WARNING: [Synth 8-350] instance 'i2c_controller_0' of module 'i2cController' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1074]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1083]
+WARNING: [Synth 8-350] instance 'i2c_controller_0' of module 'i2cController' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1074]
 INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
 	Parameter CAPACITANCE bound to: DONT_CARE - type: string 
 	Parameter DIFF_TERM bound to: FALSE - type: string 
@@ -466,10 +470,10 @@ INFO: [Synth 8-6157] synthesizing module 'IBUFGDS' [C:/Xilinx/Vivado/2018.2/scri
 	Parameter IBUF_LOW_PWR bound to: TRUE - type: string 
 	Parameter IOSTANDARD bound to: DEFAULT - type: string 
 INFO: [Synth 8-6155] done synthesizing module 'IBUFGDS' (28#1) [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:19911]
-INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7804-FDC214-01/realtime/clk_wiz_0_stub.v:5]
-INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (29#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-7804-FDC214-01/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6157] synthesizing module 'clk_wiz_0' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-13948-FDC214-01/realtime/clk_wiz_0_stub.v:5]
+INFO: [Synth 8-6155] done synthesizing module 'clk_wiz_0' (29#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/.Xil/Vivado-13948-FDC214-01/realtime/clk_wiz_0_stub.v:5]
 INFO: [Synth 8-6157] synthesizing module 'okWireOR' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
-	Parameter N bound to: 35 - type: integer 
+	Parameter N bound to: 39 - type: integer 
 INFO: [Synth 8-6155] done synthesizing module 'okWireOR' (30#1) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:119]
 INFO: [Synth 8-6157] synthesizing module 'okHost' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/XEM7310-A75/okLibrary.v:10]
 INFO: [Synth 8-6157] synthesizing module 'IOBUF' [C:/Xilinx/Vivado/2018.2/scripts/rt/data/unisim_comp.v:22660]
@@ -642,9 +646,9 @@ WARNING: [Synth 8-350] instance 'ads8686_fifo' of module 'fifo_ADS8686' requires
 	Parameter CYCLE_CNT bound to: 5'b01001 
 WARNING: [Synth 8-689] width (30) of port connection 'app_addr' does not match port width (29) of module 'ddr3_256_32' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:637]
 WARNING: [Synth 8-350] instance 'u_ddr3_256_32' of module 'ddr3_256_32' requires 38 connections, but only 37 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:618]
-	Parameter FIXED_INDEX bound to: 30'b000000011111111111111111111000 
+	Parameter FIXED_INDEX bound to: 30'b000011011111111111111111111000 
 	Parameter FIXED_INDEX2 bound to: 30'b001111111111111111111111111000 
-	Parameter FIXED_INDEX2_START bound to: 30'b000000100000000000000000000000 
+	Parameter FIXED_INDEX2_START bound to: 30'b000100000000000000000000000000 
 	Parameter OUTGOING_PIPE_FIFO_SIZE bound to: 128 - type: integer 
 	Parameter HALF_FIFO_SIZE bound to: 128 - type: integer 
 	Parameter BURST_UI_WORD_COUNT bound to: 2'b01 
@@ -709,25 +713,29 @@ INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/D
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:58]
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:59]
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:60]
-INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:73]
-INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:74]
-INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:75]
-INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:76]
-INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:78]
+INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:62]
+INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:63]
+INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:64]
+INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:65]
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:80]
-INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:81]
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:82]
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:83]
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:84]
 INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:85]
-INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:96]
-INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:143]
-WARNING: [Synth 8-689] width (8) of port connection 'wr_data_count' does not match port width (9) of module 'fifo_w128_512_r256_256' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:849]
-WARNING: [Synth 8-350] instance 'adc_to_ddr_fifo' of module 'fifo_w128_512_r256_256' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:837]
-WARNING: [Synth 8-689] width (8) of port connection 'rd_data_count' does not match port width (9) of module 'fifo_w256_256_r128_512' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:864]
-WARNING: [Synth 8-350] instance 'ddr_to_dac_fifo_ddr' of module 'fifo_w256_256_r128_512' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:853]
-WARNING: [Synth 8-689] width (16) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1082]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1094]
+INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:86]
+INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:87]
+INFO: [Synth 8-5534] Detected attribute (* KEEP = "TRUE" *) [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:98]
+INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ddr3_test.v:145]
+WARNING: [Synth 8-689] width (32) of port connection 'cmd_byte_addr_wr' does not match port width (30) of module 'ddr3_test' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:720]
+WARNING: [Synth 8-689] width (32) of port connection 'cmd_byte_addr_rd' does not match port width (30) of module 'ddr3_test' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:721]
+WARNING: [Synth 8-689] width (32) of port connection 'cmd_byte_addr_wr2' does not match port width (30) of module 'ddr3_test' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:722]
+WARNING: [Synth 8-689] width (32) of port connection 'cmd_byte_addr_rd2' does not match port width (30) of module 'ddr3_test' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:723]
+WARNING: [Synth 8-689] width (8) of port connection 'wr_data_count' does not match port width (9) of module 'fifo_w128_512_r256_256' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:864]
+WARNING: [Synth 8-350] instance 'adc_to_ddr_fifo' of module 'fifo_w128_512_r256_256' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:852]
+WARNING: [Synth 8-689] width (8) of port connection 'rd_data_count' does not match port width (9) of module 'fifo_w256_256_r128_512' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:879]
+WARNING: [Synth 8-350] instance 'ddr_to_dac_fifo_ddr' of module 'fifo_w256_256_r128_512' requires 14 connections, but only 12 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:868]
+WARNING: [Synth 8-689] width (16) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1097]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1109]
 	Parameter CLOCK_STRETCH_SUPPORT bound to: 1 - type: integer 
 	Parameter CLOCK_DIVIDER bound to: 16'b0000000111110100 
 	Parameter s_idle bound to: 0 - type: integer 
@@ -748,13 +756,13 @@ WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match por
 WARNING: [Synth 8-350] instance 'tok' of module 'i2cTokenizer' requires 15 connections, but only 13 given [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cController_wPipe.v:165]
 INFO: [Synth 8-155] case statement is not full and has no default [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cController_wPipe.v:233]
 WARNING: [Synth 8-3848] Net fifo_empty in module/entity i2cController_wPipe does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cController_wPipe.v:74]
-WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController_wPipe' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1129]
+WARNING: [Synth 8-689] width (16) of port connection 'memdin' does not match port width (8) of module 'i2cController_wPipe' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1144]
 	Parameter halfof_divide_by bound to: 31'b0000101111101011110000100000000 
-WARNING: [Synth 8-689] width (1) of port connection 'ep_trigger' does not match port width (32) of module 'okTriggerIn' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1165]
-WARNING: [Synth 8-689] width (1) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1166]
-WARNING: [Synth 8-689] width (1) of port connection 'ep_trigger' does not match port width (32) of module 'okTriggerOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1169]
-INFO: [Synth 8-226] default block is never used [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1181]
-INFO: [Synth 8-226] default block is never used [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1192]
+WARNING: [Synth 8-689] width (1) of port connection 'ep_trigger' does not match port width (32) of module 'okTriggerIn' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1180]
+WARNING: [Synth 8-689] width (1) of port connection 'ep_datain' does not match port width (32) of module 'okWireOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1181]
+WARNING: [Synth 8-689] width (1) of port connection 'ep_trigger' does not match port width (32) of module 'okTriggerOut' [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1184]
+INFO: [Synth 8-226] default block is never used [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1196]
+INFO: [Synth 8-226] default block is never used [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1207]
 WARNING: [Synth 8-3848] Net adc_fifo_empty in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:152]
 WARNING: [Synth 8-3848] Net adc_fifo_halffull in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:151]
 WARNING: [Synth 8-3848] Net adc_fifo_full in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:150]
@@ -766,7 +774,7 @@ WARNING: [Synth 8-3848] Net adc_val_reg[2] in module/entity top_level_module doe
 WARNING: [Synth 8-3848] Net adc_valid_pulse[2] in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:441]
 WARNING: [Synth 8-3848] Net adc_val_reg[3] in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:442]
 WARNING: [Synth 8-3848] Net adc_valid_pulse[3] in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:441]
-WARNING: [Synth 8-3848] Net fpga_test_looped_wo in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1159]
+WARNING: [Synth 8-3848] Net fpga_test_looped_wo in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:1174]
 WARNING: [Synth 8-3848] Net hostinterrupt in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:328]
 WARNING: [Synth 8-3848] Net debug_fifo_status in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:316]
 WARNING: [Synth 8-3848] Net adc_timing_pll_locked in module/entity top_level_module does not have driver. [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:312]
@@ -875,7 +883,7 @@ WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[3]
 WARNING: [Synth 8-3331] design okWireOut has unconnected port okHE[2]
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 591.031 ; gain = 243.680
+Finished RTL Elaboration : Time (s): cpu = 00:00:07 ; elapsed = 00:00:08 . Memory (MB): peak = 592.312 ; gain = 245.340
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -884,71 +892,71 @@ Report Check Netlist:
 +------+------------------+-------+---------+-------+------------------+
 |1     |multi_driven_nets |      0|        0|Passed |Multi driven nets |
 +------+------------------+-------+---------+-------+------------------+
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2274] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2273] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2272] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2271] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2270] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2269] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2268] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2267] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2266] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2265] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2264] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2263] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2262] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2261] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2260] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2259] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2258] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2257] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2256] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2255] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2254] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2253] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2252] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2251] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2250] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2249] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2248] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2247] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2246] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2245] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2244] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2243] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2242] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2241] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2240] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2239] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2238] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2237] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2236] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2235] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2234] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2233] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2232] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2231] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2230] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2229] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2228] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2227] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2226] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2225] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2224] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2223] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2222] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2221] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2220] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2219] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2218] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2217] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2216] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2215] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2214] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2213] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2212] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2211] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
-WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2210] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2534] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2533] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2532] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2531] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2530] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2529] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2528] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2527] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2526] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2525] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2524] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2523] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2522] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2521] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2520] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2519] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2518] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2517] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2516] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2515] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2514] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2513] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2512] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2511] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2510] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2509] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2508] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2507] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2506] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2505] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2504] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2503] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2502] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2501] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2500] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2499] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2498] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2497] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2496] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2495] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2494] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2493] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2492] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2491] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2490] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2489] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2488] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2487] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2486] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2485] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2484] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2483] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2482] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2481] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2480] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2479] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2478] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2477] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2476] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2475] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2474] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2473] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2472] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2471] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
+WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2470] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
 WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2014] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
 WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2013] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
 WARNING: [Synth 8-3295] tying undriven pin wireOR:okEHx[2012] to constant 0 [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/top_level_module.v:217]
@@ -989,10 +997,10 @@ INFO: [Common 17-14] Message 'Synth 8-3295' appears 100 times and further instan
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 591.031 ; gain = 243.680
+Finished Handling Custom Attributes : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 592.312 ; gain = 245.340
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 591.031 ; gain = 243.680
+Finished RTL Optimization Phase 1 : Time (s): cpu = 00:00:08 ; elapsed = 00:00:09 . Memory (MB): peak = 592.312 ; gain = 245.340
 ---------------------------------------------------------------------------------
 INFO: [Netlist 29-17] Analyzing 263 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
@@ -1108,7 +1116,7 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM32M => RAM32M (RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMD32, RAMS32, RAMS32): 4 instances
   RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
 
-Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.060 . Memory (MB): peak = 1082.531 ; gain = 0.000
+Constraint Validation Runtime : Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.060 . Memory (MB): peak = 1084.961 ; gain = 0.000
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'adc_to_ddr_fifo' at clock pin 'wr_clk' is different from the actual clock period '5.000', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ads8686_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'ddr_to_dac_fifo_ddr' at clock pin 'rd_clk' is different from the actual clock period '5.000', this can lead to different synthesis results.
@@ -1148,14 +1156,14 @@ WARNING: [Timing 38-316] Clock period '100.000' specified during out-of-context 
 WARNING: [Timing 38-316] Clock period '100.000' specified during out-of-context synthesis of instance 'dac_ad5453_gen[5].spi_fifo0/u_dat_scale/mult1' at clock pin 'CLK' is different from the actual clock period '5.000', this can lead to different synthesis results.
 WARNING: [Timing 38-316] Clock period '10.000' specified during out-of-context synthesis of instance 'i2c_controller_5/i2c_fifo' at clock pin 'rd_clk' is different from the actual clock period '9.920', this can lead to different synthesis results.
 ---------------------------------------------------------------------------------
-Finished Constraint Validation : Time (s): cpu = 00:00:30 ; elapsed = 00:00:30 . Memory (MB): peak = 1082.531 ; gain = 735.180
+Finished Constraint Validation : Time (s): cpu = 00:00:30 ; elapsed = 00:00:29 . Memory (MB): peak = 1084.961 ; gain = 737.988
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Loading Part and Timing Information
 ---------------------------------------------------------------------------------
 Loading part: xc7a75tfgg484-1
 ---------------------------------------------------------------------------------
-Finished Loading Part and Timing Information : Time (s): cpu = 00:00:30 ; elapsed = 00:00:30 . Memory (MB): peak = 1082.531 ; gain = 735.180
+Finished Loading Part and Timing Information : Time (s): cpu = 00:00:30 ; elapsed = 00:00:29 . Memory (MB): peak = 1084.961 ; gain = 737.988
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Applying 'set_property' XDC Constraints
@@ -1342,7 +1350,7 @@ Applied set_property DONT_TOUCH = true for \dac_ad5453_gen[4].spi_fifo0 /realTim
 Applied set_property DONT_TOUCH = true for \dac_ad5453_gen[5].spi_fifo0 /realTime_LPF_coeff_BRAM. (constraint file  auto generated constraint, line ).
 Applied set_property DONT_TOUCH = true for okHI/core0/core0/\a0/cb0 /U0/\inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst . (constraint file  auto generated constraint, line ).
 ---------------------------------------------------------------------------------
-Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:31 ; elapsed = 00:00:31 . Memory (MB): peak = 1082.531 ; gain = 735.180
+Finished applying 'set_property' XDC Constraints : Time (s): cpu = 00:00:31 ; elapsed = 00:00:29 . Memory (MB): peak = 1084.961 ; gain = 737.988
 ---------------------------------------------------------------------------------
 INFO: [Synth 8-5545] ROM "clk_div" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
 INFO: [Synth 8-5545] ROM "data_reg" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
@@ -1642,7 +1650,7 @@ s_preamble_startstopwait |                             1001 | 000000000000000000
       s_payload_stopwait |                             1110 | 00000000000000000000000000100001
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 'sequential' in module 'i2cController_wPipe'
-INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm1E6EDC6FF800'
+INFO: [Synth 8-3898] No Re-encoding of one hot register 'serial_present_state_reg' in module 'fsm25E0555E2B00'
 ---------------------------------------------------------------------------------------------------
                    State |                     New Encoding |                Previous Encoding 
 ---------------------------------------------------------------------------------------------------
@@ -1845,23 +1853,22 @@ INFO: [Synth 8-3354] encoded FSM with state register 'state_reg' using encoding 
 ---------------------------------------------------------------------------------------------------
 INFO: [Synth 8-3354] encoded FSM with state register 'fpga_test_po_state_reg' using encoding 'one-hot' in module 'top_level_module'
 ---------------------------------------------------------------------------------
-Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:40 ; elapsed = 00:00:40 . Memory (MB): peak = 1082.531 ; gain = 735.180
+Finished RTL Optimization Phase 2 : Time (s): cpu = 00:00:39 ; elapsed = 00:00:38 . Memory (MB): peak = 1084.961 ; gain = 737.988
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
-+------+-----------------------+------------+----------+
-|      |RTL Partition          |Replication |Instances |
-+------+-----------------------+------------+----------+
-|1     |okHost__GC0            |           1|      1819|
-|2     |AD7961__GC0            |           1|       221|
-|3     |top_level_module__GCB0 |           1|     19328|
-|4     |top_level_module__GCB1 |           1|     17758|
-|5     |top_level_module__GCB2 |           1|     18077|
-|6     |top_level_module__GCB3 |           1|     18137|
-|7     |top_level_module__GCB4 |           1|     34988|
-|8     |top_level_module__GCB5 |           1|     28393|
-|9     |top_level_module__GCB6 |           1|     35705|
-+------+-----------------------+------------+----------+
++------+--------------------------------+------------+----------+
+|      |RTL Partition                   |Replication |Instances |
++------+--------------------------------+------------+----------+
+|1     |okHost__GC0                     |           1|      1819|
+|2     |AD7961__GC0                     |           1|       221|
+|3     |top_level_module__GCB0          |           1|     36386|
+|4     |top_level_module__GCB1          |           1|     19220|
+|5     |spi_fifo_driven__parameterized0 |           1|     17241|
+|6     |top_level_module__GCB3          |           1|     34514|
+|7     |top_level_module__GCB4          |           1|     29854|
+|8     |top_level_module__GCB5          |           1|     35705|
++------+--------------------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start RTL Component Statistics 
 ---------------------------------------------------------------------------------
@@ -1893,33 +1900,28 @@ WARNING: [Synth 8-3917] design top_level_module has port led[7] driven by consta
 WARNING: [Synth 8-3917] design top_level_module has port ds_sdo[1] driven by constant 1
 WARNING: [Synth 8-3917] design top_level_module has port ds_sdo[0] driven by constant 1
 WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/temp4_reg[0]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/temp4_reg[1]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/temp4_reg[1]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/temp4_reg[2]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/temp3_reg[12]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/temp3_reg[13]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/pi_error_signal_reg[0]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/pi_error_signal_reg[1]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[31]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[30]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[29]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[28]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[27]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[26]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[25]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[24]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[31]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[29]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[28]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[27]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[26]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[25]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
 WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
-WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
+INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/temp4_reg[0]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/temp4_reg[1]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/temp4_reg[0]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/temp4_reg[1]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/temp4_reg[1]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/temp4_reg[2]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[0].spi_fifo0 /\temp4_reg[2] )
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/temp3_reg[12]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/temp3_reg[13]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/temp4_reg[1]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/temp4_reg[2]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[2].spi_fifo0/temp4_reg[2] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[2].spi_fifo0 /\temp4_reg[2] )
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/temp3_reg[12]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/temp3_reg[13]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/pi_error_signal_reg[0]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/pi_error_signal_reg[1]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[0].spi_fifo0 /\pi_error_signal_reg[1] )
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/pi_error_signal_reg[0]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/pi_error_signal_reg[1]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[2].spi_fifo0/pi_error_signal_reg[1] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[2].spi_fifo0 /\pi_error_signal_reg[1] )
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[31]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[30]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[29]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[28]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[27]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[26]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[25]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[24]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/data_converter_0/cmd_word_reg[33]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[31]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[33]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[30]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[33]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[29]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[33]'
@@ -1927,59 +1929,130 @@ INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/data_converte
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[27]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[33]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[26]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[33]'
 INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[25]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[33]'
-INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[33] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24] )
-WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/temp4_reg[0]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/temp4_reg[1]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/temp4_reg[1]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/temp4_reg[2]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/temp3_reg[12]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/temp3_reg[13]'
-INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/pi_error_signal_reg[0]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/pi_error_signal_reg[1]'
-INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[24]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[31]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[29]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[28]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[27]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[26]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[25]' (FDE) to 'dac_ad5453_gen[0].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[31]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[29]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[28]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[27]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[26]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[25]' (FDE) to 'dac_ad5453_gen[2].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[0].spi_fifo0 /\data_converter_0/cmd_word_reg[33] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[2].spi_fifo0 /\data_converter_0/cmd_word_reg[33] )
+INFO: [Synth 8-3333] propagating constant 1 across sequential element (fpga_test_ti_confirm_reg)
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[0].spi_fifo0 /\Wishbone_Master_0/o_wb_data_reg[24] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[2].spi_fifo0 /\Wishbone_Master_0/o_wb_data_reg[24] )
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[12]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[13]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[14]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[15]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[16]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[17]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[18]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[19]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[20]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[21]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[22]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[23]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[24]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[25]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[26]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[27]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[28]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[29]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[30]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[31]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[12]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[13]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[14]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[15]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[16]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[17]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[18]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[19]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[20]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[21]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[22]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[23]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[24]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[25]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[26]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[27]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[28]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[29]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[30]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[31]) is unused and will be removed from module okWireIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[27]) is unused and will be removed from module okWireIn__2.
+WARNING: [Synth 8-3332] Sequential element (ep_datahold_reg[2]) is unused and will be removed from module okWireIn__2.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[27]) is unused and will be removed from module okWireIn__2.
+WARNING: [Synth 8-3332] Sequential element (ep_dataout_reg[2]) is unused and will be removed from module okWireIn__2.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[0]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[14]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[16]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[17]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[19]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[21]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[22]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[2]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[31]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[6]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (ep_trigger_reg[7]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[0]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[14]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[16]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[17]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[19]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[21]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[22]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[2]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[31]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[6]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (eptrig_reg[7]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[0]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[14]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[16]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[17]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[19]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[21]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[22]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[2]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[31]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[6]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff0_reg[7]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[0]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[14]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[16]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[17]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[19]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[21]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[22]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[2]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[31]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[6]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (trigff1_reg[7]) is unused and will be removed from module okTriggerIn__1.
+WARNING: [Synth 8-3332] Sequential element (data_converter_0/adr_reg[1]) is unused and will be removed from module spi_fifo_driven__parameterized3.
+WARNING: [Synth 8-3332] Sequential element (data_converter_0/adr_reg[0]) is unused and will be removed from module spi_fifo_driven__parameterized3.
+WARNING: [Synth 8-3332] Sequential element (data_converter_0/cmd_word_reg[33]) is unused and will be removed from module spi_fifo_driven__parameterized3.
+WARNING: [Synth 8-3332] Sequential element (mul_temp_2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+WARNING: [Synth 8-3332] Sequential element (mul_temp_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+WARNING: [Synth 8-3332] Sequential element (b1mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+WARNING: [Synth 8-3332] Sequential element (b1mul1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+WARNING: [Synth 8-3332] Sequential element (a2mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+WARNING: [Synth 8-3332] Sequential element (a2mul1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+WARNING: [Synth 8-3332] Sequential element (a3mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+WARNING: [Synth 8-3332] Sequential element (a3mul1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+WARNING: [Synth 8-3332] Sequential element (b3mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__5.
+INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 WARNING: [Synth 8-6014] Unused sequential element tok/tok_wack_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cTokenizer.v:125]
 INFO: [Synth 8-5546] ROM "tok/divenable" won't be mapped to RAM because it is too sparse
-WARNING: [Synth 8-6014] Unused sequential element tok/tok_wack_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cTokenizer.v:125]
-INFO: [Synth 8-5546] ROM "tok/divenable" won't be mapped to RAM because it is too sparse
-INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[15]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[2]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[14]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[2]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[13]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[2]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[2]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[1]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[0]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[3]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[4]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[5]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[6]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[7]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[8]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[9]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[10]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[11]' (FDRE) to 'dac80508_gen[1].spi_fifo1/ads_data_reg_reg[12]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac80508_gen[1].spi_fifo1 /\ads_data_reg_reg[12] )
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/temp4_reg[0]' (FDE) to 'dac80508_gen[1].spi_fifo1/temp4_reg[1]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/temp4_reg[1]' (FDE) to 'dac80508_gen[1].spi_fifo1/temp4_reg[2]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac80508_gen[1].spi_fifo1 /\temp4_reg[2] )
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/temp3_reg[12]' (FDE) to 'dac80508_gen[1].spi_fifo1/temp3_reg[13]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/pi_error_signal_reg[0]' (FDE) to 'dac80508_gen[1].spi_fifo1/pi_error_signal_reg[1]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac80508_gen[1].spi_fifo1 /\pi_error_signal_reg[1] )
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[0]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[1]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[1]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[2]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[2]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[3]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[3]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[4]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[4]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[5]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[5]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[6]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[6]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[7]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[7]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[8]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[8]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[9]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[9]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[10]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[10]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[11]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[11]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[12]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[12]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[13]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[13]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[14]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[14]' (FDRE) to 'dac80508_gen[1].spi_fifo1/u_Butterworth_0/input_register_reg[15]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac80508_gen[1].spi_fifo1 /u_Butterworth_0/\input_register_reg[15] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[0] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[1] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[1] )
@@ -2031,23 +2104,6 @@ INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[30] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_to_0/\ep_trigger0_reg[31] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (trigOut60/\ep_trigger0_reg[31] )
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[31]' (FDE) to 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[30]' (FDE) to 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[29]' (FDE) to 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[28]' (FDE) to 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[27]' (FDE) to 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[26]' (FDE) to 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[25]' (FDE) to 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[24]' (FDE) to 'dac80508_gen[1].spi_fifo1/data_converter_0/cmd_word_reg[33]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[31]' (FDE) to 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[29]' (FDE) to 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[28]' (FDE) to 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[27]' (FDE) to 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[26]' (FDE) to 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3886] merging instance 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[25]' (FDE) to 'dac80508_gen[1].spi_fifo1/Wishbone_Master_0/o_wb_data_reg[24]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac80508_gen[1].spi_fifo1 /\data_converter_0/cmd_word_reg[33] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (bitfile_version_wo/\wirehold_reg[0] )
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[0]' (FDE) to 'fpga_test_static_po_data_reg[10]'
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[0] )
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[0] )
@@ -2086,16 +2142,8 @@ INFO: [Synth 8-3333] propagating constant 0 across sequential element (bitfile_v
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[5] )
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[5]' (FDE) to 'fpga_test_static_po_data_reg[7]'
 INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_0/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo09/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo08/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo07/\wirehold_reg[5] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (wo1/\wirehold_reg[6] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (bitfile_version_wo/\wirehold_reg[6] )
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_2/\wirehold_reg[6] )
+INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[6]' (FDE) to 'fpga_test_static_po_data_reg[17]'
-INFO: [Synth 8-3333] propagating constant 0 across sequential element (fpga_test_wo_0/\wirehold_reg[6] )
-INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[7]' (FDE) to 'fpga_test_static_po_data_reg[12]'
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[8]' (FDE) to 'fpga_test_static_po_data_reg[9]'
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[9]' (FDE) to 'fpga_test_static_po_data_reg[13]'
@@ -2106,112 +2154,71 @@ INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[13]' (FDE) t
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[14]' (FDE) to 'fpga_test_static_po_data_reg[15]'
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[15]' (FDE) to 'fpga_test_static_po_data_reg[16]'
 INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[16]' (FDE) to 'fpga_test_static_po_data_reg[20]'
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[18]' (FDE) to 'fpga_test_static_po_data_reg[19]'
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[19]' (FDE) to 'fpga_test_static_po_data_reg[22]'
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[20]' (FDE) to 'fpga_test_static_po_data_reg[23]'
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[21]' (FDE) to 'fpga_test_static_po_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[22]' (FDE) to 'fpga_test_static_po_data_reg[29]'
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[23]' (FDE) to 'fpga_test_static_po_data_reg[25]'
+INFO: [Synth 8-3886] merging instance 'fpga_test_static_po_data_reg[24]' (FDE) to 'fpga_test_static_po_data_reg[28]'
 INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-WARNING: [Synth 8-3332] Sequential element (data_converter_0/adr_reg[1]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (data_converter_0/adr_reg[0]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (data_converter_0/cmd_word_reg[33]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (mul_temp_2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (input_register_reg[15]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (mul_temp_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b1mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b1mul1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (a2mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (a2mul1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (a3mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (a3mul1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b3mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b3mul1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab3sum1_reg[48]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab3sum1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab3sum1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2mul1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2mul1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2sum1_reg[48]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2sum1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2sum1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (sub_temp_reg[49]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (sub_temp_reg[48]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (sub_temp_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (sub_temp_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab1sum1_reg[48]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab1sum1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab1sum1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b1mul2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b1mul2_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (a2mul2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (a2mul2_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (a3mul2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (a3mul2_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b3mul2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b3mul2_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab3sum2_reg[48]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab3sum2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab3sum2_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2mul2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2mul2_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2sum2_reg[48]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2sum2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (b2sum2_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (sub_temp_1_reg[49]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (sub_temp_1_reg[48]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (sub_temp_1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (sub_temp_1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab1sum2_reg[48]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab1sum2_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (ab1sum2_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (mul_temp_1_reg[47]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (mul_temp_1_reg[46]) is unused and will be removed from module Butter_pipelined__xdcDup__2.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/filter_data_read_en_reg) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[13]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[12]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[11]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[10]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[9]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[8]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[7]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[6]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[5]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[4]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[3]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[2]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[1]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (u_dat_scale/cmd_data_in_reg_reg[0]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/newaddr_reg) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_stb_reg) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/inc_reg) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[33]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[32]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[31]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[30]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[29]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[28]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[27]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[26]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[25]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[24]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[23]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[22]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[21]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[20]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[19]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[18]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[17]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[16]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[15]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[14]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[13]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[12]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[11]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[10]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[9]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[8]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[7]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-WARNING: [Synth 8-3332] Sequential element (Wishbone_Master_0/o_rsp_word_reg[6]) is unused and will be removed from module spi_fifo_driven__parameterized0.
-INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
-INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
+INFO: [Synth 8-3886] merging instance 'temp4_reg[0]' (FDE) to 'temp4_reg[1]'
+INFO: [Synth 8-3886] merging instance 'temp4_reg[1]' (FDE) to 'temp4_reg[2]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\temp4_reg[2] )
+INFO: [Synth 8-3886] merging instance 'temp3_reg[12]' (FDE) to 'temp3_reg[13]'
+INFO: [Synth 8-3886] merging instance 'pi_error_signal_reg[0]' (FDE) to 'pi_error_signal_reg[1]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\pi_error_signal_reg[1] )
+INFO: [Synth 8-3886] merging instance 'data_converter_0/cmd_word_reg[31]' (FDE) to 'data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'data_converter_0/cmd_word_reg[30]' (FDE) to 'data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'data_converter_0/cmd_word_reg[29]' (FDE) to 'data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'data_converter_0/cmd_word_reg[28]' (FDE) to 'data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'data_converter_0/cmd_word_reg[27]' (FDE) to 'data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'data_converter_0/cmd_word_reg[26]' (FDE) to 'data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'data_converter_0/cmd_word_reg[25]' (FDE) to 'data_converter_0/cmd_word_reg[33]'
+INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\data_converter_0/cmd_word_reg[33] )
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\Wishbone_Master_0/o_wb_data_reg[24] )
+WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
+WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/temp4_reg[0]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/temp4_reg[1]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/temp4_reg[0]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/temp4_reg[1]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/temp4_reg[1]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/temp4_reg[2]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[1].spi_fifo0 /\temp4_reg[2] )
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/temp3_reg[12]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/temp3_reg[13]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/temp4_reg[1]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/temp4_reg[2]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[3].spi_fifo0 /\temp4_reg[2] )
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/temp3_reg[12]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/temp3_reg[13]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/pi_error_signal_reg[0]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/pi_error_signal_reg[1]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[1].spi_fifo0 /\pi_error_signal_reg[1] )
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/pi_error_signal_reg[0]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/pi_error_signal_reg[1]'
+INFO: [Synth 8-3333] propagating constant 0 across sequential element (\dac_ad5453_gen[3].spi_fifo0 /\pi_error_signal_reg[1] )
+INFO: [Common 17-14] Message 'Synth 8-3333' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[31]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[30]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[29]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[28]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[27]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[26]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[25]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[24]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[31]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[30]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[29]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[28]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[27]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[26]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[25]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[24]' (FDE) to 'dac_ad5453_gen[3].spi_fifo0/data_converter_0/cmd_word_reg[33]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[31]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[30]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Synth 8-3886] merging instance 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[29]' (FDE) to 'dac_ad5453_gen[1].spi_fifo0/Wishbone_Master_0/o_wb_data_reg[24]'
+INFO: [Common 17-14] Message 'Synth 8-3886' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
 WARNING: [Synth 8-6014] Unused sequential element shift_chan2/s_out_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/SPI_Master/spi_shift.v:120]
 INFO: [Synth 8-5545] ROM "ddr_dac_rd_en" won't be mapped to RAM because address size (32) is larger than maximum supported(25)
+WARNING: [Synth 8-6014] Unused sequential element tok/tok_wack_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cTokenizer.v:125]
+INFO: [Synth 8-5546] ROM "tok/divenable" won't be mapped to RAM because it is too sparse
 WARNING: [Synth 8-6014] Unused sequential element tok/tok_wack_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cTokenizer.v:125]
 INFO: [Synth 8-5546] ROM "tok/divenable" won't be mapped to RAM because it is too sparse
 WARNING: [Synth 8-6014] Unused sequential element tok/tok_wack_reg was removed.  [C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/i2c/src/i2cTokenizer.v:125]
@@ -2232,23 +2239,22 @@ INFO: [Synth 8-5545] ROM "out_pulse/pulse" won't be mapped to RAM because addres
 INFO: [Common 17-14] Message 'Synth 8-3331' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 INFO: [Common 17-14] Message 'Synth 8-3332' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:07 ; elapsed = 00:01:30 . Memory (MB): peak = 1082.531 ; gain = 735.180
+Finished Cross Boundary and Area Optimization : Time (s): cpu = 00:01:00 ; elapsed = 00:01:21 . Memory (MB): peak = 1084.961 ; gain = 737.988
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
-+------+-----------------------+------------+----------+
-|      |RTL Partition          |Replication |Instances |
-+------+-----------------------+------------+----------+
-|1     |okHost__GC0            |           1|      1798|
-|2     |AD7961__GC0            |           4|       132|
-|3     |top_level_module__GCB0 |           1|      8754|
-|4     |top_level_module__GCB1 |           1|      7796|
-|5     |top_level_module__GCB2 |           1|      7898|
-|6     |top_level_module__GCB3 |           1|      7995|
-|7     |top_level_module__GCB4 |           1|     17220|
-|8     |top_level_module__GCB5 |           1|     13248|
-|9     |top_level_module__GCB6 |           1|     14857|
-+------+-----------------------+------------+----------+
++------+--------------------------------+------------+----------+
+|      |RTL Partition                   |Replication |Instances |
++------+--------------------------------+------------+----------+
+|1     |okHost__GC0                     |           1|      1798|
+|2     |AD7961__GC0                     |           4|       132|
+|3     |top_level_module__GCB0          |           1|     15797|
+|4     |top_level_module__GCB1          |           1|     11308|
+|5     |spi_fifo_driven__parameterized0 |           1|      7403|
+|6     |top_level_module__GCB3          |           1|     14836|
+|7     |top_level_module__GCB4          |           1|     14065|
+|8     |top_level_module__GCB5          |           1|     14857|
++------+--------------------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start Applying XDC Timing Constraints
 ---------------------------------------------------------------------------------
@@ -2258,29 +2264,28 @@ INFO: [Synth 8-5578] Moved timing constraint from pin 'u_ddr3_256_32/ui_clk' to 
 INFO: [Synth 8-5578] Moved timing constraint from pin 'core0/core0/a0/cb0/U0/inst_fifo_gen/gconvfifo.rf/grf.rf/rstblk/ngwrdrst.grst.g7serrst.gnsckt_wrst.rst_wr_reg2_inst/src_arst' to pin 'core0/core0/a0/l62a5479e7989ce7f4d5507c695cc69cf_reg/Q'
 INFO: [Synth 8-5819] Moved 4 constraints on hierarchical pins to their respective driving/loading pins
 ---------------------------------------------------------------------------------
-Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:15 ; elapsed = 00:01:39 . Memory (MB): peak = 1082.531 ; gain = 735.180
+Finished Applying XDC Timing Constraints : Time (s): cpu = 00:01:08 ; elapsed = 00:01:30 . Memory (MB): peak = 1084.961 ; gain = 737.988
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Timing Optimization
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Timing Optimization : Time (s): cpu = 00:01:27 ; elapsed = 00:01:52 . Memory (MB): peak = 1082.531 ; gain = 735.180
+Finished Timing Optimization : Time (s): cpu = 00:01:19 ; elapsed = 00:01:41 . Memory (MB): peak = 1084.961 ; gain = 737.988
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
-+------+-----------------------+------------+----------+
-|      |RTL Partition          |Replication |Instances |
-+------+-----------------------+------------+----------+
-|1     |okHost__GC0            |           1|      1796|
-|2     |top_level_module__GCB0 |           1|      8720|
-|3     |top_level_module__GCB1 |           1|      7796|
-|4     |top_level_module__GCB2 |           1|      7898|
-|5     |top_level_module__GCB3 |           1|      7978|
-|6     |top_level_module__GCB4 |           1|     17217|
-|7     |top_level_module__GCB6 |           1|     14854|
-|8     |partition__27__GD      |           1|        37|
-|9     |top_level_module_GT0   |           1|     13725|
-+------+-----------------------+------------+----------+
++------+--------------------------------+------------+----------+
+|      |RTL Partition                   |Replication |Instances |
++------+--------------------------------+------------+----------+
+|1     |okHost__GC0                     |           1|      1796|
+|2     |top_level_module__GCB0          |           1|     15797|
+|3     |top_level_module__GCB1          |           1|     11201|
+|4     |spi_fifo_driven__parameterized0 |           1|      6970|
+|5     |top_level_module__GCB3          |           1|     14836|
+|6     |top_level_module__GCB5          |           1|     14854|
+|7     |top_level_module_GT1            |           1|        38|
+|8     |top_level_module_GT0            |           1|     14542|
++------+--------------------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start Technology Mapping
 ---------------------------------------------------------------------------------
@@ -2297,7 +2302,7 @@ INFO: [Synth 8-5816] Retiming module `okCore`
 
 	Optimizing at the module level
 	Cannot find a feasible solution:
-		Effective logic levels from okHIi_7/core0/core0/a0/pm0/ram_1k_generate.v6.kcpsm6_rom(fixed:BRAM/DSP/SRL) to okHIi_7/core0/core0/a0/pc0/address_loop[9].pc_flop(fixed:TIMNG EXCEPTION/ATTRIBUTES) is: 12
+		Effective logic levels from okHIi_5/core0/core0/a0/pm0/ram_1k_generate.v6.kcpsm6_rom(fixed:BRAM/DSP/SRL) to okHIi_5/core0/core0/a0/pc0/address_loop[9].pc_flop(fixed:TIMNG EXCEPTION/ATTRIBUTES) is: 12
 		Effective logic levels found across for latency (=1) is: 12
 	Optimizing locally to improve critical paths(may not reduce worst delay)
 
@@ -2323,123 +2328,18 @@ INFO: [Synth 8-5816] Retiming module `okHost__GC0`
 INFO: [Synth 8-5816] Retiming module `okHost__GC0' done
 
 
-INFO: [Synth 8-5816] Retiming module `okWireIn__1`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__1' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__2`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__2' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__3`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__3' done
-
-
-INFO: [Synth 8-5816] Retiming module `top_level_module__GCB0`
+INFO: [Synth 8-5816] Retiming module `spi_fifo_driven__parameterized0`
 	Effective logic levels is 7, the effective logic levels of whole design is 12
 	Skipping retiming for this module
 
-INFO: [Synth 8-5816] Retiming module `top_level_module__GCB0' done
+INFO: [Synth 8-5816] Retiming module `spi_fifo_driven__parameterized0' done
 
 
-INFO: [Synth 8-5816] Retiming module `top_level_module__GCB1`
-	Effective logic levels is 7, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `top_level_module__GCB1' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__4`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__4' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__5`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__5' done
-
-
-INFO: [Synth 8-5816] Retiming module `okTriggerIn__1`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okTriggerIn__1' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__6`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__6' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__7`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__7' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__8`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__8' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__9`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__9' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__10`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__10' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__11`
-	Effective logic levels is 2, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__11' done
-
-
-INFO: [Synth 8-5816] Retiming module `top_level_module__GCB2`
-	Effective logic levels is 7, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `top_level_module__GCB2' done
-
-
-INFO: [Synth 8-5816] Retiming module `top_level_module__GCB3`
-	Effective logic levels is 7, the effective logic levels of whole design is 12
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `top_level_module__GCB3' done
-
-
-INFO: [Synth 8-5816] Retiming module `partition__27__GD`
+INFO: [Synth 8-5816] Retiming module `top_level_module_GT1`
 	Effective logic levels is 4, the effective logic levels of whole design is 12
 	Skipping retiming for this module
 
-INFO: [Synth 8-5816] Retiming module `partition__27__GD' done
+INFO: [Synth 8-5816] Retiming module `top_level_module_GT1' done
 
 
 INFO: [Synth 8-5816] Retiming module `top_level_module`
@@ -2449,172 +2349,25 @@ INFO: [Synth 8-5816] Retiming module `top_level_module`
 INFO: [Synth 8-5816] Retiming module `top_level_module' done
 
 
-INFO: [Synth 8-5816] Retiming module `okWireOut__1`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__1' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__2`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__2' done
-
-
-INFO: [Synth 8-5816] Retiming module `okTriggerOut__1`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okTriggerOut__1' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__3`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__3' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__4`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__4' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__12`
+INFO: [Synth 8-5816] Retiming module `okWireIn__1`
 	Effective logic levels is 2, the effective logic levels of whole design is 7
 	Skipping retiming for this module
 
-INFO: [Synth 8-5816] Retiming module `okWireIn__12' done
+INFO: [Synth 8-5816] Retiming module `okWireIn__1' done
 
 
-INFO: [Synth 8-5816] Retiming module `okPipeOut__1`
-	Effective logic levels is 0, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okPipeOut__1' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__5`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__5' done
-
-
-INFO: [Synth 8-5816] Retiming module `okPipeOut__2`
-	Effective logic levels is 0, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okPipeOut__2' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__6`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__6' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__7`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__7' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireIn__13`
+INFO: [Synth 8-5816] Retiming module `okWireIn__2`
 	Effective logic levels is 2, the effective logic levels of whole design is 7
 	Skipping retiming for this module
 
-INFO: [Synth 8-5816] Retiming module `okWireIn__13' done
+INFO: [Synth 8-5816] Retiming module `okWireIn__2' done
 
 
-INFO: [Synth 8-5816] Retiming module `okWireOut__8`
-	Effective logic levels is 0, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__8' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__9`
-	Effective logic levels is 0, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__9' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__10`
-	Effective logic levels is 0, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__10' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__11`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__11' done
-
-
-INFO: [Synth 8-5816] Retiming module `okBTPipeOut__1`
-	Effective logic levels is 0, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okBTPipeOut__1' done
-
-
-INFO: [Synth 8-5816] Retiming module `okBTPipeOut`
-	Effective logic levels is 0, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okBTPipeOut' done
-
-
-INFO: [Synth 8-5816] Retiming module `okBTPipeIn`
+INFO: [Synth 8-5816] Retiming module `okTriggerIn__1`
 	Effective logic levels is 2, the effective logic levels of whole design is 7
 	Skipping retiming for this module
 
-INFO: [Synth 8-5816] Retiming module `okBTPipeIn' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__12`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__12' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__13`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__13' done
-
-
-INFO: [Synth 8-5816] Retiming module `okPipeOut`
-	Effective logic levels is 0, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okPipeOut' done
-
-
-INFO: [Synth 8-5816] Retiming module `okTriggerOut`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okTriggerOut' done
-
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__14`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
-	Skipping retiming for this module
-
-INFO: [Synth 8-5816] Retiming module `okWireOut__14' done
+INFO: [Synth 8-5816] Retiming module `okTriggerIn__1' done
 
 
 INFO: [Synth 8-5816] Retiming module `okTriggerIn__2`
@@ -2624,46 +2377,328 @@ INFO: [Synth 8-5816] Retiming module `okTriggerIn__2`
 INFO: [Synth 8-5816] Retiming module `okTriggerIn__2' done
 
 
+INFO: [Synth 8-5816] Retiming module `okWireIn__3`
+	Effective logic levels is 2, the effective logic levels of whole design is 7
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__3' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__4`
+	Effective logic levels is 2, the effective logic levels of whole design is 7
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__4' done
+
+
+INFO: [Synth 8-5816] Retiming module `top_level_module__GCB0_tempName`
+	Effective logic levels on critical path before retiming is: 7
+	Total number of crtical paths = 192
+
+	Optimizing at the module level
+	Cannot find a feasible solution:
+		Worst path is a self-loop from i_0/dac_ad5453_gen[2].spi_fifo0/i_spi_top_0/clgen/cnt_reg[3] to i_0/dac_ad5453_gen[2].spi_fifo0/i_spi_top_0/clgen/cnt_reg[3]
+	Optimizing locally to improve critical paths(may not reduce worst delay)
+
+	Effective logic levels on critical path after retiming is: 7
+	Total number of crtical paths = 192
+	Numbers of forward move = 0, and backward move = 0
+
+
+INFO: [Synth 8-5816] Retiming module `top_level_module__GCB0_tempName' done
+
+
+INFO: [Synth 8-5816] Retiming module `top_level_module`
+	Effective logic levels is 0, the effective logic levels of whole design is 7
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `top_level_module' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__1`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__1' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__2`
+	Effective logic levels is 0, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__2' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__3`
+	Effective logic levels is 0, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__3' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__4`
+	Effective logic levels is 0, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__4' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__5`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__5' done
+
+
+INFO: [Synth 8-5816] Retiming module `okPipeOut__1`
+	Effective logic levels is 0, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okPipeOut__1' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__5`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__5' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__6`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__6' done
+
+
+INFO: [Synth 8-5816] Retiming module `okPipeOut__2`
+	Effective logic levels is 0, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okPipeOut__2' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__6`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__6' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__7`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__7' done
+
+
+INFO: [Synth 8-5816] Retiming module `okBTPipeOut__1`
+	Effective logic levels is 0, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okBTPipeOut__1' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__8`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__8' done
+
+
+INFO: [Synth 8-5816] Retiming module `okTriggerOut__1`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okTriggerOut__1' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__9`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__9' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__10`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__10' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__7`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__7' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__8`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__8' done
+
+
+INFO: [Synth 8-5816] Retiming module `okBTPipeOut`
+	Effective logic levels is 0, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okBTPipeOut' done
+
+
+INFO: [Synth 8-5816] Retiming module `okBTPipeIn`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okBTPipeIn' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__11`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__11' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__12`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__12' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__9`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__9' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__13`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__13' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__14`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__14' done
+
+
 INFO: [Synth 8-5816] Retiming module `okWireOut__15`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
+	Effective logic levels is 1, the effective logic levels of whole design is 5
 	Skipping retiming for this module
 
 INFO: [Synth 8-5816] Retiming module `okWireOut__15' done
 
 
-INFO: [Synth 8-5816] Retiming module `okWireIn__14`
-	Effective logic levels is 2, the effective logic levels of whole design is 7
+INFO: [Synth 8-5816] Retiming module `okWireIn__10`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
 	Skipping retiming for this module
 
-INFO: [Synth 8-5816] Retiming module `okWireIn__14' done
+INFO: [Synth 8-5816] Retiming module `okWireIn__10' done
 
 
-INFO: [Synth 8-5816] Retiming module `okWireOut`
-	Effective logic levels is 1, the effective logic levels of whole design is 7
+INFO: [Synth 8-5816] Retiming module `okWireIn__11`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
 	Skipping retiming for this module
 
-INFO: [Synth 8-5816] Retiming module `okWireOut' done
+INFO: [Synth 8-5816] Retiming module `okWireIn__11' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__16`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__16' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__12`
+	Effective logic levels is 2, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireIn__12' done
+
+
+INFO: [Synth 8-5816] Retiming module `okPipeOut`
+	Effective logic levels is 0, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okPipeOut' done
+
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__17`
+	Effective logic levels is 1, the effective logic levels of whole design is 5
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `okWireOut__17' done
+
+
+INFO: [Common 17-14] Message 'Synth 8-5816' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
+INFO: [Synth 8-5816] Retiming module `top_level_module__GCB3_tempName`
+	Effective logic levels on critical path before retiming is: 7
+	Total number of crtical paths = 192
+
+	Optimizing at the module level
+	Cannot find a feasible solution:
+		Worst path is a self-loop from i_2/dac_ad5453_gen[3].spi_fifo0/i_spi_top_0/clgen/cnt_reg[3] to i_2/dac_ad5453_gen[3].spi_fifo0/i_spi_top_0/clgen/cnt_reg[3]
+	Optimizing locally to improve critical paths(may not reduce worst delay)
+
+	Effective logic levels on critical path after retiming is: 7
+	Total number of crtical paths = 192
+	Numbers of forward move = 0, and backward move = 0
+
+
+INFO: [Synth 8-5816] Retiming module `top_level_module__GCB3_tempName' done
+
+
+INFO: [Synth 8-5816] Retiming module `top_level_module`
+	Effective logic levels is 0, the effective logic levels of whole design is 7
+	Skipping retiming for this module
+
+INFO: [Synth 8-5816] Retiming module `top_level_module' done
+
+
+INFO: [Synth 8-5816] Retiming module `top_level_module__GCB5_tempName`
+	Effective logic levels on critical path before retiming is: 7
+	Total number of crtical paths = 192
+
+	Optimizing at the module level
+	Cannot find a feasible solution:
+		Worst path is a self-loop from i_4/dac_ad5453_gen[5].spi_fifo0/i_spi_top_0/clgen/cnt_reg[3] to i_4/dac_ad5453_gen[5].spi_fifo0/i_spi_top_0/clgen/cnt_reg[3]
+	Optimizing locally to improve critical paths(may not reduce worst delay)
+
+	Effective logic levels on critical path after retiming is: 7
+	Total number of crtical paths = 192
+	Numbers of forward move = 0, and backward move = 0
+
+
+INFO: [Synth 8-5816] Retiming module `top_level_module__GCB5_tempName' done
 
 
 INFO: [Common 17-14] Message 'Synth 8-5816' appears 100 times and further instances of the messages will be disabled. Use the Tcl command set_msg_config to change the current settings.
 ---------------------------------------------------------------------------------
-Finished Technology Mapping : Time (s): cpu = 00:01:52 ; elapsed = 00:02:37 . Memory (MB): peak = 1082.531 ; gain = 735.180
+Finished Technology Mapping : Time (s): cpu = 00:01:46 ; elapsed = 00:02:40 . Memory (MB): peak = 1084.961 ; gain = 737.988
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
-+------+-----------------------+------------+----------+
-|      |RTL Partition          |Replication |Instances |
-+------+-----------------------+------------+----------+
-|1     |okHost__GC0            |           1|      1796|
-|2     |top_level_module__GCB0 |           1|      5121|
-|3     |top_level_module__GCB1 |           1|      4576|
-|4     |top_level_module__GCB2 |           1|      4890|
-|5     |top_level_module__GCB3 |           1|      4647|
-|6     |top_level_module__GCB4 |           1|     10481|
-|7     |top_level_module__GCB6 |           1|      8923|
-|8     |partition__27__GD      |           1|        37|
-|9     |top_level_module_GT0   |           1|      7410|
-+------+-----------------------+------------+----------+
++------+--------------------------------+------------+----------+
+|      |RTL Partition                   |Replication |Instances |
++------+--------------------------------+------------+----------+
+|1     |okHost__GC0                     |           1|      1796|
+|2     |top_level_module__GCB0          |           1|      9462|
+|3     |top_level_module__GCB1          |           1|      7049|
+|4     |spi_fifo_driven__parameterized0 |           1|      4160|
+|5     |top_level_module__GCB3          |           1|      8863|
+|6     |top_level_module__GCB5          |           1|      8923|
+|7     |top_level_module_GT1            |           1|        38|
+|8     |top_level_module_GT0            |           1|      7836|
++------+--------------------------------+------------+----------+
 ---------------------------------------------------------------------------------
 Start IO Insertion
 ---------------------------------------------------------------------------------
@@ -2676,13 +2711,12 @@ Finished Flattening Before IO Insertion
 ---------------------------------------------------------------------------------
 Start Final Netlist Cleanup
 ---------------------------------------------------------------------------------
-INFO: [Synth 8-5365] Flop dac80508_gen[1].spi_fifo1/u_dat_scale/filter_data_out_temp_0_reg[13] is being inverted and renamed to dac80508_gen[1].spi_fifo1/u_dat_scale/filter_data_out_temp_0_reg[13]_inv.
 INFO: [Synth 8-5365] Flop dac80508_gen[0].spi_fifo1/u_dat_scale/filter_data_out_temp_0_reg[13] is being inverted and renamed to dac80508_gen[0].spi_fifo1/u_dat_scale/filter_data_out_temp_0_reg[13]_inv.
 ---------------------------------------------------------------------------------
 Finished Final Netlist Cleanup
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished IO Insertion : Time (s): cpu = 00:02:03 ; elapsed = 00:02:48 . Memory (MB): peak = 1137.105 ; gain = 789.754
+Finished IO Insertion : Time (s): cpu = 00:01:56 ; elapsed = 00:02:50 . Memory (MB): peak = 1113.250 ; gain = 766.277
 ---------------------------------------------------------------------------------
 
 Report Check Netlist: 
@@ -2695,7 +2729,7 @@ Report Check Netlist:
 Start Renaming Generated Instances
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Instances : Time (s): cpu = 00:02:04 ; elapsed = 00:02:49 . Memory (MB): peak = 1137.105 ; gain = 789.754
+Finished Renaming Generated Instances : Time (s): cpu = 00:01:56 ; elapsed = 00:02:50 . Memory (MB): peak = 1113.250 ; gain = 766.277
 ---------------------------------------------------------------------------------
 
 Report RTL Partitions: 
@@ -2707,25 +2741,25 @@ Report RTL Partitions:
 Start Rebuilding User Hierarchy
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Rebuilding User Hierarchy : Time (s): cpu = 00:02:07 ; elapsed = 00:02:53 . Memory (MB): peak = 1137.105 ; gain = 789.754
+Finished Rebuilding User Hierarchy : Time (s): cpu = 00:01:59 ; elapsed = 00:02:54 . Memory (MB): peak = 1113.250 ; gain = 766.277
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Ports
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Ports : Time (s): cpu = 00:02:08 ; elapsed = 00:02:53 . Memory (MB): peak = 1137.105 ; gain = 789.754
+Finished Renaming Generated Ports : Time (s): cpu = 00:02:00 ; elapsed = 00:02:54 . Memory (MB): peak = 1113.250 ; gain = 766.277
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Handling Custom Attributes
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Handling Custom Attributes : Time (s): cpu = 00:02:08 ; elapsed = 00:02:53 . Memory (MB): peak = 1137.105 ; gain = 789.754
+Finished Handling Custom Attributes : Time (s): cpu = 00:02:00 ; elapsed = 00:02:54 . Memory (MB): peak = 1113.250 ; gain = 766.277
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Renaming Generated Nets
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
-Finished Renaming Generated Nets : Time (s): cpu = 00:02:08 ; elapsed = 00:02:53 . Memory (MB): peak = 1137.105 ; gain = 789.754
+Finished Renaming Generated Nets : Time (s): cpu = 00:02:00 ; elapsed = 00:02:54 . Memory (MB): peak = 1113.250 ; gain = 766.277
 ---------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------
 Start Writing Synthesis Report
@@ -2795,15 +2829,15 @@ Report Cell Usage:
 |41    |BUFG                   |     8|
 |42    |CARRY4                 |  1839|
 |43    |DNA_PORT               |     1|
-|44    |LUT1                   |  2612|
-|45    |LUT2                   |  4001|
-|46    |LUT3                   |  1108|
-|47    |LUT4                   |  3436|
-|48    |LUT5                   |  1355|
-|49    |LUT6                   |  4750|
+|44    |LUT1                   |  2617|
+|45    |LUT2                   |  3997|
+|46    |LUT3                   |  1099|
+|47    |LUT4                   |  3478|
+|48    |LUT5                   |  1395|
+|49    |LUT6                   |  4765|
 |50    |LUT6_2                 |    50|
 |51    |MMCME2_BASE            |     1|
-|52    |MUXF7                  |   189|
+|52    |MUXF7                  |   206|
 |53    |RAM128X1S              |     8|
 |54    |RAM32M                 |     4|
 |55    |RAM64X1D               |    96|
@@ -2812,8 +2846,8 @@ Report Cell Usage:
 |58    |RAMB36E1               |     1|
 |59    |FDCE                   |  1372|
 |60    |FDPE                   |   189|
-|61    |FDRE                   | 24397|
-|62    |FDSE                   |    54|
+|61    |FDRE                   | 24519|
+|62    |FDSE                   |    53|
 |63    |IBUF                   |     8|
 |64    |IBUFDS                 |     8|
 |65    |IBUFG                  |     1|
@@ -2823,13 +2857,13 @@ Report Cell Usage:
 |69    |OBUFDS                 |    12|
 +------+-----------------------+------+
 ---------------------------------------------------------------------------------
-Finished Writing Synthesis Report : Time (s): cpu = 00:02:08 ; elapsed = 00:02:53 . Memory (MB): peak = 1137.105 ; gain = 789.754
+Finished Writing Synthesis Report : Time (s): cpu = 00:02:00 ; elapsed = 00:02:54 . Memory (MB): peak = 1113.250 ; gain = 766.277
 ---------------------------------------------------------------------------------
-Synthesis finished with 0 errors, 0 critical warnings and 422 warnings.
-Synthesis Optimization Runtime : Time (s): cpu = 00:01:40 ; elapsed = 00:02:36 . Memory (MB): peak = 1137.105 ; gain = 298.254
-Synthesis Optimization Complete : Time (s): cpu = 00:02:08 ; elapsed = 00:02:54 . Memory (MB): peak = 1137.105 ; gain = 789.754
+Synthesis finished with 0 errors, 0 critical warnings and 544 warnings.
+Synthesis Optimization Runtime : Time (s): cpu = 00:01:32 ; elapsed = 00:02:37 . Memory (MB): peak = 1113.250 ; gain = 273.629
+Synthesis Optimization Complete : Time (s): cpu = 00:02:00 ; elapsed = 00:02:55 . Memory (MB): peak = 1113.250 ; gain = 766.277
 INFO: [Project 1-571] Translating synthesized netlist
-INFO: [Netlist 29-17] Analyzing 2265 Unisim elements for replacement
+INFO: [Netlist 29-17] Analyzing 2282 Unisim elements for replacement
 INFO: [Netlist 29-28] Unisim Transformation completed in 0 CPU seconds
 INFO: [Project 1-570] Preparing netlist for logic optimization
 INFO: [Opt 31-138] Pushed 0 inverter(s) to 0 load pin(s).
@@ -2845,12 +2879,11 @@ INFO: [Project 1-111] Unisim Transformation Summary:
   RAM64X1D => RAM64X1D (RAMD64E, RAMD64E): 96 instances
 
 INFO: [Common 17-83] Releasing license: Synthesis
-849 Infos, 485 Warnings, 0 Critical Warnings and 0 Errors encountered.
+849 Infos, 493 Warnings, 0 Critical Warnings and 0 Errors encountered.
 synth_design completed successfully
-synth_design: Time (s): cpu = 00:02:17 ; elapsed = 00:03:04 . Memory (MB): peak = 1137.105 ; gain = 789.754
+synth_design: Time (s): cpu = 00:02:09 ; elapsed = 00:03:04 . Memory (MB): peak = 1113.250 ; gain = 766.277
 WARNING: [Constraints 18-5210] No constraint will be written out.
 INFO: [Common 17-1381] The checkpoint 'C:/Users/koer2434/Documents/fpga/covg_fpga/fpga_XEM7310/fpga_XEM7310.runs/synth_1/top_level_module.dcp' has been generated.
-write_checkpoint: Time (s): cpu = 00:00:08 ; elapsed = 00:00:05 . Memory (MB): peak = 1137.105 ; gain = 0.000
 INFO: [runtcl-4] Executing : report_utilization -file top_level_module_utilization_synth.rpt -pb top_level_module_utilization_synth.pb
-report_utilization: Time (s): cpu = 00:00:00 ; elapsed = 00:00:00.402 . Memory (MB): peak = 1137.105 ; gain = 0.000
-INFO: [Common 17-206] Exiting Vivado at Fri Aug 19 12:38:58 2022...
+report_utilization: Time (s): cpu = 00:00:01 ; elapsed = 00:00:00.369 . Memory (MB): peak = 1113.250 ; gain = 0.000
+INFO: [Common 17-206] Exiting Vivado at Fri Aug 19 14:48:32 2022...

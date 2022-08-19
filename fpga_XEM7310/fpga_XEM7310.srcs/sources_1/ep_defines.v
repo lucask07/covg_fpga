@@ -47,6 +47,11 @@
 
 `define GP_BITFILE_VERSION 8'h3a // bit_width=32
 
+`define DDR3_ADDR_DAC_WR 8'h3b // bit_width=32
+`define DDR3_ADDR_DAC_RD 8'h3c // bit_width=32
+`define DDR3_ADDR_ADC_WR 8'h3d // bit_width=32
+`define DDR3_ADDR_ADC_RD 8'h3e // bit_width=32
+
 `define AD7961_PIPE_OUT_GEN_ADDR 8'hA1 // bit_width=32
 `define ADS8686_PIPE_OUT_GEN_ADDR 8'hA5 // bit_width=32
 `define DEBUGFIFO_PIPE_OUT 8'hA7 // bit_width=32

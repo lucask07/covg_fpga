@@ -33,7 +33,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 35;
+localparam NUM_OK_EPS = 39;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -161,7 +161,7 @@ module top_level_module(
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst);
     assign led[7] = 1'b0;
     
-    reg [31:0] bitfile_version = 32'd00_00_02;	// 00.00.02
+    reg [31:0] bitfile_version = 32'd00_00_03;	// 00.00.02
     okWireOut bitfile_version_wo (.okHE(okHE), .okEH(okEHx[ 33*65 +: 65 ]), .ep_addr(`GP_BITFILE_VERSION), .ep_datain(bitfile_version));
 
     // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
@@ -661,6 +661,12 @@ module top_level_module(
          );
 
      // OK MIG DDR3 User interface
+    // DDR addresses so we know where the memory pointers are
+     wire [31:0] ddr_dac_wr;
+     wire [31:0] ddr_dac_rd;
+     wire [31:0] ddr_adc_wr;
+     wire [31:0] ddr_adc_rd;
+     
      ddr3_test ddr3_ui_0 (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
          .reset              (ep43trig[`DDR3_UI_RESET]),
@@ -710,8 +716,17 @@ module top_level_module(
          .app_wdf_wren       (app_wdf_wren),
          .app_wdf_data       (app_wdf_data),
          .app_wdf_end        (app_wdf_end),
-         .app_wdf_mask       (app_wdf_mask)
+         .app_wdf_mask       (app_wdf_mask),
+         .cmd_byte_addr_wr   (ddr_dac_wr),
+         .cmd_byte_addr_rd   (ddr_dac_rd),
+         .cmd_byte_addr_wr2  (ddr_adc_wr),
+         .cmd_byte_addr_rd2  (ddr_adc_rd)
          );
+    
+    okWireOut ddr_dac_wr (.okHE(okHE), .okEH(okEHx[ 34*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_WR), .ep_datain(ddr_dac_wr));
+    okWireOut ddr_dac_rd (.okHE(okHE), .okEH(okEHx[ 35*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_RD), .ep_datain(ddr_dac_rd));
+    okWireOut ddr_adc_wr (.okHE(okHE), .okEH(okEHx[ 36*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_WR), .ep_datain(ddr_adc_wr));
+    okWireOut ddr_adc_rd (.okHE(okHE), .okEH(okEHx[ 37*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_RD), .ep_datain(ddr_adc_rd));
 
      //Block Throttle OK interfaces: check for enough space or enough data
      always @(posedge okClk) begin
