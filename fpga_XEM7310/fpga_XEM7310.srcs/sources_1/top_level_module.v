@@ -38,7 +38,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 34;
+localparam NUM_OK_EPS = 35;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -144,10 +144,7 @@ module top_level_module(
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
 	.reset(ep40trig[`AD7961_PLL_RESET]),
-	.clk_out1(adc_clk), //out at 250 MHz
-	.locked(adc_pll_locked)
-	);
-
+	.clk_out1(adc_clk), //out at 250 MHz .locked(adc_pll_locked));
 	wire adc_sync_rst;
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
     wire [(FADC_NUM-1):0]write_en_adc_o;
@@ -166,6 +163,9 @@ module top_level_module(
 	assign led[5] = ~ep40trig[`AD7961_PLL_RESET];
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst);
     assign led[7] = 1'b0;
+    
+    reg [31:0] bitfile_version = 32'd00_00_02	// 00.00.02
+    okWireOut bitfile_version_wo (.okHE(okHE), .okEH(okEHx[ 33*65 +: 65 ]), .ep_addr(`GP_BITFILE_VERSION), .ep_datain(bitfile_version));
 
     // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
     mux_8to1 (
