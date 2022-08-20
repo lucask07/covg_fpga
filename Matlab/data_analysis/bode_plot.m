@@ -3,6 +3,11 @@ clear all;
 close all;
 clc;
 
+% set the directory for data here
+data_dir = 'BodePlotData\';
+data_dir = '/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/bode_plot_h5_data/';
+
+SAVE_FIG = true; 
 %% Frequency Array
 start_exp = 2;
 end_exp = 6;
@@ -32,8 +37,8 @@ t = 0:(1/2.5e6):1;
 
 for i=1:length(freq)
     filter_input = 8191*sin(2*pi*freq(i)*t)+8192;
-    filename = ['BodePlotData\test', num2str(freq(i)), 'Hz.h5'];
-    y = hdf5read(filename,'/adc');
+    filename = fullfile(data_dir, ['test' num2str(freq(i)), 'Hz.h5']);
+    y = hdf5read(filename, '/adc');
     gain = [gain, (max(y(501:2:end,5)) - min(y(501:2:end,5)))/(max(filter_input) - min(filter_input))];
     gain_RMS = ((rms(y(501:2:end,5) - mean(y(501:2:end,5))))*sqrt(2))/((rms(filter_input - mean(filter_input)))*sqrt(2));
     gain_RMS_array = [gain_RMS_array, gain_RMS];
@@ -56,4 +61,6 @@ hold on;
 yline(-3, '--');
 legend('Measured', 'Theoretical', 'Location', 'southwest');
 
-saveas(figure(1), '4thOrderButterWorthBode.png');
+if SAVE_FIG
+    saveas(figure(1), '4thOrderButterWorthBode.png');
+end

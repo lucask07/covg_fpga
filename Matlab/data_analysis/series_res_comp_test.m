@@ -5,10 +5,14 @@ clc;
 
 %% Plot CMD Signal
 
+SAVE_FIG = true;
+
 %Grab CMD data from .h5 file
-% y = hdf5read('SeriesResData\alpha_0.7_data.h5','/adc');
-% y = hdf5read('C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.7_data.h5','/adc');
-y = hdf5read('/home/delg/OneDrive/clamp test files/alpha_0.7_data.h5','/adc');
+% configure directory of the captured data
+%data_dir = '/home/delg/OneDrive/clamp test files/';
+data_dir = '/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/std_rs_comp_h5_data';
+
+y = hdf5read(fullfile(data_dir, 'alpha_0.7_data.h5'),'/adc');
 cmd_data = y(2:2:end,5);
 t = (1:length(cmd_data))*400e-3;
 
@@ -32,8 +36,9 @@ grid on;
 title('Zoomed In On Discontinuity');
 xlabel('t (μs)');
 ylabel('Hexadecimal DAC Codes');
-saveas(figure(1), 'EndToEndLatencyMeasMATLAB.png');
-
+if SAVE_FIG
+    saveas(figure(1), 'EndToEndLatencyMeasMATLAB.png');
+end
 %% Plot CMD Signal and Current on Same Plot
 
 %Grab Im data from .h5 file
@@ -72,8 +77,9 @@ title('Zoomed In On Discontinuity');
 xlabel('t (μs)');
 ylabel('Hexadecimal DAC/ADC Codes');
 legend('CMD', 'Current Meas', 'Location', 'southwest');
-saveas(figure(2), 'FilterLatencyMeasMATLAB.png');
-
+if SAVE_FIG
+    saveas(figure(2), 'FilterLatencyMeasMATLAB.png');
+end
 %% Plot CMD, Im, P1, and Vm
 
 f = figure(3);
@@ -113,11 +119,11 @@ for alpha = (0:0.05:0.75)
     if(alpha == 0)
 %         y = hdf5read(['SeriesResData\alpha_0.0_data.h5'],'/adc');
 %         y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.0_data.h5'],'/adc');
-        y = hdf5read(['/home/delg/OneDrive/clamp test files/alpha_0.0_data.h5'],'/adc');
+        y = hdf5read(fullfile(data_dir, 'alpha_0.0_data.h5'),'/adc');
     else
 %         y = hdf5read(['SeriesResData\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
 %         y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
-        y = hdf5read(['/home/delg/OneDrive/clamp test files/alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
+        y = hdf5read(fullfile(data_dir, ['alpha_', num2str(alpha, 2), '_data.h5']),'/adc');
     end
 
     % Grab CMD, Im, P1, and Vm data from .h5 file
@@ -244,47 +250,50 @@ rs_table = array2table(round(data,1), 'VariableNames', {'RiseTime [$\mu$s]', 'Pe
 table2latex(rs_table, 'StepResponseMetrics');
 
 %% Observer Definitions and Matrices - Code is based off Dr. Secord's Vm Control Driver Script
+OBSERVER = 0;
 
-% VARIABLE AND PARAMETER DEFINITIONS
-%-----------------------------------
-Cma = 33e-9;
-Rpc = 5e3;
-Rsa = 1e3;
-Rcc = 7.12e3;
-Ccc = 4.7e-9;
+if OBSERVER
+    % VARIABLE AND PARAMETER DEFINITIONS
+    %-----------------------------------
+    Cma = 33e-9;
+    Rpc = 5e3;
+    Rsa = 1e3;
+    Rcc = 7.12e3;
+    Ccc = 4.7e-9;
+    
+    Ts = 1; % sampling time in us
+    
+    A = [-1/(Rsa*Cma) 0; 0 -1/(Rcc*Ccc)]*Ts*1e-6 + [1 0; 0 1];
+    B = [1/(Rsa*Cma); 1/(Rcc*Ccc)]*Ts*1e-6;
+    Cmeas = [-1/Rsa -1/Rcc];
+    Dmeas = (1/Rsa + 1/Rcc);
+    
+    % Observer pole placement as multiplicative factor on plant pole
+    speedFactor = 3;
+    pObs = speedFactor*eig(A);
+    L = place(A',Cmeas',pObs)'*Ts*1e-6;
 
-Ts = 1; % sampling time in us
-
-A = [-1/(Rsa*Cma) 0; 0 -1/(Rcc*Ccc)]*Ts*1e-6 + [1 0; 0 1];
-B = [1/(Rsa*Cma); 1/(Rcc*Ccc)]*Ts*1e-6;
-Cmeas = [-1/Rsa -1/Rcc];
-Dmeas = (1/Rsa + 1/Rcc);
-
-% Observer pole placement as multiplicative factor on plant pole
-speedFactor = 3;
-pObs = speedFactor*eig(A);
-L = place(A',Cmeas',pObs)'*Ts*1e-6;
-
-%% Setting Inputs to Simulink Observer Model and Plotting Simulation Output
-
-% Defining Inputs to Observer
-Im = [(t3 + 3277.2).', (current_data(1:5:end)*ADC_to_uA)*1e-3];
-Vp1 = [(t3 + 3277.2).', (p1_data*ADS_to_mV*(1/fbck_gain))];
-
-% Run Simulink Simulation and Grab Observer Output
-simResults = sim('control_system_observer');
-Vm_estimate = simResults.Vm_estimate.Data;
-Im_estimate = simResults.Im_estimate.Data;
-Observer_error = simResults.Observer_error.Data;
-
-% Plot Actual Measured Vm vs Estimator Vm
-figure(5);
-grid on;
-plot(t3, vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
-xlim([-75 175]);
-hold on;
-plot(t3(1:length(Vm_estimate)), Vm_estimate, '-*', 'LineWidth', 2);
-title('Vm vs Vm Estimate');
-xlabel('t (μs)');
-ylabel('Voltage (mV)');
-legend('Vm Actual', 'Estimated', 'Location', 'southeast');
+    %% Setting Inputs to Simulink Observer Model and Plotting Simulation Output
+    
+    % Defining Inputs to Observer
+    Im = [(t3 + 3277.2).', (current_data(1:5:end)*ADC_to_uA)*1e-3];
+    Vp1 = [(t3 + 3277.2).', (p1_data*ADS_to_mV*(1/fbck_gain))];
+    
+    % Run Simulink Simulation and Grab Observer Output
+    simResults = sim('control_system_observer');
+    Vm_estimate = simResults.Vm_estimate.Data;
+    Im_estimate = simResults.Im_estimate.Data;
+    Observer_error = simResults.Observer_error.Data;
+    
+    % Plot Actual Measured Vm vs Estimator Vm
+    figure(5);
+    grid on;
+    plot(t3, vm_data*ADS_to_mV, '-*', 'LineWidth', 2);
+    xlim([-75 175]);
+    hold on;
+    plot(t3(1:length(Vm_estimate)), Vm_estimate, '-*', 'LineWidth', 2);
+    title('Vm vs Vm Estimate');
+    xlabel('t (μs)');
+    ylabel('Voltage (mV)');
+    legend('Vm Actual', 'Estimated', 'Location', 'southeast');
+end
