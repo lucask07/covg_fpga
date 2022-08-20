@@ -179,8 +179,8 @@ def plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha, fi
     #t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
     #ax[2].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
     #ax[3].plot(t_ads*1e6, ads_separate_data['B'][1], marker='.')
-    t_ads = np.arange(len(ads_separate_data['A'][5]))*1/(ADS_FS / len(ads_sequencer_setup))
-    ax[2].plot(t_ads*1e6, ads_separate_data['A'][5]*((2**15)/2.5), marker='.')
+    t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
+    ax[2].plot(t_ads*1e6, ads_separate_data['A'][1]*((2**15)/2.5), marker='.')
     ax[3].plot(t_ads*1e6, ads_separate_data['B'][4]*((2**15)/2.5), marker='.')
     
     return fig, ax
@@ -291,7 +291,7 @@ ads.set_range(ads_voltage_range) # TODO: make an ads.current_voltage_range a pro
 ads.set_lpf(376)
 # 4B - clear sine wave set by the Slow DAC
 #ads_sequencer_setup = [('5', '4'), ('1', '1')]
-ads_sequencer_setup = [('5', '4')]
+ads_sequencer_setup = [('1', '4')]
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
 ads.set_fpga_mode()
@@ -459,8 +459,8 @@ ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total
 fig, ax = plt.subplots(2,1)
 fig.suptitle('ADS data')
 # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-t_ads = np.arange(len(ads_separate_data['A'][5]))*1/(ADS_FS / len(ads_sequencer_setup))
-ax[0].plot(t_ads*1e6, ads_separate_data['A'][5], marker='.')
+t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
+ax[0].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
 ax[0].set_ylabel('P1 (tracks Vm) [V]')
 # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
 #t_ads = np.arange(len(ads_separate_data['B'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
