@@ -18,11 +18,6 @@
 // Additional Comments:
 //
 // 
-//  To-do: The DAC ddr data is read from a clock divider (e.g. 2.5 MSPS) 
-//   but we need to synchronize to the AD7961 
-//   the AD7961 uses a slower clock (100 MHz for timing) -- how does this impact synchronization?  -- valid out is from the fast_clk 250 MHz 
-//          can this be switched to the 200 MHz clock? 
-//   find the thread about the poor AD7961 design 
 //////////////////////////////////////////////////////////////////////////////////
 // Clocks:
 //    clk_sys  - 200 MHz system clock
@@ -38,7 +33,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 34;
+localparam NUM_OK_EPS = 39;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -144,10 +139,9 @@ module top_level_module(
 	clk_wiz_0 adc_pll(
 	.clk_in1(clk_sys), //in at 200 MHz
 	.reset(ep40trig[`AD7961_PLL_RESET]),
-	.clk_out1(adc_clk), //out at 250 MHz
-	.locked(adc_pll_locked)
-	);
-
+	.clk_out1(adc_clk), //out at 250 MHz 
+	.locked(adc_pll_locked));
+	
 	wire adc_sync_rst;
     wire [31:0]adc_pipe_ep_datain[0:(FADC_NUM-1)];
     wire [(FADC_NUM-1):0]write_en_adc_o;
@@ -166,6 +160,9 @@ module top_level_module(
 	assign led[5] = ~ep40trig[`AD7961_PLL_RESET];
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst);
     assign led[7] = 1'b0;
+    
+    reg [31:0] bitfile_version = 32'd00_00_03;	// 00.00.02
+    okWireOut bitfile_version_wo (.okHE(okHE), .okEH(okEHx[ 33*65 +: 65 ]), .ep_addr(`GP_BITFILE_VERSION), .ep_datain(bitfile_version));
 
     // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
     mux_8to1 (
@@ -487,11 +484,12 @@ module top_level_module(
         .dco(dco[i]),
         .adc_serial_data(adc_serial_data[i])        
         );
-
+/*
           //pipeOut for data from AD7961
           okPipeOut pipeOutA1(.okHE(okHE), .okEH(okEHx[(5+i)*65 +: 65]),
                     .ep_addr(`AD7961_PIPE_OUT_GEN_ADDR + i), .ep_read(adc_pipe_ep_read[i]),
                     .ep_datain(adc_pipe_ep_datain[i])); 
+*/
      end
      endgenerate
 
@@ -663,6 +661,12 @@ module top_level_module(
          );
 
      // OK MIG DDR3 User interface
+    // DDR addresses so we know where the memory pointers are
+     wire [31:0] ddr_dac_wr;
+     wire [31:0] ddr_dac_rd;
+     wire [31:0] ddr_adc_wr;
+     wire [31:0] ddr_adc_rd;
+     
      ddr3_test ddr3_ui_0 (
          .clk                (clk_ddr_ui), // from the DDR3 MIG "ui_clk"
          .reset              (ep43trig[`DDR3_UI_RESET]),
@@ -712,8 +716,17 @@ module top_level_module(
          .app_wdf_wren       (app_wdf_wren),
          .app_wdf_data       (app_wdf_data),
          .app_wdf_end        (app_wdf_end),
-         .app_wdf_mask       (app_wdf_mask)
+         .app_wdf_mask       (app_wdf_mask),
+         .cmd_byte_addr_wr   (ddr_dac_wr),
+         .cmd_byte_addr_rd   (ddr_dac_rd),
+         .cmd_byte_addr_wr2  (ddr_adc_wr),
+         .cmd_byte_addr_rd2  (ddr_adc_rd)
          );
+    
+    okWireOut ddr_dac_wr (.okHE(okHE), .okEH(okEHx[ 34*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_WR), .ep_datain(ddr_dac_wr));
+    okWireOut ddr_dac_rd (.okHE(okHE), .okEH(okEHx[ 35*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_RD), .ep_datain(ddr_dac_rd));
+    okWireOut ddr_adc_wr (.okHE(okHE), .okEH(okEHx[ 36*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_WR), .ep_datain(ddr_adc_wr));
+    okWireOut ddr_adc_rd (.okHE(okHE), .okEH(okEHx[ 37*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_RD), .ep_datain(ddr_adc_rd));
 
      //Block Throttle OK interfaces: check for enough space or enough data
      always @(posedge okClk) begin
@@ -943,7 +956,7 @@ module top_level_module(
     wire [(AD5453_NUM-1):0] filter_data_ready_fast_dac;
    
     wire [31:0] spi_data[0:(AD5453_NUM-1)];
-    wire [31:0] filter_spi_data[0:(AD5453_NUM-1)];
+    wire [32:0] filter_spi_data[0:(AD5453_NUM-1)];
     wire [31:0] host_spi_data[0:(AD5453_NUM-1)];
     wire [(AD5453_NUM-1):0] spi_host_trigger_fast_dac; 
 
@@ -987,20 +1000,20 @@ module top_level_module(
         
         assign data_ready_fast_dac[p] = spi_data[p][31]; // assign MUX output MSB to the data_ready signal. 
         
-        mux8to1_32wide filter_spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
-            .datain_0({ddr_data_valid, 17'b0, po0_ep_datain[(p*16) +:14]}),
-            .datain_1({spi_host_trigger_fast_dac[p], 7'b0, host_spi_data[p][23:0]}), 
-            .datain_2({ads_data_valid, 15'b0, ads_data_out[15:0]}), // 
-            .datain_3({ddr_data_valid_norepeat[p], 17'b0, last_ddr_read[p]}), // 
-            .datain_4({write_en_adc_o[0], 15'b0, adc_val[0][15:0]}), // data from AD7961  
-            .datain_5({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961
-            .datain_6({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961
-            .datain_7({write_en_adc_o[3], 15'b0, adc_val[3][15:0]}), // data from AD7961
+        mux8to1_33wide filter_spi_mux_bus_fast_dac( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .datain_0({ddr_data_valid, 18'b0, po0_ep_datain[(p*16) +:14]}),
+            .datain_1({spi_host_trigger_fast_dac[p], 8'b0, host_spi_data[p][23:0]}), 
+            .datain_2({ads_data_valid, ads_data_out[31:0]}), // 
+            .datain_3({ddr_data_valid_norepeat[p], 18'b0, last_ddr_read[p]}), // 
+            .datain_4({write_en_adc_o[0], 16'b0, adc_val[0][15:0]}), // data from AD7961  
+            .datain_5({write_en_adc_o[1], 16'b0, adc_val[1][15:0]}), // data from AD7961
+            .datain_6({write_en_adc_o[2], 16'b0, adc_val[2][15:0]}), // data from AD7961
+            .datain_7({write_en_adc_o[3], 16'b0, adc_val[3][15:0]}), // data from AD7961
             .sel(ep_wire_filtdata[(`AD5453_FILTER_DATA_SEL_GEN_BIT + p*`AD5453_FILTER_DATA_SEL_GEN_BIT_LEN) +: `AD5453_FILTER_DATA_SEL_GEN_BIT_LEN]),
             .dataout({filter_spi_data[p]})
         );
         
-        assign filter_data_ready_fast_dac[p] = filter_spi_data[p][31]; // assign MUX output MSB to the data_ready signal. 
+        assign filter_data_ready_fast_dac[p] = filter_spi_data[p][32]; // assign MUX output MSB to the data_ready signal. 
             
         spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_ADDR + p*20))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),

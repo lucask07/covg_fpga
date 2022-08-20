@@ -45,7 +45,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      output reg data_out_ready,
      output wire [13:0] filter_out_modified,
      /*****Filter Data and Enable Separate from CMD signals*****/
-     input wire [23:0] filter_data_i,
+     input wire [31:0] filter_data_i,
      input wire data_rdy_0_filt,
      input wire downsample_en,
      input wire sum_en,
@@ -168,6 +168,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      reg signed [13:0] temp3;
      reg signed [13:0] temp4;
      reg signed [13:0] temp5;
+     reg [15:0] ads_data_reg;
      reg [15:0] filter_mux_data;
      reg filter_mux_data_rdy;
      reg [3:0] cnt;
@@ -175,6 +176,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      always @(posedge clk) begin
         if(rst == 1'b1)begin
             pi_error_signal <= 16'b0;
+            ads_data_reg <= 16'b0;
             temp1 <= 14'b0;
             temp2 <= 14'b0;
             temp3 <= 14'b0;
@@ -184,6 +186,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
         end
         else if(data_rdy_0_filt == 1'b1)begin
             cnt <= 4'b0;
+            ads_data_reg <= filter_data_i[31:16];
         end
         else if(cnt <= 4'd6)begin
             cnt <= cnt + 1'b1;
@@ -202,7 +205,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
             end
             1: begin
                 temp1 <= (data_i[13:0] - 14'h1fff);
-                temp2 <= filter_data_i[15:2];
+                temp2 <= ads_data_reg[15:2];
                 temp3 <= temp3;
                 temp4 <= temp4;
                 temp5 <= temp5;
@@ -222,7 +225,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
                 temp4 <= temp4;
             end
             4: begin
-                pi_error_signal <= {temp5, 2'b00};
+                pi_error_signal <= {temp5, 2'b0};
                 temp1 <= temp1;
                 temp2 <= temp2;
                 temp3 <= temp3;
