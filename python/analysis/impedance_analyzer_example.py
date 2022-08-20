@@ -12,7 +12,6 @@ import matplotlib
 import pandas as pd
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
-# from pyripherals.utils import calc_impedance, from_voltage, to_voltage, read_h5
 from pyripherals.utils import from_voltage, to_voltage, read_h5
 import scipy
 from scipy.signal.windows import hann
@@ -90,17 +89,13 @@ def my_savefig(fig, figname):
             fig.savefig(os.path.join(figure_dir,
                                      figname + e))
 
-
-# file_name = 'impedance_analyzer_500mV_64repeats_15khZ_1nF'
-# file_name = 'impedance_analyzer_500mV_64repeats_3khZ'
-# file_name = 'impedance_analyzer_15k_900pF_v2'  # this is actually captured at 20 kHz
-file_name_base = 'impedance_analyzer_{}k_900pF'  # this is actually captured at 20 kHz
+file_name_base = 'impedance_analyzer_{}k_900pF'  # this data was captured with an updated ordering of DDR data so that 
+                                                 # ADS8686 channel 'A' and 'B' are captured simultaneously
 
 results = {}
 for n in ['f', 'calc_real', 'calc_imag', 'real', 'imag', 'real_err', 'imag_err']:
     results[n] = np.array([])
 
-# ('25', 10000, True), ('25', 15000, True), ('25', 20000, True),
 for data_dir_day, FREQUENCY, FIX_PHASE_SHIFT in [
                                              ('26', 10000, False), ('26', 15000, False), ('26', 20000, False)]:
 
