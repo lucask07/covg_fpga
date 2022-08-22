@@ -35,6 +35,7 @@ from filters.filter_tools import butter_lowpass_filter
 # Constants
 FS = 5e6
 ADS_FS = 1e6
+CMAP_NAME = 'plasma'
 
 # Variables
 f = FPGA()
@@ -239,6 +240,7 @@ class Protocol:
         ax : matplotlib.axes._subplots.AxesSubplot
         """
 
+        cmap = plt.get_cmap(CMAP_NAME)
         fig, ax = plt.subplots()
         ax.set_xlabel('Time (ms)')
         ax.set_ylabel('Voltage (mV)')
@@ -249,7 +251,7 @@ class Protocol:
                 # final_t = len(data) * ddr.parameters["update_period"] * 1e3   # Final time in milliseconds
                 # t = np.arange(0, final_t, ddr.parameters["update_period"] * 1e3)
                 t = np.linspace(0, len(data) - 1, len(data)) * ddr.parameters['update_period'] * 1e3
-            ax.plot(t, data, label=i)
+            ax.plot(t, data, color=cmap(1.*i / len(self.sweeps)), label=i + 1)   # Number sweeps on plot starting at 1
         ax.legend()
         return ax
 
@@ -807,16 +809,18 @@ class Experiment:
         current_offset = []
         fig_x, ax_x = plt.subplots()
         fig_x.suptitle('dac_data')
-        wrap_time = 838.862 * 1e-3              # Time it takes for the DDR to wrap around to the beginning
         natural_delay = 0.23539209365844727     # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
-        time.sleep(self.sequence.duration() * 1e-3 - natural_delay + wrap_time)
+        time.sleep(self.sequence.duration() * 1e-3 - natural_delay)
         bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
                 self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
         self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [0, 0])
         self.daq.ddr.fpga.set_wire_bit(self.daq.ddr.endpoints['ADC_TRANSFER_ENABLE'].address, self.daq.ddr.endpoints['ADC_TRANSFER_ENABLE'].bit_index_low)
         end = time.time()
         print(f'Time between starting DAC data and stopping DAC data and ADC write = {end - start}')
+        cmap = plt.get_cmap(CMAP_NAME)
         for sweep_num in range(len(sweeps)):
+            color = cmap(1.*sweep_num / len(sweeps))
+
             # time.sleep(0.050)
             sweep = sweeps[sweep_num]
             # Only need len of leftover_adc_data from one clamp board's data, so we just take the first
@@ -836,7 +840,7 @@ class Experiment:
             if reading_error:
                 print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
             
-            ax_x.plot(dac_data[1])
+            ax_x.plot(dac_data[1], color=color)
             plt.show()
 
             # Resize data array for new data, append new data
@@ -890,8 +894,8 @@ class Experiment:
                 # the current_data in later sweeps may be a different length
                 # than initial sweeps, so we cut off time with current to
                 # prevent plotting ValueErrors due to shape differences.
-                axes[0][clamp_nums.index(clamp_num)].plot(t, current_data, label=f'Sweep {sweep_num + 1}')
-                axes[1][clamp_nums.index(clamp_num)].plot(t_ads, vm, label=f'Sweep {sweep_num + 1}')
+                axes[0][clamp_nums.index(clamp_num)].plot(t, current_data, label=f'Sweep {sweep_num + 1}', color=color)
+                axes[1][clamp_nums.index(clamp_num)].plot(t_ads, vm, label=f'Sweep {sweep_num + 1}', color=color)
             # Add legend to last plot
             axes[1][-1].legend(loc='lower right')
             fig.canvas.draw()
