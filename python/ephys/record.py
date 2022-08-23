@@ -13,7 +13,7 @@ protocol.preview()
 plt.show(block=True)
 
 # Run experiment
-clamp_nums = [0]
+clamp_nums = [0, 1]
 experiment = Experiment(protocol)
 experiment.setup()
 
@@ -71,3 +71,8 @@ ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total
 t_ads = np.linspace(0, len(adc_data[0]), len(ads_separate_data['A'][1]))
 plt.plot(t_ads, ads_separate_data['A'][1], label="['A'][1]")
 # plt.show()
+
+print('ADDR_DAC_WR:', experiment.daq.ddr.fpga.read_wire(experiment.daq.ddr.endpoints['ADDR_DAC_WR'].address))
+print('ADDR_DAC_RD:', experiment.daq.ddr.fpga.read_wire(experiment.daq.ddr.endpoints['ADDR_DAC_RD'].address))
+print('ADDR_ADC_WR:', experiment.daq.ddr.fpga.read_wire(experiment.daq.ddr.endpoints['ADDR_ADC_WR'].address))
+print('ADDR_ADC_RD:', experiment.daq.ddr.fpga.read_wire(experiment.daq.ddr.endpoints['ADDR_ADC_RD'].address))

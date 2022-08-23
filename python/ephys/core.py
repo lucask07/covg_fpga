@@ -780,7 +780,7 @@ class Experiment:
         sweeps = np.concatenate([p.sweeps for p in self.sequence.protocols])
 
         # Hold data from h5 from each sweep so we can write all at the end
-        data = np.array([[] for i in range(self.daq.ddr.parameters['adc_channels'])], dtype=int)
+        # data = np.array([[] for i in range(self.daq.ddr.parameters['adc_channels'])], dtype=int)
 
         data_dir = os.path.join(os.path.expanduser('~'), 'ephys_data')
         if not os.path.exists(data_dir):
@@ -828,11 +828,12 @@ class Experiment:
             num_repeats = np.ceil(len(sweep) / 64 / blk_multiples)
             # Get data
             # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-            chan_data_one_repeat = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
-                                                blk_multiples=blk_multiples)  # blk multiples multiple of 10
+            chan_data = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
+                                                blk_multiples=blk_multiples, append=True)  # blk multiples multiple of 10
+            chan_data = chan_data.astype(int)
 
             # to get the deswizzled data of all repeats need to read the file
-            _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
+            # _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
             adc_cutoff_len = len(sweep) * 2
             ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS) / len(ads_sequencer_setup))
 
@@ -844,10 +845,10 @@ class Experiment:
             plt.show()
 
             # Resize data array for new data, append new data
-            chan_data_arr = np.ones((data.shape[0], chan_data[0].shape[0]), dtype=data.dtype)
-            for i in chan_data.keys():
-                chan_data_arr[i] = chan_data[i]
-            data = np.concatenate((data, chan_data_arr), axis=1)
+            # chan_data_arr = np.ones((data.shape[0], chan_data[0].shape[0]), dtype=data.dtype)
+            # for i in chan_data.keys():
+            #     chan_data_arr[i] = chan_data[i]
+            # data = np.concatenate((data, chan_data_arr), axis=1)
 
             ############### extract the ADS data ############
             ads_data_v = {}
@@ -906,10 +907,10 @@ class Experiment:
         fig.canvas.flush_events()
 
         # Save full data
-        print('Saving recorded data')
+        # print('Saving recorded data')
         full_data_name = os.path.join(data_dir, file_name)
-        with h5py.File(full_data_name, "w") as file:
-            data_set = file.create_dataset("adc", data=data)
+        # with h5py.File(full_data_name, "w") as file:
+        #     data_set = file.create_dataset("adc", data=data)
         print(f'DDR data saved at {full_data_name}')
         plt.ioff()
         plt.show()

@@ -1,7 +1,7 @@
 Epoch Description,A,B,C,D,E,F
 Type,Step,Step,Step,Off,Off,Off
 Sample Rate,Fast,Fast,Fast,Fast,Fast,Fast
-First level (mV),-70,0,-70,0,0,0
+First level (mV),-70,-70,-70,0,0,0
 Delta level (mV),0,10,0,0,0,0
-First duration (ms),20,80,10,0,0,0
+First duration (ms),10,80,10,0,0,0
 Delta duration (ms),0,0,0,0,0,0
