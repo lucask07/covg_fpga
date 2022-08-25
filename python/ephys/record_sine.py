@@ -33,4 +33,4 @@ for clamp_num in clamp_nums:
         addr_pins_2=0b000,
     )
 
-experiment.record_sine(clamp_num=clamp_nums, amplitude=1, frequency=100e3, save_data=False)
+experiment.record_sine(clamp_num=clamp_nums, amplitude=1, frequency=1e3, save_data=False)

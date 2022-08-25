@@ -918,7 +918,7 @@ class Experiment:
         return data_dir, file_name
 
 
-    def write_sine(self, clamp_num, amplitude=1, frequency=100e3):
+    def write_sine(self, clamp_num, amplitude=1, frequency=1e3):
         """Write a continuous sine wave to the DDR.
 
         The sine wave will come as the CMD signal. The CC signal will remain
@@ -929,7 +929,7 @@ class Experiment:
         clamp_num : int or List[int]
             Which Clamp to write to (0, 1, 2, or 3).
         amplitude : float
-            The amplitude (0 to peak) of the sine wave in Volts.
+            The amplitude (peak to peak) of the sine wave in Volts.
         frequency : float
             The frequency of the sine wave in Hertz. In order to make the sine
             wave continuous, the real frequency may different.
@@ -950,18 +950,23 @@ class Experiment:
             raise TypeError('write_sequence parameter clamp_num must be int or list of ints.')
 
         dac_offset = 0x1E00
+        fb_res = 2.1
+        offset_adjust_k = 1 + fb_res / 3    # fb_res is already in kOhms, so 3 instead of 3e3
+
+        # In addition to the offset adjust amplifier, the CMD signal is
+        # attennuated 10x from the DAQ board to the daughtercard so we
+        # have to multiply our signal by 10 to get it back to what we want
+        # cmd_voltage = amplitude * offset_adjust_k * 10
+        cmd_voltage = 1 * offset_adjust_k * 10
+        cmd_bin = from_voltage(voltage=cmd_voltage, num_bits=14,
+                                voltage_range=5, with_negatives=True)
+        cmd_signal, real_freq = self.daq.ddr.make_sine_wave(amplitude=cmd_bin, frequency=frequency, offset=dac_offset, actual_frequency=True)
+        cc_signal = np.ones(len(cmd_signal), dtype=np.uint16) * dac_offset
+
         for clamp_num in clamp_nums:
             cmd_ch = clamp_num * 2 + 1
             cc_ch = clamp_num * 2
 
-            # In addition to the offset adjust amplifier, the CMD signal is
-            # attennuated 10x from the DAQ board to the daughtercard so we
-            # have to multiply our signal by 10 to get it back to what we want
-            cmd_voltage = amplitude * 10
-            cmd_bin = from_voltage(voltage=cmd_voltage, num_bits=14,
-                                   voltage_range=5, with_negatives=True)
-            cmd_signal, real_freq = self.daq.ddr.make_sine_wave(amplitude=cmd_bin, frequency=frequency, offset=dac_offset, actual_frequency=True)
-            cc_signal = np.ones(len(cmd_signal), dtype=np.uint16) * dac_offset
             self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
             self.daq.ddr.data_arrays[cc_ch] = cc_signal
         
@@ -971,18 +976,18 @@ class Experiment:
         # self.daq.DAC[cc_ch].write(int(self.daq.ddr.data_arrays[cc_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
         self.daq.ddr.reset_mig_interface()
         self.daq.ddr.reset_fifo('ALL')
-        # self.daq.ddr.write_finish()
+        self.daq.ddr.write_finish()
         # DEBUG
-        bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
-                self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
-        self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [1, 1])
+        # bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
+        #         self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
+        # self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [1, 1])
         for i in range(6):
             self.daq.DAC[i].set_data_mux("DDR")
 
         return real_freq
 
     
-    def record_sine(self, clamp_num, amplitude=1, frequency=100e3, save_data=False):
+    def record_sine(self, clamp_num, amplitude=1, frequency=1e3, save_data=False):
         """Write and read a continuous sine wave with an updating graph.
         
         Parameters
@@ -990,7 +995,7 @@ class Experiment:
         clamp_num : int or List[int]
             Which Clamp to write to (0, 1, 2, or 3).
         amplitude : float
-            The amplitude (0 to peak) of the sine wave in Volts.
+            The amplitude (peak to peak) of the sine wave in Volts.
         frequency : float
             The frequency of the sine wave in Hertz.
         save_data : bool
@@ -1001,6 +1006,7 @@ class Experiment:
         None
         """
 
+        ads_voltage_range = 5  # need this for to_voltage later
         ads_sequencer_setup = [('1', '1'), ('2', '2')]
 
         # Make clamp_nums a list
@@ -1036,6 +1042,17 @@ class Experiment:
         axes[0][0].set_ylabel('Membrane Current [\N{GREEK SMALL LETTER MU}A]')
         axes[1][0].set_ylabel('Membrane Voltage [mV]')
 
+        # Stop recording data when the figure is closed
+        class Closed:
+            def __init__(self):
+                self.closed = False
+
+            def close(self, event):
+                self.closed = True
+
+        closed = Closed()
+        fig.canvas.mpl_connect('close_event', closed.close)
+
         # No leftover data required because we are not doing this in sweeps
         # Instead, we will rewrite the data on the plot
 
@@ -1048,36 +1065,38 @@ class Experiment:
         num_repeats = np.ceil(data_points_per_period * num_period / 64 / blk_multiples)
 
         first_time = True
+        current_lines = [None] * 4
+        voltage_lines = [None] * 4
         # TODO: turn this into a while loop with a way to get out
-        for i in range(25):
+        while not closed.closed:
             # Start grabbing data, append if save_data, otherwise overwrite each time to save space
             chan_data = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
                                             blk_multiples=blk_multiples, append=save_data)
+            chan_data = chan_data.astype(int)
             adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data, self.daq.ddr.fpga.bitfile_version)
             if reading_error:
                 print(f'{timestamp[0]}:{timestamp[-1]} - Error in DDR read')
 
-            # Multiply by 1e3 to get Voltage data in millivolts
-            current_data = (np.array(to_voltage(adc_data, num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 332 * 1620/500
-
-            # Extract the ADS data
-            ads_data_v = {}
-            for letter in ['A', 'B']:
-                ads_data_v[letter] = np.array(to_voltage(ads[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
-
-            # get the right length
-            total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1]))
-            total_seq_cnt[::2] = ads_seq_cnt[0]
-            total_seq_cnt[1::2] = ads_seq_cnt[1]
-            ads_separate_data = separate_ads_sequence(
-                ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
-
             for clamp_num in clamp_nums:
+                # Multiply by 1e3 to get Voltage data in millivolts
+                current_data = (np.array(to_voltage(adc_data[clamp_num], num_bits=16, voltage_range=10, use_twos_comp=True)) * 1e3) / 332 * 1620/500
+
+                # Extract the ADS data
+                ads_data_v = {}
+                for letter in ['A', 'B']:
+                    ads_data_v[letter] = np.array(to_voltage(ads[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
+
+                # get the right length
+                total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1]))
+                total_seq_cnt[::2] = ads_seq_cnt[0]
+                total_seq_cnt[1::2] = ads_seq_cnt[1]
+                ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+
                 # Create time in milliseconds
                 t = np.arange(0, len(current_data))*1/FS * 1e3
 
                 # Multiply by 1e3 to put in mV units
-                vm =  ads['A'] * 1e3 / 1.7
+                vm =  ads_separate_data['A'][clamp_num + 1] * 1e3 / 1.7
 
                 t_ads = np.arange(len(vm))*1/(ADS_FS / len(ads_sequencer_setup)) * 1e3
                 # Because we recalculate the length of data to read each sweep,
@@ -1085,10 +1104,16 @@ class Experiment:
                 # than initial sweeps, so we cut off time with current to
                 # prevent plotting ValueErrors due to shape differences.
                 if first_time:
-                    axes[0][clamp_nums.index(clamp_num)].plot(t, current_data)
-                    axes[1][clamp_nums.index(clamp_num)].plot(t_ads, vm)
+                    # Plot returns a list of Line objects that we can later use to update data instead of drawing new lines, which is faster
+                    current_lines[clamp_num] = axes[0][clamp_nums.index(clamp_num)].plot(t, current_data)[0]
+                    voltage_lines[clamp_num] = axes[1][clamp_nums.index(clamp_num)].plot(t_ads, vm)[0]
                 else:
-                    pass
+                    current_lines[clamp_num].set_xdata(t)
+                    current_lines[clamp_num].set_ydata(current_data)
+                    voltage_lines[clamp_num].set_xdata(t_ads)
+                    voltage_lines[clamp_num].set_ydata(vm)
+                fig.canvas.draw()
+                fig.canvas.flush_events()
             first_time = False
 
         fig.suptitle('Experiment Recording')
@@ -1096,10 +1121,11 @@ class Experiment:
         fig.canvas.flush_events()
 
         # Delete data if not save_data
+        full_data_name = os.path.join(data_dir, file_name)
         if save_data:
-            full_data_name = os.path.join(data_dir, file_name)
             print(f'DDR data saved at {full_data_name}')
         else:
-            os.path.remove(full_data_name)
+            os.remove(full_data_name)
+            print(f'DDR data cleared from {full_data_name}')
         plt.ioff()
         plt.show()
