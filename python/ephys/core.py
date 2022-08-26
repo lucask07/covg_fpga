@@ -825,6 +825,10 @@ class Experiment:
             sweep = sweeps[sweep_num]
             # Only need len of leftover_adc_data from one clamp board's data, so we just take the first
             blk_multiples = 40
+            # total bytes from save data = 2048 * num_repeats * blk_multiples
+            # 128 bits per read point -> 16 bytes per read point
+            # Need 2*len(sweep) points read to read the same amount of time since ADC 2 times faster than DAC (5 MSPS vs. 2.5 MSPS)
+            # num_repeats = 2*len(sweep) * 16 / 2048 / blk_multiples --> simplifies to the below
             num_repeats = np.ceil(len(sweep) / 64 / blk_multiples)
             # Get data
             # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
@@ -1043,15 +1047,68 @@ class Experiment:
         axes[1][0].set_ylabel('Membrane Voltage [mV]')
 
         # Stop recording data when the figure is closed
-        class Closed:
-            def __init__(self):
+        class EventVariables:
+            """Hold variables needed outside event handlers, but set inside event handlers."""
+            def __init__(self, experiment):
                 self.closed = False
+                self.user_cmd = ''
+                self.experiment = experiment
 
             def close(self, event):
+                """Stop while loop when figure is closed."""
+
                 self.closed = True
 
-        closed = Closed()
-        fig.canvas.mpl_connect('close_event', closed.close)
+            def on_press(self, event):
+                """Handle user input."""
+
+                if event.key == 'enter':
+                    # Execute command on enter
+                    try:
+                        exec(self.user_cmd)
+                    except Exception as e:
+                        raise e
+                    finally:
+                        self.user_cmd = ''
+                elif event.key == 'shift':
+                    # Ignore shift because we do not want that part of the executed command
+                    return
+                elif event.key == 'backspace':
+                    # Allow backspace to remove last character
+                    self.user_cmd = self.user_cmd[:-1]
+                else:
+                    # Keep track of keys pressed to build up the command; display keys pressed for user
+                    self.user_cmd += event.key
+                    print(event.key, end='')
+                    sys.stdout.flush()
+
+                if self.user_cmd == '`1':
+                    # Some automatic keypresses prefixed by `
+                    for i in range(6):
+                        self.experiment.daq.set_dac_gain(i, 2)
+                    self.user_cmd = ''
+                    return
+                elif self.user_cmd == '`2':
+                    # Some automatic keypresses prefixed by `
+                    for i in range(6):
+                        self.experiment.daq.set_dac_gain(i, 5)
+                    self.user_cmd = ''
+                    return
+                elif self.user_cmd == '`3':
+                    # Some automatic keypresses prefixed by `
+                    for i in range(6):
+                        self.experiment.daq.set_dac_gain(i, 15)
+                    self.user_cmd = ''
+                    return
+
+
+        event_vars = EventVariables(self)
+        fig.canvas.mpl_connect('close_event', event_vars.close)
+        fig.canvas.mpl_connect('key_press_event', event_vars.on_press)
+        # Clear matplotlib default keyboard shortcuts
+        for key in plt.rcParams.keys():
+            if 'keymap' in key:
+                plt.rcParams[key] = []
 
         # No leftover data required because we are not doing this in sweeps
         # Instead, we will rewrite the data on the plot
@@ -1068,7 +1125,7 @@ class Experiment:
         current_lines = [None] * 4
         voltage_lines = [None] * 4
         # TODO: turn this into a while loop with a way to get out
-        while not closed.closed:
+        while not event_vars.closed:
             # Start grabbing data, append if save_data, otherwise overwrite each time to save space
             chan_data = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
                                             blk_multiples=blk_multiples, append=save_data)
