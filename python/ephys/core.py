@@ -550,6 +550,10 @@ class Experiment:
             self.daq.ddr.data_arrays[cmd_ch] = cmd_signal
             self.daq.ddr.data_arrays[cc_ch] = cc_signal
 
+            # Write channels to the DDR
+            self.daq.DAC[cmd_ch].write(int(self.daq.ddr.data_arrays[cmd_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+            self.daq.DAC[cc_ch].write(int(self.daq.ddr.data_arrays[cc_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+
         # Create injected current data
         if inject_current:
             # sequence_data in V, cutoff in mV, scaling factors in uA/mv, current needs to be in nA
@@ -560,9 +564,6 @@ class Experiment:
             )
             self.inject_current(current=current, write_ddr=False)
 
-        # Write channels to the DDR
-        self.daq.DAC[cmd_ch].write(int(self.daq.ddr.data_arrays[cmd_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
-        self.daq.DAC[cc_ch].write(int(self.daq.ddr.data_arrays[cc_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
 
         self.daq.ddr.write_setup()
         block_pipe_return, speed_MBs = self.daq.ddr.write_channels(set_ddr_read=False)
