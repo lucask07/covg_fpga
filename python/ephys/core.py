@@ -252,7 +252,7 @@ class Protocol:
                 # t = np.arange(0, final_t, ddr.parameters["update_period"] * 1e3)
                 t = np.linspace(0, len(data) - 1, len(data)) * ddr.parameters['update_period'] * 1e3
             ax.plot(t, data, color=cmap(1.*i / len(self.sweeps)), label=i + 1)   # Number sweeps on plot starting at 1
-        ax.legend()
+        ax.legend(loc='upper right')
         return ax
 
     @staticmethod
@@ -807,7 +807,7 @@ class Experiment:
         # 4 possible clamps
         leftover_adc_data = [np.array([], dtype=int) for i in range(4)]
         leftover_ads_data = [np.array([]) for i in range(4)]
-        current_offset = []
+        current_offset = [None] * 4
         fig_x, ax_x = plt.subplots()
         fig_x.suptitle('dac_data')
         natural_delay = 0.23539209365844727     # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
@@ -882,7 +882,7 @@ class Experiment:
                     # Only calculate offset on first sweep, then apply to all data
                     first_index = int(0.1 * len(sweep.epochs[0]))
                     last_index = int(0.9 * len(sweep.epochs[0]))
-                    current_offset.append(np.mean(current_data[first_index:last_index]))
+                    current_offset[clamp_num] = np.mean(current_data[first_index:last_index])
                 current_data = current_data - current_offset[clamp_num]
 
                 if filter_current is not None:

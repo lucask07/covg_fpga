@@ -13,7 +13,7 @@ protocol.preview()
 plt.show(block=True)
 
 # Run experiment
-clamp_nums = [0, 1]
+clamp_nums = [1]
 experiment = Experiment(protocol)
 experiment.setup()
 
@@ -50,7 +50,7 @@ _, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
 adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = experiment.daq.ddr.data_to_names(chan_data)
 
 t = np.arange(len(adc_data[0]))
-plt.plot(t, to_voltage(adc_data[0], 16, 10, True) / res)
+plt.plot(t, to_voltage(adc_data[1], 16, 10, True) / res)
 # plt.show()
 
 import os, sys
@@ -69,8 +69,8 @@ total_seq_cnt[1::2] = ads_seq_cnt[1]
 
 ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
 t_ads = np.linspace(0, len(adc_data[0]), len(ads_separate_data['A'][1]))
-plt.plot(t_ads, ads_separate_data['A'][1], label="['A'][1]")
-# plt.show()
+plt.plot(t_ads, ads_separate_data['A'][2], label="['A'][2]")
+plt.show()
 
 print('ADDR_DAC_WR:', experiment.daq.ddr.fpga.read_wire(experiment.daq.ddr.endpoints['ADDR_DAC_WR'].address))
 print('ADDR_DAC_RD:', experiment.daq.ddr.fpga.read_wire(experiment.daq.ddr.endpoints['ADDR_DAC_RD'].address))
