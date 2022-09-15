@@ -1,12 +1,13 @@
 """This script attempts to replicate Figure 4 on the biophysical poster. This
 consists of measuring the membrane current (Im) with the AD7961 after
-supplying a step voltage of 0-50mV by the AD5453. This is repeated for
-feedback resistors of 10K, 33K, 100K, 332K, and 3000K. The membrane current
-(Im) is graphed against time with all of these responses together.
+supplying a step voltage of 0-50mV by the AD5453.
+The system uses two Daughtercards with:
+ 1) the bath clamp - has a non-zero CMD voltage measures Im 
+ 2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
 
-Biophysical poster: https://uofstthomasmn.sharepoint.com/:b:/r/sites/COVGsummer2022/Shared%20Documents/biophysical_2022_poster_covg_v1.pdf?csf=1&web=1&e=gbUPQi
+Sept 2022
 
-June 2022
+Dervied from clamp_step_response.py 
 
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
@@ -44,19 +45,6 @@ from analysis.adc_data import read_h5, separate_ads_sequence
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
-
-
-def get_cc_optimize(nums):
-
-    data_dir_base = os.path.expanduser('~')
-    data_dir_covg = os.path.join(
-        data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
-    data_dir = data_dir_covg.format(2022, 1, 19)
-
-    #for nums in ([20,21], [30,31], [14,15], [40,41]):
-    with open(os.path.join(data_dir, 'basin_hop_cc_nums{}.pickle'.format(nums[0])), 'rb') as fp:
-        out = pkl.load(fp)
-    return out
 
 
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
@@ -149,7 +137,8 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
-DC_NUMS = [0, 1, 2, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
+dc_mapping = {'bath': 0, 'clamp': 1} 
+DC_NUMS = [0, 1]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 feedback_resistors = [2.1]                  # list of RF1 values; use None to get all options
 capacitors = [47, 200, 1000, 4700]          # list of CCOMP values; use None to get all options
@@ -247,7 +236,6 @@ codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
 ads.set_fpga_mode()
 
-# TODO: are the TCA pins already configured in Clamp.configure_clamp()?
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
@@ -275,9 +263,8 @@ file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
 feedback_resistors = [2.1]
-capacitors = [47]
-# TODO allow for a subset of Im resistors. 
-# Clamp.configs['ADG_RES_dict'].keys()
+capacitors = [0, 47, 247, 1247]
+bath_res = [100, 332] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -287,7 +274,7 @@ if capacitors is None:
     capacitors = [x for x in Clamp.configs['CCOMP_dict'] if type(x) == int or type(x) == np.int32]  # CCOMP Capacitor values in pF
     capacitors.sort()
 
-voltage_data = dict([(x, None) for x in Clamp.configs['ADG_RES_dict'].keys() if type(x) == int])    # Rf Resistor values in kilo-ohms for Figure 4 graph
+voltage_data = dict([(x, None) for x in bath_res if type(x) == int])    # Rf Resistor values in kilo-ohms for Figure 4 graph
 for key in voltage_data:
     voltage_data[key] = []  # Lists to hold voltage data at each resistor value
 
@@ -305,17 +292,45 @@ for dc_num in DC_NUMS:
 
 errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store whether an error occurred on the DDR read
 
-# Set CMD and CC signals
-set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
+# set all fast-DAC DDR data to midscale
+set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
+# Set CMD and CC signals - only for the bath clamp
+set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
+        step_len=16384, cc_val=None, cc_pickle_num=None)
+
+clamp_fb_res = 2.1
+clamp_res = 100 # kOhm should be stable 
+clamp_cap = 470
+for dc_num in [dc_mapping['clamp']]:
+    log_info, config_dict = clamps[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG1",
+        DAC_SEL="drive_CAL2",
+        CCOMP=clamp_cap,
+        RF1=clamp_fb_res,  # feedback circuit
+        ADG_RES=clamp_res,
+        PClamp_CTRL=0,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=0,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
+
 
 if 1:
     for fb_res in feedback_resistors:
         for cap in capacitors:
             # Try with 5 different resistors
-            for res in [x for x in Clamp.configs['ADG_RES_dict'].keys() if type(x) == int]:
+            for res in [x for x in bath_res if type(x) == int]:
                 # Choose resistor; setup
-                for dc_num in DC_NUMS:
+                for dc_num in [dc_mapping['bath']]:
                     log_info, config_dict = clamps[dc_num].configure_clamp(
                         ADC_SEL="CAL_SIG1",
                         DAC_SEL="drive_CAL2",
@@ -390,35 +405,13 @@ if 1:
                     # Plot current (uA) against time (us) -> uA because resistor values are in kilo-ohms, we multiply current by 1e3
                     current_ax.plot(t * 1e6, [(v / res) * 1e3 for v in dc_data[dc_num][fb_res][cap][res]], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
                     # Zoom in on the data
-                    current_ax.set_xlim(6550, 6800)
+                    current_ax.set_xlim(6550, 7000)
                     current_ax.set_ylim(-10, 40)
                 
                 # Set up the legend after the first subplot so there are no repeat labels from following subplots
                 if i == 0:
                     fig.legend(loc='lower right')
 
-print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
-# Configure for better oscilloscope viewing
-for dc_num in DC_NUMS:
-    log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG2",
-        DAC_SEL="drive_CAL2",
-        CCOMP=47,
-        RF1=2.1,  # feedback circuit
-        ADG_RES=100,
-        PClamp_CTRL=0,
-        P1_E_CTRL=0,
-        P1_CAL_CTRL=0, 
-        P2_E_CTRL=0,
-        P2_CAL_CTRL=1, # close just for this demonstration of the ADS CAL_ADC
-        gain=1,  # instrumentation amplifier
-        FDBK=1,
-        mode="voltage",
-        EN_ipump=0,
-        RF_1_Out=1,
-        addr_pins_1=0b110,
-        addr_pins_2=0b000,
-    )
 
 ddr.repeat_setup()
 # Get data

@@ -45,8 +45,6 @@
 // Parameters holding a bit should have the bit written in decimal without the size specification
 // Comments that are not "// address=" or "// bit_width=" should go on a separate line from the parameter definition
 
-`define GP_BITFILE_VERSION 8'h3a // bit_width=32
-
 `define DDR3_ADDR_DAC_WR 8'h3b // bit_width=32
 `define DDR3_ADDR_DAC_RD 8'h3c // bit_width=32
 `define DDR3_ADDR_ADC_WR 8'h3d // bit_width=32
@@ -73,6 +71,8 @@
 `define GPIO_DEBUG_WIRE_IN 8'h00 // bit_width=32
 `define GP_HOST_FPGAB_GPIO_WIRE_IN 8'h01 // bit_width=32
 `define GP_PWR_REG_ADC_EN_WIRE_IN 8'h02 // bit_width=32
+`define GP_BITFILE_VERSION 8'h3a // bit_width=32
+
 
 `define DDR3_RESET_READ_WRITE_ENABLE 8'h03 // bit_width=1
 `define DDR3_DAC_WRITE_ENABLE 0 // address=DDR3_RESET_READ_WRITE_ENABLE bit_width=1
