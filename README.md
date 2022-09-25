@@ -28,6 +28,7 @@ See [Installation Guide]() for more information.
 
 
 ## Acknowledgements 
+This work is partially supported by National Institutes of Health (NIH) R15 grant R15NS116907 to PI L. J. Koerner.
 
 ### The FPGA code is dervied from many open-source contributions. 
 
