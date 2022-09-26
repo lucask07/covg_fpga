@@ -516,17 +516,17 @@ class Daq:
         }
 
         self.parameters["ads_map"] = { # first key is daughter-card number, 2nd key is HDMI signal, tuple is ADS converter channel (letter) and number 
-            0: {"CAL_ADC": ('A',0), "AMP_OUT": ('A',1)}
-            1: {"CAL_ADC": ('B',0), "AMP_OUT": ('A',2)}
-            2: {"CAL_ADC": ('B',1), "AMP_OUT": ('A',3)}
-            3: {"CAL_ADC": ('A',4), "AMP_OUT": ('B',2)}
+            0: {"CAL_ADC": ('A',0), "AMP_OUT": ('A',1)},
+            1: {"CAL_ADC": ('B',0), "AMP_OUT": ('A',2)},
+            2: {"CAL_ADC": ('B',1), "AMP_OUT": ('A',3)},
+            3: {"CAL_ADC": ('A',4), "AMP_OUT": ('B',2)},
         }
 
         self.parameters["gp_dac_map"] = { # first key is daughter-card number, 2nd key is HDMI signal, tuple is ADS converter channel (letter) and number 
-            0: {"CAL": (1,0), "CAL2": None, "UTIL": (1,4)} #UTIL may not be connected to GP_DAC
-            1: {"CAL": (1,1), "CAL2": None, "UTIL": (1,5)} 
-            2: {"CAL": (1,2), "CAL2": (2,2),"UTIL": (2,5)} #not expecting to use CAL2
-            3: {"CAL": (1,3), "CAL2": (2,3),"UTIL": (2,6)}
+            0: {"CAL": (1,0), "CAL2": None, "UTIL": (1,4)}, #UTIL may not be connected to GP_DAC
+            1: {"CAL": (1,1), "CAL2": None, "UTIL": (1,5)}, 
+            2: {"CAL": (1,2), "CAL2": (2,2),"UTIL": (2,5)}, #not expecting to use CAL2
+            3: {"CAL": (1,3), "CAL2": (2,3),"UTIL": (2,6)},
         }
 
     def set_dac_gain(self, dac_num, gain, bit_value=None):

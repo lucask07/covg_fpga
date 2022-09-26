@@ -264,7 +264,7 @@ idx = 0
 
 feedback_resistors = [2.1]
 capacitors = [0, 47, 247, 1247]
-bath_res = [100, 332] # Clamp.configs['ADG_RES_dict'].keys()
+bath_res = [100, 332, 1000] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -300,8 +300,8 @@ set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0300, cc_scale=0, cc_delay=0,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 clamp_fb_res = 2.1
-clamp_res = 100 # kOhm should be stable 
-clamp_cap = 470
+clamp_res = 332 # kOhm should be stable 
+clamp_cap = 47
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG1",

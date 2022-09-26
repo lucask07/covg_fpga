@@ -325,25 +325,25 @@ for dc_num in [dc_mapping['bath']]:
     )
 
 for dc_num in [dc_mapping['clamp']]:
-log_info, config_dict = clamps[dc_num].configure_clamp(
-    ADC_SEL="CAL_SIG1",
-    DAC_SEL="gnd_both",
-    CCOMP=cap,
-    RF1=fb_res,  # feedback circuit
-    ADG_RES=res,
-    PClamp_CTRL=0,
-    P1_E_CTRL=1,
-    P1_CAL_CTRL=1,
-    P2_E_CTRL=1,
-    P2_CAL_CTRL=1,
-    gain=1,  # instrumentation amplifier
-    FDBK=1,
-    mode="voltage",
-    EN_ipump=0,
-    RF_1_Out=1,
-    addr_pins_1=0b110,
-    addr_pins_2=0b000,
-)
+	log_info, config_dict = clamps[dc_num].configure_clamp(
+		ADC_SEL="CAL_SIG1",
+		DAC_SEL="gnd_both",
+		CCOMP=cap,
+		RF1=fb_res,  # feedback circuit
+		ADG_RES=res,
+		PClamp_CTRL=0,
+		P1_E_CTRL=1,
+		P1_CAL_CTRL=1,
+		P2_E_CTRL=1,
+		P2_CAL_CTRL=1,
+		gain=1,  # instrumentation amplifier
+		FDBK=1,
+		mode="voltage",
+		EN_ipump=0,
+		RF_1_Out=1,
+		addr_pins_1=0b110,
+		addr_pins_2=0b000,
+	)
 
 ddr.repeat_setup()
 # Get data
