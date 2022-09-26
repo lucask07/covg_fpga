@@ -75,13 +75,15 @@ class Clamp:
             None: 0b0000
         }
 
-    configs['DAC_SEL_dict'] = {  # Choose to drive/store CAL_Sig1 and CAL_Sig2
+    configs['DAC_SEL_dict'] = {  # Choose to drive, gnd, or high-z CAL_Sig1 and CAL_Sig2
          'drive_CAL1': 0b0111,
           'drive_CAL2': 0b1011,
-         'gnd_CAL2': 0b1101,
+         'drive_CAL1_gnd_CAL2': 0b0101,
+          'drive_CAL2_gnd_CAL1': 0b1010,
+	 'gnd_CAL2': 0b1101,
             'gnd_CAL1': 0b1110,
-            'store_CAL1': 0b0110,
-            'store_CAL2': 0b1001,
+	 'gnd_both': 0b1100,
+	 'drive_both': 0b0011,
             'noDrive': 0b1111,
             None: 0b0000
          }
@@ -511,6 +513,20 @@ class Daq:
             "input": 49.9e3,
             "fixed": 243e3,
             "switched": [121e3, 37.4e3,  8.25e3, 3.24e3],
+        }
+
+        self.parameters["ads_map"] = { # first key is daughter-card number, 2nd key is HDMI signal, tuple is ADS converter channel (letter) and number 
+            0: {"CAL_ADC": ('A',0), "AMP_OUT": ('A',1)}
+            1: {"CAL_ADC": ('B',0), "AMP_OUT": ('A',2)}
+            2: {"CAL_ADC": ('B',1), "AMP_OUT": ('A',3)}
+            3: {"CAL_ADC": ('A',4), "AMP_OUT": ('B',2)}
+        }
+
+        self.parameters["gp_dac_map"] = { # first key is daughter-card number, 2nd key is HDMI signal, tuple is ADS converter channel (letter) and number 
+            0: {"CAL": (1,0), "CAL2": None, "UTIL": (1,4)} #UTIL may not be connected to GP_DAC
+            1: {"CAL": (1,1), "CAL2": None, "UTIL": (1,5)} 
+            2: {"CAL": (1,2), "CAL2": (2,2),"UTIL": (2,5)} #not expecting to use CAL2
+            3: {"CAL": (1,3), "CAL2": (2,3),"UTIL": (2,6)}
         }
 
     def set_dac_gain(self, dac_num, gain, bit_value=None):
