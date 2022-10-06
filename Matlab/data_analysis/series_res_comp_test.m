@@ -9,8 +9,8 @@ SAVE_FIG = true;
 
 %Grab CMD data from .h5 file
 % configure directory of the captured data
-%data_dir = '/home/delg/OneDrive/clamp test files/';
-data_dir = '/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/std_rs_comp_h5_data';
+data_dir = '/home/delg/OneDrive/clamp test files/';
+% data_dir = '/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/std_rs_comp_h5_data';
 
 y = hdf5read(fullfile(data_dir, 'alpha_0.7_data.h5'),'/adc');
 cmd_data = y(2:2:end,5);
@@ -88,11 +88,11 @@ LineStyleIdx = 1;
 t = t-3277.2;
 t2 = t2-3277.2;
 set(gcf, 'Position', get(0, 'Screensize'));
-tiledlayout(3, 1, 'TileSpacing', 'compact')
+tiledlayout(2, 2, 'TileSpacing', 'compact')
 a = nexttile;
 b = nexttile;
 c = nexttile;
-% d = nexttile;
+d = nexttile;
 
 % Constants for calculating voltage/current conversion from DAC/ADC codes
 ADG_RES = 100000; % Ohms
@@ -113,13 +113,14 @@ risetimes = [];
 overshoots = [];
 settlingtimes = [];
 
-for alpha = (0:0.05:0.75)
+for alpha = (0)
 
     % Special case for α=0 .h5 file
     if(alpha == 0)
 %         y = hdf5read(['SeriesResData\alpha_0.0_data.h5'],'/adc');
 %         y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_0.0_data.h5'],'/adc');
-        y = hdf5read(fullfile(data_dir, 'alpha_0.0_data.h5'),'/adc');
+%         y = hdf5read(fullfile(data_dir, 'alpha_0.0_data.h5'),'/adc');
+        y = hdf5read(['/home/delg/OneDrive/covg_pi_ctrl_files/PI_ctrl_data.h5'],'/adc');
     else
 %         y = hdf5read(['SeriesResData\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
 %         y = hdf5read(['C:\Users\iande\OneDrive - University of St. Thomas\clamp test files\alpha_', num2str(alpha, 2), '_data.h5'],'/adc');
@@ -137,7 +138,7 @@ for alpha = (0:0.05:0.75)
     p1_data = typecast(uint16(bin2dec(p1_data)), 'int16');
     p1_data = double(p1_data);
 %     vm_data = dec2bin(y(2:10:end,8));
-    vm_data = dec2bin(y(2:5:end,8));
+    vm_data = dec2bin(y(1:5:end,7));
     vm_data = typecast(uint16(bin2dec(vm_data)), 'int16');
     vm_data = double(vm_data);
 
@@ -167,10 +168,10 @@ for alpha = (0:0.05:0.75)
         hold on;
         
         % Plot P1 for current α
-%         axes(d);
-%         plot(t3(1:length(p1_data)), p1_data*ADS_to_mV*(1/fbck_gain), '-*', 'LineWidth', 2);
-%         xlim([-75 175]);
-%         hold on;
+        axes(d);
+        plot(t3(1:length(p1_data)), p1_data*ADS_to_mV*(1/fbck_gain)*(1/10), '-*', 'LineWidth', 2);
+        xlim([-75 175]);
+        hold on;
 
         LineStyleIdx = LineStyleIdx + 1;
     
@@ -215,11 +216,11 @@ ylabel('Voltage (mV)');
 grid on;
 
 % Axes label for P1
-% axes(d);
-% title('P1 (tracks Vm)');
-% xlabel('t (μs)');
-% ylabel('Voltage (mV)');
-% grid on;
+axes(d);
+title('P1 (tracks Vm)');
+xlabel('t (μs)');
+ylabel('Voltage (mV)');
+grid on;
 
 % Shared Legend
 legend_array = {};
@@ -237,50 +238,64 @@ saveas(figure(3), 'series_res_comp_data_full.png');
 %% Table with Step Response Metrics
 
 % Define table data entries
-data = horzcat(risetimes, overshoots, settlingtimes);
+% data = horzcat(risetimes, overshoots, settlingtimes);
 
 % Replace legend labels with LaTeX compatible character for α
-legend_array = replace(legend_array, 'α', '$\alpha$');
+% legend_array = replace(legend_array, 'α', '$\alpha$');
 
 % Create table from the data matrix
-rs_table = array2table(round(data,1), 'VariableNames', {'RiseTime [$\mu$s]', 'Percent Overshoot', ...
-'Settling Time [$\mu$s]'}, 'RowNames', legend_array);
+% rs_table = array2table(round(data,1), 'VariableNames', {'RiseTime [$\mu$s]', 'Percent Overshoot', ...
+% 'Settling Time [$\mu$s]'}, 'RowNames', legend_array);
 
 % Create .tex file from MATLAB table (output to the same directory as this script)
-table2latex(rs_table, 'StepResponseMetrics');
+% table2latex(rs_table, 'StepResponseMetrics');
 
 %% Observer Definitions and Matrices - Code is based off Dr. Secord's Vm Control Driver Script
-OBSERVER = 0;
+OBSERVER = 1;
 
 if OBSERVER
     % VARIABLE AND PARAMETER DEFINITIONS
     %-----------------------------------
     Cma = 33e-9;
+    Rma = 4.7e6;
     Rpc = 5e3;
     Rsa = 1e3;
     Rcc = 7.12e3;
     Ccc = 4.7e-9;
+    Rf = 100e3;
+    R1 = 2.1e3;
+    R2 = 3.01e3;
+    R3 = 20e3;
+    R4 = 20e3;
+    C1 = 4.7e-12;
+
+    tau1 = (Rf + Rpc + Rsa)*Cma;
+    tau2 = (R3*C1);
+    rho = (Rf + Rpc)/(Rf + Rpc + Rsa);
+    g = R2/(R1 + R2);
+    AOL = 10000;
     
     Ts = 1; % sampling time in us
     
-    A = [-1/(Rsa*Cma) 0; 0 -1/(Rcc*Ccc)]*Ts*1e-6 + [1 0; 0 1];
-    B = [1/(Rsa*Cma); 1/(Rcc*Ccc)]*Ts*1e-6;
-    Cmeas = [-1/Rsa -1/Rcc];
-    Dmeas = (1/Rsa + 1/Rcc);
+    A = [-1/tau1 -AOL/tau1; (rho*(tau2 - tau1))/(tau1*tau2*(AOL*(1-rho)+g)) (AOL*R4*tau1 + R3*g*tau1 + R4*g*tau1 - AOL*R4*rho*tau1 + AOL*tau2*R4*rho)/(tau1*tau2*R4*(AOL*(1-rho)+g))]*Ts*1e-6 + [1 0; 0 1];
+    B = [0; (R3*g)/(tau2*R4*(AOL*(1-rho)+g))]*Ts*1e-6;
+    C = [-1/(Rf + Rpc + Rsa) -AOL/(Rf + Rpc + Rsa); rho -(1-rho)*AOL];
+    D = [0; 0];
     
     % Observer pole placement as multiplicative factor on plant pole
-    speedFactor = 3;
-    pObs = speedFactor*eig(A);
-    L = place(A',Cmeas',pObs)'*Ts*1e-6;
+    speedFactor = [3; 5];
+    pObs = speedFactor.*eig(A);
+    L = place(A',C',pObs)'*Ts*1e-6;
 
     %% Setting Inputs to Simulink Observer Model and Plotting Simulation Output
     
     % Defining Inputs to Observer
     Im = [(t3 + 3277.2).', (current_data(1:5:end)*ADC_to_uA)*1e-3];
-    Vp1 = [(t3 + 3277.2).', (p1_data*ADS_to_mV*(1/fbck_gain))];
+    Vp1 = [(t3 + 3277.2).', (p1_data*ADS_to_mV*(1/fbck_gain)*(1/10))];
+    Vcmd = [(t3 + 3277.2).', ((resample(cmd_data, 2, 5)-8192)*DAC_to_mV)];
     
     % Run Simulink Simulation and Grab Observer Output
-    simResults = sim('control_system_observer');
+    simResults = sim('../control_system/control_system_observer');
     Vm_estimate = simResults.Vm_estimate.Data;
     Im_estimate = simResults.Im_estimate.Data;
     Observer_error = simResults.Observer_error.Data;
