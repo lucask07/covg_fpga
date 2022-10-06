@@ -29,3 +29,16 @@ def dn_per_nA(rf_tia, rg=None):
     i = 1e-9 # calculate dn / nA
     adc_v = diff_amp(inamp(rf_tia*i, rg))
     return adc(adc_v)
+
+def bipolar_amp(vin):
+	""""
+	bipolar amplifier on the DAQ board 
+	"""
+	
+	vref = 2.5 
+	r1 = 10e3
+	r2 = 30e3
+	r3 = 15e3
+	
+	vout = vin*(1 + r3/r2 + r3/r1) - (vref * r3/r1)
+	return vout 

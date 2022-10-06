@@ -43,6 +43,7 @@ sys.path.append(boards_path)
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
+from analysis.utils import calc_fft
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
@@ -137,10 +138,11 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
 
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
-ADS_FS = 1e6
+FS_ADS = 1e6
 dac80508_offset = 0x8000
+DC_NUMS = [0,1]
 dc_mapping = {'bath': 0, 'clamp': 1}
-DC_NUMS = [0, 1]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
+
 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
@@ -196,7 +198,7 @@ pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
 
 daq = Daq(f)
-ddr = daq.ddr    # Or reference as daq.ddr throughout the file
+ddr = daq.ddr    # Or reference as da	q.ddr throughout the file
 ddr.parameters['data_version'] = 'TIMESTAMPS'
 ad7961s = daq.ADC
 ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
@@ -223,7 +225,7 @@ for dc_num in DC_NUMS:
     clamps[dc_num] = clamp
 
 # -------- configure the ADS8686
-ads_voltage_range = 5  # need this for to_voltage later 
+ads_voltage_range = 10  # need this for to_voltage later 
 ads.hw_reset(val=False)
 ads.set_host_mode()
 ads.setup()
@@ -234,12 +236,14 @@ dc_under_test = 0
 adc_chan0 = daq.parameters['ads_map'][dc_under_test]['CAL_ADC']
 adc_chan1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT']
 ads_sequencer_setup = [('0', '0'), ('1', '1')] #DC 0 has both to ADS 'A'.
-codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
+#TODO - setup sequencer has default values for voltage range and lpf. Will over-write previous settings
+codes = ads.setup_sequencer(chan_list=ads_sequencer_setup, voltage_range=ads_voltage_range, lpf=376)
 ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
 ads.set_fpga_mode()
 
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
+# TODO: set FPGA pins to enable the Howland pump amplifiers
 
 # fast DAC channels setup
 for i in range(6):
@@ -252,6 +256,17 @@ for i in range(6):
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
 
+# --- Configure for DDR read to DAC80508 ---
+for dac_gp_ch in [0, 1]:
+    daq.DAC_gp[dac_gp_ch].set_spi_sclk_divide(0x2)
+    daq.DAC_gp[dac_gp_ch].set_ctrl_reg(0x3218)
+    daq.DAC_gp[dac_gp_ch].set_config_bin(0x00)
+    daq.DAC_gp[dac_gp_ch].set_data_mux('host')
+    daq.DAC_gp[dac_gp_ch].set_data_mux('DDR')
+
+daq.set_isel(port=1, channels=None)
+daq.set_isel(port=2, channels=None)
+	
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
@@ -264,14 +279,12 @@ ad7961s[0].reset_trig() # this IS required because it resets the timing generato
 file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
-errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store whether an error occurred on the DDR read
+for i in range(4):
+	# set all fast-DAC DDR data to midscale
+	ddr.data_arrays[i][:] = 0x2000
 
-# set all fast-DAC DDR data to midscale
-set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
-        step_len=16384, cc_val=None, cc_pickle_num=None)
-
-sdac_amp_volt = 1 # 1
-target_freq_sdac = 12000.0
+sdac_amp_volt = 1 # 1 Volt amplitude. 2 V peak to peak # amplitude was checked on oscilloscope (bipolar creates gain of *3 with 0 mean)
+target_freq_sdac = 1000.0 # Hz
 sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
 
 # Data for the 2 DAC80508 "Slow DACs"
@@ -281,9 +294,10 @@ sdac_sine, sdac_freq = ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=tar
 sdac_ch = daq.parameters['gp_dac_map'][dc_under_test]['CAL']
 if sdac_ch[0] == 1:
     sdac_1_out_chan = sdac_ch[1]
-elif sdac_ch[0] == 2:
+if sdac_ch[0] == 2:
     sdac_2_out_chan = sdac_ch[1] # don't care, this channel is not connected to CAL 
-
+else:
+	sdac_2_out_chan = 0 # need a default channel
 # Clear bits in the FDAC DDR stream that store the slow DAC channel
 for i in range(6):
     ddr.data_arrays[i] = np.bitwise_and(ddr.data_arrays[i], 0x3fff)
@@ -297,19 +311,21 @@ ddr.data_arrays[3] = np.bitwise_or(ddr.data_arrays[3], (sdac_2_out_chan & 0b001)
 
 # load slow DAC sine-wave in DDR channels 6
 ddr.data_arrays[6] = sdac_sine
+ddr.data_arrays[7] = sdac_sine
+
 
 # should be a do not care 
-clamp_fb_res = 2.1
-clamp_res = 100
-clamp_cap = 470
+fb_res = 2.1
+res = 100
+cap = 47
 
 for dc_num in [dc_mapping['bath']]:
-    log_info, config_dict = clamps[dc_num].configure_clamp(
+    log_info_bath, config_dict_bath = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG2",
-        DAC_SEL="drive_CAL2_gnd_CAL1",
-        CCOMP=clamp_cap,
-        RF1=clamp_fb_res,  # feedback circuit
-        ADG_RES=clamp_res,
+        DAC_SEL="drive_CAL2",
+        CCOMP=cap,
+        RF1=fb_res,  # feedback circuit
+        ADG_RES=res,
         PClamp_CTRL=0, # keep open for calibration 
         P1_E_CTRL=1,
         P1_CAL_CTRL=1,
@@ -325,17 +341,17 @@ for dc_num in [dc_mapping['bath']]:
     )
 
 for dc_num in [dc_mapping['clamp']]:
-	log_info, config_dict = clamps[dc_num].configure_clamp(
+	log_info, config_dict_clamp = clamps[dc_num].configure_clamp(
 		ADC_SEL="CAL_SIG1",
 		DAC_SEL="gnd_both",
 		CCOMP=cap,
 		RF1=fb_res,  # feedback circuit
 		ADG_RES=res,
-		PClamp_CTRL=0,
-		P1_E_CTRL=1,
-		P1_CAL_CTRL=1,
-		P2_E_CTRL=1,
-		P2_CAL_CTRL=1,
+		PClamp_CTRL=0, # open relay (default)
+		P1_E_CTRL=1,  # open relay
+		P1_CAL_CTRL=0, # open relay (default)
+		P2_E_CTRL=1,   # open relay
+		P2_CAL_CTRL=0, # open relay (default)
 		gain=1,  # instrumentation amplifier
 		FDBK=1,
 		mode="voltage",
@@ -345,39 +361,125 @@ for dc_num in [dc_mapping['clamp']]:
 		addr_pins_2=0b000,
 	)
 
-ddr.repeat_setup()
-# Get data
-# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8, blk_multiples=40)  # blk multiples multiple of 10
+ddr.write_setup()
+block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
+ddr.reset_mig_interface()
+ddr.write_finish()
+	
+# ----- Check frequency of results ----------
+def check_fft(t, y, predicted_freq):
+    ffreq, famp, max_freq, fig, ax = calc_fft(y, 1/(t[1]-t[0]))
+    print(f'Frequency of maximum amplitude {max_freq} [Hz]')
+    print(f'Predicted frequency: {predicted_freq}')
+    rms = np.std(y)
+    print(f'RMS amplitude: {rms}, peak amplitude: {rms*1.414}')
+    print('-'*40)
+	
+for idx in range(4):
+	# idx0: through electrodes. 1 -> 2
+	# idx1: bypass electrodes. 1 -> 2. Loop back ... Determines resistance of multiplexer (around 100 Ohms)  
+	# idx2: bypass electrodes. 1 -> 2.  
 
-# to get the deswizzled data of all repeats need to read the file
-_, chan_data = read_h5(data_dir, file_name=file_name.format(
-    idx) + '.h5', chan_list=np.arange(8))
+	if idx == 0:
+		pass # use first configuration of clamp board 
+	if idx == 1:
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # current
+		config_dict_bath['DAC_SEL'] = "drive_CAL2_gnd_CAL1"
+	if idx == 2:
+		daq.set_isel(port=1, channels=[0])
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # current
+		config_dict_bath['DAC_SEL'] = "drive_CAL2_gnd_CAL1"
+	if idx == 3:
+		daq.set_isel(port=1, channels=None)
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # current
+		config_dict_bath['DAC_SEL'] = "drive_CAL2_gnd_CAL1"
+	if idx == 4:
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG1' # low amplitude
+		config_dict_bath['DAC_SEL'] = 'drive_CAL2_gnd_CAL1' # CC cap will always be there (be careful of divider)
+	if idx == 5:
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # full amplitude 
+		config_dict_bath['DAC_SEL'] = 'drive_CAL2' # (don't ground CAL2) -- even without current flow will still have a divider.	
+	if idx == 6:
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # full amplitude 
+		config_dict_bath['DAC_SEL'] = 'drive_CAL1'  
+		# log_info_bath, config_dict_bath = clamps[0].configure_clamp(**config_dict_clamp)
+	if idx == 7:
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # full amplitude 
+		config_dict_bath['DAC_SEL'] = 'drive_CAL1'  
+		config_dict_clamp['P1_CAL_CTRL'] = 1
+		config_dict_clamp['P2_CAL_CTRL'] = 1
+		log_info_bath, config_dict_clamp = clamps[1].configure_clamp(**config_dict_clamp)
+	if idx == 8:
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # full amplitude 
+		config_dict_bath['DAC_SEL'] = 'drive_CAL1'  
+		config_dict_clamp['P1_CAL_CTRL'] = 0
+		config_dict_clamp['P2_CAL_CTRL'] = 0
+		log_info_bath, config_dict_clamp = clamps[1].configure_clamp(**config_dict_clamp)
+	if idx == 9:
+		daq.set_isel(port=1, channels=[0,1,2,3])
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # full amplitude 
+		config_dict_bath['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'  
+		# f.set_wire(eps['GP']['CURRENT_PUMP_ENABLE'].address, 0x3)
+		#idx_low = eps['GP']['CURRENT_PUMP_ENABLE'].bit_index_low
+		#val = 0x03 # high should enable the op-amp (make sure to enable, but note that disable does not shut off the current)
+		#f.set_wire(eps['GP']['CURRENT_PUMP_ENABLE'].address, val<<idx_low, mask=0x3<<idx_low)
+		config_dict_clamp['P1_CAL_CTRL'] = 1
+		config_dict_clamp['P2_CAL_CTRL'] = 1
+		log_info_bath, config_dict_clamp = clamps[1].configure_clamp(**config_dict_clamp)
+	if idx == 10:
+		daq.set_isel(port=1, channels=None) # channel select works correctly -- this turns off the signal 
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # full amplitude 
+		config_dict_bath['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'  
+		config_dict_clamp['P1_CAL_CTRL'] = 0
+		config_dict_clamp['P2_CAL_CTRL'] = 0
+		log_info_bath, config_dict_clamp = clamps[1].configure_clamp(**config_dict_clamp)
+	if idx == 11:
+		daq.set_isel(port=1, channels=[1]) # note that channels =[1] may "leak" through the clamp board
+		#f.set_wire(eps['GP']['CURRENT_PUMP_ENABLE'].address, val<<idx_low, mask=0x3<<idx_low)
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # full amplitude 
+		config_dict_bath['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'  
+		config_dict_clamp['P1_CAL_CTRL'] = 0
+		config_dict_clamp['P2_CAL_CTRL'] = 0
+		log_info_bath, config_dict_clamp = clamps[1].configure_clamp(**config_dict_clamp)
+	
+	if idx > 0: # reconfigure clamp board 
+		log_info_bath, config_dict_bath = clamps[0].configure_clamp(**config_dict_bath)
+		time.sleep(2)
+	time.sleep(3)
+	ddr.repeat_setup() #Setup for reading new data without writing to the DDR again.
 
-adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
-print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+	# Get data
+	# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+	chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=2, blk_multiples=40)  # blk multiples multiple of 10
 
-############### extract the ADS data just for the last run and plot as a demonstration ############
-ads_data_v = {}
-for letter in ['A', 'B']:
-    ads_data_v[letter] = np.array(to_voltage(
-        ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
+	# to get the deswizzled data of all repeats need to read the file
+	_, chan_data = read_h5(data_dir, file_name=file_name.format(
+		idx) + '.h5', chan_list=np.arange(8))
 
-total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
-total_seq_cnt[::2] = ads_seq_cnt[0]
-total_seq_cnt[1::2] = ads_seq_cnt[1]
-ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+	adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
+	print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
-# ADS8686
-fig,ax=plt.subplots()
-for chan, ch_idx in [('A',0), ('A',1)]:
-    y = ads_separate_data[chan][int(ch_idx)]
-    t_ads = np.arange(0,len(y))*(1/FS_ADS)*len(ads_sequencer_setup)
-    ax.plot(t_ads*1e6, y, marker = '+', label = f'ADS: {chan}')
-    # check ADS8686
-    print('FFT of ADS8686')
-    check_fft(t_ads, y, target_freq_sdac)
+	############### extract the ADS data just for the last run and plot as a demonstration ############
+	ads_data_v = {}
+	for letter in ['A', 'B']:
+		ads_data_v[letter] = np.array(to_voltage(
+			ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range*2, use_twos_comp=False))
 
-ax.legend()
-ax.set_xlabel('s [us]')
-ax.set_title('ADS8686 data')
+	total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
+	total_seq_cnt[::2] = ads_seq_cnt[0]
+	total_seq_cnt[1::2] = ads_seq_cnt[1]
+	ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+
+	# ADS8686
+	fig,ax=plt.subplots()
+
+	for chan, ch_idx in [('A',0)]: # TODO, parameterize based on daughter-card 
+		y = ads_separate_data[chan][int(ch_idx)]
+		t_ads = np.arange(0,len(y))*(1/FS_ADS)*len(ads_sequencer_setup)
+		ax.plot(t_ads*1e6, y, marker = '+', label = f'ADS: {chan}')
+		#print('FFT of ADS8686')
+		#check_fft(t_ads, y, target_freq_sdac)
+
+	ax.legend()
+	ax.set_xlabel('s [us]')
+	ax.set_title('ADS8686 data')

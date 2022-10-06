@@ -69,21 +69,23 @@ class Clamp:
     configs['ADC_SEL_dict'] = {  # Select the signal to output (Usually only output one signal at a time)
         'CAL_SIG1': 0b0111,
         'CAL_SIG2': 0b1011,
-         'INAMP_OUT': 0b1101,
+        'INAMP_OUT': 0b1101,
         'CC': 0b1110,
-            'noDrive': 0b1111,
+        'noDrive': 0b1111,
             None: 0b0000
         }
 
     configs['DAC_SEL_dict'] = {  # Choose to drive, gnd, or high-z CAL_Sig1 and CAL_Sig2
          'drive_CAL1': 0b0111,
-          'drive_CAL2': 0b1011,
+         'drive_CAL2': 0b1011,
          'drive_CAL1_gnd_CAL2': 0b0101,
-          'drive_CAL2_gnd_CAL1': 0b1010,
-	 'gnd_CAL2': 0b1101,
+         'drive_CAL2_gnd_CAL1': 0b1010,
+		 'drive_CAL2_gnd_CAL2': 0b1001,
+		 'drive_CAL1_gnd_CAL1': 0b0110,
+     'gnd_CAL2': 0b1101,
             'gnd_CAL1': 0b1110,
-	 'gnd_both': 0b1100,
-	 'drive_both': 0b0011,
+     'gnd_both': 0b1100,
+     'drive_both': 0b0011,
             'noDrive': 0b1111,
             None: 0b0000
          }
@@ -420,14 +422,20 @@ class Clamp:
             f'mode = {mode}',
             f'EN_ipump = {EN_ipump}',
             f'RF_1_Out = {RF_1_Out}',
+            f'addr_pins_1 = {addr_pins_1}',
+            f'addr_pins_2 = {addr_pins_2}',
             f'Code 1 = {message1}',
             f'Code 2 = {message2}'
         ]
         config_dict = {}
         for i in log_string:
             split_str = i.strip().split('=')
-            config_dict[split_str[0].strip()] = split_str[1].strip()
-
+            try:
+                config_dict[split_str[0].strip()] = float(split_str[1].strip())
+            except:
+                config_dict[split_str[0].strip()] = split_str[1].strip()
+        del config_dict['Code 1']
+        del config_dict['Code 2']
         return log_string, config_dict
 
 
