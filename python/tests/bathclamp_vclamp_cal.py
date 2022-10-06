@@ -225,7 +225,7 @@ for dc_num in DC_NUMS:
     clamps[dc_num] = clamp
 
 # -------- configure the ADS8686
-ads_voltage_range = 10  # need this for to_voltage later 
+ads_voltage_range = 5  # need this for to_voltage later 
 ads.hw_reset(val=False)
 ads.set_host_mode()
 ads.setup()
@@ -284,6 +284,7 @@ for i in range(4):
 	ddr.data_arrays[i][:] = 0x2000
 
 sdac_amp_volt = 1 # 1 Volt amplitude. 2 V peak to peak # amplitude was checked on oscilloscope (bipolar creates gain of *3 with 0 mean)
+# at 1 V the DAC code is max=58928, min=6554
 target_freq_sdac = 1000.0 # Hz
 sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
 
@@ -381,13 +382,13 @@ for idx in range(4):
 	# idx2: bypass electrodes. 1 -> 2.  
 
 	if idx == 0:
-		pass # use first configuration of clamp board 
+		pass # use first configuration of clamp board # gives a +/-3V sine-wave 
 	if idx == 1:
 		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # current
 		config_dict_bath['DAC_SEL'] = "drive_CAL2_gnd_CAL1"
 	if idx == 2:
 		daq.set_isel(port=1, channels=[0])
-		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # current
+		config_dict_bath['ADC_SEL'] = 'CAL_SIG2' # current -- with clamp board this porduces a 0.014 V pk-pk sinewave
 		config_dict_bath['DAC_SEL'] = "drive_CAL2_gnd_CAL1"
 	if idx == 3:
 		daq.set_isel(port=1, channels=None)
@@ -450,6 +451,8 @@ for idx in range(4):
 
 	# Get data
 	# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+
+	# 2,40 captures 2 periods of a sine-wave at 1 kHz
 	chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=2, blk_multiples=40)  # blk multiples multiple of 10
 
 	# to get the deswizzled data of all repeats need to read the file
