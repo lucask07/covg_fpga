@@ -96,7 +96,7 @@ SAMPLE_PERIOD = 1/FS
 FS_ADS = 1e6
 dac80508_offset = 0x8000
 DC_NUMS = [0,1]
-dc_mapping = {'bath': 0, 'clamp': 1}
+dc_mapping = {'bath': 0, 'clamp': 1}  # TODO get from System class in electrodes.py
 
 
 eps = Endpoint.endpoints_from_defines
@@ -231,55 +231,14 @@ time.sleep(1)
 ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
 
 # ------ Default configuration of clamp boards ------
-# should be a do not care 
-fb_res = 2.1
-res = 100
-cap = 47
-
 board_to_test = 'bath'
 board_to_disconnect = 'clamp'
 
 for dc_num in [dc_mapping[board_to_test]]:
-    log_info_bath, config_dict_test = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG2",
-        DAC_SEL="drive_CAL2",
-        CCOMP=cap,
-        RF1=fb_res,  # feedback circuit
-        ADG_RES=res,
-        PClamp_CTRL=0, # keep open for calibration 
-        P1_E_CTRL=1,
-        P1_CAL_CTRL=1,
-        P2_E_CTRL=1,
-        P2_CAL_CTRL=1,
-        gain=1,  # instrumentation amplifier
-        FDBK=1,
-        mode="voltage",
-        EN_ipump=0,
-        RF_1_Out=1,
-        addr_pins_1=0b110,
-        addr_pins_2=0b000,
-    )
+    log_info_bath, config_dict_test = clamps[dc_num].open_all_relays()
 
 for dc_num in [dc_mapping[board_to_disconnect]]:
-    log_info, config_dict_disconnect = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG1",
-        DAC_SEL="gnd_both",
-        CCOMP=cap,
-        RF1=fb_res,  # feedback circuit
-        ADG_RES=res,
-        PClamp_CTRL=0, # open relay (default)
-        P1_E_CTRL=1,  # open relay (disconnect electrode)
-        P1_CAL_CTRL=0, # open relay (default)
-        P2_E_CTRL=1,   # open relay
-        P2_CAL_CTRL=0, # open relay (default)
-        gain=1,  # instrumentation amplifier
-        FDBK=1,
-        mode="voltage",
-        EN_ipump=0,
-        RF_1_Out=1,
-        addr_pins_1=0b110,
-        addr_pins_2=0b000,
-    )
+    log_info, config_dict_disconnect = clamps[dc_num].close_cal_relays()
 
 def dac_waveform(dc_under_test, amp, freq=1000, shape='SINE', source='v'):
 
@@ -412,7 +371,9 @@ data[step] = {'dac_wave': dac_wave,
               'src': 'i',
               'shape': 'SQ',
               'freq': freq,
-			  'vclamp': 'disconnect'}
+			  'vclamp': 'disconnect',
+              'bath_clamp': config_dict_test,
+              'voltage_clamp': config_dict_disconnect}
 
 # Measure voltage with CC load connected at two different frequencies 
 
@@ -438,12 +399,14 @@ for idx,freq in enumerate([1000, 10000, 100000]):
     np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
 
     data[step] = {'dac_wave': dac_wave,
-                  'volt': volt,
+                  'volt': volt, # data 
                   't': t,
                   'src': 'v',
                   'shape': 'SINE',
                   'freq': freq,
-                  'vclamp': 'disconnect'}
+                  'vclamp': 'disconnect',                  
+                  'bath_clamp': config_dict_test,
+                  'voltage_clamp': config_dict_disconnect}
 
     # swap roles of electrodes 
     step += 1
@@ -462,7 +425,9 @@ for idx,freq in enumerate([1000, 10000, 100000]):
                   'src': 'v',
                   'shape': 'SINE',
                   'freq': freq,
-                  'vclamp': 'disconnect'}
+                  'vclamp': 'disconnect',
+                  'bath_clamp': config_dict_test,
+                  'voltage_clamp': config_dict_disconnect}
 
     for vclamp in ['passive', 'active']:
         step += 1
@@ -494,7 +459,9 @@ for idx,freq in enumerate([1000, 10000, 100000]):
                       'src': 'v',
                       'shape': 'SINE',
                       'freq': freq,
-                      'vclamp': vclamp}
+                      'vclamp': vclamp,
+                      'bath_clamp': config_dict_test,
+                      'voltage_clamp': config_dict_disconnect}
 
 # Measure voltage with CC load connected at f = 1 kHz
 step += 1
@@ -503,17 +470,7 @@ step += 1
 #volt, t = collect_data(ddr, PLT=True, ads_chan=('A', 0))
 np.savez(os.path.join(data_dir, f'imp_all_steps.npy'), data)
 
-from scipy.optimize import curve_fit
-# a square-wave that does not have infinitely fast edges. 
-def soft_sq_wave(t, f, a, h, phi, s=1 ):
-    return h + a * np.tanh( s * np.cos( 2 * np.pi *f * t + phi ) )
-
-def sine_wave(t, f, a, h, phi ):
-    return h + a * np.cos( 2 * np.pi *f * t + phi )
-
-def exponential_rise(t, a, k, c):
-    return a * (np.exp(k * t)) + c
-
+from calibrations.cal_fits import fit_sine_fft, soft_sq_wave, sine_wave
 
 # TODO - add frequency bounds set by what we set 
 for data_key in data:
@@ -528,10 +485,9 @@ for data_key in data:
                         #bounds = ([0,0,-15,0,0], [10e6, np.inf, 15, 2*np.pi, np.inf]))  # bounds cause problems. Not sure why
         print(f'Predicted resistance {yfit[0][1]/(0.8e-6/2**16*amp_dac)}')
     elif data[i]['shape'] == 'SINE':
-        yfit = curve_fit(sine_wave, t,y , p0=(freq, 3, 0, 0)) #,
-                        #bounds = ([0,0,-15,0,0], [10e6, np.inf, 15, 2*np.pi, np.inf]))  # bounds cause problems. Not sure why
+        max_freq, amp, phase = fit_sine_fft(t, y)
     
-    print(f'Amplitude from fit: {yfit[0][1]}. Amp of DAC: {amp_dac} at freq of {freq} with vclamp of {d["vclamp"]}') 
+    print(f'Amplitude of sine-wave from fft: {amp}. Amp of DAC: {amp_dac} at freq of {max_freq} with vclamp of {d["vclamp"]}') 
     
     plt.figure(data_key)
     if d['shape'] == 'SQ':

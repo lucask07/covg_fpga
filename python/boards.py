@@ -215,6 +215,48 @@ class Clamp:
                             endpoints=i2c_eps)
 
         self.serial_number = None  # Will get serial code from UID chip in setup()
+        self.default_fb_res = 2.1 # defaults especially for when disconnected
+        self.default_res = 100
+        self.default_cap = 47
+        self.default_gain = 1
+
+        self.config_open_all_relays = {
+        'ADC_SEL': "CAL_SIG1",
+        'DAC_SEL': "gnd_both",
+        'CCOMP': self.default_cap,
+        'RF1': self.default_fb_res,  # feedback circuit
+        'ADG_RES': self.default_res,
+        'PClamp_CTRL': 0, # open relay (default)
+        'P1_E_CTRL': 1,  # open relay (disconnect electrode)
+        'P1_CAL_CTRL': 0, # open relay (default)
+        'P2_E_CTRL': 1,   # open relay
+        'P2_CAL_CTRL': 0, # open relay (default)
+        'gain': self.default_gain,  # instrumentation amplifier
+        'FDBK': 1,
+        'mode': "voltage",
+        'EN_ipump': 0,
+        'RF_1_Out': 1,
+        'addr_pins_1': 0b110,
+        'addr_pins_2': 0b000}
+
+        self.config_close_cal_relays = {
+        'ADC_SEL': "CAL_SIG1",
+        'DAC_SEL': "gnd_both",
+        'CCOMP': self.default_cap,
+        'RF1': self.default_fb_res,  # feedback circuit
+        'ADG_RES': self.default_res,
+        'PClamp_CTRL': 0, # open relay (default)
+        'P1_E_CTRL': 1,  # open relay (disconnect electrode)
+        'P1_CAL_CTRL': 1, # close relay (for calibration)
+        'P2_E_CTRL': 1,   # open relay
+        'P2_CAL_CTRL': 1, # close relay (for calibration)
+        'gain': self.default_gain,  # instrumentation amplifier
+        'FDBK': 1,
+        'mode': "voltage",
+        'EN_ipump': 0,
+        'RF_1_Out': 1,
+        'addr_pins_1': 0b110,
+        'addr_pins_2': 0b000}
 
 
     def init_board(self, skip_dac=True):
@@ -286,6 +328,18 @@ class Clamp:
 
         return True
 
+    def print_config_options(self):
+        print('Compensation capacitor: ')
+        print(configs['CCOMP_dict'].keys())
+        print('Inamp gain: ')
+        print(configs['gain_dict'].keys())
+        print('Feedback gain: ')
+        print(configs['RF1_dict'].keys())
+        print('Feedback gain: ')
+        print(configs['ADG_RES_dict'].keys())
+
+
+
     def configure_clamp(self, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
                         ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
                         P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None,
@@ -293,8 +347,6 @@ class Clamp:
                         RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000):
         config_params = Register.get_chip_registers('clamp_configuration')
         """Configures the board using the I/O Expanders."""
-
-
 
         # Define configuration params for mask later
         input_params_1 = {'ADC_SEL': ADC_SEL,
@@ -434,9 +486,36 @@ class Clamp:
                 config_dict[split_str[0].strip()] = float(split_str[1].strip())
             except:
                 config_dict[split_str[0].strip()] = split_str[1].strip()
-        del config_dict['Code 1']
+        del config_dict['Code 1'] # this allows us to reuse the dictionary the next time arround
         del config_dict['Code 2']
         return log_string, config_dict
+
+    def open_all_relays(self):
+        log, config = self.configure_clamp(
+            self.config_open_all_relays)
+        return log, config 
+
+    def close_cal_relays(self):
+        log, config = self.configure_clamp(
+        ADC_SEL="CAL_SIG2",
+        DAC_SEL="drive_CAL2",
+        CCOMP=self.default_cap,
+        RF1=self.default_fb_res,  # feedback circuit
+        ADG_RES=self.default_res,
+        PClamp_CTRL=0, # keep open for calibration 
+        P1_E_CTRL=1,
+        P1_CAL_CTRL=1,
+        P2_E_CTRL=1,
+        P2_CAL_CTRL=1,
+        gain=self.default_gain,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+        )
+        return log, config 
 
 
 class Daq:
