@@ -328,6 +328,7 @@ class Clamp:
 
         return True
 
+
     def print_config_options(self):
         print('Compensation capacitor: ')
         print(configs['CCOMP_dict'].keys())
@@ -337,8 +338,6 @@ class Clamp:
         print(configs['RF1_dict'].keys())
         print('Feedback gain: ')
         print(configs['ADG_RES_dict'].keys())
-
-
 
     def configure_clamp(self, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
                         ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
@@ -492,29 +491,12 @@ class Clamp:
 
     def open_all_relays(self):
         log, config = self.configure_clamp(
-            self.config_open_all_relays)
+            **self.config_open_all_relays)
         return log, config 
 
     def close_cal_relays(self):
         log, config = self.configure_clamp(
-        ADC_SEL="CAL_SIG2",
-        DAC_SEL="drive_CAL2",
-        CCOMP=self.default_cap,
-        RF1=self.default_fb_res,  # feedback circuit
-        ADG_RES=self.default_res,
-        PClamp_CTRL=0, # keep open for calibration 
-        P1_E_CTRL=1,
-        P1_CAL_CTRL=1,
-        P2_E_CTRL=1,
-        P2_CAL_CTRL=1,
-        gain=self.default_gain,  # instrumentation amplifier
-        FDBK=1,
-        mode="voltage",
-        EN_ipump=0,
-        RF_1_Out=1,
-        addr_pins_1=0b110,
-        addr_pins_2=0b000,
-        )
+            **self.config_close_cal_relays)
         return log, config 
 
 

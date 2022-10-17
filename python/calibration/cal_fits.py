@@ -70,72 +70,74 @@ def par(z1,z2):
     # parallel combination of two impedances
     return 1/(1/z1+1/z2)
 
-t = np.linspace(0, 10e-3, 1000000)
-phi = 0.8
-h = 2.2 
-a = 1
-f = 1e3
-y = h + a*np.cos(2*np.pi*f*t+phi)
 
-plt.plot(t,y)
+if __name__ == '__main__':
+	t = np.linspace(0, 10e-3, 1000000)
+	phi = 0.8
+	h = 2.2 
+	a = 1
+	f = 1e3
+	y = h + a*np.cos(2*np.pi*f*t+phi)
 
-# yfit = fit_sine(y,y,freq=f)
-# plt.plot(t, sine_wave_nodc(t, *yfit[0]) + h)
+	plt.plot(t,y)
 
-plt.plot(t, sine_wave(t,freq, amp, dc_level, phase))
+	# yfit = fit_sine(y,y,freq=f)
+	# plt.plot(t, sine_wave_nodc(t, *yfit[0]) + h)
 
-plt.figure()
-calc_fft(y, 1/(t[1]-t[0]), plot=True, WINDOW='hann')
+	plt.plot(t, sine_wave(t,f, amp, dc_level, phase))
 
-tf_nodut = tf('nodut')
-f_arr = np.logspace(3,5,40)
-tf_nodut_v = np.vectorize(tf_nodut)
-a,p=tf_nodut_v(f_arr,3.3e3,5e3,6.8e3,4.7e-9)
+	plt.figure()
+	calc_fft(y, 1/(t[1]-t[0]), plot=True, WINDOW='hann')
 
-fig,ax=plt.subplots()
-ax.semilogx(f_arr, 20*np.log10(a))
-ax.semilogx(f_arr, np.degrees(p))
+	tf_nodut = tf('nodut')
+	f_arr = np.logspace(3,5,40)
+	tf_nodut_v = np.vectorize(tf_nodut)
+	a,p=tf_nodut_v(f_arr,3.3e3,5e3,6.8e3,4.7e-9)
+
+	fig,ax=plt.subplots()
+	ax.semilogx(f_arr, 20*np.log10(a))
+	ax.semilogx(f_arr, np.degrees(p))
 
 
-# to curve fit: gain, phase at f1, gain,phase at f2, gain,phase at f3. 
-#  Solve for r1, r4, cc
-#  however cc is a known-constant (bound?)
+	# to curve fit: gain, phase at f1, gain,phase at f2, gain,phase at f3. 
+	#  Solve for r1, r4, cc
+	#  however cc is a known-constant (bound?)
 
-from lmfit import minimize, Parameters, report_fit
-# Useful lmfit example 
-# https://stackoverflow.com/questions/20339234/python-and-lmfit-how-to-fit-multiple-datasets-with-shared-parameters?noredirect=1&lq=1
+	from lmfit import minimize, Parameters, report_fit
+	# Useful lmfit example 
+	# https://stackoverflow.com/questions/20339234/python-and-lmfit-how-to-fit-multiple-datasets-with-shared-parameters?noredirect=1&lq=1
 
-def ap_eval(params, f_arr):
-    r1 = params['r1'].value
-    r2 = params['r2'].value
-    r3 = params['r3'].value
-    cc = 4.7e-9
+	def ap_eval(params, f_arr):
+		r1 = params['r1'].value
+		r2 = params['r2'].value
+		r3 = params['r3'].value
+		cc = 4.7e-9
 
-    a,p=tf_nodut_v(f_arr,r1,r2,r3,cc)
-    return a,p
+		a,p=tf_nodut_v(f_arr,r1,r2,r3,cc)
+		return a,p
 
-def residuals(params, f_arr, data):
-    # calculate the difference between the data (gain, phase) and the 
-    #  evaluated impedance
-    a,p = ap_eval(params, f_arr)
-    ap = np.vstack([a,p])
+	def residuals(params, f_arr, data):
+		# calculate the difference between the data (gain, phase) and the 
+		#  evaluated impedance
+		a,p = ap_eval(params, f_arr)
+		ap = np.vstack([a,p])
 
-    diff = ap - data
-    # The only change required is to use view instead of abs.
-    # so that gain and phase both contribute to the fit
-    return diff.flatten()
+		diff = ap - data
+		# The only change required is to use view instead of abs.
+		# so that gain and phase both contribute to the fit
+		return diff.flatten()
 
-fit_params = Parameters()
-fit_params.add('r1', value=5e3, min=100, max=15e3)
-fit_params.add('r2', value=5e3, min=100, max=15e3)
-fit_params.add('r3', value=5e3, min=100, max=15e3)
+	fit_params = Parameters()
+	fit_params.add('r1', value=5e3, min=100, max=15e3)
+	fit_params.add('r2', value=5e3, min=100, max=15e3)
+	fit_params.add('r3', value=5e3, min=100, max=15e3)
 
-data = np.vstack([a,p])
+	data = np.vstack([a,p])
 
-# run the global fit to all the data sets
-result = minimize(residuals, fit_params, args=(f_arr, data))
-report_fit(result)
+	# run the global fit to all the data sets
+	result = minimize(residuals, fit_params, args=(f_arr, data))
+	report_fit(result)
 
-af,pf = ap_eval(result.params, f_arr)
-ax.semilogx(f_arr, 20*np.log10(af),linestyle='--')
-ax.semilogx(f_arr, np.degrees(pf),linestyle='--')
+	af,pf = ap_eval(result.params, f_arr)
+	ax.semilogx(f_arr, 20*np.log10(af),linestyle='--')
+	ax.semilogx(f_arr, np.degrees(pf),linestyle='--')
