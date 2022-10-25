@@ -497,49 +497,63 @@ data[step] = {'dac_wave': dac_wave,
               'bath_clamp': config_dict_test,
               'voltage_clamp': config_dict_disconnect}
 
-SWAP = False
+config_dict_disconnect['P1_CAL_CTRL'] = 0
+config_dict_disconnect['P2_CAL_CTRL'] = 0
+config_dict_disconnect['DAC_SEL'] = 'drive_CAL2'  
+log_info_bath, config_dict_disconnect = clamps[1].configure_clamp(**config_dict_disconnect)
+
+SWAP = True
+VCLAMP_TEST = False
+daq.set_isel(port=1, channels=None) # channel select works correctly -- this turns off the signal 
+
 # Measure voltage with CC load connected at two different frequencies 
-for idx,freq in enumerate([400, 1000, 4000, 7000, 10000, 20000, 100000]):
-	print(freq)
-	# inject voltage sine wave of 1 V amplitude 
-	step += 1
-	daq.set_isel(port=1, channels=None) # channel select works correctly -- this turns off the signal 
-	config_dict_test['ADC_SEL'] = 'CAL_SIG1'
-	config_dict_test['DAC_SEL'] = 'drive_CAL1' # do not ground CAL1 
-	log_info_bath, config_dict_test = clamps[0].configure_clamp(**config_dict_test)
-	if freq > 1000:
-		config_dict_disconnect['P1_CAL_CTRL'] = 0
-		config_dict_disconnect['P2_CAL_CTRL'] = 0
-		config_dict_disconnect['P1_CAL_CTRL'] = 1
-		config_dict_disconnect['P2_CAL_CTRL'] = 1
-		config_dict_disconnect['DAC_SEL'] = 'drive_CAL2'  
-		log_info_bath, config_dict_disconnect = clamps[1].configure_clamp(**config_dict_disconnect)
+for drive_elec in [1,2]:
+	for idx,freq in enumerate([400, 1000, 4000, 7000, 10000, 20000, 100000]):
+		print(freq)
+		# inject voltage sine wave of 1 V amplitude 
+		step += 1
+		
+		if drive_elec == 1:
+			config_dict_test['ADC_SEL'] = 'CAL_SIG1'
+			config_dict_test['DAC_SEL'] = 'drive_CAL1' # do not ground CAL2 
+		elif drive_elec == 2:
+			config_dict_test['ADC_SEL'] = 'CAL_SIG2'
+			config_dict_test['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
+		
+		log_info_bath, config_dict_test = clamps[0].configure_clamp(**config_dict_test)
 
-	# inject voltage sine wave
-	dac_wave = dac_waveform(dc_under_test, amp=1, freq=freq, shape='SINE', source='v')
-	volt, t = collect_data(ddr, PLT=True, ads_chan=('A', 0))
-	np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
+		# load into DDR voltage sine wave
+		dac_wave = dac_waveform(dc_under_test, amp=1, freq=freq, shape='SINE', source='v')
+		time.sleep(0.2)
+		volt, t = collect_data(ddr, PLT=True, ads_chan=('A', 0))
+		np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
 
-	data[step] = {'dac_wave': dac_wave,
-				  'volt': volt, # data 
-				  't': t,
-				  'src': 'v',
-				  'shape': 'SINE',
-				  'freq': freq,
-				  'vclamp': 'disconnect',                  
-				  'bath_clamp': config_dict_test,
-				  'voltage_clamp': config_dict_disconnect}
+		data[step] = {'dac_wave': dac_wave,
+					  'volt': volt, # data 
+					  't': t,
+					  'src': 'v',
+					  'shape': 'SINE',
+					  'freq': freq,
+					  'vclamp': 'disconnect',                  
+					  'bath_clamp': copy.deepcopy(config_dict_test),
+					  'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
 
-	if SWAP:
+		if step == 8:
+			print(data[step]['bath_clamp'])
+			
 		# swap roles of electrodes 
 		step += 1
-		daq.set_isel(port=1, channels=None) # channel select works correctly -- this turns off the signal 
-		
-		config_dict_test['ADC_SEL'] = 'CAL_SIG2'
-		config_dict_test['DAC_SEL'] = 'drive_CAL1' # do not ground CAL1 
+		if drive_elec == 1:
+			config_dict_test['ADC_SEL'] = 'CAL_SIG2'
+			config_dict_test['DAC_SEL'] = 'drive_CAL1' # do not ground CAL2 
+		elif drive_elec == 2:
+			config_dict_test['ADC_SEL'] = 'CAL_SIG1'
+			config_dict_test['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
+
 		log_info_bath, config_dict_test = clamps[0].configure_clamp(**config_dict_test)
-		
-		# use same injection waveform as in previous test  
+
+		# use same injection waveform as in previous test
+		time.sleep(0.2)
 		volt, t = collect_data(ddr, PLT=True, ads_chan=('A', 0))
 		np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
 		data[step] = {'dac_wave': dac_wave,
@@ -549,9 +563,15 @@ for idx,freq in enumerate([400, 1000, 4000, 7000, 10000, 20000, 100000]):
 					  'shape': 'SINE',
 					  'freq': freq,
 					  'vclamp': 'disconnect',
-					  'bath_clamp': config_dict_test,
-					  'voltage_clamp': config_dict_disconnect}
+					  'bath_clamp': copy.deepcopy(config_dict_test),
+					  'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
+		if step == 9:
+			print(data[step]['bath_clamp'])
 
+np.savez(os.path.join(data_dir, f'imp_all_steps.npy'), data)
+
+if 0:
+	if VCLAMP_TEST:
 		for vclamp in ['passive', 'active']:
 			step += 1
 			# same configuration of the bath clamp 
@@ -591,47 +611,31 @@ for idx,freq in enumerate([400, 1000, 4000, 7000, 10000, 20000, 100000]):
 	# inject voltage sine wave of 1 V amplitude 
 	#dac_wave = dac_waveform(dc_under_test, amp=1, freq=10000, shape='SINE', source='v')
 	#volt, t = collect_data(ddr, PLT=True, ads_chan=('A', 0))
-np.savez(os.path.join(data_dir, f'imp_all_steps.npy'), data)
 
-from calibration.cal_fits import fit_sine_fft, soft_sq_wave, sine_wave
-from scipy.optimize import curve_fit
+	from calibration.cal_fits import fit_sine_fft, soft_sq_wave, sine_wave
+	from scipy.optimize import curve_fit
 
-# TODO - add frequency bounds set by what we set 
-for data_key in data:
-    d = data[data_key]
-    t = d['t'][0:]
-    y = d['volt'][0:] # if I chop at an arbitrary point there will be a phase shift that varies with frequency
-    freq = d['freq']
-    amp_dac = np.max(d['dac_wave']) - np.min(d['dac_wave']) 
+	# TODO - add frequency bounds set by what we set 
+	for data_key in data:
+		d = data[data_key]
+		t = d['t'][0:]
+		y = d['volt'][0:] # if I chop at an arbitrary point there will be a phase shift that varies with frequency
+		freq = d['freq']
+		amp_dac = np.max(d['dac_wave']) - np.min(d['dac_wave']) 
 
-    if d['shape'] == 'SQ':
-        yfit = curve_fit(soft_sq_wave, t,y , p0=(freq, 0.016, 0, 0, 0)) #,
-                        #bounds = ([0,0,-15,0,0], [10e6, np.inf, 15, 2*np.pi, np.inf]))  # bounds cause problems. Not sure why
-        predicted_res = yfit[0][1]/(0.8e-6/2**16*amp_dac)
-        print(f'Predicted resistance {predicted_res}')
-    elif d['shape'] == 'SINE':
-        max_freq, amp, phase = fit_sine_fft(t, y)
-        print(f'Amp. of sine from fft: {amp:.2f}. Phase: {np.degrees(phase):.2f} at freq of {max_freq} [Hz] vclamp of {d["vclamp"]}') 
-    
-    plt.figure(data_key)
-    if d['shape'] == 'SQ':
-        plt.plot(t*1e6, soft_sq_wave(t, *yfit[0]))
-    elif d['shape'] == 'SINE':
-        plt.plot(t*1e6, sine_wave(t, max_freq, amp, np.average(y), phase))
+		if d['shape'] == 'SQ':
+			yfit = curve_fit(soft_sq_wave, t,y , p0=(freq, 0.016, 0, 0, 0)) #,
+							#bounds = ([0,0,-15,0,0], [10e6, np.inf, 15, 2*np.pi, np.inf]))  # bounds cause problems. Not sure why
+			predicted_res = yfit[0][1]/(0.8e-6/2**16*amp_dac)
+			print(f'Predicted resistance {predicted_res}')
+		elif d['shape'] == 'SINE':
+			max_freq, amp, phase = fit_sine_fft(t, y)
+			print(f'Amp. of sine from fft: {amp:.2f}. Phase: {np.degrees(phase):.2f} at freq of {max_freq} [Hz] vclamp of {d["vclamp"]}') 
+		
+		plt.figure(data_key)
+		if d['shape'] == 'SQ':
+			plt.plot(t*1e6, soft_sq_wave(t, *yfit[0]))
+		elif d['shape'] == 'SINE':
+			plt.plot(t*1e6, sine_wave(t, max_freq, amp, np.average(y), phase))
 
 # TODO: use frequency data to estimate Rs individual
-
-'''
-# now fit a single edge to an exponential 
-# the first rising edge is here the argument to cos goes past -pi/2 or past 3*pi/2 
-idxs_rising = np.where(2*np.pi*yfit[0][0]*data[1]['t'] + yfit[0][3] > 3/2*np.pi)
-idx_rising = idxs_rising[0][0]
-yfit = curve_fit(soft_sq_wave, data[1]['t'], data[1]['volt'], p0=(1000, 0.016, 0, 0, 0)) #,
-
-
-# so far the expoential fit isn't working 
-t = data[1]['t'][idx_rising:(idx_rising+200)]
-y = data[1]['volt'][idx_rising:(idx_rising+200)]
-yfit_tau = curve_fit(exponential_rise, t, y) #,
-plt.plot(t*1e6, exponential_rise(t, *yfit_tau[0]))
-'''
