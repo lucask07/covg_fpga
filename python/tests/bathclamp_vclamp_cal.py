@@ -536,8 +536,8 @@ daq.set_isel(port=1, channels=None) # channel select works correctly -- this tur
 
 # Measure voltage with CC load connected at two different frequencies 
 for drive_elec in [1,2]:
-	#for idx,freq in enumerate([400, 1000, 4000, 7000, 10000, 20000, 100000]):
-	for idx,freq in enumerate([1000]):
+	for idx,freq in enumerate([400, 1000, 4000, 7000, 10000, 20000, 100000]):
+	#for idx,freq in enumerate([1000]):
 		print(freq)
 		# inject voltage sine wave of 1 V amplitude 
 		step += 1
@@ -578,7 +578,7 @@ for drive_elec in [1,2]:
 		log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
 
 		# use same injection waveform as in previous test
-		volt, t = collect_data(ddr, PLT=True, ads_chan=('A', 0))
+		volt, t = collect_data(ddr, PLT=True, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'])
 		np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
 		data[step] = {'dac_wave': dac_wave,
 					  'volt': volt,
