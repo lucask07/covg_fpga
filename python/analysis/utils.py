@@ -2,6 +2,7 @@ import numpy as np
 import scipy.fftpack
 import matplotlib.pyplot as plt
 from scipy.signal.windows import hann
+from scipy.signal import correlate, correlation_lags
 
 
 def find_nearest(array, target):
@@ -66,8 +67,78 @@ def calc_fft(data, FS, plot=True, WINDOW='hann'):
     max_freq = freq[1:N//2][max_idx]
     return freq, yf, max_freq, fig, ax
 
+def phase_by_xcorr(freq, t, data, dac_wave=None, debug_plots=False):
+    # determine the phase of a sinusoid at a given frequency
+    VERBOSE = False 
+    # remove mean of data 
+    fs = 1/(t[1]-t[0])
+    data = data - np.mean(data)
+    amp = np.sqrt(2)*np.std(data)
 
-def fft_maxs(data, FS, plot=False, window='hann'):
+    if dac_wave is None:
+        ideal_sine = amp*np.sin(2*np.pi*freq*t)
+        amp_ratio = amp
+    else:
+        dac_wave = dac_wave - np.mean(dac_wave)
+        amp_ratio = np.sqrt(2)*np.std(dac_wave)/amp
+        ideal_sine = amp*dac_wave/np.max(dac_wave)
+    
+    n_period = int(np.ceil(fs/freq))
+    n_period_float = fs/freq
+    # TODO: limit to 20 periods so that small frequency errors don't cause problems 
+    data_range = n_period*20
+    xc = correlate(ideal_sine[:n_period], data[:data_range], mode='same')
+    lags = correlation_lags(len(ideal_sine[:n_period]), 
+                            len(data[:data_range]), mode='same')
+
+    if debug_plots and VERBOSE:
+        print(f'Sampling freq. {fs}')
+        plt.figure()
+        plt.plot(t, ideal_sine, linestyle = '--', label='ideal sine', marker='.')
+        plt.plot(t, data, 'k', label='data', marker='.')
+
+    angle = (t * freq * 2 * np.pi) % (2*np.pi)
+    # index of 1 period 
+    if debug_plots:
+        fig, ax = plt.subplots(2,1)
+        ax[0].plot(ideal_sine[:n_period])
+        ax[0].plot(data)
+        ax[1].plot(lags, xc)
+        ax[1].plot(lags, angle[0:len(lags)]*100)
+
+    maxa_idx = np.argmax(xc[:int(n_period/2)])
+    lag = lags[maxa_idx] % n_period_float
+    maxangle = (lag * (2*np.pi)/n_period_float) % (2*np.pi)
+
+    if debug_plots:
+        print(f'Max xcorr index {maxa_idx} search up to {int(n_period/2)}')
+        print(f'phase shift (radians): {maxangle}, (degrees) {np.degrees(maxangle)} ')
+        print(f'Amplitude ratio: {amp_ratio}, {20*np.log10(amp_ratio)} ')
+
+        if dac_wave is None:
+            ideal_sine_shift = amp*np.sin(2*np.pi*freq*t + maxangle)
+            t_shift = t
+        else:
+            print(f'Shifting reference input by lag of {lag}')
+            if int(lag)>0:
+                ideal_sine_shift = ideal_sine[int(lag):]
+                t_shift = t[:-int(lag)]
+            else:
+                ideal_sine_shift = ideal_sine
+                t_shift = t 
+
+        plt.figure()
+        plt.plot(t, data, 'k', label='data')
+        plt.plot(t, ideal_sine, linestyle = '--', label='ideal sine')
+        plt.plot(t_shift, ideal_sine_shift, 'r', marker='.', label='shifted_sine')
+        plt.title('after phase shift by xcorr')
+        plt.legend()
+
+    return maxangle, lag, n_period_float, amp_ratio
+
+
+def fft_maxs(data, FS, method='quad_interpolate', 
+             plot=False, window='hann'):
     # to avoid breaking the interface to calc_fft 
     # add this helper function that gets the amplitude and frequency of the maximum 
     #  frequency point
@@ -78,12 +149,23 @@ def fft_maxs(data, FS, plot=False, window='hann'):
 
     N = len(data)
     freq, yf, max_freq, fig, ax = calc_fft(data, FS, plot=plot, WINDOW=window)
-    max_idx = np.argmax(np.abs(yf[1:N//2]))
-    max_amp = 2.0/N * np.abs(yf[1:N//2])[max_idx]
-    max_phase = np.angle(yf[1:N//2][max_idx])
+    
+    if method == 'single_bin':
+        max_idx = np.argmax(np.abs(yf[1:N//2]))
+        max_amp = 2.0/N * np.abs(yf[1:N//2])[max_idx]
+        max_phase = np.angle(yf[1:N//2][max_idx])
+    if method == 'quad_interpolate': #https://ccrma.stanford.edu/~jos/sasp/Quadratic_Interpolation_Spectral_Peaks.html
+        max_idx = np.argmax(np.abs(yf[1:N//2]))
+        beta = np.abs(yf[1:N//2])[max_idx]
+        alpha = np.abs(yf[1:N//2])[max_idx-1]
+        gamma = np.abs(yf[1:N//2])[max_idx+1]
+
+        p = 1/2*(alpha-gamma)/(alpha - 2*beta + gamma)
+        max_freq = max_freq + p*(freq[1] - freq[0])
+        max_amp = 2.0/N * (beta - 1/4*(alpha-gamma)*p)
+        max_phase = np.angle(yf[1:N//2][max_idx])
 
     return freq, max_freq, max_amp, max_phase
-
 
 
 def get_impulse(data_dir, filename, t_offset_idx, t0=6400e-6):
