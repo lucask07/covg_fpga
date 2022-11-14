@@ -1,4 +1,0 @@
-vhdl xil_defaultlib  \
-"../../../../fpga_XEM7310.srcs/sources_1/ip/mult_gen_1/sim/mult_gen_1.vhd" \
-
-nosort
