@@ -517,17 +517,19 @@ data[step] = {'volt': volt,
               'vclamp': 'disconnect',
               'bath_clamp': copy.deepcopy(config_dict_test),
               'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
-			  
+
 if testing == 'bath':
 	config_dict_disconnect['P1_CAL_CTRL'] = 0
 	config_dict_disconnect['P2_CAL_CTRL'] = 0
 	config_dict_disconnect['DAC_SEL'] = 'drive_CAL2'  
-	freq_arr = [400, 1000, 4000, 7000, 10000, 20000, 50000]
+	#freq_arr = [400, 1000, 4000, 7000, 10000, 20000, 50000]
+	freq_arr = np.logspace(np.log10(400), np.log10(50000), 20)
 elif testing == 'vclamp': # ground the bath clamp electrodes since 5k is small compared to the 200kOhm of the voltage clamp 
 	config_dict_disconnect['P1_CAL_CTRL'] = 1
 	config_dict_disconnect['P2_CAL_CTRL'] = 1
 	config_dict_disconnect['DAC_SEL'] = 'gnd_both' 
-	freq_arr = [40, 100, 200, 500, 1000]
+	#freq_arr = [40, 100, 200, 500, 1000]
+	freq_arr = np.logspace(np.log10(40), np.log10(10000), 20)
 	
 
 log_info_bath, config_dict_disconnect = clamps[dc_disconnect].configure_clamp(**config_dict_disconnect)

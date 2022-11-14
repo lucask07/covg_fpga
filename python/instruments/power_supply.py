@@ -77,7 +77,7 @@ def config_supply(dc_pwr, dc_pwr2, setup=None, neg=16.5):
             dc_pwr.set('ocp', 0.500, configs={'chan': ch})
 
         # Channel 1 on supply1 for Vin
-        dc_pwr.set('i', 0.55, configs={'chan': 1})
+        dc_pwr.set('i', 0.70, configs={'chan': 1}) # for calibration testing. Increase due to relay current
         dc_pwr.set('v', 7, configs={'chan': 1})
         dc_pwr.set('ovp', 7.2, configs={'chan': 1})
         dc_pwr.set('ocp', 0.75, configs={'chan': 1})
