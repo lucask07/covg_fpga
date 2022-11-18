@@ -21,6 +21,14 @@
 // establish the addresses of all OpalKelly endpoints here. This will ease keeping tracking between the
 //  Verilog code and the API easier.
 
+// Opal Kelly ranges: 
+// wire in 0x00 - 0x1F 
+// wire out 0x20 - 0x3F
+// trig in 0x40 - 0x5F
+// trig out 0x60 - 0x7F
+// pipe in 0x80 - 0x9F 
+// pipe out 0xA0 - 0xBf
+
 // Naming system
 // CLASS_PARAM_NAME_GEN_BIT_GEN_ADDR // address=ASSOCIATED_ADDRESS_PARAM bit_width=0123456789
 // "CLASS" = Python class name
@@ -45,10 +53,11 @@
 // Parameters holding a bit should have the bit written in decimal without the size specification
 // Comments that are not "// address=" or "// bit_width=" should go on a separate line from the parameter definition
 
-`define DDR3_ADDR_DAC_WR 8'h3b // bit_width=32
-`define DDR3_ADDR_DAC_RD 8'h3c // bit_width=32
-`define DDR3_ADDR_ADC_WR 8'h3d // bit_width=32
-`define DDR3_ADDR_ADC_RD 8'h3e // bit_width=32
+`define DDR3_ADDR_DAC_WR 8'h2E // bit_width=32
+`define DDR3_ADDR_DAC_RD 8'h2F // bit_width=32
+`define DDR3_ADDR_ADC_WR 8'h30 // bit_width=32
+`define DDR3_ADDR_ADC_RD 8'h31 // bit_width=32
+`define DDR3_ADC_DATA_CNT 8'h32 // bit_width=32
 
 `define AD7961_PIPE_OUT_GEN_ADDR 8'hA1 // bit_width=32
 `define ADS8686_PIPE_OUT_GEN_ADDR 8'hA5 // bit_width=32
@@ -199,8 +208,6 @@
 `define DDR3_OUT2_FULL 7 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
 `define DDR3_OUT2_EMPTY 8 // address=DDR3_INIT_CALIB_COMPLETE bit_width=1
 `define DDR3_ADC_DATA_COUNT 9 // address=DDR3_INIT_CALIB_COMPLETE bit_width=16
-
-`define DDR3_ADC_DATA_CNT 8'h3e // bit_width=32
 
 // trigger in at 0x41
 `define I2CDC_MEMSTART_GEN_BIT 0 // address=I2C_TRIG_IN bit_width=1
