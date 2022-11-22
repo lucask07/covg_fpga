@@ -198,8 +198,7 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc'):
 	result2 = minimize(residuals, fit_params, args=(f, np.vstack([amp,phase]), tf_type))
 	# report_fit(result2)
 
-	return result, result2
-
+	return result, result2 # result ignores phase, result 2 considers phase
 
 # use known rtotal: 1 TF is r1; the other is rtotal-r1 
 

@@ -17,6 +17,8 @@ Lucas Koerner, koerner.lucas@stthomas.edu
 from math import ceil
 import os
 import sys
+sys.path.append('C:/Users/koer2434/Documents/covg/pyripherals/python/src/') #TODO - temporary 
+
 from time import sleep
 import datetime
 import time
@@ -186,8 +188,8 @@ pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
 
 daq = Daq(f)
-ddr = daq.ddr    # Or reference as da   q.ddr throughout the file
-ddr.parameters['data_version'] = 'TIMESTAMPS'
+ddr = daq.ddr    # Or reference as daq.ddr throughout the file
+ddr.data_version = 'TIMESTAMPS'
 ad7961s = daq.ADC
 ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
