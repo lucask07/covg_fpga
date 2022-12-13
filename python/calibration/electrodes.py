@@ -61,7 +61,7 @@ class System:
     def __init__(self, system='Dagan_no_guard'):
 
         self.electrodes = []
-        self.system = system
+        self.system = system  # nickname of system configuration 
         self.dc_mapping = {'bath': 0, 'clamp': 1}
 
         if self.system == 'Dagan_no_guard':
