@@ -1,6 +1,6 @@
 <deployment-project plugin="plugin.matlabhdlcoder" plugin-version="R2020b">
-  <configuration file="/Users/koer2434/My Drive/UST/research/covg/manuscripts/control_system/secord_memos/obersver_nov_update/matrix_mul.prj" location="/Users/koer2434/My Drive/UST/research/covg/manuscripts/control_system/secord_memos/obersver_nov_update" name="matrix_mul" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
-    <param.AutoInferDefaultFile />
+  <configuration file="/Users/koer2434/Documents/covg_fpga/Matlab/control_system/observer/observer/observer.prj" location="/Users/koer2434/Documents/covg_fpga/Matlab/control_system/observer/observer" name="observer" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
+    <param.AutoInferDefaultFile>${PROJECT_ROOT}/observer_tb.m</param.AutoInferDefaultFile>
     <param.AutoInferUseVariableSize>false</param.AutoInferUseVariableSize>
     <param.AutoInferUseUnboundedSize>false</param.AutoInferUseUnboundedSize>
     <param.AutoInferVariableSizeThreshold>1024</param.AutoInferVariableSizeThreshold>
@@ -17,13 +17,13 @@
     <param.hdl.WorkingSpecifiedDirectory />
     <param.hdl.BuildDirectory>option.hdl.ProjectDirectory</param.hdl.BuildDirectory>
     <param.hdl.BuildSpecifiedDirectory />
-    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}/codegen/matrix_mul_fixedpt/fixpt/matrix_mul_fixedpt_float_mex.mexmaci64</param.fixptconv.InstrumentedMexFile>
-    <param.fixptconv.InstrumentedBuildChecksum>412352894</param.fixptconv.InstrumentedBuildChecksum>
+    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}/codegen/observer/fixpt/observer_float_mex.mexmaci64</param.fixptconv.InstrumentedMexFile>
+    <param.fixptconv.InstrumentedBuildChecksum>3965510948</param.fixptconv.InstrumentedBuildChecksum>
     <param.fixptconv.ShowCoverage>true</param.fixptconv.ShowCoverage>
-    <param.fixptconv.FixedPointValidationChecksum>786483818</param.fixptconv.FixedPointValidationChecksum>
-    <param.fixptconv.FixedPointSourceCodeChecksum>900094594</param.fixptconv.FixedPointSourceCodeChecksum>
+    <param.fixptconv.FixedPointValidationChecksum>671250423</param.fixptconv.FixedPointValidationChecksum>
+    <param.fixptconv.FixedPointSourceCodeChecksum>3359504975</param.fixptconv.FixedPointSourceCodeChecksum>
     <param.fixptconv.FixedPointStaticAnalysisChecksum />
-    <param.fixptconv.DefaultTestFile>${PROJECT_ROOT}/basic_matrix_mul_fixedpt_tb.m</param.fixptconv.DefaultTestFile>
+    <param.fixptconv.DefaultTestFile>${PROJECT_ROOT}/observer_tb.m</param.fixptconv.DefaultTestFile>
     <param.fixptconv.ExcludedFixedPointVerificationFiles />
     <param.fixptconv.ExcludedFixedPointSimulationFiles />
     <param.fixptconv.FixptProposalKind>option.fixptconv.ProposeFracLenBasedOnWordLen</param.fixptconv.FixptProposalKind>
@@ -34,9 +34,25 @@
     <param.fixptconv.ProposeUsingDesignMinMaxAnd>option.fixptconv.ProposeUsingDesignMinMaxAnd.SimAndDerivedMinMax</param.fixptconv.ProposeUsingDesignMinMaxAnd>
     <param.transformedVariables>
       <UserEntities>
-        <Function file="$(PROJECTDIR)/matrix_mul_fixedpt.m" name="matrix_mul_fixedpt" specialization="matrix_mul_fixedpt" specializationId="-1" uniqueId="matrix_mul_fixedpt">
+        <Function file="$(PROJECTDIR)/observer.m" name="observer" specialization="observer" specializationId="-1" uniqueId="observer">
           <Variable name="out" specid="-1">
-            <Column property="ProposedType" type="String" value="numerictype(1, 33, 30)" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 16, 13)" />
+            <Column property="LoggingEnabled" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="y1" specid="-1">
+            <Column property="ProposedType" type="String" value="numerictype(1, 16, 15)" />
+            <Column property="LoggingEnabled" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="y2" specid="-1">
+            <Column property="ProposedType" type="String" value="numerictype(1, 16, 15)" />
+            <Column property="LoggingEnabled" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="u" specid="-1">
+            <Column property="ProposedType" type="String" value="numerictype(1, 16, 15)" />
+            <Column property="LoggingEnabled" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="L" specid="-1">
+            <Column property="ProposedType" type="String" value="numerictype(1, 16, 15)" />
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
           <Variable name="A" specid="-1">
@@ -46,6 +62,12 @@
           <Variable name="B" specid="-1">
             <Column property="ProposedType" type="String" value="numerictype(1, 16, 15)" />
             <Column property="LoggingEnabled" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="yest" specid="-1">
+            <Column property="ProposedType" type="String" value="numerictype(1, 35, 30)" />
+          </Variable>
+          <Variable name="Lm" specid="-1">
+            <Column property="ProposedType" type="String" value="numerictype(1, 16, 15)" />
           </Variable>
           <Variable name="Am" specid="-1">
             <Column property="ProposedType" type="String" value="numerictype(1, 16, 15)" />
@@ -58,17 +80,97 @@
     </param.transformedVariables>
     <param.computedVariables>
       <ComputedEntities>
-        <Function file="$(PROJECTDIR)/matrix_mul_fixedpt.m" name="matrix_mul_fixedpt" specialization="matrix_mul_fixedpt" specializationId="-1" uniqueId="matrix_mul_fixedpt">
+        <Function file="$(PROJECTDIR)/observer.m" name="observer" specialization="observer" specializationId="-1" uniqueId="observer">
           <Variable name="out" specid="-1">
             <Column property="Kind" type="String" value="output" />
-            <Column property="SimMin" type="Double" value="-1.3270656370148866" />
-            <Column property="SimMax" type="Double" value="1.5110900456223313" />
+            <Column property="SimMin" type="Double" value="-3.0258977478227083" />
+            <Column property="SimMax" type="Double" value="3.213188123388946" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>1</size>
             </MATLABType>
             <Column property="IsInteger" type="Boolean" value="false" />
-            <Column property="ProposedType" type="String" value="numerictype(1, 14, 12)" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 14, 11)" />
+            <Column property="RoundMode" type="String" value="Floor" />
+            <Column property="OverflowMode" type="String" value="Wrap" />
+            <Column property="ProductMode" type="String" value="FullPrecision" />
+            <Column property="ProductWordLength" type="Double" value="32" />
+            <Column property="ProductFractionLength" type="Double" value="30" />
+            <Column property="SumMode" type="String" value="FullPrecision" />
+            <Column property="SumWordLength" type="Double" value="32" />
+            <Column property="SumFractionLength" type="Double" value="30" />
+            <Column property="CastBeforeSum" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="y1" specid="-1">
+            <Column property="Kind" type="String" value="input" />
+            <Column property="SimMin" type="Double" value="-0.9961571898839106" />
+            <Column property="SimMax" type="Double" value="0.9981908022938828" />
+            <MATLABType class="double" complex="false">
+              <size>1</size>
+              <size>1</size>
+            </MATLABType>
+            <Column property="IsInteger" type="Boolean" value="false" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 14, 13)" />
+            <Column property="RoundMode" type="String" value="Floor" />
+            <Column property="OverflowMode" type="String" value="Wrap" />
+            <Column property="ProductMode" type="String" value="FullPrecision" />
+            <Column property="ProductWordLength" type="Double" value="32" />
+            <Column property="ProductFractionLength" type="Double" value="30" />
+            <Column property="SumMode" type="String" value="FullPrecision" />
+            <Column property="SumWordLength" type="Double" value="32" />
+            <Column property="SumFractionLength" type="Double" value="30" />
+            <Column property="CastBeforeSum" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="y2" specid="-1">
+            <Column property="Kind" type="String" value="input" />
+            <Column property="SimMin" type="Double" value="-0.9836856772948779" />
+            <Column property="SimMax" type="Double" value="0.9978227371976864" />
+            <MATLABType class="double" complex="false">
+              <size>1</size>
+              <size>1</size>
+            </MATLABType>
+            <Column property="IsInteger" type="Boolean" value="false" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 14, 13)" />
+            <Column property="RoundMode" type="String" value="Floor" />
+            <Column property="OverflowMode" type="String" value="Wrap" />
+            <Column property="ProductMode" type="String" value="FullPrecision" />
+            <Column property="ProductWordLength" type="Double" value="32" />
+            <Column property="ProductFractionLength" type="Double" value="30" />
+            <Column property="SumMode" type="String" value="FullPrecision" />
+            <Column property="SumWordLength" type="Double" value="32" />
+            <Column property="SumFractionLength" type="Double" value="30" />
+            <Column property="CastBeforeSum" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="u" specid="-1">
+            <Column property="Kind" type="String" value="input" />
+            <Column property="SimMin" type="Double" value="-0.9770726885731849" />
+            <Column property="SimMax" type="Double" value="0.9862580163876211" />
+            <MATLABType class="double" complex="false">
+              <size>1</size>
+              <size>1</size>
+            </MATLABType>
+            <Column property="IsInteger" type="Boolean" value="false" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 14, 13)" />
+            <Column property="RoundMode" type="String" value="Floor" />
+            <Column property="OverflowMode" type="String" value="Wrap" />
+            <Column property="ProductMode" type="String" value="FullPrecision" />
+            <Column property="ProductWordLength" type="Double" value="32" />
+            <Column property="ProductFractionLength" type="Double" value="30" />
+            <Column property="SumMode" type="String" value="FullPrecision" />
+            <Column property="SumWordLength" type="Double" value="32" />
+            <Column property="SumFractionLength" type="Double" value="30" />
+            <Column property="CastBeforeSum" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="L" specid="-1">
+            <Column property="Kind" type="String" value="input" />
+            <Column property="SimMin" type="Double" value="-0.9981340843248601" />
+            <Column property="SimMax" type="Double" value="0.9888377554603169" />
+            <MATLABType class="double" complex="false">
+              <size>4</size>
+              <size>1</size>
+            </MATLABType>
+            <Column property="IsInteger" type="Boolean" value="false" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 14, 13)" />
             <Column property="RoundMode" type="String" value="Floor" />
             <Column property="OverflowMode" type="String" value="Wrap" />
             <Column property="ProductMode" type="String" value="FullPrecision" />
@@ -81,8 +183,8 @@
           </Variable>
           <Variable name="A" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="-0.9995462453895123" />
-            <Column property="SimMax" type="Double" value="0.9993170755637222" />
+            <Column property="SimMin" type="Double" value="-0.9954719595466479" />
+            <Column property="SimMax" type="Double" value="0.9997349129091089" />
             <MATLABType class="double" complex="false">
               <size>4</size>
               <size>1</size>
@@ -101,8 +203,8 @@
           </Variable>
           <Variable name="B" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="-0.9940828877559995" />
-            <Column property="SimMax" type="Double" value="0.9995378696011665" />
+            <Column property="SimMin" type="Double" value="-0.9943586555112163" />
+            <Column property="SimMax" type="Double" value="0.9998594786980723" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>1</size>
@@ -119,10 +221,50 @@
             <Column property="SumFractionLength" type="Double" value="30" />
             <Column property="CastBeforeSum" type="Boolean" value="true" />
           </Variable>
+          <Variable name="yest" specid="-1">
+            <Column property="Kind" type="String" value="persistent" />
+            <Column property="SimMin" type="Double" value="-3.0258977478227083" />
+            <Column property="SimMax" type="Double" value="3.213188123388946" />
+            <MATLABType class="double" complex="false">
+              <size>2</size>
+              <size>1</size>
+            </MATLABType>
+            <Column property="IsInteger" type="Boolean" value="false" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 14, 11)" />
+            <Column property="RoundMode" type="String" value="Floor" />
+            <Column property="OverflowMode" type="String" value="Wrap" />
+            <Column property="ProductMode" type="String" value="FullPrecision" />
+            <Column property="ProductWordLength" type="Double" value="32" />
+            <Column property="ProductFractionLength" type="Double" value="30" />
+            <Column property="SumMode" type="String" value="FullPrecision" />
+            <Column property="SumWordLength" type="Double" value="32" />
+            <Column property="SumFractionLength" type="Double" value="30" />
+            <Column property="CastBeforeSum" type="Boolean" value="true" />
+          </Variable>
+          <Variable name="Lm" specid="-1">
+            <Column property="Kind" type="String" value="local" />
+            <Column property="SimMin" type="Double" value="-0.9981340843248601" />
+            <Column property="SimMax" type="Double" value="0.9888377554603169" />
+            <MATLABType class="double" complex="false">
+              <size>2</size>
+              <size>2</size>
+            </MATLABType>
+            <Column property="IsInteger" type="Boolean" value="false" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 14, 13)" />
+            <Column property="RoundMode" type="String" value="Floor" />
+            <Column property="OverflowMode" type="String" value="Wrap" />
+            <Column property="ProductMode" type="String" value="FullPrecision" />
+            <Column property="ProductWordLength" type="Double" value="32" />
+            <Column property="ProductFractionLength" type="Double" value="30" />
+            <Column property="SumMode" type="String" value="FullPrecision" />
+            <Column property="SumWordLength" type="Double" value="32" />
+            <Column property="SumFractionLength" type="Double" value="30" />
+            <Column property="CastBeforeSum" type="Boolean" value="true" />
+          </Variable>
           <Variable name="Am" specid="-1">
             <Column property="Kind" type="String" value="local" />
-            <Column property="SimMin" type="Double" value="-0.9995462453895123" />
-            <Column property="SimMax" type="Double" value="0.9993170755637222" />
+            <Column property="SimMin" type="Double" value="-0.9954719595466479" />
+            <Column property="SimMax" type="Double" value="0.9997349129091089" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>2</size>
@@ -141,8 +283,8 @@
           </Variable>
           <Variable name="Bm" specid="-1">
             <Column property="Kind" type="String" value="local" />
-            <Column property="SimMin" type="Double" value="-0.9940828877559995" />
-            <Column property="SimMax" type="Double" value="0.9995378696011665" />
+            <Column property="SimMin" type="Double" value="-0.9943586555112163" />
+            <Column property="SimMax" type="Double" value="0.9998594786980723" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>1</size>
@@ -162,7 +304,7 @@
         </Function>
       </ComputedEntities>
     </param.computedVariables>
-    <param.fixptconv.FiMathString>fimath('RoundingMethod', 'Floor', 'OverflowAction', 'Wrap', 'ProductMode', 'FullPrecision', 'MaxProductWordLength', 128, 'SumMode', 'FullPrecision', 'MaxSumWordLength', 128)</param.fixptconv.FiMathString>
+    <param.fixptconv.FiMathString>fimath('RoundingMethod', 'Floor', 'OverflowAction', 'Wrap', 'ProductMode', 'FullPrecision', 'SumMode', 'FullPrecision')</param.fixptconv.FiMathString>
     <param.fixptconv.DefaultRoundMode>option.fixptconv.proposetypes.floor</param.fixptconv.DefaultRoundMode>
     <param.fixptconv.DefaultOverflowMode>option.fixptconv.proposetypes.wrap</param.fixptconv.DefaultOverflowMode>
     <param.fixptconv.LogAllIOValues>false</param.fixptconv.LogAllIOValues>
@@ -184,14 +326,14 @@
     <param.fixptconv.StaticAnalysisTimeout />
     <param.fixptconv.StaticAnalysisGlobalRangesOnly>false</param.fixptconv.StaticAnalysisGlobalRangesOnly>
     <var.lastFixedPointAction>option.fixedPointAction.convert</var.lastFixedPointAction>
-    <var.lastSimContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;/Users/koer2434/My Drive/UST/research/covg/manuscripts/control_system/secord_memos/obersver_nov_update/basic_matrix_mul_fixedpt_tb.m&lt;/file&gt;&lt;/testFiles&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastSimContext>
+    <var.lastSimContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;/Users/koer2434/Documents/covg_fpga/Matlab/control_system/observer/observer/observer_tb.m&lt;/file&gt;&lt;/testFiles&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastSimContext>
     <var.lastVerifyContext />
-    <param.fpDataRoot>/Users/koer2434/My Drive/UST/research/covg/manuscripts/control_system/secord_memos/obersver_nov_update/codegen/matrix_mul_fixedpt/fixpt/guiFpReport.mat</param.fpDataRoot>
+    <param.fpDataRoot>/Users/koer2434/Documents/covg_fpga/Matlab/control_system/observer/observer/codegen/observer/fixpt/guiFpReport.mat</param.fpDataRoot>
     <param.fpUserFileChecksum />
-    <var.snapshotChecksum>2943504560</var.snapshotChecksum>
-    <param.fpLastConvertChecksum>412352894</param.fpLastConvertChecksum>
+    <var.snapshotChecksum>1910430822</var.snapshotChecksum>
+    <param.fpLastConvertChecksum>3965510948</param.fpLastConvertChecksum>
     <var.FixedPointAnalysisMode>option.FixedPointAnalysisMode.Sim</var.FixedPointAnalysisMode>
-    <param.FixedPointUseDesignRanges>false</param.FixedPointUseDesignRanges>
+    <param.FixedPointUseDesignRanges>true</param.FixedPointUseDesignRanges>
     <param.hdl.Workflow>option.workflow.GenericAsicFpga</param.hdl.Workflow>
     <param.hdl.TargetPlatform />
     <param.hdl.SynthesisTool>No synthesis tool available on system path</param.hdl.SynthesisTool>
@@ -199,7 +341,7 @@
     <param.hdl.TargetFrequency>100</param.hdl.TargetFrequency>
     <param.hdl.ReferenceDesign />
     <param.hdl.ReferenceDesignPath />
-    <param.hdl.IPCoreName>matrix_mul_fixedpt_fixpt_ipcore</param.hdl.IPCoreName>
+    <param.hdl.IPCoreName>observer_fixpt_ipcore</param.hdl.IPCoreName>
     <param.hdl.IPCoreVersion>1.0</param.hdl.IPCoreVersion>
     <param.hdl.AdditionalIPFiles />
     <param.hdl.ExecutionMode>option.hdl.FreeRunning</param.hdl.ExecutionMode>
@@ -401,7 +543,6 @@
     <param.hdl.EmbeddedSystemProjectFolder>codegen/pa_prj</param.hdl.EmbeddedSystemProjectFolder>
     <param.hdl.BitstreamBuildMode>false</param.hdl.BitstreamBuildMode>
     <unset>
-      <param.AutoInferDefaultFile />
       <param.AutoInferUseVariableSize />
       <param.AutoInferUseUnboundedSize />
       <param.AutoInferVariableSizeThreshold />
@@ -427,7 +568,6 @@
       <param.fixptconv.ContainerTypes />
       <param.fixptconv.SafetyMargin />
       <param.fixptconv.ProposeUsingDesignMinMaxAnd />
-      <param.fixptconv.FiMathString />
       <param.fixptconv.DefaultRoundMode />
       <param.fixptconv.DefaultOverflowMode />
       <param.fixptconv.LogAllIOValues />
@@ -448,7 +588,6 @@
       <var.lastVerifyContext />
       <param.fpUserFileChecksum />
       <var.FixedPointAnalysisMode />
-      <param.FixedPointUseDesignRanges />
       <param.hdl.Workflow />
       <param.hdl.TargetPlatform />
       <param.hdl.InputFrequency />
@@ -636,8 +775,44 @@
       <param.hdl.BitstreamBuildMode />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}/matrix_mul_fixedpt.m">
-        <Inputs fileName="matrix_mul_fixedpt.m" functionName="matrix_mul_fixedpt">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}/observer.m">
+        <Inputs fileName="observer.m" functionName="observer">
+          <Input Name="y1">
+            <Class>double</Class>
+            <Size>1 x 1</Size>
+            <Value />
+            <InitialValue />
+            <UserDefined>false</UserDefined>
+            <Complex>false</Complex>
+            <Sparse>false</Sparse>
+          </Input>
+          <Input Name="y2">
+            <Class>double</Class>
+            <Size>1 x 1</Size>
+            <Value />
+            <InitialValue />
+            <UserDefined>false</UserDefined>
+            <Complex>false</Complex>
+            <Sparse>false</Sparse>
+          </Input>
+          <Input Name="u">
+            <Class>double</Class>
+            <Size>1 x 1</Size>
+            <Value />
+            <InitialValue />
+            <UserDefined>false</UserDefined>
+            <Complex>false</Complex>
+            <Sparse>false</Sparse>
+          </Input>
+          <Input Name="L">
+            <Class>double</Class>
+            <Size>4 x 1</Size>
+            <Value />
+            <InitialValue />
+            <UserDefined>false</UserDefined>
+            <Complex>false</Complex>
+            <Sparse>false</Sparse>
+          </Input>
           <Input Name="A">
             <Class>double</Class>
             <Size>4 x 1</Size>
@@ -660,7 +835,7 @@
       </file>
     </fileset.entrypoints>
     <fileset.scriptfile>
-      <file>${PROJECT_ROOT}/basic_matrix_mul_fixedpt_tb.m</file>
+      <file>${PROJECT_ROOT}/observer_tb.m</file>
     </fileset.scriptfile>
     <fileset.package />
     <build-deliverables />
