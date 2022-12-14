@@ -1,8 +1,9 @@
 """
-
 Oct 2022
-
 Lucas Koerner, koerner.lucas@stthomas.edu
+
+read LTSpice simulation results and compare with the function being used for the transfer fuction in calibration fitting
+
 """
 
 import os

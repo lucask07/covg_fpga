@@ -54,9 +54,11 @@ class Dut:
                  nominal={'r': 4.7e6, 'c': 33e-9, 'i_leak': 0},
                  measured={'r': None, 'c': None, 'i_leak': None},
                  name=None):
+        self.nominal = nominal
+        self.measured = measured
+        self.name = name
 
-
-class System: 
+class EphysSystem: 
     
     def __init__(self, system='Dagan_no_guard'):
 
@@ -88,8 +90,8 @@ class System:
             self.electrodes.append(e)
 
 
-    def find_item(self, key, value):
+    def _find_item(self, key, value):
         return next((i for i, item in enumerate(self.electrodes) if getattr(item,key) == value), None)
 
     def find_name(self, value):
-        return self.find_item('name', value) 
+        return self._find_item('name', value) 
