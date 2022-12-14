@@ -104,7 +104,7 @@ def calc_tf(f,r1,r2,r3,c1,rs,c2,r5,r6):
 
     return np.abs(a), np.angle(a)
 
-def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc'):
+def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
 	
 	def tf_eval(params, f, tf_type):
 		if tf_type == 'elec_r_cc':
@@ -127,12 +127,15 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc'):
 
 			return tf_test(f,r1,cm)
 
-		elif tf_type == 'vclamp_bound': # since we measure rtotal using a current source: solve for r2 as rtotal-r1 
-			rtotal = 300e3
+		elif tf_type == 'vclamp_bound': # since we measure rtotal using a current source: solve for r2 as rtotal-r1 			
 			r1 = params['r1'].value
 			cm = params['cm'].value
+			rtotal = params['rtotal'].value 
+			if rtotal is None:
+				log.error('rtotal is None. For voltage clamp bound fit need an rtotal input.')
+				raise ValueError('rtotal cannot be None in vclamp_bnd')
 
-			return tf_test(f,rtotal - r1,cm)
+			return tf_test(f, rtotal - r1, cm)
 
 
 	def residuals(params, f_arr, data, tf_type):
@@ -176,6 +179,7 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc'):
 		fit_params = Parameters()
 		fit_params.add('r1', value=100e3, min=50e3, max=1e6)
 		fit_params.add('cm', value=33e-9, min=20e-9, max=60e-9)
+		fit_params.add('rtotal', value=rtotal, vary=False)
 
 	# run the global fit to all the data sets
 	result = minimize(residuals_magnitude, fit_params, args=(f, tf_amp_phase[0], tf_type))
