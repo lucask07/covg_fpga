@@ -139,3 +139,6 @@ python/tests/unit_tests/test_defines.v
 ## exclude data 
 data/*
 covg/data/*
+
+## allow for Verilog simulation files from MATLAB
+!*.dat
