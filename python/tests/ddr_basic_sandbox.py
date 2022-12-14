@@ -11,12 +11,13 @@ Data buffered into and then read from DDR (port 2):
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
+import os
+import sys
 
+sys.path.append('C:/Users/koer2434/Documents/covg/pyripherals/python/src/')
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
 from pyripherals.utils import from_voltage
-import os
-import sys
 from time import sleep
 import datetime
 import time
