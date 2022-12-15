@@ -1,6 +1,6 @@
 <deployment-project plugin="plugin.matlabhdlcoder" plugin-version="R2020b">
-  <configuration file="/Users/koer2434/Documents/covg_fpga/Matlab/control_system/observer/observer/observer.prj" location="/Users/koer2434/Documents/covg_fpga/Matlab/control_system/observer/observer" name="observer" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
-    <param.AutoInferDefaultFile>${PROJECT_ROOT}/observer_tb.m</param.AutoInferDefaultFile>
+  <configuration file="C:\Users\koer2434\Documents\covg\covg_fpga\Matlab\control_system\observer\observer\observer.prj" location="C:\Users\koer2434\Documents\covg\covg_fpga\Matlab\control_system\observer\observer" name="observer" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
+    <param.AutoInferDefaultFile>${PROJECT_ROOT}\observer_tb.m</param.AutoInferDefaultFile>
     <param.AutoInferUseVariableSize>false</param.AutoInferUseVariableSize>
     <param.AutoInferUseUnboundedSize>false</param.AutoInferUseUnboundedSize>
     <param.AutoInferVariableSizeThreshold>1024</param.AutoInferVariableSizeThreshold>
@@ -17,13 +17,13 @@
     <param.hdl.WorkingSpecifiedDirectory />
     <param.hdl.BuildDirectory>option.hdl.ProjectDirectory</param.hdl.BuildDirectory>
     <param.hdl.BuildSpecifiedDirectory />
-    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}/codegen/observer/fixpt/observer_float_mex.mexmaci64</param.fixptconv.InstrumentedMexFile>
-    <param.fixptconv.InstrumentedBuildChecksum>3965510948</param.fixptconv.InstrumentedBuildChecksum>
+    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}\codegen\observer\fixpt\observer_float_mex.mexw64</param.fixptconv.InstrumentedMexFile>
+    <param.fixptconv.InstrumentedBuildChecksum>725791467</param.fixptconv.InstrumentedBuildChecksum>
     <param.fixptconv.ShowCoverage>true</param.fixptconv.ShowCoverage>
-    <param.fixptconv.FixedPointValidationChecksum>671250423</param.fixptconv.FixedPointValidationChecksum>
-    <param.fixptconv.FixedPointSourceCodeChecksum>3359504975</param.fixptconv.FixedPointSourceCodeChecksum>
+    <param.fixptconv.FixedPointValidationChecksum>610803561</param.fixptconv.FixedPointValidationChecksum>
+    <param.fixptconv.FixedPointSourceCodeChecksum>2840671467</param.fixptconv.FixedPointSourceCodeChecksum>
     <param.fixptconv.FixedPointStaticAnalysisChecksum />
-    <param.fixptconv.DefaultTestFile>${PROJECT_ROOT}/observer_tb.m</param.fixptconv.DefaultTestFile>
+    <param.fixptconv.DefaultTestFile>${PROJECT_ROOT}\observer_tb.m</param.fixptconv.DefaultTestFile>
     <param.fixptconv.ExcludedFixedPointVerificationFiles />
     <param.fixptconv.ExcludedFixedPointSimulationFiles />
     <param.fixptconv.FixptProposalKind>option.fixptconv.ProposeFracLenBasedOnWordLen</param.fixptconv.FixptProposalKind>
@@ -34,7 +34,7 @@
     <param.fixptconv.ProposeUsingDesignMinMaxAnd>option.fixptconv.ProposeUsingDesignMinMaxAnd.SimAndDerivedMinMax</param.fixptconv.ProposeUsingDesignMinMaxAnd>
     <param.transformedVariables>
       <UserEntities>
-        <Function file="$(PROJECTDIR)/observer.m" name="observer" specialization="observer" specializationId="-1" uniqueId="observer">
+        <Function file="$(PROJECTDIR)\observer.m" name="observer" specialization="observer" specializationId="-1" uniqueId="observer">
           <Variable name="out" specid="-1">
             <Column property="ProposedType" type="String" value="numerictype(1, 16, 13)" />
             <Column property="LoggingEnabled" type="Boolean" value="true" />
@@ -64,7 +64,7 @@
             <Column property="LoggingEnabled" type="Boolean" value="true" />
           </Variable>
           <Variable name="yest" specid="-1">
-            <Column property="ProposedType" type="String" value="numerictype(1, 35, 30)" />
+            <Column property="ProposedType" type="String" value="numerictype(1, 33, 30)" />
           </Variable>
           <Variable name="Lm" specid="-1">
             <Column property="ProposedType" type="String" value="numerictype(1, 16, 15)" />
@@ -80,11 +80,11 @@
     </param.transformedVariables>
     <param.computedVariables>
       <ComputedEntities>
-        <Function file="$(PROJECTDIR)/observer.m" name="observer" specialization="observer" specializationId="-1" uniqueId="observer">
+        <Function file="$(PROJECTDIR)\observer.m" name="observer" specialization="observer" specializationId="-1" uniqueId="observer">
           <Variable name="out" specid="-1">
             <Column property="Kind" type="String" value="output" />
-            <Column property="SimMin" type="Double" value="-3.0258977478227083" />
-            <Column property="SimMax" type="Double" value="3.213188123388946" />
+            <Column property="SimMin" type="Double" value="-3.8808364891773945" />
+            <Column property="SimMax" type="Double" value="3.562466989324485" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>1</size>
@@ -103,8 +103,8 @@
           </Variable>
           <Variable name="y1" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="-0.9961571898839106" />
-            <Column property="SimMax" type="Double" value="0.9981908022938828" />
+            <Column property="SimMin" type="Double" value="-0.9765757644370963" />
+            <Column property="SimMax" type="Double" value="0.9938186048850697" />
             <MATLABType class="double" complex="false">
               <size>1</size>
               <size>1</size>
@@ -123,8 +123,8 @@
           </Variable>
           <Variable name="y2" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="-0.9836856772948779" />
-            <Column property="SimMax" type="Double" value="0.9978227371976864" />
+            <Column property="SimMin" type="Double" value="-0.9514142513412638" />
+            <Column property="SimMax" type="Double" value="0.9861744720592653" />
             <MATLABType class="double" complex="false">
               <size>1</size>
               <size>1</size>
@@ -143,8 +143,8 @@
           </Variable>
           <Variable name="u" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="-0.9770726885731849" />
-            <Column property="SimMax" type="Double" value="0.9862580163876211" />
+            <Column property="SimMin" type="Double" value="-0.9968535786837422" />
+            <Column property="SimMax" type="Double" value="0.9994782896589387" />
             <MATLABType class="double" complex="false">
               <size>1</size>
               <size>1</size>
@@ -163,8 +163,8 @@
           </Variable>
           <Variable name="L" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="-0.9981340843248601" />
-            <Column property="SimMax" type="Double" value="0.9888377554603169" />
+            <Column property="SimMin" type="Double" value="-0.9971867765518754" />
+            <Column property="SimMax" type="Double" value="0.9993170755637222" />
             <MATLABType class="double" complex="false">
               <size>4</size>
               <size>1</size>
@@ -183,8 +183,8 @@
           </Variable>
           <Variable name="A" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="-0.9954719595466479" />
-            <Column property="SimMax" type="Double" value="0.9997349129091089" />
+            <Column property="SimMin" type="Double" value="-0.9989557172717842" />
+            <Column property="SimMax" type="Double" value="0.9995378696011665" />
             <MATLABType class="double" complex="false">
               <size>4</size>
               <size>1</size>
@@ -203,8 +203,8 @@
           </Variable>
           <Variable name="B" specid="-1">
             <Column property="Kind" type="String" value="input" />
-            <Column property="SimMin" type="Double" value="-0.9943586555112163" />
-            <Column property="SimMax" type="Double" value="0.9998594786980723" />
+            <Column property="SimMin" type="Double" value="-0.999338758929915" />
+            <Column property="SimMax" type="Double" value="0.9941632994124472" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>1</size>
@@ -223,8 +223,8 @@
           </Variable>
           <Variable name="yest" specid="-1">
             <Column property="Kind" type="String" value="persistent" />
-            <Column property="SimMin" type="Double" value="-3.0258977478227083" />
-            <Column property="SimMax" type="Double" value="3.213188123388946" />
+            <Column property="SimMin" type="Double" value="-3.8808364891773945" />
+            <Column property="SimMax" type="Double" value="3.562466989324485" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>1</size>
@@ -243,8 +243,8 @@
           </Variable>
           <Variable name="Lm" specid="-1">
             <Column property="Kind" type="String" value="local" />
-            <Column property="SimMin" type="Double" value="-0.9981340843248601" />
-            <Column property="SimMax" type="Double" value="0.9888377554603169" />
+            <Column property="SimMin" type="Double" value="-0.9971867765518754" />
+            <Column property="SimMax" type="Double" value="0.9993170755637222" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>2</size>
@@ -263,8 +263,8 @@
           </Variable>
           <Variable name="Am" specid="-1">
             <Column property="Kind" type="String" value="local" />
-            <Column property="SimMin" type="Double" value="-0.9954719595466479" />
-            <Column property="SimMax" type="Double" value="0.9997349129091089" />
+            <Column property="SimMin" type="Double" value="-0.9989557172717842" />
+            <Column property="SimMax" type="Double" value="0.9995378696011665" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>2</size>
@@ -283,8 +283,8 @@
           </Variable>
           <Variable name="Bm" specid="-1">
             <Column property="Kind" type="String" value="local" />
-            <Column property="SimMin" type="Double" value="-0.9943586555112163" />
-            <Column property="SimMax" type="Double" value="0.9998594786980723" />
+            <Column property="SimMin" type="Double" value="-0.999338758929915" />
+            <Column property="SimMax" type="Double" value="0.9941632994124472" />
             <MATLABType class="double" complex="false">
               <size>2</size>
               <size>1</size>
@@ -326,17 +326,17 @@
     <param.fixptconv.StaticAnalysisTimeout />
     <param.fixptconv.StaticAnalysisGlobalRangesOnly>false</param.fixptconv.StaticAnalysisGlobalRangesOnly>
     <var.lastFixedPointAction>option.fixedPointAction.convert</var.lastFixedPointAction>
-    <var.lastSimContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;/Users/koer2434/Documents/covg_fpga/Matlab/control_system/observer/observer/observer_tb.m&lt;/file&gt;&lt;/testFiles&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastSimContext>
+    <var.lastSimContext>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;&lt;SimulationContext&gt;&lt;testFiles&gt;&lt;file&gt;C:\Users\koer2434\Documents\covg\covg_fpga\Matlab\control_system\observer\observer\observer_tb.m&lt;/file&gt;&lt;/testFiles&gt;&lt;synthetic&gt;false&lt;/synthetic&gt;&lt;/SimulationContext&gt;</var.lastSimContext>
     <var.lastVerifyContext />
-    <param.fpDataRoot>/Users/koer2434/Documents/covg_fpga/Matlab/control_system/observer/observer/codegen/observer/fixpt/guiFpReport.mat</param.fpDataRoot>
+    <param.fpDataRoot>C:\Users\koer2434\Documents\covg\covg_fpga\Matlab\control_system\observer\observer\codegen\observer\fixpt/guiFpReport.mat</param.fpDataRoot>
     <param.fpUserFileChecksum />
-    <var.snapshotChecksum>1910430822</var.snapshotChecksum>
-    <param.fpLastConvertChecksum>3965510948</param.fpLastConvertChecksum>
+    <var.snapshotChecksum>2753002918</var.snapshotChecksum>
+    <param.fpLastConvertChecksum>725791467</param.fpLastConvertChecksum>
     <var.FixedPointAnalysisMode>option.FixedPointAnalysisMode.Sim</var.FixedPointAnalysisMode>
     <param.FixedPointUseDesignRanges>true</param.FixedPointUseDesignRanges>
     <param.hdl.Workflow>option.workflow.GenericAsicFpga</param.hdl.Workflow>
     <param.hdl.TargetPlatform />
-    <param.hdl.SynthesisTool>No synthesis tool available on system path</param.hdl.SynthesisTool>
+    <param.hdl.SynthesisTool>No synthesis tool specified</param.hdl.SynthesisTool>
     <param.hdl.InputFrequency>100</param.hdl.InputFrequency>
     <param.hdl.TargetFrequency>100</param.hdl.TargetFrequency>
     <param.hdl.ReferenceDesign />
@@ -493,7 +493,7 @@
     <param.hdl.RAMThreshold>256</param.hdl.RAMThreshold>
     <param.hdl.RAMVariableNames />
     <param.hdl.InitializeBlockRAM>true</param.hdl.InitializeBlockRAM>
-    <param.isHDLVerifierInstalled>false</param.isHDLVerifierInstalled>
+    <param.isHDLVerifierInstalled>true</param.isHDLVerifierInstalled>
     <param.hdl.GenerateHDLTestBench>true</param.hdl.GenerateHDLTestBench>
     <param.hdl.SimulateGeneratedCode>false</param.hdl.SimulateGeneratedCode>
     <param.hdl.SimulationTool>No simulation tool available on system path</param.hdl.SimulationTool>
@@ -531,7 +531,7 @@
     <param.hdl.CosimResetLength>2</param.hdl.CosimResetLength>
     <param.hdl.GenerateFILTestBench>false</param.hdl.GenerateFILTestBench>
     <param.hdl.FILLogOutputs>false</param.hdl.FILLogOutputs>
-    <param.hdl.FILBoardName>HDL Verifier installation or license is not available</param.hdl.FILBoardName>
+    <param.hdl.FILBoardName>Choose a board</param.hdl.FILBoardName>
     <param.hdl.FILConnection />
     <param.hdl.FILBoardIPAddress>192.168.0.2</param.hdl.FILBoardIPAddress>
     <param.hdl.FILBoardMACAddress>00-0A-35-02-21-8A</param.hdl.FILBoardMACAddress>
@@ -539,8 +539,8 @@
     <param.hdl.SimulateFILTestBench>false</param.hdl.SimulateFILTestBench>
     <param.hdl.AdditionalSynthesisProjectFiles />
     <param.hdl.CriticalPathSource>option.hdl.Preroute</param.hdl.CriticalPathSource>
-    <param.hdl.EmbeddedSystemTool>Xilinx PlanAhead with Embedded Design</param.hdl.EmbeddedSystemTool>
-    <param.hdl.EmbeddedSystemProjectFolder>codegen/pa_prj</param.hdl.EmbeddedSystemProjectFolder>
+    <param.hdl.EmbeddedSystemTool />
+    <param.hdl.EmbeddedSystemProjectFolder />
     <param.hdl.BitstreamBuildMode>false</param.hdl.BitstreamBuildMode>
     <unset>
       <param.AutoInferUseVariableSize />
@@ -775,7 +775,7 @@
       <param.hdl.BitstreamBuildMode />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}/observer.m">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}\observer.m">
         <Inputs fileName="observer.m" functionName="observer">
           <Input Name="y1">
             <Class>double</Class>
@@ -835,7 +835,7 @@
       </file>
     </fileset.entrypoints>
     <fileset.scriptfile>
-      <file>${PROJECT_ROOT}/observer_tb.m</file>
+      <file>${PROJECT_ROOT}\observer_tb.m</file>
     </fileset.scriptfile>
     <fileset.package />
     <build-deliverables />
@@ -869,16 +869,29 @@
       <step key="category.workflow.fpgaturnkeyprogramtargetdevice" skipped="false" />
     </workflow>
     <matlab>
-      <root>/Applications/MATLAB_R2022a.app</root>
+      <root>C:\Program Files\MATLAB\R2022a</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
+        <toolbox name="embeddedcoder" />
+        <toolbox name="gpucoder" />
         <toolbox name="fixedpoint" />
         <toolbox name="matlabhdlcoder" />
+        <toolbox name="neuralnetwork" />
       </toolboxes>
       <toolbox>
         <matlabcoder>
           <enabled>true</enabled>
         </matlabcoder>
+      </toolbox>
+      <toolbox>
+        <embeddedcoder>
+          <enabled>true</enabled>
+        </embeddedcoder>
+      </toolbox>
+      <toolbox>
+        <gpucoder>
+          <enabled>true</enabled>
+        </gpucoder>
       </toolbox>
       <toolbox>
         <fixedpoint>
@@ -890,20 +903,25 @@
           <enabled>true</enabled>
         </matlabhdlcoder>
       </toolbox>
+      <toolbox>
+        <neuralnetwork>
+          <enabled>true</enabled>
+        </neuralnetwork>
+      </toolbox>
     </matlab>
     <platform>
-      <unix>true</unix>
-      <mac>true</mac>
-      <windows>false</windows>
+      <unix>false</unix>
+      <mac>false</mac>
+      <windows>true</windows>
       <win2k>false</win2k>
       <winxp>false</winxp>
       <vista>false</vista>
       <linux>false</linux>
       <solaris>false</solaris>
-      <osver>12.5.1</osver>
+      <osver>10.0</osver>
       <os32>false</os32>
       <os64>true</os64>
-      <arch>maci64</arch>
+      <arch>win64</arch>
       <matlab>true</matlab>
     </platform>
   </configuration>

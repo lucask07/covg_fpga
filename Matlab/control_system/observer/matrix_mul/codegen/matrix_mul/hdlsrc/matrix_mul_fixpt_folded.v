@@ -34,6 +34,8 @@
 `timescale 1 ns / 1 ns
 
 module matrix_mul_fixpt_folded
+#(parameter A_wid = 'd16,
+parameter B_wid = 'd16)
           (clk,
            reset,
            clk_enable,
@@ -47,10 +49,7 @@ module matrix_mul_fixpt_folded
            out_0,
            out_1);
 
-  parameter A_wid = 'd16;
-  parameter B_wid = 'd16;
-  parameter m_wid = A_wid + B_wid;  // width of multiplier output 
-  parameter out_wid = 'd33;
+  parameter out_wid = A_wid + B_wid + 1;  // width of multiplier output 
 
   input   clk;
   input   reset;
@@ -103,7 +102,7 @@ module matrix_mul_fixpt_folded
 
   reg signed [(A_wid-1):0] a_in;
   reg signed [(B_wid-1):0] b_in;
-  wire signed [(m_wid-1):0] m_out;
+  wire signed [(out_wid-1):0] m_out;
 
   always @(posedge clk) begin 
     if (reset == 1'b1) begin
@@ -141,13 +140,13 @@ module matrix_mul_fixpt_folded
       end
 
       default: begin
-        a_in <= 16'b0;
-        b_in <= 16'b0;
+        a_in <= {(A_wid){1'b0}};
+        b_in <= {(B_wid){1'b0}};
       end
     endcase
   end  
 
-  reg signed [(out_wid-1):0] out_tmp [0:1];
+  reg signed [(out_wid - 1):0] out_tmp [0:1]; //
 
   always @(posedge clk) begin 
     if (reset == 1'b1) begin
@@ -155,7 +154,7 @@ module matrix_mul_fixpt_folded
         out_tmp[1] <= {(out_wid){1'b0}};
         out_0 <= {(out_wid){1'b0}};
         out_1 <= {(out_wid){1'b0}};
-        ce_out = {(out_wid){1'b0}}; 
+        ce_out <= 1'b0; 
     end
     case(counter)
       0: begin 
@@ -164,19 +163,19 @@ module matrix_mul_fixpt_folded
         $display("counter %d: out[0]: %d out[1]: %d", counter, out_tmp[0], out_tmp[1]);
       end
       0 + PIPE_DLY: begin 
-        out_tmp[0] <= out_tmp[0] + {{1{m_out[m_wid-1]}}, m_out};
+        out_tmp[0] <= out_tmp[0] + {{1{m_out[out_wid-1]}}, m_out};
         $display("counter %d: Mult_out: %d out[0]: %d out[1]: %d", counter, m_out, out_tmp[0], out_tmp[1]);
       end
       1 + PIPE_DLY: begin
-        out_tmp[0] <= out_tmp[0] + {{1{m_out[m_wid-1]}}, m_out};
+        out_tmp[0] <= out_tmp[0] + {{1{m_out[out_wid-1]}}, m_out};
         $display("counter %d: Mult_out: %d out[0]: %d out[1]: %d", counter, m_out, out_tmp[0], out_tmp[1]);
       end
       2 + PIPE_DLY: begin
-        out_tmp[1] <= out_tmp[1] + {{1{m_out[m_wid-1]}}, m_out};
+        out_tmp[1] <= out_tmp[1] + {{1{m_out[out_wid-1]}}, m_out};
         $display("counter %d: Mult_out: %d out[0]: %d out[1]: %d", counter, m_out, out_tmp[0], out_tmp[1]);
       end
       3 + PIPE_DLY: begin
-        out_tmp[1] <= out_tmp[1] + {{1{m_out[m_wid-1]}}, m_out};
+        out_tmp[1] <= out_tmp[1] + {{1{m_out[out_wid-1]}}, m_out};
         $display("counter %d: Mult_out: %d out[0]: %d out[1]: %d", counter, m_out, out_tmp[0], out_tmp[1]);
       end
       4 + PIPE_DLY: begin
@@ -196,7 +195,7 @@ module matrix_mul_fixpt_folded
     endcase
   end  
 
-  multiply_pipe u2_mult(.clk(clk), .reset(reset), .a(a_in), .b(b_in), .out(m_out));
+  multiply_pipe #(.A_wid(A_wid), .B_wid(B_wid)) u2_mult(.clk(clk), .reset(reset), .a(a_in), .b(b_in), .out(m_out));
 
 endmodule  
 

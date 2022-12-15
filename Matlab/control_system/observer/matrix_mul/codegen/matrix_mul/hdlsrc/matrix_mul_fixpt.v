@@ -39,7 +39,7 @@
 
 `timescale 1 ns / 1 ns
 
-module matrix_mul_fixedpt_fixpt
+module matrix_mul_fixpt
           (clk,
            reset,
            clk_enable,

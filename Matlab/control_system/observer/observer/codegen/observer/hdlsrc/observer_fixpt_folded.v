@@ -71,22 +71,26 @@ module observer_fixpt_folded
   input   signed [15:0] B_0;  // sfix16_En15
   input   signed [15:0] B_1;  // sfix16_En15
   output  reg ce_out;
-  output  reg signed [15:0] out_0;  // sfix16_En13
-  output  reg signed [15:0] out_1;  // sfix16_En13
+  output  wire signed [15:0] out_0;  // sfix16_En13
+  output  wire signed [15:0] out_1;  // sfix16_En13
+  
+  reg signed [48:0] out_0_cast;
+  reg signed [48:0] out_1_cast;
+
 
   wire ce_out1;
   wire ce_out2;
   wire ce_out3;
 
-  wire signed [32:0] out_0_A;
-  wire signed [32:0] out_1_A;
+  wire signed [48:0] out_0_A;
+  wire signed [48:0] out_1_A;
   wire signed [32:0] out_0_B;
   wire signed [32:0] out_1_B;
   wire signed [32:0] out_0_L;
   wire signed [32:0] out_1_L;
 
-  reg signed [32:0] out_0_A_reg;
-  reg signed [32:0] out_1_A_reg;
+  reg signed [48:0] out_0_A_reg;
+  reg signed [48:0] out_1_A_reg;
   reg signed [32:0] out_0_B_reg;
   reg signed [32:0] out_1_B_reg;
   reg signed [32:0] out_0_L_reg;
@@ -117,50 +121,60 @@ module observer_fixpt_folded
 
   always @(*) begin
     case(state)
-    S0: if (ce_out1==1) nextstate = S1; //TODO: making the assumption that all ce_out are synchronized
-    S1: nextstate = S2; 
-    S2: nextstate = S3;
-    S3: if (clk_enable==1) nextstate = S0;
-    default nextstate = S0;
+        S0: if (ce_out1==1) nextstate = S1; //TODO: making the assumption that all ce_out are synchronized
+        S1: nextstate = S2; 
+        S2: nextstate = S3;
+        S3: if (clk_enable==1) nextstate = S0;
+        default nextstate = S0;
+    endcase
   end
 
   always @(*) begin
     case (state)
-    S0: ce_out <= 0; time_to_sum <=0;
-    S1: ce_out <= 0; time_to_sum <=1;
-    S2: ce_out <= 1; time_to_sum <=0;
-    S3: ce_out <= 0; time_to_sum <=0;    
-  end
+    S0: begin 
+        ce_out <= 0; time_to_sum <=0;
+        end
+    S1: begin 
+        ce_out <= 0; time_to_sum <=1;
+        end
+    S2: begin 
+        ce_out <= 1; time_to_sum <=0;
+        end
+    S3: begin 
+        ce_out <= 0; time_to_sum <=0;    
+        end
+    endcase 
+    end
 
-    matrix_mul_fixpt u_matrix_mul_fixpt (.clk(clk),
+    matrix_mul_fixpt_folded #(.A_wid(16), .B_wid(33)) u1_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
                                                        .A_0(A_0),  // sfix16_En15 0,0
                                                        .A_1(A_1),  // sfix16_En15 1,0
                                                        .A_2(A_2),  // sfix16_En15 0,1
                                                        .A_3(A_3),  // sfix16_En15 1,1
-                                                       .B_0(B_0),  // sfix16_En15
-                                                       .B_1(B_1),  // sfix16_En15
+                                                       .B_0(out_0_cast[32:0]),  // sfix33_En30 -- eqv. to yest 
+                                                       .B_1(out_0_cast[32:0]),  // sfix33_30
                                                        .ce_out(ce_out1),
-                                                       .out_0(out_0_A),  // sfix33_En30
-                                                       .out_1(out_1_A)  // sfix33_En30
+                                                       .out_0(out_0_A),  // sfix49_En45
+                                                       .out_1(out_1_A)  // sfix49_En45
                                                        );
 
-    matrix_mul_fixpt u_matrix_mul_fixpt (.clk(clk),
+    matrix_mul_fixpt_folded u2_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
                                                        .A_0(B_0),  // sfix16_En15 0,0
                                                        .A_1(B_1),  // sfix16_En15 1,0
-                                                       .A_2(0),  // sfix16_En15 0,1
-                                                       .A_3(0),  // sfix16_En15 1,1
+                                                       .A_2(16'd0),  // sfix16_En15 0,1
+                                                       .A_3(16'd0),  // sfix16_En15 1,1
                                                        .B_0(u),  // sfix16_En15
-                                                       .B_1(0),  // sfix16_En15
+                                                       .B_1(16'd0),  // sfix16_En15
                                                        .ce_out(ce_out2),
                                                        .out_0(out_0_B),  // sfix33_En30
                                                        .out_1(out_1_B)  // sfix33_En30
                                                        );
 
-    matrix_mul_fixpt u_matrix_mul_fixpt (.clk(clk),
+    matrix_mul_fixpt_folded u3_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
                                                        .A_0(L_0),  // sfix16_En15 0,0
@@ -176,48 +190,50 @@ module observer_fixpt_folded
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      output_0_A_reg<=0;
-      output_1_A_reg<=0;
+      out_0_A_reg<=49'd0;
+      out_1_A_reg<=49'd0;
     end
     else if (ce_out1==1) begin 
-      output_0_A_reg <= output_0_A;
-      output_1_A_reg <= output_1_A;
+      out_0_A_reg <= out_0_A;
+      out_1_A_reg <= out_1_A;
     end
   end
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      output_0_B_reg<=0;
-      output_1_B_reg<=0;
+      out_0_B_reg<=0;
+      out_1_B_reg<=0;
     end
     else if (ce_out2==1) begin 
-      output_0_B_reg <= output_0_B;
-      output_1_B_reg <= output_1_B;
+      out_0_B_reg <= out_0_B;
+      out_1_B_reg <= out_1_B;
     end
   end
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      output_0_L_reg<=0;
-      output_1_L_reg<=0;
+      out_0_L_reg<=0;
+      out_1_L_reg<=0;
     end
     else if (ce_out3==1) begin 
-      output_0_L_reg <= output_0_L;
-      output_1_L_reg <= output_1_L;
+      out_0_L_reg <= out_0_L;
+      out_1_L_reg <= out_1_L;
     end
   end
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0<=0;
-      out_1<=0;
+      out_0_cast <= 48'd0;
+      out_1_cast <= 48'd0; //33En30 
     end
     else if (time_to_sum==1) begin 
-      out_0 <= output_0_A_reg + output_0_B_reg + output_0_L_reg; //TODO: resizing and cast! 
-      out_1 <= output_1_A_reg + output_1_B_reg + output_1_L_reg;
+      out_0_cast <= out_0_A_reg + {out_0_B_reg, 16'b0} + {out_0_L_reg, 16'b0}; //TODO: resizing and cast! 
+      out_1_cast <= out_1_A_reg + {out_1_B_reg, 16'b0} + {out_1_L_reg, 16'b0};
     end
   end 
 
+assign out_0 = out_0_cast[32:17];  // sfix16_En13 
+assign out_1 = out_1_cast[32:17]; 
 
 endmodule  
 

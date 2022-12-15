@@ -40,7 +40,7 @@
 
 `timescale 1 ns / 1 ns
 
-module matrix_mul_fixedpt_fixpt_tb;
+module matrix_mul_fixpt_tb;
 
 
 
