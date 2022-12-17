@@ -39,6 +39,7 @@
 // -------------------------------------------------------------
 
 `timescale 1 ns / 1 ns
+`define directory "C:/Users/koer2434/Documents/covg/covg_fpga/Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/"
 
 module matrix_mul_fixpt_folded_tb;
 
@@ -135,7 +136,7 @@ module matrix_mul_fixpt_folded_tb;
   // Data source for B_1
   initial
     begin : B_1_fileread
-      fp_B_1 = $fopen("B_1.dat", "r");
+      fp_B_1 =$fopen({`directory,"B_1.dat"}, "r");
       status_B_1 = $rewind(fp_B_1);
     end
 
@@ -177,7 +178,7 @@ module matrix_mul_fixpt_folded_tb;
   // Data source for B_0
   initial
     begin : B_0_fileread
-      fp_B_0 = $fopen("B_0.dat", "r");
+      fp_B_0 =$fopen({`directory,"B_0.dat"}, "r");
       status_B_0 = $rewind(fp_B_0);
     end
 
@@ -217,7 +218,7 @@ module matrix_mul_fixpt_folded_tb;
   // Data source for A_3
   initial
     begin : A_3_fileread
-      fp_A_3 = $fopen("A_3.dat", "r");
+      fp_A_3 =$fopen({`directory,"A_3.dat"}, "r");
       status_A_3 = $rewind(fp_A_3);
     end
 
@@ -257,7 +258,7 @@ module matrix_mul_fixpt_folded_tb;
   // Data source for A_2
   initial
     begin : A_2_fileread
-      fp_A_2 = $fopen("A_2.dat", "r");
+      fp_A_2 =$fopen({`directory,"A_2.dat"}, "r");
       status_A_2 = $rewind(fp_A_2);
     end
 
@@ -297,7 +298,7 @@ module matrix_mul_fixpt_folded_tb;
   // Data source for A_1
   initial
     begin : A_1_fileread
-      fp_A_1 = $fopen("A_1.dat", "r");
+      fp_A_1 =$fopen({`directory,"A_1.dat"}, "r");
       status_A_1 = $rewind(fp_A_1);
     end
 
@@ -370,7 +371,7 @@ module matrix_mul_fixpt_folded_tb;
   // Data source for A_0
   initial
     begin : A_0_fileread
-      fp_A_0 = $fopen("A_0.dat", "r");
+      fp_A_0 =$fopen({`directory,"A_0.dat"}, "r");
       status_A_0 = $rewind(fp_A_0);
     end
 
@@ -549,7 +550,7 @@ module matrix_mul_fixpt_folded_tb;
   // Data source for out_0_0_expected
   initial
     begin : out_0_0_expected_fileread
-      fp_out_0_0_expected = $fopen("out_0_0_expected.dat", "r");
+      fp_out_0_0_expected =$fopen({`directory, "out_0_0_expected.dat"}, "r");
       status_out_0_0_expected = $rewind(fp_out_0_0_expected);
     end
 
@@ -599,7 +600,7 @@ module matrix_mul_fixpt_folded_tb;
   // Data source for out_0_1_expected
   initial
     begin : out_0_1_expected_fileread
-      fp_out_0_1_expected = $fopen("out_0_1_expected.dat", "r");
+      fp_out_0_1_expected =$fopen({`directory, "out_0_1_expected.dat"}, "r");
       status_out_0_1_expected = $rewind(fp_out_0_1_expected);
     end
 
