@@ -74,30 +74,28 @@ module observer_fixpt_folded
   output  wire signed [15:0] out_0;  // sfix16_En13
   output  wire signed [15:0] out_1;  // sfix16_En13
   
-  reg signed [48:0] out_0_cast;
-  reg signed [48:0] out_1_cast;
+  reg signed [51:0] out_0_cast;
+  reg signed [51:0] out_1_cast;
 
+  wire signed [32:0] yest [0:1];
 
   wire ce_out1;
   wire ce_out2;
   wire ce_out3;
 
-  wire signed [48:0] out_0_A;
-  wire signed [48:0] out_1_A;
+  wire signed [49:0] out_0_A;
+  wire signed [49:0] out_1_A;
   wire signed [32:0] out_0_B;
   wire signed [32:0] out_1_B;
   wire signed [32:0] out_0_L;
   wire signed [32:0] out_1_L;
 
-  reg signed [48:0] out_0_A_reg;
-  reg signed [48:0] out_1_A_reg;
+  reg signed [49:0] out_0_A_reg;
+  reg signed [49:0] out_1_A_reg;
   reg signed [32:0] out_0_B_reg;
   reg signed [32:0] out_1_B_reg;
   reg signed [32:0] out_0_L_reg;
   reg signed [32:0] out_1_L_reg;
-
-  reg signed [35:0] yest_1;
-  reg signed [35:0] yest_2;
 
   parameter S0=2'd0; // calculating  
   parameter S1=2'd1; //
@@ -153,8 +151,8 @@ module observer_fixpt_folded
                                                        .A_1(A_1),  // sfix16_En15 1,0
                                                        .A_2(A_2),  // sfix16_En15 0,1
                                                        .A_3(A_3),  // sfix16_En15 1,1
-                                                       .B_0(out_0_cast[32:0]),  // sfix33_En30 -- eqv. to yest 
-                                                       .B_1(out_0_cast[32:0]),  // sfix33_30
+                                                       .B_0(yest[0]),  // sfix33_En30 -- eqv. to yest 
+                                                       .B_1(yest[1]),  // sfix33_30
                                                        .ce_out(ce_out1),
                                                        .out_0(out_0_A),  // sfix49_En45
                                                        .out_1(out_1_A)  // sfix49_En45
@@ -190,8 +188,8 @@ module observer_fixpt_folded
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_A_reg<=49'd0;
-      out_1_A_reg<=49'd0;
+      out_0_A_reg<=50'd0;
+      out_1_A_reg<=50'd0;
     end
     else if (ce_out1==1) begin 
       out_0_A_reg <= out_0_A;
@@ -201,8 +199,8 @@ module observer_fixpt_folded
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_B_reg<=0;
-      out_1_B_reg<=0;
+      out_0_B_reg<=33'd0;
+      out_1_B_reg<=33'd0;
     end
     else if (ce_out2==1) begin 
       out_0_B_reg <= out_0_B;
@@ -212,8 +210,8 @@ module observer_fixpt_folded
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_L_reg<=0;
-      out_1_L_reg<=0;
+      out_0_L_reg<=33'd0;
+      out_1_L_reg<=33'd0;
     end
     else if (ce_out3==1) begin 
       out_0_L_reg <= out_0_L;
@@ -223,17 +221,36 @@ module observer_fixpt_folded
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_cast <= 48'd0;
-      out_1_cast <= 48'd0; //33En30 
+      out_0_cast <= 51'd0;
+      out_1_cast <= 51'd0; //33En30 
     end
     else if (time_to_sum==1) begin 
-      out_0_cast <= out_0_A_reg + {out_0_B_reg, 16'b0} + {out_0_L_reg, 16'b0}; //TODO: resizing and cast! 
-      out_1_cast <= out_1_A_reg + {out_1_B_reg, 16'b0} + {out_1_L_reg, 16'b0};
+      out_0_cast <= {{2{out_0_A_reg[49]}}, out_0_A_reg} + { {4{out_0_B_reg[31]}}, out_0_B_reg, 15'b0} + { {4{out_0_L_reg[31]}}, out_0_L_reg, 15'b0};
+      out_1_cast <= {{2{out_1_A_reg[49]}}, out_1_A_reg} + { {4{out_1_B_reg[31]}}, out_1_B_reg, 15'b0} + { {4{out_1_L_reg[31]}}, out_1_L_reg, 15'b0};
     end
   end 
 
-assign out_0 = out_0_cast[32:17];  // sfix16_En13 
-assign out_1 = out_1_cast[32:17]; 
+  reg signed [32:0] yest_reg_reg[0:1];
+
+  always @(posedge clk or posedge reset)
+    begin : yest_reg_process
+      if (reset == 1'b1) begin
+        yest_reg_reg[0] <= 33'sh000000000;
+        yest_reg_reg[1] <= 33'sh000000000;
+      end
+      else begin
+        if (clk_enable) begin
+          yest_reg_reg[0] <= out_0_cast[47:15];
+          yest_reg_reg[1] <= out_1_cast[47:15];
+        end
+      end
+    end
+
+assign yest[0] = out_0_cast[47:15];
+assign yest[1] = out_1_cast[47:15];
+
+assign out_0 = yest_reg_reg[0][32:17];
+assign out_1 = yest_reg_reg[1][32:17];
 
 endmodule  
 

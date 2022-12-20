@@ -336,7 +336,7 @@
     <param.FixedPointUseDesignRanges>true</param.FixedPointUseDesignRanges>
     <param.hdl.Workflow>option.workflow.GenericAsicFpga</param.hdl.Workflow>
     <param.hdl.TargetPlatform />
-    <param.hdl.SynthesisTool>No synthesis tool specified</param.hdl.SynthesisTool>
+    <param.hdl.SynthesisTool>No synthesis tool available on system path</param.hdl.SynthesisTool>
     <param.hdl.InputFrequency>100</param.hdl.InputFrequency>
     <param.hdl.TargetFrequency>100</param.hdl.TargetFrequency>
     <param.hdl.ReferenceDesign />
@@ -431,7 +431,7 @@
     <param.hdl.MultiplierPartitioningThreshold>65</param.hdl.MultiplierPartitioningThreshold>
     <param.hdl.AggressiveDataflowConversion>false</param.hdl.AggressiveDataflowConversion>
     <param.hdl.RegisterInputs>false</param.hdl.RegisterInputs>
-    <param.hdl.RegisterOutputs>false</param.hdl.RegisterOutputs>
+    <param.hdl.RegisterOutputs>true</param.hdl.RegisterOutputs>
     <param.hdl.AdaptivePipelining>false</param.hdl.AdaptivePipelining>
     <param.hdl.DistributedPipelining>false</param.hdl.DistributedPipelining>
     <param.hdl.DistributedPipeliningPriority>option.hdl.NumericalIntegrity</param.hdl.DistributedPipeliningPriority>
@@ -680,7 +680,6 @@
       <param.hdl.MultiplierPartitioningThreshold />
       <param.hdl.AggressiveDataflowConversion />
       <param.hdl.RegisterInputs />
-      <param.hdl.RegisterOutputs />
       <param.hdl.AdaptivePipelining />
       <param.hdl.DistributedPipelining />
       <param.hdl.DistributedPipeliningPriority />
