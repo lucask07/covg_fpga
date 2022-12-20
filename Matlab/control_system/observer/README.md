@@ -1,15 +1,12 @@
 These folders work to implement the membrane voltage observer designed by Tom Secord into the FPGA. 
 
-To implement into the FPGA the 
-
-
 ## matrix_mul 
 
 Implements a 2x2 matrix multiplication using a multiplier with a parameterizable pipeline dela. The input widths are parameterizable and the resulting output width has a width of A_wid+B_wid. The folded version is a custom design with a folding factor of x40 (200 MHz/5 MHz). 
 
 ## observer 
 
-The observer is implemented after rearranging the expression so that only 3 matrix multiplications are nneed. The modified expression is:
+The observer is implemented after rearranging the expression so that only 3 matrix multiplications are needed. The modified expression is:
 
 ```
 yest[n] = Ldp*y + Adp*yest[n-1] + Bdp*u 
