@@ -42,4 +42,5 @@ This folder holds the simulink models and the MATLAB code to run them. A MATLAB 
 1. Correct the scaling and fixed point sizing in the ...discrete_reorder_fixedpt.slx file. 
 2. Implement an interpolator of the ADS Vp1 measurement (1:5). 
 3. Add to the FPGA and send the observer outputs to DDR.  
+4. Modify the multiplier to use the Xilinx IP and correct any changes added due to a different pipeline delay.
 
