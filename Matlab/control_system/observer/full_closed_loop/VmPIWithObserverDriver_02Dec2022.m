@@ -121,8 +121,6 @@ diff_buf = 499/(120+1500); % correct, refering to signal_chain.py
 dn_per_amp = (2^15/5)*(RF*in_amp*diff_buf); % correct 
 Im_scale = dn_per_amp;
 
-Im_scale = dn_per_amp;
-
 ads_full_scale = 2.5;
 dn_per_volt = (2^15/ads_full_scale); %correct
 VP1_scale = dn_per_volt;
