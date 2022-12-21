@@ -141,7 +141,7 @@ FIXPT = true;
 
 Adp_sim.time = t;
 if FIXPT
-    Adp_sim.signals.values = fi(repmat(Adp(:)', length(t), 1), 1, 16, 3);
+    Adp_sim.signals.values = fi(repmat(Adp(:)', length(t), 1), 1, 16, 5);
 else
     Adp_sim.signals.values = repmat(Adp(:)', length(t), 1);
 end    
@@ -149,7 +149,7 @@ Adp_sim.signals.dimensions = length(Adp(:));
 
 Bdp_sim.time = t;
 if FIXPT
-    Bdp_sim.signals.values = fi(repmat(Bdp(:)', length(t), 1), 1, 16, 36);
+    Bdp_sim.signals.values = fi(repmat(Bdp(:)', length(t), 1), 1, 16, 38);
 else
     Bdp_sim.signals.values = repmat(Bdp(:)', length(t), 1);
 end

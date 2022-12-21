@@ -142,3 +142,6 @@ covg/data/*
 
 ## allow for Verilog simulation files from MATLAB
 !*.dat
+
+## allow readmes in subdirectories
+!*.md 

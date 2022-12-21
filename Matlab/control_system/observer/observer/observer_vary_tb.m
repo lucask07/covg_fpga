@@ -1,9 +1,5 @@
 % create fixed point inputs 
 
-% y1 = fi(y1, 1, 16,15); % Im 
-% y2 = fi(y2, 1, 16,15); % Vp1 
-% cmd = fi(cmd, 1, 16,15);
-
 %Cma = 33e-9;
 %RF = 100e3;
 
@@ -111,6 +107,7 @@ for Cma = [10e-9 33e-9 200e-9] % membrane capacitance
         vm_actual = y(:,1); 
 
         cmd = cmd*dn_per_volt;
+        Bdp = Bdp/dn_per_volt;
 
         % clamp digitized values (both DACs are signed 16 bits)
         dac_max = 32768-1; % 2^15-1 
@@ -128,7 +125,7 @@ for Cma = [10e-9 33e-9 200e-9] % membrane capacitance
             vm_out(t_idx) = vm(1);
         end
         
-        vm_out = vm_out / dn_per_volt;
+        vm_out = vm_out;
 
         % scaling of the CMD signal 
         dn_per_volt_cmd = 1e3;
@@ -140,13 +137,17 @@ for Cma = [10e-9 33e-9 200e-9] % membrane capacitance
         subplot(3,1,1)
         plot(t, cmd, 'b'); hold on;
         plot(t, y2, 'r')
-
+        legend('cmd', 'y2')
+            
         subplot(3,1,2)
         plot(t, y1);
+        legend('y1')
+
         hold on;
         subplot(3,1,3)
         plot(t, vm_out);  hold on;
         plot(t, vm_actual, 'r');
+        legend('vm:out', 'vm:actual')
 
         % compare estimate to actual 
         figure
@@ -157,5 +158,6 @@ for Cma = [10e-9 33e-9 200e-9] % membrane capacitance
         plot(t, (vm_actual-vm_out(:))./vm_actual*100)
         ylabel('Perc. error')
         ylim([-10 10])
+
     end
 end
