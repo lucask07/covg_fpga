@@ -39,7 +39,8 @@
 // -------------------------------------------------------------
 
 `timescale 1 ns / 1 ns
-`define directory "C:/Users/koer2434/Documents/covg/covg_fpga/Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/"
+//`define directory "C:/Users/koer2434/Documents/covg/covg_fpga/Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/"
+`define directory "/home/delg/Documents/covg_fpga_project/covg_fpga/Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/"
 
 module matrix_mul_fixpt_folded_tb;
 

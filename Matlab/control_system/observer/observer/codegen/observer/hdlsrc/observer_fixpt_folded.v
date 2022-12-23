@@ -60,22 +60,22 @@ module observer_fixpt_folded
   input   signed [15:0] y1;  // sfix16_En15
   input   signed [15:0] y2;  // sfix16_En15
   input   signed [15:0] u;  // sfix16_En15
-  input   signed [15:0] L_0;  // sfix16_En15
-  input   signed [15:0] L_1;  // sfix16_En15
-  input   signed [15:0] L_2;  // sfix16_En15
-  input   signed [15:0] L_3;  // sfix16_En15
-  input   signed [15:0] A_0;  // sfix16_En15
-  input   signed [15:0] A_1;  // sfix16_En15
-  input   signed [15:0] A_2;  // sfix16_En15
-  input   signed [15:0] A_3;  // sfix16_En15
-  input   signed [15:0] B_0;  // sfix16_En15
-  input   signed [15:0] B_1;  // sfix16_En15
+  input   signed [31:0] L_0;  // sfix32_En31
+  input   signed [31:0] L_1;  // sfix32_En31
+  input   signed [31:0] L_2;  // sfix32_En31
+  input   signed [31:0] L_3;  // sfix32_En31
+  input   signed [31:0] A_0;  // sfix32_En31
+  input   signed [31:0] A_1;  // sfix32_En31
+  input   signed [31:0] A_2;  // sfix32_En31
+  input   signed [31:0] A_3;  // sfix32_En31
+  input   signed [31:0] B_0;  // sfix32_En31
+  input   signed [31:0] B_1;  // sfix32_En31
   output  reg ce_out;
   output  wire signed [15:0] out_0;  // sfix16_En13
   output  wire signed [15:0] out_1;  // sfix16_En13
   
-  reg signed [51:0] out_0_cast;
-  reg signed [51:0] out_1_cast;
+  reg signed [67:0] out_0_cast;
+  reg signed [67:0] out_1_cast;
 
   wire signed [32:0] yest [0:1];
 
@@ -83,19 +83,23 @@ module observer_fixpt_folded
   wire ce_out2;
   wire ce_out3;
 
-  wire signed [49:0] out_0_A;
-  wire signed [49:0] out_1_A;
-  wire signed [32:0] out_0_B;
-  wire signed [32:0] out_1_B;
-  wire signed [32:0] out_0_L;
-  wire signed [32:0] out_1_L;
+  reg out_A_sum_rdy;
+  reg out_B_sum_rdy;
+  reg out_L_sum_rdy;
 
-  reg signed [49:0] out_0_A_reg;
-  reg signed [49:0] out_1_A_reg;
-  reg signed [32:0] out_0_B_reg;
-  reg signed [32:0] out_1_B_reg;
-  reg signed [32:0] out_0_L_reg;
-  reg signed [32:0] out_1_L_reg;
+  wire signed [65:0] out_0_A;
+  wire signed [65:0] out_1_A;
+  wire signed [48:0] out_0_B;
+  wire signed [48:0] out_1_B;
+  wire signed [48:0] out_0_L;
+  wire signed [48:0] out_1_L;
+
+  reg signed [65:0] out_0_A_reg;
+  reg signed [65:0] out_1_A_reg;
+  reg signed [48:0] out_0_B_reg;
+  reg signed [48:0] out_1_B_reg;
+  reg signed [48:0] out_0_L_reg;
+  reg signed [48:0] out_1_L_reg;
 
   parameter S0=2'd0; // calculating  
   parameter S1=2'd1; //
@@ -119,7 +123,7 @@ module observer_fixpt_folded
 
   always @(*) begin
     case(state)
-        S0: if (ce_out1==1) nextstate = S1; //TODO: making the assumption that all ce_out are synchronized
+        S0: if (out_A_sum_rdy && out_B_sum_rdy && out_L_sum_rdy) nextstate = S1; //TODO: making the assumption that all ce_out are synchronized
         S1: nextstate = S2; 
         S2: nextstate = S3;
         S3: if (clk_enable==1) nextstate = S0;
@@ -144,89 +148,104 @@ module observer_fixpt_folded
     endcase 
     end
 
-    matrix_mul_fixpt_folded #(.A_wid(16), .B_wid(33)) u1_matrix_mul_fixpt_folded (.clk(clk),
+    matrix_mul_fixpt_folded #(.A_wid(32), .B_wid(33)) u1_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
-                                                       .A_0(A_0),  // sfix16_En15 0,0
-                                                       .A_1(A_1),  // sfix16_En15 1,0
-                                                       .A_2(A_2),  // sfix16_En15 0,1
-                                                       .A_3(A_3),  // sfix16_En15 1,1
+                                                       .A_0(A_0),  // sfix32_En31 0,0
+                                                       .A_1(A_1),  // sfix32_En31 1,0
+                                                       .A_2(A_2),  // sfix32_En31 0,1
+                                                       .A_3(A_3),  // sfix32_En31 1,1
                                                        .B_0(yest[0]),  // sfix33_En30 -- eqv. to yest 
                                                        .B_1(yest[1]),  // sfix33_30
                                                        .ce_out(ce_out1),
-                                                       .out_0(out_0_A),  // sfix49_En45
-                                                       .out_1(out_1_A)  // sfix49_En45
+                                                       .out_0(out_0_A),  // sfix66_En61
+                                                       .out_1(out_1_A)  // sfix66_En61
                                                        );
 
-    matrix_mul_fixpt_folded u2_matrix_mul_fixpt_folded (.clk(clk),
+    matrix_mul_fixpt_folded #(.A_wid(32), .B_wid(16)) u2_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
-                                                       .A_0(B_0),  // sfix16_En15 0,0
-                                                       .A_1(B_1),  // sfix16_En15 1,0
-                                                       .A_2(16'd0),  // sfix16_En15 0,1
-                                                       .A_3(16'd0),  // sfix16_En15 1,1
+                                                       .A_0(B_0),  // sfix32_En31 0,0
+                                                       .A_1(B_1),  // sfix32_En31 1,0
+                                                       .A_2(32'd0),  // sfix32_En31 0,1
+                                                       .A_3(32'd0),  // sfix32_En31 1,1
                                                        .B_0(u),  // sfix16_En15
                                                        .B_1(16'd0),  // sfix16_En15
                                                        .ce_out(ce_out2),
-                                                       .out_0(out_0_B),  // sfix33_En30
-                                                       .out_1(out_1_B)  // sfix33_En30
+                                                       .out_0(out_0_B),  // sfix49_En46
+                                                       .out_1(out_1_B)  // sfix49_En46
                                                        );
 
-    matrix_mul_fixpt_folded u3_matrix_mul_fixpt_folded (.clk(clk),
+    matrix_mul_fixpt_folded #(.A_wid(32), .B_wid(16)) u3_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
-                                                       .A_0(L_0),  // sfix16_En15 0,0
-                                                       .A_1(L_1),  // sfix16_En15 1,0
-                                                       .A_2(L_2),  // sfix16_En15 0,1
-                                                       .A_3(L_3),  // sfix16_En15 1,1
+                                                       .A_0(L_0),  // sfix32_En31 0,0
+                                                       .A_1(L_1),  // sfix32_En31 1,0
+                                                       .A_2(L_2),  // sfix32_En31 0,1
+                                                       .A_3(L_3),  // sfix32_En31 1,1
                                                        .B_0(y1),  // sfix16_En15
                                                        .B_1(y2),  // sfix16_En15
                                                        .ce_out(ce_out3),
-                                                       .out_0(out_0_L),  // sfix33_En30
-                                                       .out_1(out_1_L)  // sfix33_En30
+                                                       .out_0(out_0_L),  // sfix49_En46
+                                                       .out_1(out_1_L)  // sfix49_En46
                                                        );
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_A_reg<=50'd0;
-      out_1_A_reg<=50'd0;
+      out_0_A_reg<=66'd0;
+      out_1_A_reg<=66'd0;
+      out_A_sum_rdy<=1'b0;
     end
     else if (ce_out1==1) begin 
       out_0_A_reg <= out_0_A;
       out_1_A_reg <= out_1_A;
+      out_A_sum_rdy <= 1'b1;
+    end
+    else if (time_to_sum) begin
+      out_A_sum_rdy <= 1'b0;
     end
   end
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_B_reg<=33'd0;
-      out_1_B_reg<=33'd0;
+      out_0_B_reg<=49'd0;
+      out_1_B_reg<=49'd0;
+      out_B_sum_rdy<=1'b0;
     end
     else if (ce_out2==1) begin 
       out_0_B_reg <= out_0_B;
       out_1_B_reg <= out_1_B;
+      out_B_sum_rdy <= 1'b1;
+    end
+     else if (time_to_sum) begin
+      out_B_sum_rdy <= 1'b0;
     end
   end
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_L_reg<=33'd0;
-      out_1_L_reg<=33'd0;
+      out_0_L_reg<=49'd0;
+      out_1_L_reg<=49'd0;
+      out_L_sum_rdy<=1'b0;
     end
     else if (ce_out3==1) begin 
       out_0_L_reg <= out_0_L;
       out_1_L_reg <= out_1_L;
+      out_L_sum_rdy <= 1'b1;
+    end
+     else if (time_to_sum) begin
+      out_L_sum_rdy <= 1'b0;
     end
   end
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_cast <= 51'd0;
-      out_1_cast <= 51'd0; //33En30 
+      out_0_cast <= 68'd0;
+      out_1_cast <= 68'd0; //33En30 
     end
     else if (time_to_sum==1) begin 
-      out_0_cast <= {{2{out_0_A_reg[49]}}, out_0_A_reg} + { {4{out_0_B_reg[31]}}, out_0_B_reg, 15'b0} + { {4{out_0_L_reg[31]}}, out_0_L_reg, 15'b0};
-      out_1_cast <= {{2{out_1_A_reg[49]}}, out_1_A_reg} + { {4{out_1_B_reg[31]}}, out_1_B_reg, 15'b0} + { {4{out_1_L_reg[31]}}, out_1_L_reg, 15'b0};
+      out_0_cast <= {{2{out_0_A_reg[65]}}, out_0_A_reg} + { {4{out_0_B_reg[48]}}, out_0_B_reg, 15'b0} + { {4{out_0_L_reg[48]}}, out_0_L_reg, 15'b0}; //sfix68_en61
+      out_1_cast <= {{2{out_1_A_reg[65]}}, out_1_A_reg} + { {4{out_1_B_reg[48]}}, out_1_B_reg, 15'b0} + { {4{out_1_L_reg[48]}}, out_1_L_reg, 15'b0}; //sfix68_en61
     end
   end 
 
@@ -240,14 +259,14 @@ module observer_fixpt_folded
       end
       else begin
         if (clk_enable) begin
-          yest_reg_reg[0] <= out_0_cast[47:15];
-          yest_reg_reg[1] <= out_1_cast[47:15];
+          yest_reg_reg[0] <= out_0_cast[63:31];
+          yest_reg_reg[1] <= out_1_cast[63:31];
         end
       end
     end
 
-assign yest[0] = out_0_cast[47:15];
-assign yest[1] = out_1_cast[47:15];
+assign yest[0] = out_0_cast[63:31];
+assign yest[1] = out_1_cast[63:31];
 
 assign out_0 = yest_reg_reg[0][32:17];
 assign out_1 = yest_reg_reg[1][32:17];

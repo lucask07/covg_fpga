@@ -5,12 +5,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function out = observer_wrapper_fixpt(y1,y2,u,L,A,B)
     fm = get_fimath();
-    y1_in = fi( y1, 1, 16, 0, fm );
-    y2_in = fi( y2, 1, 16, 4, fm );
-    u_in = fi( u, 1, 16, 3, fm );
-    L_in = fi( L, 1, 16, 32, fm );
-    A_in = fi( A, 1, 16, 5, fm );
-    B_in = fi( B, 0, 16, 38, fm );
+    y1_in = fi( y1, 1, 16, 15, fm );
+    y2_in = fi( y2, 1, 16, 15, fm );
+    u_in = fi( u, 1, 16, 15, fm );
+    L_in = fi( L, 1, 32, 31, fm );
+    A_in = fi( A, 1, 32, 31, fm );
+    B_in = fi( B, 1, 32, 31, fm );
     [out_out] = observer_fixpt( y1_in, y2_in, u_in, L_in, A_in, B_in );
     out = double( out_out );
 end
