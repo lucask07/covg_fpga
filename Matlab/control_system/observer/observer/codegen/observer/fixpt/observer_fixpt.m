@@ -16,15 +16,15 @@ function [out] = observer_fixpt(y1, y2, u, L, A, B)
     persistent yest;
     if isempty(yest)
         %yest = fi([0 0]', 1, 33);
-        yest = fi([0 0]', 1, 33, 30, fm);
+        yest = fi([0 0]', 1, 33, 32, fm);
     end
 
-    Lm = fi(reshape(L,2,2), 1, 32, 31, fm);
-    Am = fi(reshape(A,2,2), 1, 32, 31, fm);
-    Bm = fi(reshape(B,2,1), 1, 32, 31, fm); % this is a Nx1 vector so reshape is uncessary 
+    Lm = fi(reshape(L,2,2), 1, 32, 50, fm);
+    Am = fi(reshape(A,2,2), 1, 32, 24, fm);
+    Bm = fi(reshape(B,2,1), 0, 32, 50, fm); % this is a Nx1 vector so reshape is uncessary 
 
-    yest(:) = Am*yest + Bm*u + Lm*[fi(y1, 1, 16, 15, fm) y2]'; 
-    out = fi(yest, 1, 16, 13, fm);
+    yest(:) = Am*yest + Bm*u + Lm*[fi(y1, 1, 16, 0, fm) y2]'; 
+    out = fi(yest, 1, 16, 15, fm);
 end
 
 

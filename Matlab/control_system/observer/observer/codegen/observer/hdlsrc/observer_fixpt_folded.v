@@ -57,27 +57,27 @@ module observer_fixpt_folded
   input   clk;
   input   reset;
   input   clk_enable;
-  input   signed [15:0] y1;  // sfix16_En15
-  input   signed [15:0] y2;  // sfix16_En15
-  input   signed [15:0] u;  // sfix16_En15
-  input   signed [31:0] L_0;  // sfix32_En31
-  input   signed [31:0] L_1;  // sfix32_En31
-  input   signed [31:0] L_2;  // sfix32_En31
-  input   signed [31:0] L_3;  // sfix32_En31
-  input   signed [31:0] A_0;  // sfix32_En31
-  input   signed [31:0] A_1;  // sfix32_En31
-  input   signed [31:0] A_2;  // sfix32_En31
-  input   signed [31:0] A_3;  // sfix32_En31
-  input   signed [31:0] B_0;  // sfix32_En31
-  input   signed [31:0] B_1;  // sfix32_En31
+  input   signed [15:0] y1;  // sfix16_En0
+  input   signed [15:0] y2;  // sfix16_En0
+  input   signed [15:0] u;  // sfix16_En0
+  input   signed [31:0] L_0;  // sfix32_En50
+  input   signed [31:0] L_1;  // sfix32_En50
+  input   signed [31:0] L_2;  // sfix32_En50
+  input   signed [31:0] L_3;  // sfix32_En50
+  input   signed [31:0] A_0;  // sfix32_En24
+  input   signed [31:0] A_1;  // sfix32_En24
+  input   signed [31:0] A_2;  // sfix32_En24
+  input   signed [31:0] A_3;  // sfix32_En24
+  input   signed [31:0] B_0;  // ufix32_En50
+  input   signed [31:0] B_1;  // ufix32_En50
   output  reg ce_out;
-  output  wire signed [15:0] out_0;  // sfix16_En13
-  output  wire signed [15:0] out_1;  // sfix16_En13
+  output  wire signed [15:0] out_0;  // sfix16_En17
+  output  wire signed [15:0] out_1;  // sfix16_En17
   
   reg signed [67:0] out_0_cast;
   reg signed [67:0] out_1_cast;
 
-  wire signed [32:0] yest [0:1];
+  wire signed [32:0] yest [0:1]; //sfix33_32
 
   wire ce_out1;
   wire ce_out2;
@@ -151,43 +151,43 @@ module observer_fixpt_folded
     matrix_mul_fixpt_folded #(.A_wid(32), .B_wid(33)) u1_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
-                                                       .A_0(A_0),  // sfix32_En31 0,0
-                                                       .A_1(A_1),  // sfix32_En31 1,0
-                                                       .A_2(A_2),  // sfix32_En31 0,1
-                                                       .A_3(A_3),  // sfix32_En31 1,1
-                                                       .B_0(yest[0]),  // sfix33_En30 -- eqv. to yest 
-                                                       .B_1(yest[1]),  // sfix33_30
+                                                       .A_0(A_0),  // sfix32_En24 0,0
+                                                       .A_1(A_1),  // sfix32_En24 1,0
+                                                       .A_2(A_2),  // sfix32_En24 0,1
+                                                       .A_3(A_3),  // sfix32_En24 1,1
+                                                       .B_0(yest[0]),  // sfix33_En32 -- eqv. to yest 
+                                                       .B_1(yest[1]),  // sfix33_32
                                                        .ce_out(ce_out1),
-                                                       .out_0(out_0_A),  // sfix66_En61
-                                                       .out_1(out_1_A)  // sfix66_En61
+                                                       .out_0(out_0_A),  // sfix66_En56
+                                                       .out_1(out_1_A)  // sfix66_En56
                                                        );
 
     matrix_mul_fixpt_folded #(.A_wid(32), .B_wid(16)) u2_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
-                                                       .A_0(B_0),  // sfix32_En31 0,0
-                                                       .A_1(B_1),  // sfix32_En31 1,0
-                                                       .A_2(32'd0),  // sfix32_En31 0,1
-                                                       .A_3(32'd0),  // sfix32_En31 1,1
-                                                       .B_0(u),  // sfix16_En15
-                                                       .B_1(16'd0),  // sfix16_En15
+                                                       .A_0(B_0),  // ufix32_En50 0,0
+                                                       .A_1(B_1),  // ufix32_En50 1,0
+                                                       .A_2(32'd0),  // ufix32_En50 0,1
+                                                       .A_3(32'd0),  // ufix32_En50 1,1
+                                                       .B_0(u),  // sfix16_En0
+                                                       .B_1(16'd0),  // sfix16_En0
                                                        .ce_out(ce_out2),
-                                                       .out_0(out_0_B),  // sfix49_En46
-                                                       .out_1(out_1_B)  // sfix49_En46
+                                                       .out_0(out_0_B),  // sfix49_En50
+                                                       .out_1(out_1_B)  // sfix49_En50
                                                        );
 
     matrix_mul_fixpt_folded #(.A_wid(32), .B_wid(16)) u3_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
-                                                       .A_0(L_0),  // sfix32_En31 0,0
-                                                       .A_1(L_1),  // sfix32_En31 1,0
-                                                       .A_2(L_2),  // sfix32_En31 0,1
-                                                       .A_3(L_3),  // sfix32_En31 1,1
-                                                       .B_0(y1),  // sfix16_En15
-                                                       .B_1(y2),  // sfix16_En15
+                                                       .A_0(L_0),  // sfix32_En50 0,0
+                                                       .A_1(L_1),  // sfix32_En50 1,0
+                                                       .A_2(L_2),  // sfix32_En50 0,1
+                                                       .A_3(L_3),  // sfix32_En50 1,1
+                                                       .B_0(y1),  // sfix16_En0
+                                                       .B_1(y2),  // sfix16_En0
                                                        .ce_out(ce_out3),
-                                                       .out_0(out_0_L),  // sfix49_En46
-                                                       .out_1(out_1_L)  // sfix49_En46
+                                                       .out_0(out_0_L),  // sfix49_En50
+                                                       .out_1(out_1_L)  // sfix49_En50
                                                        );
 
   always @(posedge clk) begin
@@ -244,8 +244,8 @@ module observer_fixpt_folded
       out_1_cast <= 68'd0; //33En30 
     end
     else if (time_to_sum==1) begin 
-      out_0_cast <= {{2{out_0_A_reg[65]}}, out_0_A_reg} + { {4{out_0_B_reg[48]}}, out_0_B_reg, 15'b0} + { {4{out_0_L_reg[48]}}, out_0_L_reg, 15'b0}; //sfix68_en61
-      out_1_cast <= {{2{out_1_A_reg[65]}}, out_1_A_reg} + { {4{out_1_B_reg[48]}}, out_1_B_reg, 15'b0} + { {4{out_1_L_reg[48]}}, out_1_L_reg, 15'b0}; //sfix68_en61
+      out_0_cast <= {{2{out_0_A_reg[65]}}, out_0_A_reg} + { {13{out_0_B_reg[48]}}, out_0_B_reg, 6'b0} + { {13{out_0_L_reg[48]}}, out_0_L_reg, 6'b0}; //sfix68_en61
+      out_1_cast <= {{2{out_1_A_reg[65]}}, out_1_A_reg} + { {13{out_1_B_reg[48]}}, out_1_B_reg, 6'b0} + { {13{out_1_L_reg[48]}}, out_1_L_reg, 6'b0}; //sfix68_en61
     end
   end 
 
@@ -259,14 +259,14 @@ module observer_fixpt_folded
       end
       else begin
         if (clk_enable) begin
-          yest_reg_reg[0] <= out_0_cast[63:31];
-          yest_reg_reg[1] <= out_1_cast[63:31];
+          yest_reg_reg[0] <= out_0_cast[56:24];
+          yest_reg_reg[1] <= out_1_cast[56:24];
         end
       end
     end
 
-assign yest[0] = out_0_cast[63:31];
-assign yest[1] = out_1_cast[63:31];
+assign yest[0] = out_0_cast[56:24];
+assign yest[1] = out_1_cast[56:24];
 
 assign out_0 = yest_reg_reg[0][32:17];
 assign out_1 = yest_reg_reg[1][32:17];
