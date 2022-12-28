@@ -23,6 +23,7 @@ import os
 import sys
 import h5py
 import numpy as np
+from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from analysis.adc_data import read_h5, separate_ads_sequence
 
 FS = 5e6
@@ -41,14 +42,16 @@ class Datastream():
         self.initial_time = t0
 
     def create_time(self):
-        return np.arange(len(self.data))*self.sample_rate + self.initial_time
+        return np.arange(len(self.data))*(1/self.sample_rate) + self.initial_time
 
-    def plot(self, ax):
-        ax.plot(self.create_time(), self.data)
-        # TODO: allow for scaling of time to present in milliseconds or seconds  
-        ax.set_xlabel('time [s]')
-        ax.set_ylabel(f'{self.name} [{self.units}]')
-
+    def plot(self, ax, kwargs):
+        ax.plot(self.create_time()*1e6, self.data, **kwargs)
+        # TODO: allow for scaling of time to present in milliseconds or seconds. Fixed at us
+        ax.set_xlabel('time [$\mu$s]')
+        if self.net is not None:
+            ax.set_ylabel(f'{self.net} [{self.units}]')
+        else:
+            ax.set_ylabel(f'{self.name} [{self.units}]')
 
 def h5_to_datastreams(filename):
     return datastreams, info  
@@ -58,7 +61,7 @@ def h5_to_datastreams(filename):
     # TODO: this could be a method of a datastreams class 
 
 
-def rawh5_to_datastreams(data_dir, infile, data_to_names, ads_sequencer_setup, outfile = None):
+def rawh5_to_datastreams(data_dir, infile, data_to_names, ads_sequencer_setup, phys_connections, outfile = None):
     """
     parameters: 
         data_dir: directory for both input and output files 
@@ -77,12 +80,12 @@ def rawh5_to_datastreams(data_dir, infile, data_to_names, ads_sequencer_setup, o
 
     # Long data sequence -- entire file
     adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = data_to_names(chan_data)
-    ads_separate_data = extract_ads_data(ads_data, ads_seq_cnt, ads_sequencer_setup)
+    ads_separate_data = extract_ads_data(ads_data_tmp, ads_seq_cnt, ads_sequencer_setup)
     log_info = {'timestamp_step': timestamp[1]-timestamp[0],
                 'timestamp_span': 5e-9*(timestamp[-1] - timestamp[0]),
                 'read_errors': read_errors}
 
-    datastreams = data_to_datastreams(adc_data, ads_data, dac_data, phys_connections, log_info)
+    datastreams = data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections, log_info)
 
     if outfile is not None:
         pass
@@ -103,15 +106,19 @@ def data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections,
             use_twos_comp = True
             data = np.array(to_voltage(adc_data[pc_name], num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=use_twos_comp))
             sample_rate = FS
-        elif pc.converter == 'ADS8686':
+        elif pc.converter == 'ADS8686' and (int(pc_name[1]) in ads_separate_data[pc_name[0]].keys()): # need to check that this converter was in the sequencer
             use_twos_comp = False
             sample_rate = FS_ADS/seq_len
-            data = np.array(to_voltage(ads_separate_data[pc_name[0]][pc_name[1]], 
+            data = np.array(to_voltage(ads_separate_data[pc_name[0]][int(pc_name[1])], 
                                        num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=use_twos_comp))
+        else:
+            continue # don't add to datastream dictionary 
+        ds = Datastream(data, sample_rate, units=pc.units, name=pc_name, net=pc.net, t0=0)
 
-        ds = Datastream(data, sample_rate, units=pc.units, name=pc_name, net=None, t0=0)
-
-        datastreams[pc_name] = ds 
+        if pc.net is not None:
+            datastreams[pc.net] = ds         
+        else:
+            datastreams[pc_name] = ds 
 
     return datastreams
 
@@ -140,7 +147,7 @@ class PhysicalConnection():
     These connections are agnostic to the connections to the DUT (and electrodes)
     """
 
-    def __init__(self, node, conv_factor, converter, units, net=None):
+    def __init__(self, name, conv_factor, converter, bits, units, net=None):
         self.name = name 
         self.conv_factor = conv_factor # DN to physical units 
         self.converter = converter # name of the converter (eg AD7961)
@@ -152,48 +159,65 @@ class PhysicalConnection():
 
 # I channels 0 - 3, node, conversion, factor 
 
-def create_sys_connections(dc_config_dicts, daq_brd, ads, system='daq_v2'):
+def create_sys_connections(dc_config_dicts, daq_brd, ads, ephys_sys=None, system='daq_v2'):
 
     # build up the connectivity to ADCs  
     # dc_config_dicts are dictionaries of the daughercard connectivity that are returned by configure_clamp
     # TODO: need an update_conv_factor method
 
-    connections = {} 
+    connections = {}
     
     if system == 'daq_v2':
         ad7961_fs = 4.096*2 
         # ADC data 
         # 1) AD7961 - dictionary key is an integer [0, 3]
         for dc_config in dc_config_dicts:
-            RF = dc_config_dicts[dc_config]['ADG_RES']
+            RF = dc_config_dicts[dc_config]['ADG_RES']*1e3 # all resistor values are in kilo-Ohms
             inamp_gain = dc_config_dicts[dc_config]['gain']
             conv_factor = ad7961_fs/inamp_gain/RF
-            connections[{dc_config}] = PhysicalConnection(f'I{dc_config}', 
+
+            if ephys_sys is not None:
+                dc_type = ephys_sys.dc_mapping[dc_config] 
+                net = ephys_sys.daughtercard_to_net[dc_type]['AD7961']
+            else:
+                net = None
+
+            pc =                        PhysicalConnection(f'{dc_config}', 
                                                               conv_factor, 
                                                               converter='AD7961',
                                                               bits = 16, 
-                                                              units='A')
+                                                              units='A',
+                                                              net=net)
+            connections[int(dc_config)] = pc
+
 
         # 2) ADS8686
         ads_map = daq_brd.parameters["ads_map"]
         for dc_config in dc_config_dicts:
-            for net in ['AMP_OUT', 'CAL_OUT']:
-            if 'AMP_OUT':
-                gain = dc_config_dicts[dc_config]['RF1']
-            else:
-                gain = 1
-            if ads_map[dc_config][0] == 'A':
-                ads_chan = 0
-            else:
-                ads_chan = 8
-            ads_chan += int(ads_map[dc_config][1]) # channel goes from 0 - 15 for the voltage range 
-            conv_factor = ads.ranges[ads_chan]*2/gain # ads.current_voltage_range is a len 16 list
-            con_name = f'{ads_map[dc_config][0]}{ads_map[dc_config][1]}' # example 'A0' or 'B2'
-            connections[con_name] = PhysicalConnection(f'{net}_{dc_config}', 
-                                                        conv_factor, 
-                                                        converter='ADS8686',
-                                                        bits=16, 
-                                                        units='V')
+            for amp_net in ['AMP_OUT', 'CAL_ADC']:
+                if 'AMP_OUT':
+                    gain = dc_config_dicts[dc_config]['RF1']
+                else:
+                    gain = 1
+                if ads_map[dc_config][amp_net][0] == 'A':
+                    ads_chan = 0
+                else:
+                    ads_chan = 8
+                ads_chan += int(ads_map[dc_config][amp_net][1]) # channel goes from 0 - 15 for the voltage range 
+                conv_factor = ads.ranges[ads_chan]*2/gain # ads.current_voltage_range is a len 16 list
+                con_name = f'{ads_map[dc_config][amp_net][0]}{ads_map[dc_config][amp_net][1]}' # example 'A0' or 'B2'
+                if ephys_sys is not None:
+                    dc_type = ephys_sys.dc_mapping[dc_config] 
+                    net = ephys_sys.daughtercard_to_net[dc_type][amp_net]
+                else:
+                    net = None
+                pc = PhysicalConnection(f'{net}_{dc_config}', 
+                                                            conv_factor, 
+                                                            converter='ADS8686',
+                                                            bits=16, 
+                                                            units='V',
+                                                            net=net)
+                connections[con_name] = pc
 
         # TODO 3) DAC data 
 

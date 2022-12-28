@@ -64,7 +64,9 @@ class EphysSystem:
 
         self.electrodes = []
         self.system = system  # nickname of system configuration 
-        self.dc_mapping = {'bath': 0, 'clamp': 1}
+        self.dc_mapping = {0: 'bath', 1: 'clamp'}
+        self.daughtercard_to_net = {'bath': {'AMP_OUT': 'P1', 'CAL_ADC': 'P2', 'AD7961': 'Im'},
+                                    'clamp': {'AMP_OUT': 'V1', 'CAL_ADC': 'I', 'AD7961': 'Itop'}}
 
         if self.system == 'Dagan_no_guard':
             # voltage clamp board 

@@ -46,6 +46,7 @@ from datastream.datastream import create_sys_connections, rawh5_to_datastreams
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
+from calibration.electrodes import EphysSystem
 
 
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
@@ -198,8 +199,7 @@ pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
 
 daq = Daq(f)
-ddr = daq.ddr    # Or reference as daq.ddr throughout the file
-ddr.parameters['data_version'] = 'TIMESTAMPS'
+ddr = daq.ddr
 ad7961s = daq.ADC
 ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
@@ -357,7 +357,7 @@ if 1:
                 ddr.repeat_setup()
                 # Get data
                 # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-                infile = file_name=file_name.format(idx) + '.h5'
+                infile = file_name.format(idx) + '.h5'
                 chan_data_one_repeat = ddr.save_data(data_dir, infile, num_repeats=8,
                                                     blk_multiples=40)  # blk multiples multiple of 10
 
@@ -367,8 +367,20 @@ if 1:
                 adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
                 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
-                create_sys_connections(dc_configs, daq, ads, system='daq_v2')
-                datastreams = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, ads_sequencer_setup, outfile = None)
+                ############### extract the ADS data just for the last run and plot as a demonstration ############
+                ads_data_v = {}
+                for letter in ['A', 'B']:
+                    ads_data_v[letter] = np.array(to_voltage(
+                        ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
+
+                total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
+                total_seq_cnt[::2] = ads_seq_cnt[0]
+                total_seq_cnt[1::2] = ads_seq_cnt[1]
+                ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+
+                ephys_sys = EphysSystem()
+                sys_connections = create_sys_connections(dc_configs, daq, ads, ephys_sys)
+                datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, ads_sequencer_setup, sys_connections, outfile = None)
 
                 # Store voltage in list; plot
                 for dc_num in DC_NUMS:
@@ -377,6 +389,8 @@ if 1:
                     ads_data_dict[dc_num][fb_res][cap][res] = ads_data    
                     ads_seq_cnt_dict[dc_num][fb_res][cap][res] = ads_seq_cnt    
                     errors[dc_num][fb_res][cap][res] = reading_error
+
+                # TODO: save as datastream h5s
 
 
     print('Data collected. DDR read error report below.')
@@ -462,6 +476,16 @@ def ads_plot_zoom(ax):
     for ax_s in ax:
         ax_s.set_xlim([3250, 3330])
         ax_s.grid('on')
+
+# Do the same plotting as above using datastreams 
+datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, ads_sequencer_setup, sys_connections, outfile = None)
+fig, ax = plt.subplots(2,1)
+fig.suptitle('ADS data')
+# AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
+t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
+datastreams['P1'].plot(ax[0], {'marker':'.'})
+# CAL ADC : observing electrode P2 (configured by CAL_SIG2)
+datastreams['P2'].plot(ax[1], {'marker':'.'})
 
 ####### RS compensation test #############
 RS_COMP_TESTS = False
