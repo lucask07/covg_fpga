@@ -42,6 +42,7 @@ sys.path.append(boards_path)
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
+from datastream.datastream import create_sys_connections, rawh5_to_datastreams
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
@@ -299,6 +300,7 @@ set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
 set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
+dc_configs = {}
 clamp_fb_res = 2.1
 clamp_res = 332 # kOhm should be stable 
 clamp_cap = 47
@@ -322,7 +324,7 @@ for dc_num in [dc_mapping['clamp']]:
         addr_pins_1=0b110,
         addr_pins_2=0b000,
     )
-
+    dc_configs[dc_num] = config_dict
 
 if 1:
     for fb_res in feedback_resistors:
@@ -350,19 +352,23 @@ if 1:
                         addr_pins_1=0b110,
                         addr_pins_2=0b000,
                     )
+                    dc_configs[dc_num] = config_dict
 
                 ddr.repeat_setup()
                 # Get data
                 # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-                chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+                infile = file_name=file_name.format(idx) + '.h5'
+                chan_data_one_repeat = ddr.save_data(data_dir, infile, num_repeats=8,
                                                     blk_multiples=40)  # blk multiples multiple of 10
 
                 # to get the deswizzled data of all repeats need to read the file
-                _, chan_data = read_h5(data_dir, file_name=file_name.format(
-                    idx) + '.h5', chan_list=np.arange(8))
+                _, chan_data = read_h5(data_dir, infile, chan_list=np.arange(8))
 
                 adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
                 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+
+                create_sys_connections(dc_configs, daq, ads, system='daq_v2')
+                datastreams = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, ads_sequencer_setup, outfile = None)
 
                 # Store voltage in list; plot
                 for dc_num in DC_NUMS:
@@ -371,6 +377,7 @@ if 1:
                     ads_data_dict[dc_num][fb_res][cap][res] = ads_data    
                     ads_seq_cnt_dict[dc_num][fb_res][cap][res] = ads_seq_cnt    
                     errors[dc_num][fb_res][cap][res] = reading_error
+
 
     print('Data collected. DDR read error report below.')
     print('|'.join([x.center(6, ' ') for x in ['dc_num', 'fb_res', 'cap', 'res', 'ERROR']]))
