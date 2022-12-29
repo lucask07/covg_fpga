@@ -21,6 +21,7 @@ Steps:
 """
 import os
 import sys
+import copy
 import h5py
 import numpy as np
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
@@ -44,7 +45,7 @@ class Datastream():
     def create_time(self):
         return np.arange(len(self.data))*(1/self.sample_rate) + self.initial_time
 
-    def plot(self, ax, kwargs):
+    def plot(self, ax, kwargs={}):
         ax.plot(self.create_time()*1e6, self.data, **kwargs)
         # TODO: allow for scaling of time to present in milliseconds or seconds. Fixed at us
         ax.set_xlabel('time [$\mu$s]')
@@ -53,13 +54,43 @@ class Datastream():
         else:
             ax.set_ylabel(f'{self.name} [{self.units}]')
 
-def h5_to_datastreams(filename):
-    return datastreams, info  
+def h5_to_datastreams(directory, filename):
 
+    full_file = os.path.join(directory, filename)
 
-# def datastream_to_h5(datastreams, filename):
+    datastreams = {}
+    with h5py.File(full_file, "r") as file:
+        for dk in file.keys():
+            try:
+                ds = Datastream(file[dk][:],  # must use [:] to create a copy of the data so that the h5 file doesn't need to stay open
+                            sample_rate=file[dk].attrs['sample_rate'], 
+                            units=file[dk].attrs['units'], 
+                            name=file[dk].attrs['name'], 
+                            net=file[dk].attrs['net'], 
+                            t0=file[dk].attrs['initial_time'])
+
+                datastreams[ds.net] = ds
+            except:
+                print(f'skipping h5 key {dk}')
+
+    return datastreams
+
+def datastreams_to_h5(directory, filename, datastreams, log_info):
+
     # TODO: this could be a method of a datastreams class 
-
+    # filename must include the directory 
+    full_file = os.path.join(directory, filename)
+    with h5py.File(full_file, 'w') as f:
+        grp = f.create_group('0') # TODO
+        for dk in datastreams:
+            d_stream = copy.deepcopy(datastreams[dk])
+            dataset = f.create_dataset(d_stream.net, data=d_stream.data) # net must be a string 
+            dstream_attrs = d_stream.__dict__
+            dstream_attrs.pop('data', None)
+            # get attributes from the datastream and set these attributes to the dataset 
+            dataset.attrs.update(dstream_attrs)
+            dataset.attrs.update(log_info) # should log_info itself be a dictionary key?
+        grp.attrs['test'] = 12 # TODO - group attributes 
 
 def rawh5_to_datastreams(data_dir, infile, data_to_names, ads_sequencer_setup, phys_connections, outfile = None):
     """
@@ -103,14 +134,20 @@ def data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections,
     for pc_name in phys_connections:
         pc = phys_connections[pc_name]
         if pc.converter == 'AD7961':
-            use_twos_comp = True
-            data = np.array(to_voltage(adc_data[pc_name], num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=use_twos_comp))
+            data = np.array(to_voltage(adc_data[pc_name], num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=True))
             sample_rate = FS
         elif pc.converter == 'ADS8686' and (int(pc_name[1]) in ads_separate_data[pc_name[0]].keys()): # need to check that this converter was in the sequencer
-            use_twos_comp = False
             sample_rate = FS_ADS/seq_len
             data = np.array(to_voltage(ads_separate_data[pc_name[0]][int(pc_name[1])], 
-                                       num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=use_twos_comp))
+                                       num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=False))
+        elif pc.converter == 'AD5453': 
+            sample_rate = FS/2
+            data_name = int(pc_name.replace('D',''))
+            data = np.array(to_voltage(dac_data[data_name], 
+                                       num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=False))
+            data = data - to_voltage(2**(pc.bits-1), 
+                                     num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=False)
+
         else:
             continue # don't add to datastream dictionary 
         ds = Datastream(data, sample_rate, units=pc.units, name=pc_name, net=pc.net, t0=0)
@@ -212,15 +249,30 @@ def create_sys_connections(dc_config_dicts, daq_brd, ads, ephys_sys=None, system
                 else:
                     net = None
                 pc = PhysicalConnection(f'{net}_{dc_config}', 
-                                                            conv_factor, 
-                                                            converter='ADS8686',
-                                                            bits=16, 
-                                                            units='V',
-                                                            net=net)
+                                        conv_factor, 
+                                        converter='ADS8686',
+                                        bits=16, 
+                                        units='V',
+                                        net=net)
                 connections[con_name] = pc
 
-        # TODO 3) DAC data 
-
+        # TODO 3) DAC data -- AD5453, does not depend on daughtercard config, unsigned 
+        for ch in range(4):
+            net = daq_brd.parameters['fast_dac_map'][ch] 
+            gain = daq_brd.current_dac_gain[ch] # +/-
+            if gain > 99: # must by mV -- convert to volts
+                gain = gain/1000
+            if 'CMD' in net:
+                gain = gain/dc_config_dicts[dc_config]['RF1']
+            con_name = f'D{ch}'
+            pc = PhysicalConnection(con_name, 
+                                    gain*2,  # this is more accurately the full-scale range
+                                    converter='AD5453',
+                                    bits=14, 
+                                    units='V',
+                                    net=net)
+            connections[con_name] = pc
+        
         return connections
     else:
         print(f'The system of {system} is not supported by create_sys_connections')

@@ -42,7 +42,7 @@ sys.path.append(boards_path)
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
-from datastream.datastream import create_sys_connections, rawh5_to_datastreams
+from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams, datastreams_to_h5
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
@@ -125,7 +125,7 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
         raise TypeError('dc_nums must be int or list')
 
     for dc_num in dc_nums:
-        cmd_ch = dc_num * 2 + 1
+        cmd_ch = dc_num * 2 + 1 # TODO: replace with daq.parameters['fast_dac_map']
         cc_ch = dc_num * 2
         ddr.data_arrays[cmd_ch], ddr.data_arrays[cc_ch] = make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
     
@@ -486,6 +486,11 @@ t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_
 datastreams['P1'].plot(ax[0], {'marker':'.'})
 # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
 datastreams['P2'].plot(ax[1], {'marker':'.'})
+
+# test writing and reading datastream h5
+datastreams_to_h5(data_dir, 'test.h5', datastreams, log_info)
+
+datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
 
 ####### RS compensation test #############
 RS_COMP_TESTS = False
