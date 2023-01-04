@@ -71,8 +71,8 @@ module observer_fixpt_folded
   input   signed [31:0] B_0;  // ufix32_En50
   input   signed [31:0] B_1;  // ufix32_En50
   output  reg ce_out;
-  output  wire signed [15:0] out_0;  // sfix16_En17
-  output  wire signed [15:0] out_1;  // sfix16_En17
+  output  wire signed [15:0] out_0;  // sfix16_En15
+  output  wire signed [15:0] out_1;  // sfix16_En15
   
   reg signed [73:0] out_0_cast; //sfix74_En56
   reg signed [73:0] out_1_cast; //sfix74_En56

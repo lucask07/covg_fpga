@@ -50,7 +50,10 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire downsample_en,
      input wire sum_en,
      /*****Filter mux select signal to allow for special case of selecting ADS data*****/
-     input wire [2:0] filter_data_mux_sel
+     input wire [2:0] filter_data_mux_sel,
+     /*****Output of Filter/PI Controller Before Scaling (for observer)*****/
+     output wire [15:0] filter_out_signed,
+     output wire filter_out_signed_rdy
     );
     
       wire cmd_stb;
@@ -256,12 +259,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      end
      
      always @(*) begin
-         if (filter_data_mux_sel == 3'b010) filter_mux_data = pi_error_signal;
+         if ((filter_data_mux_sel == 3'b010) || (filter_data_mux_sel == 3'b011)) filter_mux_data = pi_error_signal;
          else filter_mux_data = filter_data_i[15:0];
      end
      
      always @(*) begin
-         if (filter_data_mux_sel == 3'b010) filter_mux_data_rdy = data_rdy_pi_error;
+         if ((filter_data_mux_sel == 3'b010) || (filter_data_mux_sel == 3'b011)) filter_mux_data_rdy = data_rdy_pi_error;
          else filter_mux_data_rdy = data_rdy_0_filt;
      end
 	 
@@ -281,7 +284,10 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          //.coeff_debug_out1(coeff_debug_out1),
          //.coeff_debug_out2(coeff_debug_out2)
          );
-              
+
+        assign filter_out_signed = {filter_out, 2'b0};
+        assign filter_out_signed_rdy = filter_out_ready;
+    
 //     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
 //     .din(filter_out_scaled), .dout(filter_out_modified)
 //     );

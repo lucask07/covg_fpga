@@ -33,7 +33,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 39;
+localparam NUM_OK_EPS = 40;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -950,6 +950,95 @@ module top_level_module(
     endgenerate
     /*---------------- END DAC80508 -------------------*/
     
+    /*---------------- LUENBERGER OBSERVER ----------------*/
+
+    wire [31:0] observer_in_vp1; // 32 bit bus for VP1 signal mux
+    wire [31:0] observer_in_im; // 32 bit bus for Im signal mux
+    wire [31:0] observer_in_vcmd; // 32 bit bus for Vcmd signal mux
+    wire [15:0] observer_out_est [1:0]; // 16 bit buses for observer outputs
+    wire [31:0] L_matrix_coeff [3:0]; // 32 bit buses for L matrix coefficients
+    wire [31:0] A_matrix_coeff [3:0]; // 32 bit buses for A matrix coefficients
+    wire [31:0] B_matrix_coeff [1:0]; // 32 bit buses for B matrix coefficients
+
+    wire observer_in_data_rdy; // observer data input ready signal
+    assign observer_in_data_rdy = observer_in_im[31];
+
+    wire observer_ce_out; // observer data output ready signal
+
+    wire [15:0] filter_out_signed[0:(AD5453_NUM-1)];
+    wire filter_out_signed_rdy[0:(AD5453_NUM-1)];
+
+    // (TODO: add module/method for storing coefficients from register bridge and make appropriate changes to ep_defines.v)
+    obsv_coeff_store #(.ADDR(`OBSV_REGBRIDGE_OFFSET_GEN_ADDR)) observer_coeffs(
+            .okClk(okClk),
+            .ep_write(regWrite),
+            .ep_address(regAddress),
+            .ep_dataout(regDataOut),
+            .L_0(L_matrix_coeff[0][31:0]),
+            .L_1(L_matrix_coeff[1][31:0]),
+            .L_2(L_matrix_coeff[2][31:0]),
+            .L_3(L_matrix_coeff[3][31:0]),
+            .A_0(A_matrix_coeff[0][31:0]),
+            .A_1(A_matrix_coeff[1][31:0]),
+            .A_2(A_matrix_coeff[2][31:0]),
+            .A_3(A_matrix_coeff[3][31:0]),
+            .B_0(B_matrix_coeff[0][31:0]),
+            .B_1(B_matrix_coeff[1][31:0])
+    );
+
+    wire [31:0] ep_wire_obsvdata;
+    okWireIn wi_obsv_data (.okHE(okHE), .ep_addr(`OBSV_DATA_SEL_WIRE_IN), .ep_dataout(ep_wire_obsvdata));
+
+    mux8to1_32wide observer_mux_bus_im( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .datain_0({write_en_adc_o[0], 15'b0, adc_val[0][15:0]}), // data from AD7961 
+            .datain_1({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961 
+            .datain_2({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961 
+            .datain_3({write_en_adc_o[3], 15'b0, adc_val[3][15:0]}), // data from AD7961 
+            .sel(ep_wire_obsvdata[(`OBSV_IM_DATA_SEL_GEN_BIT) +: `OBSV_IM_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({observer_in_im})
+        );
+
+    mux8to1_32wide observer_mux_bus_vp1( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .datain_0({ads_data_valid, 15'b0, ads_data_out[15:0]}),
+            .datain_1({ads_data_valid, 15'b0, ads_data_out[31:16]}), 
+            .sel(ep_wire_obsvdata[(`OBSV_VP1_DATA_SEL_GEN_BIT) +: `OBSV_VP1_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({observer_in_vp1})
+        );
+
+     mux8to1_32wide observer_mux_bus_vcmd( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .datain_0({filter_out_signed_rdy[0], 15'b0, filter_out_signed[0][15:0]}),
+            .datain_1({filter_out_signed_rdy[1], 15'b0, filter_out_signed[1][15:0]}),
+            .datain_2({filter_out_signed_rdy[2], 15'b0, filter_out_signed[2][15:0]}),
+            .datain_3({filter_out_signed_rdy[3], 15'b0, filter_out_signed[3][15:0]}),
+            .datain_4({filter_out_signed_rdy[4], 15'b0, filter_out_signed[4][15:0]}),
+            .datain_5({filter_out_signed_rdy[5], 15'b0, filter_out_signed[5][15:0]}),
+            .sel(ep_wire_obsvdata[(`OBSV_VCMD_DATA_SEL_GEN_BIT) +: `OBSV_VCMD_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({observer_in_vcmd})
+        );
+
+    observer_fixpt_folded u_observer_fixpt_folded (.clk(clk_sys),
+                                   .reset(sys_rst),
+                                   .clk_enable(observer_in_data_rdy),
+                                   .y1(observer_in_im[15:0]),  // sfix16_En0
+                                   .y2(observer_in_vp1[15:0]),  // sfix16_En0
+                                   .u(observer_in_vcmd[15:0]),  // sfix16_En0
+                                   .L_0(L_matrix_coeff[0][31:0]),  // sfix32_En50
+                                   .L_1(L_matrix_coeff[1][31:0]),  // sfix32_En50
+                                   .L_2(L_matrix_coeff[2][31:0]),  // sfix32_En50
+                                   .L_3(L_matrix_coeff[3][31:0]),  // sfix32_En50
+                                   .A_0(A_matrix_coeff[0][31:0]),  // sfix32_En24
+                                   .A_1(A_matrix_coeff[1][31:0]),  // sfix32_En24
+                                   .A_2(A_matrix_coeff[2][31:0]),  // sfix32_En24
+                                   .A_3(A_matrix_coeff[3][31:0]),  // sfix32_En24
+                                   .B_0(B_matrix_coeff[0][31:0]),  // ufix32_En50
+                                   .B_1(B_matrix_coeff[1][31:0]),  // ufix32_En50
+                                   .ce_out(observer_ce_out),
+                                   .out_0(observer_out_est[0][15:0]),  // sfix16_En15
+                                   .out_1(observer_out_est[1][15:0])  // sfix16_En15
+                                   );
+
+    /*---------------- END LUENBERGER OBSERVER ----------------*/
+    
     /* ------------------ AD5453 SPI ------------------- */
     wire [(AD5453_NUM-1):0] rd_en_fast_dac;
     wire [(AD5453_NUM-1):0] data_ready_fast_dac;
@@ -1004,7 +1093,7 @@ module top_level_module(
             .datain_0({ddr_data_valid, 18'b0, po0_ep_datain[(p*16) +:14]}),
             .datain_1({spi_host_trigger_fast_dac[p], 8'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, ads_data_out[31:0]}), // 
-            .datain_3({ddr_data_valid_norepeat[p], 18'b0, last_ddr_read[p]}), // 
+            .datain_3({observer_ce_out, 16'b0, observer_out_est[0][15:0]}), // data from Luenberger observer
             .datain_4({write_en_adc_o[0], 16'b0, adc_val[0][15:0]}), // data from AD7961  
             .datain_5({write_en_adc_o[1], 16'b0, adc_val[1][15:0]}), // data from AD7961
             .datain_6({write_en_adc_o[2], 16'b0, adc_val[2][15:0]}), // data from AD7961
@@ -1036,7 +1125,9 @@ module top_level_module(
                  .data_rdy_0_filt(filter_data_ready_fast_dac[p]),
                  .downsample_en(ep_wire_filtdata[`AD5453_DOWNSAMPLE_ENABLE_GEN_BIT + p]),
                  .sum_en(ep_wire_filtdata[`AD5453_SUMMATION_ENABLE_GEN_BIT + p]),
-                 .filter_data_mux_sel(ep_wire_filtdata[(`AD5453_FILTER_DATA_SEL_GEN_BIT + p*`AD5453_FILTER_DATA_SEL_GEN_BIT_LEN) +: `AD5453_FILTER_DATA_SEL_GEN_BIT_LEN])
+                 .filter_data_mux_sel(ep_wire_filtdata[(`AD5453_FILTER_DATA_SEL_GEN_BIT + p*`AD5453_FILTER_DATA_SEL_GEN_BIT_LEN) +: `AD5453_FILTER_DATA_SEL_GEN_BIT_LEN]),
+                 .filter_out_signed(filter_out_signed[p]),
+                 .filter_out_signed_rdy(filter_out_signed_rdy[p])
                  );
         end
     endgenerate

@@ -105,6 +105,14 @@
 `define AD5453_DOWNSAMPLE_ENABLE_GEN_BIT 18 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
 `define AD5453_SUMMATION_ENABLE_GEN_BIT 24 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
 
+`define OBSV_DATA_SEL_WIRE_IN 8'h07 // bit_width 32
+`define OBSV_IM_DATA_SEL_GEN_BIT 0 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_IM_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_VP1_DATA_SEL_GEN_BIT 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_VP1_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_VCMD_DATA_SEL_GEN_BIT 6 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_VCMD_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+
 `define FILTER_SEL_WIRE_IN 8'h11 // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define AD5453_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
@@ -291,6 +299,7 @@
 `define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
 `define DAC80508_REGBRIDGE_OFFSET_GEN_ADDR 8'h05 // bit_width=32 addr_step=20
 `define AD5453_REGBRIDGE_OFFSET_GEN_ADDR 8'h2D // bit_width=32 addr_step=20
+`define OBSV_REGBRIDGE_OFFSET_GEN_ADDR 8'h69 // bit_width=32 addr_step=10
 
 // FPGA test Endpoints
 `define FPGATEST_STATIC_READ_WO 8'h3F // bit_width=32
