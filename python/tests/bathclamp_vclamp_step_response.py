@@ -42,7 +42,7 @@ sys.path.append(boards_path)
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
-from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams, datastreams_to_h5
+from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
@@ -229,12 +229,11 @@ ads_voltage_range = 5  # need this for to_voltage later
 ads.hw_reset(val=False)
 ads.set_host_mode()
 ads.setup()
-ads.set_range(ads_voltage_range) # TODO: make an ads.current_voltage_range a property of the ADS so we always know it
+ads.set_range(ads_voltage_range) 
 ads.set_lpf(376)
-# 4B - clear sine wave set by the Slow DAC
-ads_sequencer_setup = [('0', '0'), ('1', '1')]
+ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
-ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
+ads.write_reg_bridge() # 1 MSPS rate 
 ads.set_fpga_mode()
 
 daq.TCA[0].configure_pins([0, 0])
@@ -264,8 +263,8 @@ file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
 feedback_resistors = [2.1]
-capacitors = [0, 47, 247, 1247]
-bath_res = [100, 332, 1000] # Clamp.configs['ADG_RES_dict'].keys()
+capacitors = [0, 47, 247]
+bath_res = [33, 100, 332] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -302,8 +301,8 @@ set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0300, cc_scale=0, cc_delay=0,
 
 dc_configs = {}
 clamp_fb_res = 2.1
-clamp_res = 332 # kOhm should be stable 
-clamp_cap = 47
+clamp_res = 100 # kOhm should be stable 
+clamp_cap = 0
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG1",
@@ -379,8 +378,8 @@ if 1:
                 ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
 
                 ephys_sys = EphysSystem()
-                sys_connections = create_sys_connections(dc_configs, daq, ads, ephys_sys)
-                datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, ads_sequencer_setup, sys_connections, outfile = None)
+                sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+                datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, daq, sys_connections, outfile = None)
 
                 # Store voltage in list; plot
                 for dc_num in DC_NUMS:
@@ -433,9 +432,8 @@ if 1:
                 if i == 0:
                     fig.legend(loc='lower right')
 
+ddr.repeat_setup() # Get data
 
-ddr.repeat_setup()
-# Get data
 # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
 chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
                                     blk_multiples=40)  # blk multiples multiple of 10
@@ -447,145 +445,35 @@ _, chan_data = read_h5(data_dir, file_name=file_name.format(
 # Long data sequence -- entire file
 adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
 
-############### extract the ADS data just for the last run and plot as a demonstration ############
-ads_data_v = {}
-for letter in ['A', 'B']:
-    ads_data_v[letter] = np.array(to_voltage(
-        ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
-
-total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
-total_seq_cnt[::2] = ads_seq_cnt[0]
-total_seq_cnt[1::2] = ads_seq_cnt[1]
-ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
-
-fig, ax = plt.subplots(2,1)
-fig.suptitle('ADS data')
-# AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
-ax[0].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
-ax[0].set_ylabel('P1 (tracks Vm) [V]')
-# CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-t_ads = np.arange(len(ads_separate_data['A'][0]))*1/(ADS_FS / len(ads_sequencer_setup))
-ax[1].plot(t_ads*1e6, ads_separate_data['A'][0], marker='.')
-ax[1].set_ylabel('P2 [V]')
-
-for ax_s in ax:
-    ax_s.set_xlabel('t [$\mu$s]')
-
 def ads_plot_zoom(ax):
     for ax_s in ax:
         ax_s.set_xlim([3250, 3330])
         ax_s.grid('on')
 
-# Do the same plotting as above using datastreams 
-datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, ads_sequencer_setup, sys_connections, outfile = None)
+# update system connections since the daughtercard configurations have changed
+sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+
+# Plot using datastreams 
+datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, daq, sys_connections, outfile = None)
 fig, ax = plt.subplots(2,1)
 fig.suptitle('ADS data')
 # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
 datastreams['P1'].plot(ax[0], {'marker':'.'})
 # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
 datastreams['P2'].plot(ax[1], {'marker':'.'})
 
+# add log info to datastreams -- any dictionary is ok  
+datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+datastreams.add_log_info({'dc_configs': dc_configs})
+
+print(datastreams.__dict__)
+
 # test writing and reading datastream h5
-datastreams_to_h5(data_dir, 'test.h5', datastreams, log_info)
+datastreams.to_h5(data_dir, 'test.h5', log_info)
 
 datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
+# this datastreams has the log info but as a dictionary, not as Python classes
+# if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
 
-####### RS compensation test #############
-RS_COMP_TESTS = False
-if RS_COMP_TESTS:
-    #specify number of alpha values to loop through
-    num_alphas = 10
-    start_alpha = 0.5
-    end_alpha = 0.95
-    alpha = np.linspace(start_alpha, end_alpha, num_alphas)
-
-    for alphas in range (num_alphas):
-
-        #define values for ADG_RES (in kilo-ohms), inamp gain, and DAC output amplitude (in millivolts)
-        ADG_RES_Val = 100
-        inamp_gain = 1
-        DAC_gain_amplitude = 500
-        correction_factor = 0.5*0.161
-        #scale value is calculated as:
-        #series_res_scale = (1/(ADG_RES_Val*1e3))*(1/0.308)*(1/inamp_gain)*1000*(8192/DAC_gain_amplitude)*(4096/DAC_gain_amplitude)*10*alpha[alphas]
-        series_res_scale = (1/(ADG_RES_Val*1e3))*(1/0.308)*(1/inamp_gain)*1000*(8192/DAC_gain_amplitude)*(correction_factor)*10*alpha[alphas]
-        print("scale value =", series_res_scale)
-
-        filter_coeff_generated = create_filter_coefficients(fc=500e3, output_scale=series_res_scale*2**13)
-        #for i in range (num_alphas):
-        #    filter_coeff_generated = create_filter_coefficients(fc=500e3, output_scale=series_res_scale[i]*2**13)
-        #    print(filter_coeff_generated)
-
-        for i in [1]:
-            daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
-            daq.DAC[i].set_spi_sclk_divide()
-            daq.DAC[i].filter_select(operation="set")
-            daq.DAC[i].write(int(0))
-            daq.DAC[i].set_data_mux("DDR")
-            daq.DAC[i].set_data_mux("ad7961_ch0", filter_data=True)
-            daq.DAC[i].filter_sum("set")
-            daq.DAC[i].filter_downsample("set")
-            daq.DAC[i].change_filter_coeff(target="generated", value=filter_coeff_generated)
-            daq.DAC[i].write_filter_coeffs()
-            daq.set_dac_gain(i, 500)  # 5V to see easier on oscilloscope
-
-        for i in [3]:
-            daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
-            daq.DAC[i].set_spi_sclk_divide()
-            daq.DAC[i].filter_select(operation="set")
-            daq.DAC[i].write(int(0))
-            daq.DAC[i].set_data_mux("DDR")
-            daq.DAC[i].set_data_mux("ad7961_ch1", filter_data=True)
-            daq.DAC[i].filter_sum("set")
-            daq.DAC[i].filter_downsample("set")
-            daq.DAC[i].change_filter_coeff(target="generated", value=filter_coeff_generated)
-            daq.DAC[i].write_filter_coeffs()
-            daq.set_dac_gain(i, 500)  # 5V to see easier on oscilloscope
-
-        ddr.repeat_setup()
-        # Get data
-        # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-        chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-                                            blk_multiples=40)  # blk multiples multiple of 10
-
-        # to get the deswizzled data of all repeats need to read the file
-        _, chan_data = read_h5(data_dir, file_name=file_name.format(
-            idx) + '.h5', chan_list=np.arange(8))
-
-        # Long data sequence -- entire file
-        adc_data, timestamp, dac_data, ads_data_tmp, ads_seq, read_errors = ddr.data_to_names(chan_data)
-
-        # Shorter data sequence, just one of the repeats
-        # adc_data, timestamp, dac_data, ads, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data_one_repeat)
-
-        t = np.arange(0,len(adc_data[0]))*1/FS
-
-        crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
-        print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
-
-
-    # DACs
-    t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
-    for dac_ch in range(4):
-        fig,ax=plt.subplots()
-        y = dac_data[dac_ch][crop_start:]
-        lbl = f'Ch{dac_ch}'
-        ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
-        print(f'Min {np.min(y[2:])}, Max {np.max(y)}') # skip the first 2 readings which are 0
-        ax.legend()
-        ax.set_title('Fast DAC data')
-        ax.set_xlabel('s [us]')
-
-    # fast ADC. AD7961
-    for ch in range(2):
-        fig,ax=plt.subplots()
-        # Store voltage in list; plot
-        y = to_voltage(adc_data[ch][crop_start:], num_bits=16, voltage_range=2**16, use_twos_comp=True)
-        lbl = f'Ch{ch}'
-        ax.plot(t*1e6, y, marker = '+', label = lbl)
-        ax.legend()
-        ax.set_title('Fast ADC data')
-        ax.set_xlabel('s [us]')
-        ax.set_ylabel('ADC codes')
+for n in datastreams:
+    assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'

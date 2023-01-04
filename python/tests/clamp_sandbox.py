@@ -65,16 +65,6 @@ if not os.path.exists(data_dir):
 pwr_setup = "3dual"
 dc_num = 0  # the Daughter-card channel under test. Order on board from L to R: 1,0,2,3
 
-# encoding was added as an option at Python 3.9
-# logging.basicConfig(filename='DAC53401_test.log',
-#                     encoding='utf-8', level=logging.INFO)
-
-# alternative for Python<3.9
-root_logger = logging.getLogger()
-root_logger.setLevel(logging.INFO)
-handler = logging.FileHandler("DAC53401_test.log", "w", "utf-8")
-root_logger.addHandler(handler)
-
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
 if pwr_setup == "3dual":
@@ -95,26 +85,6 @@ elif pwr_setup == "3dual":
     for ch in [2, 3]:
         dc_pwr.set("out_state", "ON", configs={"chan": ch})
 
-# ------ oscilloscope -----------------
-if 0:
-    osc = open_by_name("msox_scope")
-    osc.set("chan_label", '"P2"', configs={"chan": 1})
-    osc.set("chan_label", '"CC"', configs={"chan": 3})
-    osc.set("chan_label", '"Vm"', configs={"chan": 4}) # label must be in "" for the scope to accept
-    osc.comm_handle.write(':DISP:LAB 1')  # turn on the labels
-    osc.set('chan_display', 0, configs={'chan': 2})
-
-# --------  function generator  --------
-fg = open_by_name("new_function_gen")
-
-fg.set("load", "INF")
-fg.set("offset", 2)
-fg.set("v", 2)
-fg.set("freq", 10e3)
-fg.set("output", "ON")
-
-atexit.register(fg.set, "output", "OFF")
-
 # Initialize FPGA
 f = FPGA()
 f.init_device()
@@ -132,12 +102,6 @@ ad7961s[0].reset_wire(1)
 for name in ["1V8", "5V", "3V3"]:
     pwr.supply_on(name)
     sleep(0.05)
-
-gpio = Daq.GPIO(f)
-gpio.fpga.debug = True
-# configure the SPI debug MUXs
-gpio.spi_debug("dfast1")
-gpio.ads_misc("sdoa")  # do not care for this experiment
 
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
 clamp = {}

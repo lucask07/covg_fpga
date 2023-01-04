@@ -26,7 +26,8 @@ class Electrode:
 
     def __init__(self, name, dc_num, dc_pin,
                  nominal={'res': None, 'offset': 0},
-                 measured={'res': None, 'offset': None}):
+                 measured={'res': None, 'offset': None},
+                 ac_coupled=None):
         # dc_num is the daughter card channel number since there are 0-3 channels
 
         self.name = name
@@ -36,10 +37,13 @@ class Electrode:
         self.dc_pin = dc_pin
         self.nominal = nominal
         self.measured = measured
-        if dc_pin == 'CC':
-            self.ac_coupled = True
+        if ac_coupled == None:
+            if dc_pin == 'CC':
+                self.ac_coupled = True
+            else:
+                self.ac_coupled = False
         else:
-            self.ac_coupled = False
+            self.ac_coupled = ac_coupled
 
     def __repr__(self):
         return str(vars(self))
@@ -91,6 +95,8 @@ class EphysSystem:
                           nominal={'res':6.8e3, 'offset':0})
             self.electrodes.append(e)
 
+        # no longer necessary if using JSON serialization with default=vars
+        # self.electrodes_dict = {v: k for v, k in enumerate(self.electrodes)}
 
     def _find_item(self, key, value):
         return next((i for i, item in enumerate(self.electrodes) if getattr(item,key) == value), None)

@@ -22,10 +22,13 @@ Steps:
 import os
 import sys
 import copy
+import datetime
 import h5py
+import json
 import numpy as np
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from analysis.adc_data import read_h5, separate_ads_sequence
+from filters.filter_tools import butter_lowpass_filter
 
 FS = 5e6
 FS_ADS = 1e6 
@@ -54,50 +57,93 @@ class Datastream():
         else:
             ax.set_ylabel(f'{self.name} [{self.units}]')
 
+    def get_impulse(self, t0=6553.6e-6, tl_tr=(-150e-6, 200e-6), fc=None):
+        """ get the impulse of a trace produced by a step function by calculating the derivative
+        """
+        t = self.create_time()
+        tlow = t0 + tl_tr[0]
+        thigh = t0 + tl_tr[1]
+        idx = ((t>=tlow) & (t<=thigh))
+        t = t[idx]
+        y = self.data[idx]
+
+        if fc is not None:
+            y = butter_lowpass_filter(y, cutoff=fc, fs=FS, order=5)
+
+        #  the Wiener deconvolution adds noise to the denominator so that the result doesn't explode.
+        # imp_resp_w = wiener_deconvolution(y, step_func)[:(len(y)-len(step_func) + 1)]
+        # imp_resp_w = wiener_deconvolution(y, step_func)[:(248)]
+
+        # An FFT-based deconvolution of a step response is fraught since the step response has a
+        #  low information FFT. Large at f=0 and then constant at all other frequencies.
+        #  seems better to simply take the derivative ... this gives the impulse response
+        imp_resp_d = np.gradient(y, t[1]-t[0])
+        return imp_resp_d, t, t0
+
+class Datastreams(dict):
+
+    def __init__(self):
+        self.set_time()
+
+    def set_time(self):
+        self.time = datetime.datetime.now().isoformat()
+
+    def add_log_info(self, log_dict):
+        for k in log_dict:
+            setattr(self, k, log_dict[k])
+
+    def to_h5(self, directory, filename, log_info):
+        # write datastreams to a file 
+        # filename must include the directory 
+        full_file = os.path.join(directory, filename)
+        with h5py.File(full_file, 'w') as f:
+            grp = f.create_group('metadata') # TODO
+            for dk in self:
+                d_stream = copy.deepcopy(self[dk])
+                dataset = f.create_dataset(d_stream.net, data=d_stream.data) # net must be a string 
+                dstream_attrs = d_stream.__dict__
+                dstream_attrs.pop('data', None)
+                # get attributes from the datastream and set these attributes to the dataset 
+                dataset.attrs.update(dstream_attrs)
+                dataset.attrs.update(log_info) # should log_info itself be a dictionary key?
+            
+            grp.attrs['json'] = json.dumps(self.__dict__, default=vars)
+
+
 def h5_to_datastreams(directory, filename):
 
     full_file = os.path.join(directory, filename)
 
-    datastreams = {}
+    datastreams = Datastreams()
     with h5py.File(full_file, "r") as file:
         for dk in file.keys():
-            try:
-                ds = Datastream(file[dk][:],  # must use [:] to create a copy of the data so that the h5 file doesn't need to stay open
-                            sample_rate=file[dk].attrs['sample_rate'], 
-                            units=file[dk].attrs['units'], 
-                            name=file[dk].attrs['name'], 
-                            net=file[dk].attrs['net'], 
-                            t0=file[dk].attrs['initial_time'])
+            if dk == 'metadata':
+                t2 = json.loads(file[dk].attrs['json'])
+                datastreams.add_log_info(t2)
+            else:
+                try:
+                    ds = Datastream(file[dk][:],  # must use [:] to create a copy of the data so that the h5 file doesn't need to stay open
+                                sample_rate=file[dk].attrs['sample_rate'], 
+                                units=file[dk].attrs['units'], 
+                                name=file[dk].attrs['name'], 
+                                net=file[dk].attrs['net'], 
+                                t0=file[dk].attrs['initial_time'])
 
-                datastreams[ds.net] = ds
-            except:
-                print(f'skipping h5 key {dk}')
+                    datastreams[ds.net] = ds
+                except:
+                    print(f'skipping h5 key {dk}')
 
     return datastreams
 
-def datastreams_to_h5(directory, filename, datastreams, log_info):
 
-    # TODO: this could be a method of a datastreams class 
-    # filename must include the directory 
-    full_file = os.path.join(directory, filename)
-    with h5py.File(full_file, 'w') as f:
-        grp = f.create_group('0') # TODO
-        for dk in datastreams:
-            d_stream = copy.deepcopy(datastreams[dk])
-            dataset = f.create_dataset(d_stream.net, data=d_stream.data) # net must be a string 
-            dstream_attrs = d_stream.__dict__
-            dstream_attrs.pop('data', None)
-            # get attributes from the datastream and set these attributes to the dataset 
-            dataset.attrs.update(dstream_attrs)
-            dataset.attrs.update(log_info) # should log_info itself be a dictionary key?
-        grp.attrs['test'] = 12 # TODO - group attributes 
 
-def rawh5_to_datastreams(data_dir, infile, data_to_names, ads_sequencer_setup, phys_connections, outfile = None):
+def rawh5_to_datastreams(data_dir, infile, data_to_names, daq, phys_connections, outfile = None):
     """
     parameters: 
         data_dir: directory for both input and output files 
         infile: name of input file (needs .h5 suffix)
         data_to_names: this is a method of the DDR, pass this in to complete
+        daq: the DAQ board object (to get info such as sequencer_setup)
         phys_connection: dictionary of PhysicalConnections 
         outfile: name of output h5 file 
 
@@ -111,7 +157,7 @@ def rawh5_to_datastreams(data_dir, infile, data_to_names, ads_sequencer_setup, p
 
     # Long data sequence -- entire file
     adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = data_to_names(chan_data)
-    ads_separate_data = extract_ads_data(ads_data_tmp, ads_seq_cnt, ads_sequencer_setup)
+    ads_separate_data = extract_ads_data(ads_data_tmp, ads_seq_cnt, daq.ADC_gp.sequencer_setup)
     log_info = {'timestamp_step': timestamp[1]-timestamp[0],
                 'timestamp_span': 5e-9*(timestamp[-1] - timestamp[0]),
                 'read_errors': read_errors}
@@ -128,7 +174,7 @@ def data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections,
     # TODO: only store adc_data that is connected -- create a "datastream h5"
 
     seq_len = len(ads_separate_data['A'])
-    datastreams = {}
+    datastreams = Datastreams()
 
     # for each physical connection, create a datastream instance, add to h5  
     for pc_name in phys_connections:
@@ -196,12 +242,13 @@ class PhysicalConnection():
 
 # I channels 0 - 3, node, conversion, factor 
 
-def create_sys_connections(dc_config_dicts, daq_brd, ads, ephys_sys=None, system='daq_v2'):
+def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq_v2'):
 
     # build up the connectivity to ADCs  
     # dc_config_dicts are dictionaries of the daughercard connectivity that are returned by configure_clamp
     # TODO: need an update_conv_factor method
 
+    ads = daq_brd.ADC_gp
     connections = {}
     
     if system == 'daq_v2':
@@ -256,14 +303,17 @@ def create_sys_connections(dc_config_dicts, daq_brd, ads, ephys_sys=None, system
                                         net=net)
                 connections[con_name] = pc
 
-        # TODO 3) DAC data -- AD5453, does not depend on daughtercard config, unsigned 
+        # P1 is the voltage that is actually at the membrane electrode (divided by gain of feedback amplifier)
+        
+        # CMD is the target membrane voltage with a closed-loop configuration
+        # 3) DAC data -- AD5453, does not depend on daughtercard config, unsigned 
         for ch in range(4):
             net = daq_brd.parameters['fast_dac_map'][ch] 
             gain = daq_brd.current_dac_gain[ch] # +/-
             if gain > 99: # must by mV -- convert to volts
                 gain = gain/1000
             if 'CMD' in net:
-                gain = gain/dc_config_dicts[dc_config]['RF1']
+                gain = gain/dc_config_dicts[dc_config]['RF1'] # TODO x10 is a property of the clamp board, can we have a parameter for this? 
             con_name = f'D{ch}'
             pc = PhysicalConnection(con_name, 
                                     gain*2,  # this is more accurately the full-scale range
