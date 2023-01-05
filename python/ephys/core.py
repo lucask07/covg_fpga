@@ -37,12 +37,6 @@ FS = 5e6
 ADS_FS = 1e6
 CMAP_NAME = 'plasma'
 
-# Variables
-f = FPGA()
-f.init_device()
-ddr = DDR3(fpga=f)
-f.xem.Close()
-
 # Classes
 
 class Epoch:
@@ -424,9 +418,9 @@ class Experiment:
                 self.dc_pwr[0].set("out_state", "ON", configs={"chan": ch})
 
         # Initialize the FPGA
-        # f.init_device()   # Currently being done in __init__
+        # self.fpga.init_device()   # Currently being done in __init__
         time.sleep(2)
-        f.send_trig(self.endpoints["GP"]["SYSTEM_RESET"])  # system reset
+        self.fpga.send_trig(self.endpoints["GP"]["SYSTEM_RESET"])  # system reset
         self.daq.ADC[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
         # power supply turn on via FPGA enables
@@ -595,7 +589,7 @@ class Experiment:
             The current data in nanoamps (nA).
         write_ddr : bool
             Whether to write to the DDR after creating the data. If False, the
-            data will still be in the ddr.data_arrays variable and will be
+            data will still be in the self.daq.ddr.data_arrays variable and will be
             written next time the DDR is written.
         """
 
