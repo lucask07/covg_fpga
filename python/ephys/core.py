@@ -350,6 +350,48 @@ class Sequence:
         return sum([p.duration() for p in self.protocols])
 
 
+class Electrode:
+    """Contains connections and characteristics of an electrode.
+
+    Attributes
+    ----------
+    name : str
+        The name associated with the electrode. (for now use names in the Dagan COVG manual)
+    dc_num : int
+        The DAQ board port number of the daughtercard the electrode is connected to.
+    dc_pin : str
+        The daughtercard pin name the electrode is connected to, must be 'P2', 'P1', or 'CC'.
+    nominal : dict
+        Nominal values of electrode characteristics such as resistance or offset. TODO: what is offset?
+    measured : dict
+        Measured values of electrode characteristics such as resistance or offset. TODO: what is offset?
+    """
+
+    def __init__(self, name, dc_num, dc_pin,
+                 nominal={'res': None, 'offset': 0},
+                 measured={'res': None, 'offset': None}):
+        # dc_num is the daughter card channel number since there are 0-3 channels
+
+        self.name = name
+        self.dc_num = dc_num
+        if dc_pin not in ['P2', 'P1', 'CC']:
+            print(
+                f'Warning. Daughter-card pin {dc_pin} of electrode {name} is non-standard')
+        self.dc_pin = dc_pin
+        self.nominal = nominal
+        self.measured = measured
+        if dc_pin == 'CC':
+            self.ac_coupled = True
+        else:
+            self.ac_coupled = False
+
+    def __repr__(self):
+        return str(vars(self))
+
+    def __str__(self):
+        return f'{self.dc_num} -> {self.dc_pin} -> {self.name}'
+
+
 class Experiment:
     """Holds all objects needed for an Experiment.
     
