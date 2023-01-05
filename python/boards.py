@@ -817,7 +817,7 @@ class Daq:
 
         # --- Optionally plot input and output ---
         if plot:
-            x = [i * self.ddr.parameters['update_period'] * 99 for i in range(len(v_in_voltage))]
+            x = [i * DDR3.UPDATE_PERIOD * 99 for i in range(len(v_in_voltage))]
 
             # First, codes
             plt.plot(x, v_in_code, c='b', label='v_in')
