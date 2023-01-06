@@ -171,7 +171,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      reg signed [13:0] temp3;
      reg signed [13:0] temp4;
      reg signed [13:0] temp5;
-     reg [15:0] ads_data_reg;
+     reg [15:0] vm_fbck_data_reg;
      reg [15:0] filter_mux_data;
      reg filter_mux_data_rdy;
      reg [3:0] cnt;
@@ -179,7 +179,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      always @(posedge clk) begin
         if(rst == 1'b1)begin
             pi_error_signal <= 16'b0;
-            ads_data_reg <= 16'b0;
+            vm_fbck_data_reg <= 16'b0;
             temp1 <= 14'b0;
             temp2 <= 14'b0;
             temp3 <= 14'b0;
@@ -189,7 +189,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
         end
         else if(data_rdy_0_filt == 1'b1)begin
             cnt <= 4'b0;
-            ads_data_reg <= filter_data_i[31:16];
+            if (filter_data_mux_sel == 3'b010) begin
+                vm_fbck_data_reg <= filter_data_i[31:16];
+            end
+            else if (filter_data_mux_sel == 3'b011) begin
+                vm_fbck_data_reg <= filter_data_i[15:0];
+            end
         end
         else if(cnt <= 4'd6)begin
             cnt <= cnt + 1'b1;
@@ -208,14 +213,24 @@ module spi_fifo_driven #(parameter ADDR = 0) (
             end
             1: begin
                 temp1 <= (data_i[13:0] - 14'h1fff);
-                temp2 <= ads_data_reg[15:2];
+                temp2 <= vm_fbck_data_reg[15:2];
                 temp3 <= temp3;
                 temp4 <= temp4;
                 temp5 <= temp5;
             end
             2: begin
-                temp3 <= (temp1>>>1);
-                temp4 <= (temp2<<3);
+                if (filter_data_mux_sel == 3'b010) begin
+                    temp3 <= (temp1>>>1);
+                    temp4 <= (temp2<<3);
+                end
+                else if (filter_data_mux_sel == 3'b011) begin
+                    temp3 <= (temp1<<3);
+                    temp4 <= (temp2<<3);
+                end
+                else begin
+                    temp3 <= temp3;
+                    temp4 <= temp4;
+                end
                 temp1 <= temp1;
                 temp2 <= temp2;
                 temp5 <= temp5;
@@ -285,7 +300,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          //.coeff_debug_out2(coeff_debug_out2)
          );
 
-        assign filter_out_signed = {filter_out, 2'b0};
+        assign filter_out_signed = {(filter_out<<2), 2'b0}; //filter output is sfix14_en12 --> multiply x2 (PI numerator coeffs are halved to fit into the filter module numerator), and bitshift left once to convert to sfix16_en15 for observer
         assign filter_out_signed_rdy = filter_out_ready;
     
 //     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
