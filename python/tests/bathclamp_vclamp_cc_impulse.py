@@ -374,7 +374,7 @@ for imp_on in ['CMD', 'CC']:
     datastreams.add_log_info({'experiment_name': sys.argv[0]})
 
     # write data to datastream h5
-    datastreams.to_h5(data_dir, 'test.h5', log_info)
+    datastreams.to_h5(data_dir, f'{imp_on}_impulse.h5', log_info)
 
     # plot impulses. 
     # TODO: the scaling of DAC codes needs to be checked with the oscilloscope. 
