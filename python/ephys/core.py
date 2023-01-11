@@ -37,12 +37,6 @@ FS = 5e6
 ADS_FS = 1e6
 CMAP_NAME = 'plasma'
 
-# Variables
-f = FPGA()
-f.init_device()
-ddr = DDR3(fpga=f)
-f.xem.Close()
-
 # Classes
 
 class Epoch:
@@ -81,7 +75,7 @@ class Epoch:
             Length of the Epoch data np.ndarray of np.uint16.
         """
 
-        return int(np.ceil(self.first_duration * 1e-3 / ddr.parameters['update_period']))
+        return int(np.ceil(self.first_duration * 1e-3 / DDR3.UPDATE_PERIOD))
 
     def data(self):
         """Create and return the data for the Epoch.
@@ -106,7 +100,8 @@ class Epoch:
             The actual duration of the Epoch in ms.
         """
 
-        duration = int(np.ceil(self.first_duration * 1e-3 / ddr.parameters['update_period'])) * ddr.parameters["update_period"] * 1e3
+        duration = int(np.ceil(self.first_duration * 1e-3 /
+                       DDR3.UPDATE_PERIOD)) * DDR3.UPDATE_PERIOD * 1e3
         return duration
 
 
@@ -121,7 +116,7 @@ class Sweep:
         The duration of the Sweep in ms.
     """
 
-    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']  # In seconds
+    MAX_TIME = DDR3.SAMPLE_SIZE * DDR3.UPDATE_PERIOD  # In seconds
 
     def __init__(self, epochs: List[Epoch]):
         self.epochs = epochs
@@ -147,8 +142,8 @@ class Sweep:
         """
 
         data = np.concatenate([e.data() for e in self.epochs])
-        if len(data) > ddr.parameters['sample_size']:
-            print(f'WARNING: Sweep data too long for DDR. {len(data) * ddr.parameters["update_period"] * 1e3} ms > max {Sweep.MAX_TIME * 1e3} ms')
+        if len(data) > DDR3.SAMPLE_SIZE:
+            print(f'WARNING: Sweep data too long for DDR. {len(data) * DDR3.UPDATE_PERIOD * 1e3} ms > max {Sweep.MAX_TIME * 1e3} ms')
         return data
 
     def duration(self):
@@ -178,7 +173,7 @@ class Protocol:
         The duration of the Protocol in ms.
     """
 
-    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']  # In seconds
+    MAX_TIME = DDR3.SAMPLE_SIZE * DDR3.UPDATE_PERIOD  # In seconds
 
     def __init__(self, sweep: Sweep, num_sweeps):
         self.sweeps = [sweep]
@@ -212,8 +207,8 @@ class Protocol:
         """
 
         data = np.concatenate([s.data() for s in self.sweeps])
-        if len(data) > ddr.parameters['sample_size']:
-            print(f'WARNING: Protocol data too long for DDR. {len(data) * ddr.parameters["update_period"] * 1e3} ms > max {Protocol.MAX_TIME * 1e3} ms')
+        if len(data) > DDR3.SAMPLE_SIZE:
+            print(f'WARNING: Protocol data too long for DDR. {len(data) * DDR3.UPDATE_PERIOD * 1e3} ms > max {Protocol.MAX_TIME * 1e3} ms')
         return data
 
     def duration(self):
@@ -248,9 +243,9 @@ class Protocol:
         for i in range(len(self.sweeps)):
             data = self.sweeps[i].data()
             if i == 0:
-                # final_t = len(data) * ddr.parameters["update_period"] * 1e3   # Final time in milliseconds
-                # t = np.arange(0, final_t, ddr.parameters["update_period"] * 1e3)
-                t = np.linspace(0, len(data) - 1, len(data)) * ddr.parameters['update_period'] * 1e3
+                # final_t = len(data) * DDR3.UPDATE_PERIOD * 1e3   # Final time in milliseconds
+                # t = np.arange(0, final_t, DDR3.UPDATE_PERIOD * 1e3)
+                t = np.linspace(0, len(data) - 1, len(data)) * DDR3.UPDATE_PERIOD * 1e3
             ax.plot(t, data, color=cmap(1.*i / len(self.sweeps)), label=i + 1)   # Number sweeps on plot starting at 1
         ax.legend(loc='upper right')
         return ax
@@ -303,7 +298,7 @@ class Sequence:
         List of all contained Protocols.
     """
 
-    MAX_TIME = ddr.parameters['sample_size'] * ddr.parameters['update_period']  # In seconds
+    MAX_TIME = DDR3.SAMPLE_SIZE * DDR3.UPDATE_PERIOD  # In seconds
 
     def __init__(self, protocols: Protocol or List[Protocol]):
         if type(protocols) is Protocol:
@@ -332,8 +327,8 @@ class Sequence:
         """
 
         data = np.concatenate([p.data() for p in self.protocols])
-        if len(data) > ddr.parameters['sample_size']:
-            print(f'WARNING: Sequence data too long for DDR. {len(data) * ddr.parameters["update_period"] * 1e3} ms > max {Sequence.MAX_TIME * 1e3} ms')
+        if len(data) > DDR3.SAMPLE_SIZE:
+            print(f'WARNING: Sequence data too long for DDR. {len(data) * DDR3.UPDATE_PERIOD * 1e3} ms > max {Sequence.MAX_TIME * 1e3} ms')
         return data
 
     def duration(self):
@@ -381,7 +376,7 @@ class Experiment:
         # TODO: is there any way we can wait to fpga.init_device() until setup?
         self.fpga.init_device()
         self.daq = Daq(self.fpga)
-        self.daq.ddr.parameters['data_version'] = 'TIMESTAMPS'
+        self.daq.ddr.data_version = 'TIMESTAMPS'
         self.clamps = [Clamp(fpga=self.fpga, dc_num=dc_num) for dc_num in range(4)]
         self.gpio = Daq.GPIO(self.fpga)
         self.pwr = Daq.Power(self.fpga)
@@ -423,9 +418,9 @@ class Experiment:
                 self.dc_pwr[0].set("out_state", "ON", configs={"chan": ch})
 
         # Initialize the FPGA
-        # f.init_device()   # Currently being done in __init__
+        # self.fpga.init_device()   # Currently being done in __init__
         time.sleep(2)
-        f.send_trig(self.endpoints["GP"]["SYSTEM_RESET"])  # system reset
+        self.fpga.send_trig(self.endpoints["GP"]["SYSTEM_RESET"])  # system reset
         self.daq.ADC[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
         # power supply turn on via FPGA enables
@@ -594,7 +589,7 @@ class Experiment:
             The current data in nanoamps (nA).
         write_ddr : bool
             Whether to write to the DDR after creating the data. If False, the
-            data will still be in the ddr.data_arrays variable and will be
+            data will still be in the self.daq.ddr.data_arrays variable and will be
             written next time the DDR is written.
         """
 
@@ -781,7 +776,7 @@ class Experiment:
         sweeps = np.concatenate([p.sweeps for p in self.sequence.protocols])
 
         # Hold data from h5 from each sweep so we can write all at the end
-        # data = np.array([[] for i in range(self.daq.ddr.parameters['adc_channels'])], dtype=int)
+        # data = np.array([[] for i in range(DDR3.NUM_ADC_CHANNELS)], dtype=int)
 
         data_dir = os.path.join(os.path.expanduser('~'), 'ephys_data')
         if not os.path.exists(data_dir):

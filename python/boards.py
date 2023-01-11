@@ -329,15 +329,16 @@ class Clamp:
         return True
 
 
-    def print_config_options(self):
+    @staticmethod
+    def print_config_options():
         print('Compensation capacitor: ')
-        print(configs['CCOMP_dict'].keys())
+        print(Clamp.configs['CCOMP_dict'].keys())
         print('Inamp gain: ')
-        print(configs['gain_dict'].keys())
+        print(Clamp.configs['gain_dict'].keys())
         print('Feedback gain: ')
-        print(configs['RF1_dict'].keys())
+        print(Clamp.configs['RF1_dict'].keys())
         print('Feedback gain: ')
-        print(configs['ADG_RES_dict'].keys())
+        print(Clamp.configs['ADG_RES_dict'].keys())
 
     def configure_clamp(self, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
                         ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
@@ -831,7 +832,7 @@ class Daq:
 
         # --- Optionally plot input and output ---
         if plot:
-            x = [i * self.ddr.parameters['update_period'] * 99 for i in range(len(v_in_voltage))]
+            x = [i * DDR3.UPDATE_PERIOD * 99 for i in range(len(v_in_voltage))]
 
             # First, codes
             plt.plot(x, v_in_code, c='b', label='v_in')
