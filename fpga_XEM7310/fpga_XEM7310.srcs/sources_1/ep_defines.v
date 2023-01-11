@@ -105,7 +105,7 @@
 `define AD5453_DOWNSAMPLE_ENABLE_GEN_BIT 18 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
 `define AD5453_SUMMATION_ENABLE_GEN_BIT 24 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
 
-`define OBSV_DATA_SEL_WIRE_IN 8'h07 // bit_width 32
+`define OBSV_DATA_SEL_WIRE_IN 8'h07 // bit_width=32
 `define OBSV_IM_DATA_SEL_GEN_BIT 0 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
 `define OBSV_IM_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
 `define OBSV_VP1_DATA_SEL_GEN_BIT 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
