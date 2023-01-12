@@ -548,19 +548,19 @@ PI_coeff = {0: 0x7fffffff,
 obsv = Observer(f)
 obsv.set_im_data_mux("ad7961_ch0")
 obsv.set_vcmd_data_mux("ad5453_ch1")
-obsv.set_vp1_data_mux("ads8686_chA")
+obsv.set_vp1_data_mux("ads8686_chB")
 
 # observer coeffs
-obsv_coeff = {0:0xd7e9dea5,
-              1:0xffffee8c,
-              2:0x633c7b06,
-              3:0x000111ca,
-              4:0x00fb6efd,
-              5:0x00000000,
-              6:0xbaa53c6d,
-              7:0x00f67566,
-              8:0x03fd39ac,
-              9:0x00008c7f}
+obsv_coeff = {0:0x80000000,
+              1:0x80000000,
+              2:0x80000000,
+              3:0x80000000,
+              4:0x80000000,
+              5:0x80000000,
+              6:0x80000000,
+              7:0x80000000,
+              8:0x80000000,
+              9:0x80000000}
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
@@ -572,7 +572,7 @@ for i in [1]:
     daq.DAC[i].write(int(0))
     daq.DAC[i].set_data_mux("DDR")
     daq.DAC[i].set_data_mux("ads8686_chA", filter_data=True)
-    daq.DAC[i].filter_sum("clear")
+    daq.DAC[i].filter_sum("set")
     daq.DAC[i].filter_downsample("clear")
     daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
     #daq.DAC[i].change_filter_coeff(target="passthru")
@@ -679,6 +679,12 @@ ax[1].set_ylabel('P2 [V]')
 
 for ax_s in ax:
     ax_s.set_xlabel('t [$\mu$s]')
+
+# plot dac channel 4 data
+fig,ax=plt.subplots()
+fig = ax.plot(to_voltage(dac_data[4], num_bits=16, voltage_range=2**16, use_twos_comp=True))
+ax.set_title('Observer data')
+ax.set_xlabel('s [us]')
 
 def ads_plot_zoom(ax):
     for ax_s in ax:
