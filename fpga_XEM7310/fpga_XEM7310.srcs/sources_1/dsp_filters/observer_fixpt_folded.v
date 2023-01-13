@@ -123,30 +123,53 @@ module observer_fixpt_folded
 
   always @(*) begin
     case(state)
-        S0: if (out_A_sum_rdy && out_B_sum_rdy && out_L_sum_rdy) nextstate = S1; //TODO: making the assumption that all ce_out are synchronized
-        S1: nextstate = S2; 
-        S2: nextstate = S3;
-        S3: if (clk_enable==1) nextstate = S0;
-        default nextstate = S0;
+        S0: begin
+          if ((out_A_sum_rdy == 1'b1) && (out_B_sum_rdy == 1'b1) && (out_L_sum_rdy == 1'b1)) begin
+            nextstate = S1; //TODO: making the assumption that all ce_out are synchronized
+          end
+          else begin
+            nextstate = S0;
+          end
+        end
+        S1: begin
+          nextstate = S2; 
+        end
+        S2: begin
+          nextstate = S3;
+        end
+        S3: begin
+          if (clk_enable == 1'b1) begin 
+            nextstate = S0;
+          end
+          else begin
+            nextstate = S3;
+          end
+        end
+        default: begin
+          nextstate = S0;
+        end
     endcase
   end
 
   always @(*) begin
     case (state)
-    S0: begin 
-        ce_out <= 0; time_to_sum <=0;
+        S0: begin 
+            ce_out <= 1'b0; time_to_sum <= 1'b0;
         end
-    S1: begin 
-        ce_out <= 0; time_to_sum <=1;
+        S1: begin 
+            ce_out <= 1'b0; time_to_sum <= 1'b1;
         end
-    S2: begin 
-        ce_out <= 1; time_to_sum <=0;
+        S2: begin 
+            ce_out <= 1'b1; time_to_sum <= 1'b0;
         end
-    S3: begin 
-        ce_out <= 0; time_to_sum <=0;    
+        S3: begin 
+            ce_out <= 1'b0; time_to_sum <= 1'b0;    
+        end
+        default: begin
+            ce_out <= 1'b0; time_to_sum <= 1'b0;
         end
     endcase 
-    end
+  end
 
     matrix_mul_fixpt_folded #(.A_wid(32), .B_wid(33)) u1_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
@@ -192,49 +215,70 @@ module observer_fixpt_folded
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_A_reg<=66'd0;
-      out_1_A_reg<=66'd0;
-      out_A_sum_rdy<=1'b0;
+      out_0_A_reg <= 66'd0;
+      out_1_A_reg <= 66'd0;
+      out_A_sum_rdy <= 1'b0;
     end
-    else if (ce_out1==1) begin 
+    else if (ce_out1 == 1'b1) begin 
       out_0_A_reg <= out_0_A;
       out_1_A_reg <= out_1_A;
       out_A_sum_rdy <= 1'b1;
     end
-    else if (time_to_sum) begin
+    else if (time_to_sum == 1'b1) begin
+      out_0_A_reg <= out_0_A_reg;
+      out_1_A_reg <= out_1_A_reg;
       out_A_sum_rdy <= 1'b0;
+    end
+    else begin
+      out_0_A_reg <= out_0_A_reg;
+      out_1_A_reg <= out_1_A_reg;
+      out_A_sum_rdy <= out_A_sum_rdy;
     end
   end
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_B_reg<=66'd0;
-      out_1_B_reg<=66'd0;
-      out_B_sum_rdy<=1'b0;
+      out_0_B_reg <= 66'd0;
+      out_1_B_reg <= 66'd0;
+      out_B_sum_rdy <= 1'b0;
     end
-    else if (ce_out2==1) begin 
+    else if (ce_out2 == 1'b1) begin 
       out_0_B_reg <= out_0_B;
       out_1_B_reg <= out_1_B;
       out_B_sum_rdy <= 1'b1;
     end
-     else if (time_to_sum) begin
+    else if (time_to_sum == 1'b1) begin
+      out_0_B_reg <= out_0_B_reg;
+      out_1_B_reg <= out_1_B_reg;
       out_B_sum_rdy <= 1'b0;
+    end
+    else begin
+      out_0_B_reg <= out_0_B_reg;
+      out_1_B_reg <= out_1_B_reg;
+      out_B_sum_rdy <= out_B_sum_rdy;
     end
   end
 
   always @(posedge clk) begin
     if (reset == 1'b1) begin 
-      out_0_L_reg<=66'd0;
-      out_1_L_reg<=66'd0;
-      out_L_sum_rdy<=1'b0;
+      out_0_L_reg <= 66'd0;
+      out_1_L_reg <= 66'd0;
+      out_L_sum_rdy <= 1'b0;
     end
-    else if (ce_out3==1) begin 
+    else if (ce_out3 == 1'b1) begin 
       out_0_L_reg <= out_0_L;
       out_1_L_reg <= out_1_L;
       out_L_sum_rdy <= 1'b1;
     end
-     else if (time_to_sum) begin
+    else if (time_to_sum == 1'b1) begin
+      out_0_L_reg <= out_0_L_reg;
+      out_1_L_reg <= out_1_L_reg;
       out_L_sum_rdy <= 1'b0;
+    end
+    else begin
+      out_0_L_reg <= out_0_L_reg;
+      out_1_L_reg <= out_1_L_reg;
+      out_L_sum_rdy <= out_L_sum_rdy;
     end
   end
 
@@ -243,9 +287,13 @@ module observer_fixpt_folded
       out_0_cast <= 74'd0;
       out_1_cast <= 74'd0; //33En30 
     end
-    else if (time_to_sum==1) begin 
+    else if (time_to_sum == 1'b1) begin 
       out_0_cast <= {{8{out_0_A_reg[65]}}, out_0_A_reg} + { {2{out_0_B_reg[48]}}, out_0_B_reg, 6'b0} + { {2{out_0_L_reg[48]}}, out_0_L_reg, 6'b0}; //sfix74_en56
       out_1_cast <= {{8{out_1_A_reg[65]}}, out_1_A_reg} + { {2{out_1_B_reg[48]}}, out_1_B_reg, 6'b0} + { {2{out_1_L_reg[48]}}, out_1_L_reg, 6'b0}; //sfix74_en56
+    end
+    else begin
+      out_0_cast <= out_0_cast;
+      out_1_cast <= out_1_cast;
     end
   end 
 
@@ -258,9 +306,13 @@ module observer_fixpt_folded
         yest_reg_reg[1] <= 33'sh000000000;
       end
       else begin
-        if (clk_enable) begin
+        if (clk_enable == 1'b1) begin
           yest_reg_reg[0] <= out_0_cast[56:24];
           yest_reg_reg[1] <= out_1_cast[56:24];
+        end
+        else begin
+          yest_reg_reg[0] <= yest_reg_reg[0];
+          yest_reg_reg[1] <= yest_reg_reg[1];
         end
       end
     end
