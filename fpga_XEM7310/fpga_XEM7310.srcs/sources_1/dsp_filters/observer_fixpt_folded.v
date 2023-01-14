@@ -38,8 +38,11 @@ module observer_fixpt_folded
            reset,
            clk_enable,
            y1,
+           y1_rdy,
            y2,
+           y2_rdy,
            u,
+           u_rdy,
            L_0,
            L_1,
            L_2,
@@ -57,9 +60,12 @@ module observer_fixpt_folded
   input   clk;
   input   reset;
   input   clk_enable;
-  input   signed [15:0] y1;  // sfix16_En0
-  input   signed [15:0] y2;  // sfix16_En0
-  input   signed [15:0] u;  // sfix16_En0
+  input   signed [15:0] y1;   // sfix16_En0
+  input   y1_rdy;             // y1 data ready signal
+  input   signed [15:0] y2;   // sfix16_En0
+  input   y2_rdy;             // y2 data ready signal
+  input   signed [15:0] u;    // sfix16_En0
+  input   u_rdy;              // u data ready signal
   input   signed [31:0] L_0;  // sfix32_En50
   input   signed [31:0] L_1;  // sfix32_En50
   input   signed [31:0] L_2;  // sfix32_En50
@@ -171,6 +177,49 @@ module observer_fixpt_folded
     endcase 
   end
 
+  // capture y1 data on its own data ready signal
+  reg signed [15:0] y1_reg;
+  always @(posedge clk) begin
+    if (reset == 1'b1) begin
+        y1_reg <= 16'b0;
+    end
+    else if (y1_rdy == 1'b1) begin
+        y1_reg <= y1;
+    end
+    else begin
+        y1_reg <= y1_reg;
+    end
+  end
+
+  // capture y2 data on its own data ready signal
+  reg signed [15:0] y2_reg;
+  always @(posedge clk) begin
+    if (reset == 1'b1) begin
+        y2_reg <= 16'b0;
+    end
+    else if (y2_rdy == 1'b1) begin
+        y2_reg <= y2;
+    end
+    else begin
+        y2_reg <= y2_reg;
+    end
+  end
+
+  // capture u data on its own data ready signal
+  reg signed [15:0] u_reg;
+  always @(posedge clk) begin
+    if (reset == 1'b1) begin
+        u_reg <= 16'b0;
+    end
+    else if (u_rdy == 1'b1) begin
+        u_reg <= u;
+    end
+    else begin
+        u_reg <= u_reg;
+    end
+  end
+
+
     matrix_mul_fixpt_folded #(.A_wid(32), .B_wid(33)) u1_matrix_mul_fixpt_folded (.clk(clk),
                                                        .reset(reset),
                                                        .clk_enable(clk_enable),
@@ -192,7 +241,7 @@ module observer_fixpt_folded
                                                        .A_1(B_1),  // ufix32_En50 1,0
                                                        .A_2(32'd0),  // ufix32_En50 0,1
                                                        .A_3(32'd0),  // ufix32_En50 1,1
-                                                       .B_0({{17{u[15]}}, u}),  // sfix16_En0, signext -> sfix33_En0
+                                                       .B_0({{17{u_reg[15]}}, u_reg}),  // sfix16_En0, signext -> sfix33_En0
                                                        .B_1(33'd0),  // sfix16_En0, signext -> sfix33_En0
                                                        .ce_out(ce_out2),
                                                        .out_0(out_0_B),  // sfix66_En50
@@ -206,8 +255,8 @@ module observer_fixpt_folded
                                                        .A_1(L_1),  // sfix32_En50 1,0
                                                        .A_2(L_2),  // sfix32_En50 0,1
                                                        .A_3(L_3),  // sfix32_En50 1,1
-                                                       .B_0({{17{y1[15]}}, y1}),  // sfix16_En0, signext -> sfix33_En0
-                                                       .B_1({{17{y2[15]}}, y2}),  // sfix16_En0, signext -> sfix33_En0
+                                                       .B_0({{17{y1_reg[15]}}, y1_reg}),  // sfix16_En0, signext -> sfix33_En0
+                                                       .B_1({{17{y2_reg[15]}}, y2_reg}),  // sfix16_En0, signext -> sfix33_En0
                                                        .ce_out(ce_out3),
                                                        .out_0(out_0_L),  // sfix66_En50
                                                        .out_1(out_1_L)  // sfix66_En50
