@@ -112,6 +112,8 @@
 `define OBSV_VP1_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
 `define OBSV_VCMD_DATA_SEL_GEN_BIT 6 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
 `define OBSV_VCMD_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_RDY_DATA_SEL_GEN_BIT 9 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_RDY_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
 
 `define FILTER_SEL_WIRE_IN 8'h11 // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1

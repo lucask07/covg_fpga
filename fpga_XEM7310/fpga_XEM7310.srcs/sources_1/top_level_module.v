@@ -960,8 +960,8 @@ module top_level_module(
     wire [31:0] A_matrix_coeff [3:0]; // 32 bit buses for A matrix coefficients
     wire [31:0] B_matrix_coeff [1:0]; // 32 bit buses for B matrix coefficients
 
-    wire observer_in_data_rdy; // observer data input ready signal
-    assign observer_in_data_rdy = observer_in_im[31];
+    wire [31:0] observer_in_data_rdy; // observer data input ready signal
+    //assign observer_in_data_rdy = observer_in_im[31];
 
     wire observer_ce_out; // observer data output ready signal
 
@@ -1005,7 +1005,7 @@ module top_level_module(
             .dataout({observer_in_vp1})
         );
 
-     mux8to1_32wide observer_mux_bus_vcmd( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+    mux8to1_32wide observer_mux_bus_vcmd( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
             .datain_0({filter_out_signed_rdy[0], 15'b0, filter_out_signed[0][15:0]}),
             .datain_1({filter_out_signed_rdy[1], 15'b0, filter_out_signed[1][15:0]}),
             .datain_2({filter_out_signed_rdy[2], 15'b0, filter_out_signed[2][15:0]}),
@@ -1015,13 +1015,24 @@ module top_level_module(
             .sel(ep_wire_obsvdata[(`OBSV_VCMD_DATA_SEL_GEN_BIT) +: `OBSV_VCMD_DATA_SEL_GEN_BIT_LEN]),
             .dataout({observer_in_vcmd})
         );
+    
+    mux8to1_32wide observer_mux_bus_rdy( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .datain_0({observer_in_im}),
+            .datain_1({observer_in_vp1}),
+            .datain_2({observer_in_vcmd}),
+            .sel(ep_wire_obsvdata[(`OBSV_RDY_DATA_SEL_GEN_BIT) +: `OBSV_RDY_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({observer_in_data_rdy})
+        );
 
     observer_fixpt_folded u_observer_fixpt_folded (.clk(clk_sys),
                                    .reset(sys_rst),
-                                   .clk_enable(observer_in_data_rdy),
+                                   .clk_enable(observer_in_data_rdy[31]),
                                    .y1(observer_in_im[15:0]),  // sfix16_En0
+                                   .y1_rdy(observer_in_im[31]),
                                    .y2(observer_in_vp1[15:0]),  // sfix16_En0
+                                   .y2_rdy(observer_in_vp1[31]),
                                    .u(observer_in_vcmd[15:0]),  // sfix16_En0
+                                   .u_rdy(observer_in_vcmd[31]),
                                    .L_0(L_matrix_coeff[0][31:0]),  // sfix32_En50
                                    .L_1(L_matrix_coeff[1][31:0]),  // sfix32_En50
                                    .L_2(L_matrix_coeff[2][31:0]),  // sfix32_En50
