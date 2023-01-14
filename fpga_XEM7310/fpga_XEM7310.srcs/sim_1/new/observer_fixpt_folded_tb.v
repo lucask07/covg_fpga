@@ -823,8 +823,11 @@ module observer_fixpt_folded_tb;
                                    .reset(reset),
                                    .clk_enable(clk_enable_1),
                                    .y1(y1_1),  // sfix16_En0
+                                   .y1_rdy(clk_enable_1),
                                    .y2(y2),  // sfix16_En0
+                                   .y2_rdy(clk_enable_1),
                                    .u(u),  // sfix16_En0
+                                   .u_rdy(clk_enable_1),
                                    .L_0(L_0),  // sfix32_En50
                                    .L_1(L_1),  // sfix32_En50
                                    .L_2(L_2),  // sfix32_En50

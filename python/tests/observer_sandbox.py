@@ -251,8 +251,14 @@ class Observer():
         'ads8686_chB': 1,
     }
 
+    default_rdy_data_mux = {
+        'sync_im': 0,
+        'sync_vp1': 1,
+        'sync_vcmd': 2,
+    }
+
     def __init__(self, fpga, endpoints=None, im_data_mux=default_im_data_mux, 
-    vcmd_data_mux=default_vcmd_data_mux, vp1_data_mux=default_vp1_data_mux):
+    vcmd_data_mux=default_vcmd_data_mux, vp1_data_mux=default_vp1_data_mux, rdy_data_mux=default_rdy_data_mux):
 
         self.fpga = fpga
         if endpoints is None:
@@ -261,6 +267,7 @@ class Observer():
         self.im_data_mux = im_data_mux
         self.vcmd_data_mux = vcmd_data_mux
         self.vp1_data_mux = vp1_data_mux
+        self.rdy_data_mux = rdy_data_mux
         # Start with ad7961_ch0 to minimize unintentional commands from other sources on startup
         self.current_im_data_mux = None
         if self.set_im_data_mux('ad7961_ch0') == -1:
@@ -363,6 +370,30 @@ class Observer():
         self.fpga.set_wire(self.endpoints[endpoint].address, data,
                            mask=mask)
         self.current_vp1_data_mux = source
+
+    def set_rdy_data_mux(self, source):
+        """Configure the MUX that routes data source to the SPI output.
+
+        Parameters
+        ----------
+        source : str
+            See SPIFifoDriven.data_mux dict for options and conversion.
+        """
+
+        select_val = self.rdy_data_mux.get(source)
+        if select_val is None:
+            print(f'Set data mux failed, {source} not available')
+            return -1
+
+        endpoint = 'RDY_DATA_SEL'
+
+        mask = gen_mask(range(self.endpoints[endpoint].bit_index_low,
+                              self.endpoints[endpoint].bit_index_high))
+        data = (self.rdy_data_mux[source]
+                << self.endpoints[endpoint].bit_index_low)
+        self.fpga.set_wire(self.endpoints[endpoint].address, data,
+                           mask=mask)
+        self.current_rdy_data_mux = source
 
     def write_observer_coeffs(self):
         # TODO: add method docstring
@@ -548,19 +579,20 @@ PI_coeff = {0: 0x7fffffff,
 obsv = Observer(f)
 obsv.set_im_data_mux("ad7961_ch0")
 obsv.set_vcmd_data_mux("ad5453_ch1")
-obsv.set_vp1_data_mux("ads8686_chB")
+obsv.set_vp1_data_mux("ads8686_chA")
+obsv.set_rdy_data_mux("sync_im")
 
 # observer coeffs
-obsv_coeff = {0:0x80000000,
-              1:0x80000000,
-              2:0x80000000,
-              3:0x80000000,
-              4:0x80000000,
-              5:0x80000000,
-              6:0x80000000,
-              7:0x80000000,
-              8:0x80000000,
-              9:0x80000000}
+obsv_coeff = {0:0x7fffffff,
+              1:0x7fffffff,
+              2:0x0,
+              3:0x0,
+              4:0x0,
+              5:0x00000000,
+              6:0x00000000,
+              7:0x00000000,
+              8:0x00000000,
+              9:0x0}
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
@@ -572,7 +604,7 @@ for i in [1]:
     daq.DAC[i].write(int(0))
     daq.DAC[i].set_data_mux("DDR")
     daq.DAC[i].set_data_mux("ads8686_chA", filter_data=True)
-    daq.DAC[i].filter_sum("set")
+    daq.DAC[i].filter_sum("clear")
     daq.DAC[i].filter_downsample("clear")
     daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
     #daq.DAC[i].change_filter_coeff(target="passthru")
