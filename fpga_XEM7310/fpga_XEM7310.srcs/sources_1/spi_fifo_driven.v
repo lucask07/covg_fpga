@@ -300,7 +300,7 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          //.coeff_debug_out2(coeff_debug_out2)
          );
 
-        assign filter_out_signed = {(filter_out<<2), 2'b0}; //filter output is sfix14_en12 --> multiply x2 (PI numerator coeffs are halved to fit into the filter module numerator), and bitshift left once to convert to sfix16_en15 for observer
+        assign filter_out_signed = {(filter_out<<1), 2'b0}; //filter output is sfix14_en12 --> multiply x2 (PI numerator coeffs are halved to fit into the filter module numerator), and bitshift left once to convert to sfix16_en15 for observer
         assign filter_out_signed_rdy = filter_out_ready;
     
 //     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
