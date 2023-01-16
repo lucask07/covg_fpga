@@ -346,6 +346,61 @@ class Sequence:
         return sum([p.duration() for p in self.protocols])
 
 
+class ExperimentSetup:
+    """Contains information from YAML setup file.
+    
+    This includes how daughtercards are connected to DAQ ports and which pins of which daughtercards are used for what in an experiment.
+    
+    Attributes
+    ----------
+    daq_ports : List[Dict[str : Electrode]]
+        The setup connection structure: DAQ port number, daughtercard pins, Electrode
+    electrodes : List[Electrode]
+        A list of all Electrodes in the setup. This is used to help access Electrodes by their name. To avoid confusion, it is recommended to use the ExperimentSetup.get_electrode_by_name method rather than accessing this dictionary directly.
+    """
+
+    def __init__(self, yaml_dict):
+        """Create ExperimentSetup object.
+        
+        Meant to be used after loading a YAML setup file with yaml.safe_load(file).
+        
+        Parameters
+        ----------
+        yaml_dict : dict
+            Dictionary of YAML setup file after yaml.safe_load(file).
+        """
+
+        electrodes = []
+
+        # Accessing the ports explicitly in case other numbered attributes are added later.
+        self.daq_ports = [None] * 4
+        for i in range(4):
+            # Copy everything
+            try:
+                self.daq_ports[i] = yaml_dict['daq'][i]
+            except KeyError:
+                self.daq_ports[i] = None
+                continue
+
+            # Now create Electrodes and replace the innermost dictionaries with Electrodes
+            # TODO: need to understand which parts of the dictionaries should be replaced with Electrodes first
+
+            # TODO: append to electrodes list as we go
+
+    def get_electrode_by_name(name: str):
+        """Get an Electrode instance from setup by name.
+        
+        Parameters
+        ----------
+        name : str
+            The name of the Electrode.
+        
+        Returns
+        -------
+        Electrode : the Electrode with that name. None if the Electrode is not in self.electrodes list.
+        """
+
+
 class Experiment:
     """Holds all objects needed for an Experiment.
     
