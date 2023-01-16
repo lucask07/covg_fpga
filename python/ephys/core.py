@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import atexit
 import h5py
+import yaml
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.utils import to_voltage, from_voltage, read_h5
 from pyripherals.peripherals.DDR3 import DDR3
@@ -350,6 +351,10 @@ class Experiment:
     
     Attributes
     ----------
+    sequence : Sequence
+        The Sequence to be run in this Experiment.
+    setup_file_path : str
+        Path to the setup YAML file.
     endpoints : Dict[str, Endpoint]
         All Endpoints used in the experiment.
     fpga : FPGA
@@ -364,11 +369,9 @@ class Experiment:
         Power for Daq board.
     dc_pwr : ???
         The power supply instances powering the Daq board.
-    sequence : Sequence
-        The Sequence to be run in this Experiment.
     """
 
-    def __init__(self, sequence: Sequence or Protocol):
+    def __init__(self, sequence: Sequence or Protocol, setup_file_path: str = None):
 
         # Initialize FPGA
         self.endpoints = Endpoint.update_endpoints_from_defines()
@@ -386,6 +389,33 @@ class Experiment:
             self.sequence = Sequence(protocols=sequence)
         else:
             self.sequence = sequence
+        self.setup_file_path = setup_file_path
+
+    def load_setup(self, file_path: str = None):
+        """Load setup from a YAML file.
+        
+        Parameters
+        ----------
+        file_path : str
+            Path to the setup YAML file. Defaults to None in which case Experiment.setup_yaml_path is used instead.
+
+        Returns
+        -------
+        dict : loaded dictionary from YAML file using yaml.safe_load(file)
+        """
+
+        if file_path is None:
+            if self.setup_file_path is None:
+                raise AttributeError('Setup file path must be specified as file_path argument or Experiment.setup_file_path attribute, both are None')
+            else:
+                file_path = self.setup_file_path
+
+        with open(file_path, 'r') as file:
+            setup_yaml = yaml.safe_load(file)
+
+        # Load everything into a setup attribute of Experiment
+
+        return setup_yaml
 
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
