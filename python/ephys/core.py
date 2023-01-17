@@ -370,7 +370,7 @@ class ExperimentSetup:
             Dictionary of YAML setup file after yaml.safe_load(file).
         """
 
-        electrodes = []
+        self.electrodes = []
 
         # Accessing the ports explicitly in case other numbered attributes are added later.
         self.daq_ports = [None] * 4
@@ -379,7 +379,7 @@ class ExperimentSetup:
             try:
                 self.daq_ports[i] = yaml_dict['daq'][i]
             except KeyError:
-                self.daq_ports[i] = None
+                self.daq_ports[i] = {}
                 continue
 
             # Now create Electrodes and replace the innermost dictionaries with Electrodes
@@ -410,6 +410,8 @@ class Experiment:
         The Sequence to be run in this Experiment.
     setup_file_path : str
         Path to the setup YAML file.
+    experiment_setup : ExperimentSetup
+        ExperimentSetup instance containing information about connections for the experiment.
     endpoints : Dict[str, Endpoint]
         All Endpoints used in the experiment.
     fpga : FPGA
@@ -426,7 +428,7 @@ class Experiment:
         The power supply instances powering the Daq board.
     """
 
-    def __init__(self, sequence: Sequence or Protocol, setup_file_path: str = None):
+    def __init__(self, sequence: Sequence or Protocol, setup_file_path: str = None, autoload_setup: bool = True):
 
         # Initialize FPGA
         self.endpoints = Endpoint.update_endpoints_from_defines()
@@ -445,6 +447,10 @@ class Experiment:
         else:
             self.sequence = sequence
         self.setup_file_path = setup_file_path
+        if self.setup_file_path is not None and autoload_setup:
+            self.load_setup()
+        else:
+            self.experiment_setup = ExperimentSetup({})
 
     def load_setup(self, file_path: str = None):
         """Load setup from a YAML file.
@@ -456,7 +462,7 @@ class Experiment:
 
         Returns
         -------
-        dict : loaded dictionary from YAML file using yaml.safe_load(file)
+        ExperimentSetup : the loaded setup.
         """
 
         if file_path is None:
@@ -466,11 +472,11 @@ class Experiment:
                 file_path = self.setup_file_path
 
         with open(file_path, 'r') as file:
-            setup_yaml = yaml.safe_load(file)
+            yaml_dict = yaml.safe_load(file)
 
-        # Load everything into a setup attribute of Experiment
+        self.experiment_setup = ExperimentSetup(yaml_dict)
 
-        return setup_yaml
+        return self.setup
 
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
@@ -533,7 +539,9 @@ class Experiment:
         self.daq.ADC_gp.set_range(ads_voltage_range) # TODO: make an self.daq.ADC_gp.current_voltage_range a property of the ADS so we always know it
         self.daq.ADC_gp.set_lpf(39)
         ads_sequencer_setup = [('1', '1'), ('2', '2')]
-        codes = self.daq.ADC_gp.setup_sequencer(chan_list=ads_sequencer_setup, lpf=39)
+        codes = self.daq.ADC_gp.setup_sequencer(chan_list=ads_sequencer_setup)
+        self.daq.ADC_gp.set_lpf(39)
+        self.daq.ADC_gp.set_range(5)
         self.daq.ADC_gp.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value of 1000 which is 200 ksps)
         self.daq.ADC_gp.set_fpga_mode()
 
@@ -557,6 +565,55 @@ class Experiment:
             self.daq.ADC[chan].power_up_adc()  # standard sampling
         self.daq.ADC[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
         self.daq.ADC[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
+
+    def configure_clamps(self, clamps=[0, 1, 2, 3]):
+        """Configure the clamps (daughtercards) as defined in the self.setup attribute.
+        
+        To change the configuration of the clamps, change the values in self.setup and run this method again.
+
+        Parameters
+        ----------
+        clamps : List[int]
+            A list of which clamps to configure. Defaults to [0, 1, 2, 3] to configure all clamps.
+        
+        Returns
+        -------
+        List[Dict] : the configuration parameters just set for each daughtercard. DC 0 at index 0, DC 1 at index 1, etc.
+        """
+
+        config_list = [{}] * 4
+
+        for dc_num in clamps:
+            dc = self.experiment_setup.daq_ports[dc_num]
+            # Skip any daughtercard (clamp) with no specified configuration
+            if dc is None or dc.get('clamp_configs') is None:
+                continue
+
+            configs = dc['clamp_configs']
+            # Configure any daughtercard with a specified configuration
+            # We use .get() instead of [] to access dict here so we get None instead of a KeyError
+            # This way, any parameter not specified in the 'clamp_configs' dict will be left as the default Clamp.configure_clamp() argument for that parameter.
+            _, config_list[dc_num] = self.clamps[dc_num].configure_clamp(
+                ADC_SEL     = configs.get('ADC_SEL'),
+                DAC_SEL     = configs.get('DAC_SEL'),
+                CCOMP       = configs.get('CCOMP'),
+                RF1         = configs.get('RF1'),
+                ADG_RES     = configs.get('ADG_RES'),
+                PClamp_CTRL = configs.get('PClamp_CTRL'),
+                P1_E_CTRL   = configs.get('P1_E_CTRL'),
+                P1_CAL_CTRL = configs.get('P1_CAL_CTRL'),
+                P2_E_CTRL   = configs.get('P2_E_CTRL'),
+                P2_CAL_CTRL = configs.get('P2_CAL_CTRL'),
+                gain        = configs.get('gain'),
+                FDBK        = configs.get('FDBK'),
+                mode        = configs.get('mode'),
+                EN_ipump    = configs.get('EN_ipump'),
+                RF_1_Out    = configs.get('RF_1_Out'),
+                addr_pins_1 = configs.get('addr_pins_1'),
+                addr_pins_2 = configs.get('addr_pins_2'),
+            )
+
+        return config_list
 
     def close(self):
         """Close opened devices from setup."""
