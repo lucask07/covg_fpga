@@ -258,7 +258,8 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
         for dc_config in dc_config_dicts:
             RF = dc_config_dicts[dc_config]['ADG_RES']*1e3 # all resistor values are in kilo-Ohms
             inamp_gain = dc_config_dicts[dc_config]['gain']
-            conv_factor = ad7961_fs/inamp_gain/RF
+            diff_buffer_gain = 499/(1500+120) # daughter-card differential buffer (resistor values). Gain is less than x1
+            conv_factor = ad7961_fs/inamp_gain/RF/diff_buffer_gain
 
             if ephys_sys is not None:
                 dc_type = ephys_sys.dc_mapping[dc_config] 
@@ -279,8 +280,8 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
         ads_map = daq_brd.parameters["ads_map"]
         for dc_config in dc_config_dicts:
             for amp_net in ['AMP_OUT', 'CAL_ADC']:
-                if 'AMP_OUT':
-                    gain = dc_config_dicts[dc_config]['RF1']
+                if amp_net == 'AMP_OUT':
+                    gain = 11*(1+dc_config_dicts[dc_config]['RF1']/3.01)  # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
                 else:
                     gain = 1
                 if ads_map[dc_config][amp_net][0] == 'A':
@@ -313,7 +314,7 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
             if gain > 99: # must by mV -- convert to volts
                 gain = gain/1000
             if 'CMD' in net:
-                gain = gain/dc_config_dicts[dc_config]['RF1'] # TODO x10 is a property of the clamp board, can we have a parameter for this? 
+                gain = gain/(1 + dc_config_dicts[dc_config]['RF1']/3.01)/10 # TODO x10 is a property of the clamp board, can we have a parameter for this? 
             con_name = f'D{ch}'
             pc = PhysicalConnection(con_name, 
                                     gain*2,  # this is more accurately the full-scale range
