@@ -248,7 +248,7 @@ for i in range(6):
     daq.DAC[i].set_data_mux("DDR")
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
-    daq.set_dac_gain(i, 5)  # 5V to see easier on oscilloscope
+    daq.set_dac_gain(i, 5)  # 5V 
 
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
@@ -300,13 +300,13 @@ set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0300, cc_scale=0, cc_delay=0,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
-clamp_fb_res = 2.1
+clamp_fb_res = 2.1  # gain is 1 + clamp_fb_res/3.0 
 clamp_res = 100 # kOhm should be stable 
 clamp_cap = 0
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG1",
-        DAC_SEL="drive_CAL2",
+        ADC_SEL="CAL_SIG2", # required to digitize P2 
+        DAC_SEL="gnd_CAL1", # must not be drive_CAL2 
         CCOMP=clamp_cap,
         RF1=clamp_fb_res,  # feedback circuit
         ADG_RES=clamp_res,
@@ -314,7 +314,7 @@ for dc_num in [dc_mapping['clamp']]:
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
         P2_E_CTRL=0,
-        P2_CAL_CTRL=0,
+        P2_CAL_CTRL=1,
         gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -333,8 +333,8 @@ if 1:
                 # Choose resistor; setup
                 for dc_num in [dc_mapping['bath']]:
                     log_info, config_dict = clamps[dc_num].configure_clamp(
-                        ADC_SEL="CAL_SIG1",
-                        DAC_SEL="drive_CAL2",
+                        ADC_SEL="CAL_SIG2",  # required to digitize P2 
+                        DAC_SEL="gnd_CAL1",
                         CCOMP=cap,
                         RF1=fb_res,  # feedback circuit
                         ADG_RES=res,
@@ -342,7 +342,7 @@ if 1:
                         P1_E_CTRL=0,
                         P1_CAL_CTRL=0,
                         P2_E_CTRL=0,
-                        P2_CAL_CTRL=0,
+                        P2_CAL_CTRL=1,
                         gain=1,  # instrumentation amplifier
                         FDBK=1,
                         mode="voltage",
@@ -462,12 +462,26 @@ datastreams['P1'].plot(ax[0], {'marker':'.'})
 # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
 datastreams['P2'].plot(ax[1], {'marker':'.'})
 
+fig, ax = plt.subplots()
+fig.suptitle('Overlay P1 and CMD')
+datastreams['P1'].plot(ax, {'marker':'.'})
+datastreams['CMD0'].plot(ax, {'marker':'.'})  # TODO: use physical connections to allow for setting CMD0 in terms of physical units 
+
+# estimate Im 
+Cm = 33e-9
+fig, ax = plt.subplots()
+fig.suptitle('Overlay Meas. Im and Im estimate')
+datastreams['Im'].plot(ax, {'marker':'.', 'label': 'Meas. Im'})
+t = datastreams['P1'].create_time()
+dt = t[1] - t[0]
+p1_diff = np.diff(datastreams['P1'].data)/dt
+ax.plot(t[:-1]*1e6, -Cm*p1_diff)
+
 # add log info to datastreams -- any dictionary is ok  
 datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
 datastreams.add_log_info({'dc_configs': dc_configs})
 
 print(datastreams.__dict__)
-
 # test writing and reading datastream h5
 datastreams.to_h5(data_dir, 'test.h5', log_info)
 
