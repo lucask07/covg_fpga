@@ -573,7 +573,7 @@ PI_coeff = {0: 0x7fffffff,
             12: 0x00000000,
             13: 0x00000000,
             7: 0x7fffffff,
-            15: 0x0000_1800}
+            15: 0x0000_1000}
 
 # set observer data input muxes
 obsv = Observer(f)
@@ -583,16 +583,16 @@ obsv.set_vp1_data_mux("ads8686_chA")
 obsv.set_rdy_data_mux("sync_im")
 
 # observer coeffs
-obsv_coeff = {0:0x7fffffff,
-              1:0x7fffffff,
-              2:0x0,
-              3:0x0,
-              4:0x0,
+obsv_coeff = {0:0x2816215b,
+              1:0x00001174,
+              2:0x633c7b06,
+              3:0x000111ca,
+              4:0x00fb6efd,
               5:0x00000000,
-              6:0x00000000,
-              7:0x00000000,
-              8:0x00000000,
-              9:0x0}
+              6:0xbaa53c6d,
+              7:0x00f67566,
+              8:0x03fd39ac,
+              9:0x00008c7f}
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
@@ -715,7 +715,13 @@ for ax_s in ax:
 # plot dac channel 4 data
 fig,ax=plt.subplots()
 fig = ax.plot(to_voltage(dac_data[4], num_bits=16, voltage_range=2**16, use_twos_comp=True))
-ax.set_title('Observer data')
+ax.set_title('Observer data [0]')
+ax.set_xlabel('s [us]')
+
+# plot dac channel 5 data
+fig,ax=plt.subplots()
+fig = ax.plot(to_voltage(dac_data[5], num_bits=16, voltage_range=2**16, use_twos_comp=True))
+ax.set_title('Observer data [1]')
 ax.set_xlabel('s [us]')
 
 def ads_plot_zoom(ax):

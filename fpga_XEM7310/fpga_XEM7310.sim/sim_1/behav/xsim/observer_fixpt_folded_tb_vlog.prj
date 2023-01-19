@@ -68,11 +68,8 @@ verilog xil_defaultlib  -i "../../../../../Matlab/control_system/observer/observ
 "../../../../../Matlab/control_system/observer/observer/codegen/observer/hdlsrc/observer_fixpt_tc.v" \
 "../../../../../Matlab/control_system/observer/observer/codegen/observer/hdlsrc/observer_fixpt_tb.v" \
 "../../../../../Matlab/control_system/observer/observer/codegen/observer/hdlsrc/observer_fixpt_folded_tb.v" \
-"../../../../../Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/matrix_mul_fixpt_folded.v" \
 "../../../../../Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/matrix_mul_fixpt_tb.v" \
 "../../../../../Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/multiply_pipe.v" \
-"../../../../../Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/matrix_mul_fixpt_tc.v" \
-"../../../../../Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/matrix_mul_fixpt_enb_bypass.v" \
 "../../../../../Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/matrix_mul_fixpt_folded_tb.v" \
 "../../../../../Matlab/control_system/observer/matrix_mul/codegen/matrix_mul/hdlsrc/matrix_mul_fixpt.v" \
 "../../../../fpga_XEM7310.srcs/sim_1/new/observer_fixpt_folded_tb.v" \
