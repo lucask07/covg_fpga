@@ -43,35 +43,35 @@ module obsv_coeff_store #(parameter ADDR = 0) (
 
     //scaling coeff assignment process
     always @ (posedge okClk) begin
-        if (ep_write && (ep_address == (ADDR + 8'h0))) begin
-            L_matrix_coeff[0] <= ep_dataout;
+        if (ep_write && (ep_address == (ADDR + 32'h0))) begin
+            L_matrix_coeff[0][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h1))) begin
-            L_matrix_coeff[1] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h1))) begin
+            L_matrix_coeff[1][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h2))) begin
-            L_matrix_coeff[2] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h2))) begin
+            L_matrix_coeff[2][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h3))) begin
-            L_matrix_coeff[3] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h3))) begin
+            L_matrix_coeff[3][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h4))) begin
-            A_matrix_coeff[0] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h4))) begin
+            A_matrix_coeff[0][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h5))) begin
-            A_matrix_coeff[1] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h5))) begin
+            A_matrix_coeff[1][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h6))) begin
-            A_matrix_coeff[2] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h6))) begin
+            A_matrix_coeff[2][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h7))) begin
-            A_matrix_coeff[3] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h7))) begin
+            A_matrix_coeff[3][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h8))) begin
-            B_matrix_coeff[0] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h8))) begin
+            B_matrix_coeff[0][31:0] <= ep_dataout[31:0];
         end
-        else if (ep_write && (ep_address == (ADDR + 8'h9))) begin
-            B_matrix_coeff[1] <= ep_dataout;
+        else if (ep_write && (ep_address == (ADDR + 32'h9))) begin
+            B_matrix_coeff[1][31:0] <= ep_dataout[31:0];
         end
     end
 

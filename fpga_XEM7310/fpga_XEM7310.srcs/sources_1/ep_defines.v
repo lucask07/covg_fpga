@@ -301,7 +301,7 @@
 `define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
 `define DAC80508_REGBRIDGE_OFFSET_GEN_ADDR 8'h05 // bit_width=32 addr_step=20
 `define AD5453_REGBRIDGE_OFFSET_GEN_ADDR 8'h2D // bit_width=32 addr_step=20
-`define OBSV_REGBRIDGE_OFFSET_GEN_ADDR 8'h69 // bit_width=32 addr_step=10
+`define OBSV_REGBRIDGE_OFFSET_GEN_ADDR 8'hA5 // bit_width=32 addr_step=10
 
 // FPGA test Endpoints
 `define FPGATEST_STATIC_READ_WO 8'h3F // bit_width=32
