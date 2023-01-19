@@ -28,6 +28,14 @@ See [Installation Guide]() for more information.
 
 
 ## Acknowledgements 
+
+If this work contributes to your research please cite:
+
+I. Delgadillo Bonequi, A. Stroschein, and L. J. Koerner, “A field-programmable gate array (FPGA)-based data acquisition system for closed-loop experiments,” Review of Scientific Instruments, vol. 93, no. 11, p. 114712, Nov. 2022, [doi: 10.1063/5.0121898](http://doi.org/10.1063/5.0121898).
+
+A. Stroschein, I. D. Bonequi, and L. J. Koerner, “Pyripherals: A Python Package for Communicating with Peripheral Electronic Devices,” Journal of Open Source Software, vol. 7, no. 79, p. 4762, Nov. 2022, [doi: 10.21105/joss.04762](http://doi.org/10.21105/joss.04762).
+
+
 This work is partially supported by National Institutes of Health (NIH) R15 grant R15NS116907 to PI L. J. Koerner.
 
 ### The FPGA code is dervied from many open-source contributions. 
@@ -59,4 +67,4 @@ We have targeted and tested with the [XEM7310-A75 module](https://opalkelly.com/
 
 ## (Approximate) FPGA Block Diagram 
 <p align="center">
-<img src="docs/block_diagram/fpga_block_diagram.png" width="700">
+<img src="docs/block_diagram/99_fig2.pdf" width="700">
