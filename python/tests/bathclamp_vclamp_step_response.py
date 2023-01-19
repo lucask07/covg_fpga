@@ -279,17 +279,9 @@ for key in voltage_data:
     voltage_data[key] = []  # Lists to hold voltage data at each resistor value
 
 dc_data = {}    # To store voltage data for each configuration of each daughtercard
-ads_data = {}    # To store voltage data for each configuration of each daughtercard
-ads_data_dict = {}
-ads_seq_cnt_dict = {}
 
-for dc_num in DC_NUMS:
-    # access data with dc_data[dc_num][fb_res][cap][res]
-    dc_data[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
-    ads_data[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
-    ads_data_dict[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
-    ads_seq_cnt_dict[dc_num]= dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
-
+# access data with dc_data[fb_res][cap][res]
+dc_data = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])   
 errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store whether an error occurred on the DDR read
 
 # set all fast-DAC DDR data to midscale
@@ -361,58 +353,38 @@ if 1:
                                                     blk_multiples=40)  # blk multiples multiple of 10
 
                 # to get the deswizzled data of all repeats need to read the file
-                _, chan_data = read_h5(data_dir, infile, chan_list=np.arange(8))
+                #_, chan_data = read_h5(data_dir, infile, chan_list=np.arange(8))
 
-                adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
-                print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
-
-                ############### extract the ADS data just for the last run and plot as a demonstration ############
-                ads_data_v = {}
-                for letter in ['A', 'B']:
-                    ads_data_v[letter] = np.array(to_voltage(
-                        ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
-
-                total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
-                total_seq_cnt[::2] = ads_seq_cnt[0]
-                total_seq_cnt[1::2] = ads_seq_cnt[1]
-                ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+                #adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
+                #print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
                 ephys_sys = EphysSystem()
                 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
                 datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, daq, sys_connections, outfile = None)
 
-                # Store voltage in list; plot
-                for dc_num in DC_NUMS:
-                    dc_data[dc_num][fb_res][cap][res] = to_voltage(
-                        adc_data[dc_num], num_bits=16, voltage_range=10, use_twos_comp=True)
-                    ads_data_dict[dc_num][fb_res][cap][res] = ads_data    
-                    ads_seq_cnt_dict[dc_num][fb_res][cap][res] = ads_seq_cnt    
-                    errors[dc_num][fb_res][cap][res] = reading_error
-
-                # TODO: save as datastream h5s
+                # Store datastreams in dictionary based on parameters; plot
+                dc_data[fb_res][cap][res] = datastreams
+                errors[fb_res][cap][res] = log_info['read_errors']
 
 
     print('Data collected. DDR read error report below.')
     print('|'.join([x.center(6, ' ') for x in ['dc_num', 'fb_res', 'cap', 'res', 'ERROR']]))
     error_cnt = 0
-    for dc_num in errors:
-        for fb_res in errors[dc_num]:
-            for cap in errors[dc_num][fb_res]:
-                for res in errors[dc_num][fb_res][cap]:
-                    if errors[dc_num][fb_res][cap][res]:
-                        # An error occurred in the DDR read
-                        print('|'.join([str(x).center(6, ' ') for x in [dc_num, fb_res, cap, res, 'ERROR']]))
-                        error_cnt += 1
+    for fb_res in errors:
+        for cap in errors[fb_res]:
+            for res in errors[fb_res][cap]:
+                if errors[fb_res][cap][res]:
+                    # An error occurred in the DDR read
+                    print('|'.join([str(x).center(6, ' ') for x in [fb_res, cap, res, 'ERROR']]))
+                    error_cnt += 1
     print('Total DDR read errors:', error_cnt)
     print('Plotting...')
 
-    # Time in seconds
-    t = np.arange(0, len(adc_data[0]))*1/FS
-    for dc_num in DC_NUMS:
-        for fb_res in dc_data[dc_num].keys():
+    for sig in ['Im', 'Itop']:
+        for fb_res in dc_data.keys():
             rows = ceil(len(capacitors)**(1/2))
             fig, axes = plt.subplots(rows, rows)
-            fig.suptitle(f'DC{dc_num} Current response to CMD step voltage (RF1={fb_res})')
+            fig.suptitle(f'{sig} Current response to CMD step voltage (RF1={fb_res})')
 
             for i in range(len(capacitors)):
                 cap = capacitors[i]
@@ -421,12 +393,11 @@ if 1:
                 current_ax.set_xlabel('Time (\N{GREEK SMALL LETTER MU}s)')
                 current_ax.set_ylabel('Current (\N{GREEK SMALL LETTER MU}A)')
                 
-                for res in dc_data[dc_num][fb_res][cap].keys():
-                    # Plot current (uA) against time (us) -> uA because resistor values are in kilo-ohms, we multiply current by 1e3
-                    current_ax.plot(t * 1e6, [(v / res) * 1e3 for v in dc_data[dc_num][fb_res][cap][res]], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
+                for res in dc_data[fb_res][cap].keys():
+                    dc_data[fb_res][cap][res][sig].plot(current_ax, {'label': str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}'})
                     # Zoom in on the data
                     current_ax.set_xlim(6550, 7000)
-                    current_ax.set_ylim(-10, 40)
+                    # current_ax.set_ylim(-10e-6, 40e-6)
                 
                 # Set up the legend after the first subplot so there are no repeat labels from following subplots
                 if i == 0:
@@ -437,18 +408,6 @@ ddr.repeat_setup() # Get data
 # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
 chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
                                     blk_multiples=40)  # blk multiples multiple of 10
-
-# to get the deswizzled data of all repeats need to read the file
-_, chan_data = read_h5(data_dir, file_name=file_name.format(
-    idx) + '.h5', chan_list=np.arange(8))
-
-# Long data sequence -- entire file
-adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
-
-def ads_plot_zoom(ax):
-    for ax_s in ax:
-        ax_s.set_xlim([3250, 3330])
-        ax_s.grid('on')
 
 # update system connections since the daughtercard configurations have changed
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
