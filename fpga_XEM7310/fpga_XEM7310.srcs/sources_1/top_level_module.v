@@ -815,13 +815,13 @@ module top_level_module(
                 4'd9:    adc_ddr_data = {ads_last_read[15:0],       ads_last_read[31:16],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd8:    adc_ddr_data = {timestamp_snapshot[15:0],      timestamp_snapshot[31:16], dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd7:    adc_ddr_data = {timestamp_snapshot[47:32], observer_out_est[0][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd6:    adc_ddr_data = {16'haa55,                  observer_out_est[0][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd6:    adc_ddr_data = {16'haa55,                  observer_out_est[1][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd5:    adc_ddr_data = {{11'h28b, ads_sequence_count},                  observer_out_est[0][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
 
                 4'd4:    adc_ddr_data = {ads_last_read[15:0],       ads_last_read[31:16],  dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd3:    adc_ddr_data = {timestamp_snapshot[15:0],      timestamp_snapshot[31:16], dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd2:    adc_ddr_data = {timestamp_snapshot[47:32], observer_out_est[0][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd1:    adc_ddr_data = {16'h77bb,                  observer_out_est[0][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd1:    adc_ddr_data = {16'h77bb,                  observer_out_est[1][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd0:    adc_ddr_data = { {11'h28c, ads_sequence_count},                  observer_out_est[0][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 
                 default: adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
