@@ -2,13 +2,13 @@ This README demonstrates quick start tests and the results of these tests.
 
 ## To Run  
 
-Questions: power supply? 
+Questions: power supply flexibility. 
 
 Setup 
 
 ## Results 
 
-Calibration results are available here:
+Calibration results of electrode resistances and offsets are available here:
 [calibration results](calibration.csv)
 
 ## Open Loop Tests
@@ -28,6 +28,9 @@ Calibration results are available here:
 - Im noise 
 - Vm rise time 
 - Vm amplitude 
+
+### H5 Datastreams and Axon P-Clamp Formatted Data 
+
 
 ### CC Electrode Impulse Responses 
 <!--- from test xyz.py --->

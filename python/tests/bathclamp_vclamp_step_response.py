@@ -22,18 +22,22 @@ import atexit
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
+import hashlib 
 from pyripherals.utils import from_voltage
 from pyripherals.core import FPGA, Endpoint
 
 from setup_paths import *
 
 from analysis.clamp_data import adjust_step2
+from analysis.utils import my_savefig
 from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
 
+
+dac_offset = 0x2000
 
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
@@ -46,9 +50,6 @@ def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8
     -------
     np.ndarray, np.ndarray : the CMD signal data, the CC signal data.
     """
-
-    dac_offset = 0x2000
-
     cmd_signal = ddr.make_step(
         low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len)  # 1.6 ms between edges
 
@@ -120,6 +121,8 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
     block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
     ddr.reset_mig_interface()
     ddr.write_finish()
+
+    return block_pipe_return, speed_MBs
 
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
@@ -230,7 +233,19 @@ except NameError:
 
 # ------ Collect Data --------------
 file_name = time.strftime("%Y%m%d-%H%M%S")
+experiment_name = 'bathclamp_vclamp_step_response'
 idx = 0
+
+results_dir = os.path.join(boards_path, 'results') # 
+UPDATE_RESULTS = True
+system_params = {}
+system_params['file_name'] = file_name
+system_params['fpga_usbSpeed'] = f.device_info.usbSpeed
+system_params['fpga_devID'] = f.device_info.deviceID
+system_params['fpga_serialNumber'] = f.device_info.serialNumber
+system_params['fpga_bitfile_version'] = f.bitfile_version
+system_params['fpga_bitfile_md5'] = hashlib.md5(open(f.bitfile,'rb').read()).hexdigest()
+
 
 feedback_resistors = [2.1]
 capacitors = [0, 47, 247]
@@ -257,8 +272,12 @@ errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store
 # set all fast-DAC DDR data to midscale
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
+
+for cmd_ch in range(6):
+    ddr.data_arrays[cmd_ch][:] = dac_offset
+
 # Set CMD and CC signals - only for the bath clamp
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
+system_params['pipe_return'], system_params['speed_MBs'] = set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
@@ -372,6 +391,8 @@ if 1:
                 # Set up the legend after the first subplot so there are no repeat labels from following subplots
                 if i == 0:
                     fig.legend(loc='lower right')
+        if (sig == 'Im') and UPDATE_RESULTS:
+            my_savefig(fig, results_dir, 'Im_step')
 
 ddr.repeat_setup() # Get data
 
@@ -392,9 +413,11 @@ datastreams['P1'].plot(ax[0], {'marker':'.'})
 datastreams['P2'].plot(ax[1], {'marker':'.'})
 
 fig, ax = plt.subplots()
-fig.suptitle('Overlay P1 and CMD')
+fig.suptitle('DAC CMD and Vm (measured at P1)')
 datastreams['P1'].plot(ax, {'marker':'.'})
 datastreams['CMD0'].plot(ax, {'marker':'.'})  # TODO: use physical connections to allow for setting CMD0 in terms of physical units 
+if UPDATE_RESULTS:
+    my_savefig(fig, results_dir, 'Vm_step')
 
 # estimate Im 
 Cm = 33e-9
@@ -408,13 +431,19 @@ ax.plot(t[:-1]*1e6, -Cm*p1_diff)
 
 # add log info to datastreams -- any dictionary is ok  
 datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+datastreams.add_log_info(system_params)
 datastreams.add_log_info({'dc_configs': dc_configs})
 
-print(datastreams.__dict__)
 # test writing and reading datastream h5
-datastreams.to_h5(data_dir, 'test.h5', log_info)
+datastreams.to_h5(data_dir, f'{experiment_name}.h5', log_info)
 
-datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
+full_system_params = datastreams.get_log_info()
+
+if UPDATE_RESULTS:
+    df = pd.DataFrame.from_dict(full_system_params)
+    df.to_csv(os.path.join(results_dir, 'system_params.csv'))
+
+datastreams2 = h5_to_datastreams(data_dir, f'{experiment_name}.h5')
 # this datastreams has the log info but as a dictionary, not as Python classes
 # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
 
