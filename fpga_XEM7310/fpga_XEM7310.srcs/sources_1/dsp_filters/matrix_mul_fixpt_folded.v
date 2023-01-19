@@ -64,7 +64,7 @@ parameter B_wid = 'd16)
   output  reg signed [(A_wid + B_wid + 1 -1):0] out_0; 
   output  reg signed [(A_wid + B_wid + 1 -1):0] out_1;  
 
-  parameter PIPE_DLY = 5'd6 + 5'd3; // pipeline delay of the Xilinx multiplier (6 - listed as "optimal" by IP generator) combined with delay to get inputs into multiplier
+  parameter PIPE_DLY = 5'd6 + 5'd2; // pipeline delay of the Xilinx multiplier (6 - listed as "optimal" by IP generator) combined with delay to get inputs into multiplier
 
   wire enb_1_1_1;
   wire enb_40_1_0;
@@ -82,7 +82,7 @@ parameter B_wid = 'd16)
   assign B[0] = B_0;
   assign B[1] = B_1;
 
-  wire clk_enable_1;
+  /*wire clk_enable_1;
   matrix_mul_fixpt_enb_bypass u_matrix_mul_fixpt_enb_bypass (.clk_1(clk),
                                                                              .reset_1(reset),
                                                                              .clk_enable_1(clk_enable),
@@ -96,7 +96,25 @@ parameter B_wid = 'd16)
                                                          .clk_enable(clk_enable_1),
                                                          .enb_40_1_0(enb_40_1_0),
                                                          .enb_1_1_1(enb_1_1_1),
-                                                         .count40(counter));
+                                                         .count40(counter));*/
+  reg [5:0] counter;
+
+  // counter process
+  always @(posedge clk) begin
+      if (reset == 1'b1) begin
+          counter <= 1'b0;
+      end
+      else if (clk_enable == 1'b1) begin
+          counter <= 1'b0;
+      end
+      // counter increment
+      else if (counter <= (5 + PIPE_DLY)) begin
+          counter <= counter + 1'b1;
+      end
+      else begin
+          counter <= counter;
+      end
+  end
 
 
   reg signed [(A_wid-1):0] a_in;
