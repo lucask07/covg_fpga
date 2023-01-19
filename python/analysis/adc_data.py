@@ -28,7 +28,6 @@ elif sys.platform == "darwin":
 elif sys.platform == "win32":
     data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/{}{:02d}{:02d}')
 
-data_dir = data_dir_covg.format(2022, 1, 16)
 SAMPLE_PERIOD = 1 / 5e6
 FS = 5e6
 ADC_CROP = 64

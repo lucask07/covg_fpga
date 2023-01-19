@@ -17,8 +17,6 @@ Lucas Koerner, koerner.lucas@stthomas.edu
 from math import ceil
 import os
 import sys
-sys.path.append('C:/Users/koer2434/Documents/covg/pyripherals/python/src/') #TODO - temporary 
-
 from time import sleep
 import datetime
 import time
@@ -182,7 +180,7 @@ elif pwr_setup == "3dual":
 # Initialize FPGA
 f = FPGA()
 f.init_device()
-sleep(2)
+sleep(0.2)
 f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset
 
 pwr = Daq.Power(f)
@@ -220,15 +218,14 @@ ads_voltage_range = 5  # need this for to_voltage later
 ads.hw_reset(val=False)
 ads.set_host_mode()
 ads.setup()
-ads.set_range(ads_voltage_range) # TODO: make an ads.current_voltage_range a property of the ADS so we always know it
+ads.set_range(ads_voltage_range) # 
 ads.set_lpf(376)
 
 dc_under_test = 0 # TODO: 
 adc_chan0 = daq.parameters['ads_map'][dc_under_test]['CAL_ADC'] # ('A', 0)
 adc_chan1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT'] # ('A', 1)
 ads_sequencer_setup = [('0', '0'), ('1', '1')] #DC 0 has both to ADS 'A'.
-#TODO - setup sequencer has default values for voltage range and lpf. Will over-write previous settings
-codes = ads.setup_sequencer(chan_list=ads_sequencer_setup, voltage_range=ads_voltage_range, lpf=376)
+codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
 ads.set_fpga_mode()
 
@@ -498,6 +495,8 @@ for testing in ['bath', 'vclamp']:
 	dac_wave = dac_waveform(0, amp=current_amp, freq=freq, shape='SQ', source='i') # howland pump is always driven by BP_OUT0
 	volt, t = collect_data(ddr, PLT=True, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
 							num_repeats=num_repeats, blk_multiples=blk_multiples)
+
+    # TODO: change just saving the H5 file? However h5 does not save the slow DAC waveforms 
 	np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
 
 	data[step] = {'volt': volt,
@@ -595,6 +594,8 @@ for testing in ['bath', 'vclamp']:
 		tf_type = 'elec_r_cc'
 		r_total_guess = 8e3
 
+    # calculates both the total resistance (measured via current injection)
+    # and the isolated resistance 
 	predicted_res, res_fit_mesg, component_fits, fit_notes, components = total_res_iso_res(data_dir, filename + '.npz',  r_total_guess, tf_type, PLT=True)
 	print(components)
 	# components is calculated from component_fits so its ok to not capture component_fits
