@@ -487,7 +487,7 @@ for testing in ['bath', 'vclamp']:
 		num_repeats=50 
 		blk_multiples=40
 		
-	daq.set_isel(port=1, channels=[dc_under_test]) # current on CH 0 TODO: parameterize based on DC#  
+	daq.set_isel(port=1, channels=[dc_under_test]) # current based on DC#  
 	config_dict_test['ADC_SEL'] = 'CAL_SIG2'
 	config_dict_test['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'
 	log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
