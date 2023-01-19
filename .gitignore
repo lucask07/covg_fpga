@@ -137,8 +137,8 @@ python/tests/unit_tests/test_defines.v
 !docs/block_diagram/*.pdf
 
 # For results 
-!results/README.md
-!results/*.pdf
+!python/results/README.md
+!python/results/*.pdf
 
 
 ## exclude data 
