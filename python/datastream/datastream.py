@@ -109,17 +109,21 @@ class Datastreams(dict):
             
             grp.attrs['json'] = json.dumps(self.__dict__, default=vars)
 
-def get_log_info(self):
+    def get_log_info(self):
+        """ 
+        extract log info from datastreams and placed into a dict
+        removes the data array (consumes the most disk space)
+        but keeps the other info
+        """
+        log_dict = {}
+        for dk in self:
+            d_stream = copy.deepcopy(self[dk])
+            dstream_attrs = d_stream.__dict__
+            dstream_attrs.pop('data', None)
+            # get attributes from the datastream and set these attributes to the dataset 
+            log_dict.update(dstream_attrs)
 
-    log_dict = {}
-    for dk in self:
-        d_stream = copy.deepcopy(self[dk])
-        dstream_attrs = d_stream.__dict__
-        dstream_attrs.pop('data', None)
-        # get attributes from the datastream and set these attributes to the dataset 
-        log_dict.update(dstream_attrs)
-
-    return log_dict
+        return log_dict
 
 
 def h5_to_datastreams(directory, filename):

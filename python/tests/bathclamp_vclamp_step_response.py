@@ -21,6 +21,7 @@ import time
 import atexit
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 import copy
 import hashlib 
 from pyripherals.utils import from_voltage
@@ -246,7 +247,6 @@ system_params['fpga_serialNumber'] = f.device_info.serialNumber
 system_params['fpga_bitfile_version'] = f.bitfile_version
 system_params['fpga_bitfile_md5'] = hashlib.md5(open(f.bitfile,'rb').read()).hexdigest()
 
-
 feedback_resistors = [2.1]
 capacitors = [0, 47, 247]
 bath_res = [33, 100, 332] # Clamp.configs['ADG_RES_dict'].keys()
@@ -436,12 +436,11 @@ datastreams.add_log_info({'dc_configs': dc_configs})
 
 # test writing and reading datastream h5
 datastreams.to_h5(data_dir, f'{experiment_name}.h5', log_info)
-
-full_system_params = datastreams.get_log_info()
+full_system_params = vars(datastreams)
 
 if UPDATE_RESULTS:
-    df = pd.DataFrame.from_dict(full_system_params)
-    df.to_csv(os.path.join(results_dir, 'system_params.csv'))
+    df = pd.DataFrame([system_params])
+    df.to_csv(os.path.join(results_dir, 'system_params.csv'), index=False)
 
 datastreams2 = h5_to_datastreams(data_dir, f'{experiment_name}.h5')
 # this datastreams has the log info but as a dictionary, not as Python classes

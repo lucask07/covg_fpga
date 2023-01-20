@@ -25,6 +25,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pkl
 import copy
+import pandas as pd
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
