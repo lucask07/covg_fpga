@@ -139,7 +139,8 @@ python/tests/unit_tests/test_defines.v
 # For results 
 !python/results/README.md
 !python/results/*.pdf
-
+!python/results/*.png
+!python/results/*.csv
 
 ## exclude data 
 data/*
