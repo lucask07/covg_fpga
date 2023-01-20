@@ -532,7 +532,7 @@ file_name = time.strftime("%Y%m%d-%H%M%S") + '_{}' # to append index
 idx = 0
 
 # Set CMD and CC signals
-set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
+set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0029, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
@@ -543,7 +543,7 @@ for dc_num in DC_NUMS:
         DAC_SEL="drive_CAL2",
         CCOMP=47,
         RF1=2.1,  # feedback circuit
-        ADG_RES=100,
+        ADG_RES=332,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
@@ -561,19 +561,19 @@ for dc_num in DC_NUMS:
 color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
 
 PI_coeff = {0: 0x7fffffff,
-            1: 0x51418937,
-            2: 0xb1418937,
+            1:0x50404ea5,
+            2:0xb0404ea5,
             3: 0x00000000,
             4: 0xc0000000,
             5: 0x00000000,
             8: 0x7fffffff,
-            9: 0x40000000,
+            9: 0x20000000,
             10: 0x00000000,
             11: 0x00000000,
             12: 0x00000000,
             13: 0x00000000,
             7: 0x7fffffff,
-            15: 0x0000_1000}
+            15: 0x0000_089a}
 
 # set observer data input muxes
 obsv = Observer(f)
@@ -583,16 +583,16 @@ obsv.set_vp1_data_mux("ads8686_chA")
 obsv.set_rdy_data_mux("sync_im")
 
 # observer coeffs
-obsv_coeff = {0:0x2816215b,
-              1:0x00001174,
-              2:0x633c7b06,
-              3:0x000111ca,
-              4:0x00fb6efd,
-              5:0x00000000,
-              6:0xbaa53c6d,
-              7:0x00f67566,
-              8:0x03fd39ac,
-              9:0x00008c7f}
+obsv_coeff = {0:0x00fd4c52,
+1:0x000009ac,
+2:0x054ecf2e,
+3:0xfffec841,
+4:0x00fb6f97,
+5:0x00000005,
+6:0xfcb79653,
+7:0x00f674ae,
+8:0x01987ac9,
+9:0x0004a391}
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
@@ -603,7 +603,7 @@ for i in [1]:
     daq.DAC[i].filter_select(operation="set")
     daq.DAC[i].write(int(0))
     daq.DAC[i].set_data_mux("DDR")
-    daq.DAC[i].set_data_mux("ads8686_chA", filter_data=True)
+    daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True)
     daq.DAC[i].filter_sum("clear")
     daq.DAC[i].filter_downsample("clear")
     daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
@@ -723,6 +723,17 @@ fig,ax=plt.subplots()
 fig = ax.plot(to_voltage(dac_data[5], num_bits=16, voltage_range=2**16, use_twos_comp=True))
 ax.set_title('Observer data [1]')
 ax.set_xlabel('s [us]')
+
+# subplot of Observer Vm and measured Vm
+fig,ax=plt.subplots(2,1)
+fig.suptitle('Observer Vm vs ADS8686')
+# Observer
+fig = ax[0].plot(t_ads, to_voltage(dac_data[4], num_bits=16, voltage_range=1, use_twos_comp=True))
+ax[0].set_ylabel('Observer Vm [V]')
+# ADS8686
+fig = ax[1].plot(t_ads, ads_separate_data['B'][4])
+ax[1].set_ylabel('ADS8686 Vm [V]')
+ax[1].set_xlabel('s [us]')
 
 def ads_plot_zoom(ax):
     for ax_s in ax:
