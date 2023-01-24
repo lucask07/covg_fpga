@@ -358,8 +358,8 @@ class ExperimentSetup:
         The setup connection structure: DAQ port number, daughtercard pins, Electrode
     electrodes : List[Electrode]
         A list of all Electrodes in the setup. This is used to help access Electrodes by their name. To avoid confusion, it is recommended to use the ExperimentSetup.get_electrode_by_name method rather than accessing this dictionary directly.
-    ads_sequencer_setup : List[List[str]]
-        The sequencer setup for the ADS8686 for the experiment.
+    daq_peripherals : Dict[str: Dict[str: any]]
+        Configuration information for DAQ chips such as the ADS8686 (ADC_GP).
     """
 
     def __init__(self, yaml_dict):
@@ -390,7 +390,13 @@ class ExperimentSetup:
 
             # TODO: append to electrodes list as we go
 
-        self.ads_sequencer_setup = yaml_dict['ads_sequencer_setup']
+        self.daq_peripherals = {}
+        for k in yaml_dict['daq']:
+            # Skip ports, already did that above
+            if k in [0, 1, 2, 3]:
+                continue
+            else:
+                self.daq_peripherals[k] = yaml_dict[k]
 
     def get_electrode_by_name(self, name: str):
         """Get an Electrode instance from setup by name.
@@ -634,15 +640,12 @@ class Experiment:
 
 
         # -------- configure the ADS8686
-        ads_voltage_range = 5  # need this for to_voltage later 
         self.daq.ADC_gp.hw_reset(val=False)
         self.daq.ADC_gp.set_host_mode()
         self.daq.ADC_gp.setup()
-        self.daq.ADC_gp.set_range(ads_voltage_range) # TODO: make an self.daq.ADC_gp.current_voltage_range a property of the ADS so we always know it
+        self.daq.ADC_gp.set_range(self.experiment_setup.daq_peripherals['ADS8686']['voltage_range'])
         self.daq.ADC_gp.set_lpf(39)
         codes = self.daq.ADC_gp.setup_sequencer(chan_list=self.experiment_setup.ads_sequencer_setup)
-        self.daq.ADC_gp.set_lpf(39)
-        self.daq.ADC_gp.set_range(5)
         self.daq.ADC_gp.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value of 1000 which is 200 ksps)
         self.daq.ADC_gp.set_fpga_mode()
 
@@ -1011,7 +1014,6 @@ class Experiment:
             raise TypeError('record parameter clamp_num must be int or list of ints.')
 
         ads_voltage_range = 5
-        ads_sequencer_setup = [('1', '1'), ('2', '2')]
         sequence_length = self.write_sequence(clamp_num=clamp_nums, inject_current=inject_current, low_scaling_factor=low_scaling_factor, cutoff=cutoff, high_scaling_factor=high_scaling_factor)
         start = time.time()
 
@@ -1078,7 +1080,7 @@ class Experiment:
             # to get the deswizzled data of all repeats need to read the file
             # _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
             adc_cutoff_len = len(sweep) * 2
-            ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS) / len(ads_sequencer_setup))
+            ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS) / len(self.experiment_setup.daq_peripherals['ADS8686']['sequencer_setup']))
 
             adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data, self.daq.ddr.fpga.bitfile_version)
             if reading_error:
@@ -1102,7 +1104,7 @@ class Experiment:
             total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
             total_seq_cnt[::2] = ads_seq_cnt[0]
             total_seq_cnt[1::2] = ads_seq_cnt[1]
-            ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+            ads_separate_data = separate_ads_sequence(self.experiment_setup.daq_peripherals['ADS8686']['sequencer_setup'], ads_data_v, total_seq_cnt, slider_value=4)
 
             for clamp_num in clamp_nums:
                 # Need leftover_adc_data to keep track of any data not part of the current sweep that came with the last read of data.
@@ -1133,7 +1135,7 @@ class Experiment:
                 # Multiply by 1e3 to put in mV units
                 vm = combined_ads_data[:ads_cutoff_len] * 1e3 / 1.7
 
-                t_ads = np.arange(len(vm))*1/(ADS_FS / len(ads_sequencer_setup)) * 1e3
+                t_ads = np.arange(len(vm))*1/(ADS_FS / len(self.experiment_setup.daq_peripherals['ADS8686']['sequencer_setup'])) * 1e3
                 # Because we recalculate the length of data to read each sweep,
                 # the current_data in later sweeps may be a different length
                 # than initial sweeps, so we cut off time with current to

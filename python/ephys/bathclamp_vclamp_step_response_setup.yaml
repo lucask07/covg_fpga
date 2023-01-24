@@ -72,10 +72,12 @@ daq:
       RF_1_Out: 1
       addr_pins_1: 0b110
       addr_pins_2: 0b000
-  ads_sequencer_setup:
-    - ['0', '0']
-    - ['1', '1']
-    - ['2', '2']
+  ADS8686:
+    sequencer_setup:
+      - ['0', '0']
+      - ['1', '1']
+      - ['2', '2']
+    voltage_range: 5
 
 cell:
   name: model_cell
