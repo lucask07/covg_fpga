@@ -358,6 +358,8 @@ class ExperimentSetup:
         The setup connection structure: DAQ port number, daughtercard pins, Electrode
     electrodes : List[Electrode]
         A list of all Electrodes in the setup. This is used to help access Electrodes by their name. To avoid confusion, it is recommended to use the ExperimentSetup.get_electrode_by_name method rather than accessing this dictionary directly.
+    ads_sequencer_setup : List[List[str]]
+        The sequencer setup for the ADS8686 for the experiment.
     """
 
     def __init__(self, yaml_dict):
@@ -387,6 +389,8 @@ class ExperimentSetup:
             # TODO: need to understand which parts of the dictionaries should be replaced with Electrodes first
 
             # TODO: append to electrodes list as we go
+
+        self.ads_sequencer_setup = yaml_dict['ads_sequencer_setup']
 
     def get_electrode_by_name(self, name: str):
         """Get an Electrode instance from setup by name.
@@ -636,8 +640,7 @@ class Experiment:
         self.daq.ADC_gp.setup()
         self.daq.ADC_gp.set_range(ads_voltage_range) # TODO: make an self.daq.ADC_gp.current_voltage_range a property of the ADS so we always know it
         self.daq.ADC_gp.set_lpf(39)
-        ads_sequencer_setup = [('1', '1'), ('2', '2')]
-        codes = self.daq.ADC_gp.setup_sequencer(chan_list=ads_sequencer_setup)
+        codes = self.daq.ADC_gp.setup_sequencer(chan_list=self.experiment_setup.ads_sequencer_setup)
         self.daq.ADC_gp.set_lpf(39)
         self.daq.ADC_gp.set_range(5)
         self.daq.ADC_gp.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value of 1000 which is 200 ksps)
