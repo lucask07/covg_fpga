@@ -32,6 +32,7 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from analysis.adc_data import separate_ads_sequence
 from boards import Daq, Clamp
 from filters.filter_tools import butter_lowpass_filter
+from datastream.datastream import PhysicalConnection
 
 # Constants
 FS = 5e6
@@ -387,7 +388,7 @@ class ExperimentSetup:
 
             # TODO: append to electrodes list as we go
 
-    def get_electrode_by_name(name: str):
+    def get_electrode_by_name(self, name: str):
         """Get an Electrode instance from setup by name.
         
         Parameters
@@ -478,6 +479,103 @@ class Experiment:
 
         return self.setup
 
+    def create_phys_connections(self):
+        """Return a dictionary of PhysicalConnections based on the current setup.
+        
+        Returns
+        -------
+        dict : int or str to PhysicalConnections pairs
+        """
+
+        phys_connections = {}
+
+        ad7961_fs = 4.096*2
+        # ADC data
+        # 1) AD7961 - dictionary key is an integer [0, 3]
+        for dc_num in range(4):
+            dc = self.experiment_setup.daq_ports[dc_num]
+            # Skip any daughtercards not defined in setup YAML
+            if dc == {}:
+                pc = None
+            else:
+                RF = dc['clamp_configs']['ADG_RES'] * \
+                    1e3  # all resistor values are in kilo-Ohms
+                inamp_gain = dc['clamp_configs']['gain']
+                # daughter-card differential buffer (resistor values). Gain is less than x1
+                diff_buffer_gain = 499/(1500+120)
+                conv_factor = ad7961_fs/inamp_gain/RF/diff_buffer_gain
+
+                net = dc['AD7961']['name']
+                pc = PhysicalConnection(f'{dc_num}',
+                                        conv_factor,
+                                        converter='AD7961',
+                                        bits=16,
+                                        units='A',
+                                        net=net)
+            phys_connections[int(dc_num)] = pc
+
+        # 2) ADS8686
+        ads_map = self.daq.parameters["ads_map"]
+        for dc_num in range(4):
+            dc = self.experiment_setup.daq_ports[dc_num]
+            # Skip any daughtercards not defined in setup YAML
+            if dc == {}:
+                pc = None
+            else:
+                for amp_net in ['AMP_OUT', 'CAL_ADC']:
+                    if amp_net == 'AMP_OUT':
+                        # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
+                        gain = 11*(1+dc['clamp_configs']['RF1']/3.01)
+                    else:
+                        gain = 1
+                    if ads_map[dc_num][amp_net][0] == 'A':
+                        ads_chan = 0
+                    else:
+                        ads_chan = 8
+                    # channel goes from 0 - 15 for the voltage range
+                    ads_chan += int(ads_map[dc_num][amp_net][1])
+                    # ads.current_voltage_range is a len 16 list
+                    conv_factor = self.daq.ADC_gp.ranges[ads_chan]*2/gain
+                    # example 'A0' or 'B2'
+                    con_name = f'{ads_map[dc_num][amp_net][0]}{ads_map[dc_num][amp_net][1]}'
+
+                    net = dc[amp_net]['name']
+                    pc = PhysicalConnection(f'{net}_{dc_num}',
+                                            conv_factor,
+                                            converter='ADS8686',
+                                            bits=16,
+                                            units='V',
+                                            net=net)
+            phys_connections[con_name] = pc
+
+        # P1 is the voltage that is actually at the membrane electrode (divided by gain of feedback amplifier)
+
+        # CMD is the target membrane voltage with a closed-loop configuration
+        # 3) DAC data -- AD5453, does not depend on daughtercard config, unsigned
+        for dc_num in range(4):
+            dc = self.experiment_setup.daq_ports[dc_num]
+            # Skip any daughtercards not defined in setup YAML
+            if dc == {}:
+                pc = None
+            else:
+                net = self.daq.parameters['fast_dac_map'][dc_num]
+                gain = self.daq.current_dac_gain[dc_num]  # +/-
+                if gain > 99:  # must by mV -- convert to volts
+                    gain = gain/1000
+                if 'CMD' in net:
+                    # TODO x10 is a property of the clamp board, can we have a parameter for this?
+                    gain = gain/(1 + dc['clamp_configs']['RF1']/3.01)/10
+                con_name = f'D{dc_num}'
+                pc = PhysicalConnection(con_name,
+                                        gain*2,  # this is more accurately the full-scale range
+                                        converter='AD5453',
+                                        bits=14,
+                                        units='V',
+                                        net=net)
+            phys_connections[con_name] = pc
+
+        return phys_connections
+
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
 
@@ -566,7 +664,7 @@ class Experiment:
         self.daq.ADC[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
         self.daq.ADC[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
 
-    def configure_clamps(self, clamps=[0, 1, 2, 3]):
+    def configure_clamps(self, clamps: list = [0, 1, 2, 3]):
         """Configure the clamps (daughtercards) as defined in the self.setup attribute.
         
         To change the configuration of the clamps, change the values in self.setup and run this method again.
