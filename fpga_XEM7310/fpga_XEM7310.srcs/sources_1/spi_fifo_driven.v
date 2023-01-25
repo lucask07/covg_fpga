@@ -224,8 +224,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
                     temp4 <= (temp2<<3);
                 end
                 else if (filter_data_mux_sel == 3'b011) begin
-                    temp3 <= (temp1<<3);
-                    temp4 <= (temp2<<3);
+                    temp3 <= (temp1);
+                    temp4 <= (temp2);
                 end
                 else begin
                     temp3 <= temp3;
