@@ -337,8 +337,8 @@ module observer_fixpt_folded
       out_1_cast <= 74'd0; //33En30 
     end
     else if (time_to_sum == 1'b1) begin 
-      out_0_cast <= {{8{out_0_A_reg[65]}}, out_0_A_reg} + { {2{out_0_B_reg[48]}}, out_0_B_reg, 6'b0} + { {2{out_0_L_reg[48]}}, out_0_L_reg, 6'b0}; //sfix74_en56
-      out_1_cast <= {{8{out_1_A_reg[65]}}, out_1_A_reg} + { {2{out_1_B_reg[48]}}, out_1_B_reg, 6'b0} + { {2{out_1_L_reg[48]}}, out_1_L_reg, 6'b0}; //sfix74_en56
+      out_0_cast <= {{8{out_0_A_reg[65]}}, out_0_A_reg} + { {2{out_0_B_reg[65]}}, out_0_B_reg, 6'b0} + { {2{out_0_L_reg[65]}}, out_0_L_reg, 6'b0}; //sfix74_en56
+      out_1_cast <= {{8{out_1_A_reg[65]}}, out_1_A_reg} + { {2{out_1_B_reg[65]}}, out_1_B_reg, 6'b0} + { {2{out_1_L_reg[65]}}, out_1_L_reg, 6'b0}; //sfix74_en56
     end
     else begin
       out_0_cast <= out_0_cast;
