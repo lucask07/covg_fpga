@@ -67,4 +67,4 @@ We have targeted and tested with the [XEM7310-A75 module](https://opalkelly.com/
 
 ## (Approximate) FPGA Block Diagram 
 <p align="center">
-<img src="docs/block_diagram/99_fig2.pdf" width="700">
+<img src="docs/block_diagram/99_fig2.png" width="700">
