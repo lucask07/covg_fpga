@@ -43,9 +43,9 @@ capacitors = [0, 47, 247]
 bath_res = [33, 100, 332]  # Clamp.configs['ADG_RES_dict'].keys()
 
 # DEBUGGING
-feedback_resistors = feedback_resistors[-1:]
-capacitors = capacitors[-1:]
-bath_res = bath_res[-1:]
+# feedback_resistors = feedback_resistors[-1:]
+# capacitors = capacitors[-1:]
+# bath_res = bath_res[-1:]
 
 # Set up Experiment
 setup_yaml_path = 'bathclamp_vclamp_step_response_setup.yaml'
@@ -69,12 +69,49 @@ for fb_res in feedback_resistors:
             file_names.append(file_name)
             experiment.experiment_setup.daq_ports[dc_mapping['bath']]['clamp_configs'].update(config_updates)
             experiment.configure_clamps()
-            experiment.record(clamp_num=dc_mapping['bath'], file_name=file_name)    # TODO: update record to use Datastreams
+            experiment.record(clamp_num=dc_mapping['bath'], file_name=file_name, plot=False)    # TODO: update record to use Datastreams
             # input('Pausing...')
 
 # Plot data
+# for file_name in file_names:
+#     # Plot using datastreams
+#     datastreams, log_info = rawh5_to_datastreams(
+#         data_dir=data_dir,
+#         infile=file_name,
+#         data_to_names=experiment.daq.ddr.data_to_names,
+#         daq=experiment.daq,
+#         phys_connections=experiment.create_phys_connections(),
+#         outfile=None
+#     )
+#     fig, ax = plt.subplots(2, 1)
+#     fig.suptitle('ADS data')
+#     # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
+#     # datastreams['P1'].plot(ax[0], {'marker': '.'})
+#     # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
+#     datastreams['P2'].plot(ax[1], {'marker': '.'})
+
+#     fig, ax = plt.subplots()
+#     fig.suptitle('Overlay P1 and CMD')
+#     # datastreams['P1'].plot(ax, {'marker': '.'})
+#     # TODO: use physical connections to allow for setting CMD0 in terms of physical units
+#     datastreams['CMD0'].plot(ax, {'marker': '.'})
+
+#     # estimate Im
+#     Cm = 33e-9
+#     fig, ax = plt.subplots()
+#     fig.suptitle('Overlay Meas. Im and Im estimate')
+#     datastreams['Im'].plot(ax, {'marker': '.', 'label': 'Meas. Im'})
+#     # t = datastreams['P1'].create_time()
+#     t = datastreams['P2'].create_time()
+#     dt = t[1] - t[0]
+#     # p1_diff = np.diff(datastreams['P1'].data)/dt
+#     p1_diff = np.zeros(t.shape)[:-1]
+#     ax.plot(t[:-1]*1e6, -Cm*p1_diff)
+# plt.show()
+
+# Plot the different setups
+fig, ax = plt.subplots()
 for file_name in file_names:
-    # Plot using datastreams
     datastreams, log_info = rawh5_to_datastreams(
         data_dir=data_dir,
         infile=file_name,
@@ -83,28 +120,10 @@ for file_name in file_names:
         phys_connections=experiment.create_phys_connections(),
         outfile=None
     )
-    fig, ax = plt.subplots(2, 1)
-    fig.suptitle('ADS data')
-    # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-    # datastreams['P1'].plot(ax[0], {'marker': '.'})
-    # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-    datastreams['P2'].plot(ax[1], {'marker': '.'})
 
-    fig, ax = plt.subplots()
-    fig.suptitle('Overlay P1 and CMD')
-    # datastreams['P1'].plot(ax, {'marker': '.'})
-    # TODO: use physical connections to allow for setting CMD0 in terms of physical units
-    datastreams['CMD0'].plot(ax, {'marker': '.'})
-
-    # estimate Im
-    Cm = 33e-9
-    fig, ax = plt.subplots()
-    fig.suptitle('Overlay Meas. Im and Im estimate')
-    datastreams['Im'].plot(ax, {'marker': '.', 'label': 'Meas. Im'})
-    # t = datastreams['P1'].create_time()
-    t = datastreams['P2'].create_time()
-    dt = t[1] - t[0]
-    # p1_diff = np.diff(datastreams['P1'].data)/dt
-    p1_diff = np.zeros(t.shape)[:-1]
-    ax.plot(t[:-1]*1e6, -Cm*p1_diff)
+    datastreams['Im'].plot(ax, {'marker': '.', 'label': file_name})
+# Zoom to one protocol length
+# Plot is in microseconds, protocol duration in milliseconds
+ax.set_xlim([0, protocol.duration() * 1e3])
+ax.legend(loc='upper right')
 plt.show()

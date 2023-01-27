@@ -969,7 +969,7 @@ class Experiment:
 
         return t, data
 
-    def record(self, clamp_num, file_name=None, filter_current=None, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
+    def record(self, clamp_num, file_name=None, filter_current=None, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7, plot=True):
         """Send out Sequence and display updating graph.
         
         We read back the data by Sweep so we can update the graph in pieces,
@@ -1001,6 +1001,8 @@ class Experiment:
             The scaling factor (uA/mV) for current when the CMD voltage is
             greater than or equal to the cutoff.
             current = voltage * low_scaling_factor  * 1e3.
+        plot : bool
+            Whether to plot membrane voltage and current data as it comes in.
         
         Returns
         -------
@@ -1017,13 +1019,9 @@ class Experiment:
 
         ads_voltage_range = 5
         sequence_length = self.write_sequence(clamp_num=clamp_nums, inject_current=inject_current, low_scaling_factor=low_scaling_factor, cutoff=cutoff, high_scaling_factor=high_scaling_factor)
-        start = time.time()
 
         # Split Sequence into Sweeps. Write full sequence but read each Sweep individually
         sweeps = np.concatenate([p.sweeps for p in self.sequence.protocols])
-
-        # Hold data from h5 from each sweep so we can write all at the end
-        # data = np.array([[] for i in range(DDR3.NUM_ADC_CHANNELS)], dtype=int)
 
         data_dir = os.path.join(os.path.expanduser('~'), 'ephys_data')
         if not os.path.exists(data_dir):
@@ -1031,6 +1029,25 @@ class Experiment:
         # Assign file name according to the date if None is given
         if file_name is None:
             file_name = time.strftime("%Y%m%d-%H%M%S.h5")
+
+        if not plot:
+            # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
+            natural_delay = 0.23539209365844727
+            time.sleep(max(0, self.sequence.duration() * 1e-3 - natural_delay))
+            blk_multiples = 40
+            # total bytes from save data = 2048 * num_repeats * blk_multiples
+            # 128 bits per read point -> 16 bytes per read point
+            # Need 2*len(sweep) points read to read the same amount of time since ADC 2 times faster than DAC (5 MSPS vs. 2.5 MSPS)
+            # num_repeats = 2*len(sweep) * 16 / 2048 / blk_multiples --> simplifies to the below
+            total_sweep_len = sum([len(sweep) for sweep in sweeps])
+            num_repeats = np.ceil(total_sweep_len / 64 / blk_multiples)
+            # Get data
+            # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+            chan_data = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
+                                               blk_multiples=blk_multiples, append=True)  # blk multiples multiple of 10
+            return data_dir, file_name
+
+        start = time.time()
 
         # Graph membrane current on top row, membrane voltage on bottom row,
         # each clamp board gets a different column.
@@ -1054,7 +1071,6 @@ class Experiment:
         current_offset = [None] * 4
         fig_x, ax_x = plt.subplots()
         fig_x.suptitle('dac_data')
-        natural_delay = 0.23539209365844727     # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
         time.sleep(max(0, self.sequence.duration() * 1e-3 - natural_delay))
         bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
                 self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
