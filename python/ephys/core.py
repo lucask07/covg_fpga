@@ -396,7 +396,7 @@ class ExperimentSetup:
             if k in [0, 1, 2, 3]:
                 continue
             else:
-                self.daq_peripherals[k] = yaml_dict[k]
+                self.daq_peripherals[k] = yaml_dict['daq'][k]
 
     def get_electrode_by_name(self, name: str):
         """Get an Electrode instance from setup by name.
@@ -506,7 +506,7 @@ class Experiment:
             dc = self.experiment_setup.daq_ports[dc_num]
             # Skip any daughtercards not defined in setup YAML
             if dc == {}:
-                pc = None
+                continue
             else:
                 RF = dc['clamp_configs']['ADG_RES'] * \
                     1e3  # all resistor values are in kilo-Ohms
@@ -530,7 +530,7 @@ class Experiment:
             dc = self.experiment_setup.daq_ports[dc_num]
             # Skip any daughtercards not defined in setup YAML
             if dc == {}:
-                pc = None
+                continue
             else:
                 for amp_net in ['AMP_OUT', 'CAL_ADC']:
                     if amp_net == 'AMP_OUT':
@@ -566,7 +566,7 @@ class Experiment:
             dc = self.experiment_setup.daq_ports[dc_num]
             # Skip any daughtercards not defined in setup YAML
             if dc == {}:
-                pc = None
+                continue
             else:
                 net = self.daq.parameters['fast_dac_map'][dc_num]
                 gain = self.daq.current_dac_gain[dc_num]  # +/-
@@ -645,7 +645,7 @@ class Experiment:
         self.daq.ADC_gp.setup()
         self.daq.ADC_gp.set_range(self.experiment_setup.daq_peripherals['ADS8686']['voltage_range'])
         self.daq.ADC_gp.set_lpf(39)
-        codes = self.daq.ADC_gp.setup_sequencer(chan_list=self.experiment_setup.ads_sequencer_setup)
+        codes = self.daq.ADC_gp.setup_sequencer(chan_list=self.experiment_setup.daq_peripherals['ADS8686']['sequencer_setup'])
         self.daq.ADC_gp.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value of 1000 which is 200 ksps)
         self.daq.ADC_gp.set_fpga_mode()
 
@@ -969,7 +969,7 @@ class Experiment:
 
         return t, data
 
-    def record(self, clamp_num, filter_current=None, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
+    def record(self, clamp_num, file_name=None, filter_current=None, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
         """Send out Sequence and display updating graph.
         
         We read back the data by Sweep so we can update the graph in pieces,
@@ -981,6 +981,8 @@ class Experiment:
         ----------
         clamp_num : int or List[int]
             Which Clamp to write to (0, 1, 2, or 3).
+        file_name : str
+            The h5 file name for the data which will be stored in ~/ephys_data/file_name. If left as None, the current date will be used.
         filter_current : float or None
             The cutoff frequency in Hertz for a Low Pass Filter (LPF) to
             apply to the current data. None to apply no filter. Defaults to
@@ -1026,7 +1028,9 @@ class Experiment:
         data_dir = os.path.join(os.path.expanduser('~'), 'ephys_data')
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
-        file_name = time.strftime("%Y%m%d-%H%M%S.h5")
+        # Assign file name according to the date if None is given
+        if file_name is None:
+            file_name = time.strftime("%Y%m%d-%H%M%S.h5")
 
         # Graph membrane current on top row, membrane voltage on bottom row,
         # each clamp board gets a different column.
@@ -1051,7 +1055,7 @@ class Experiment:
         fig_x, ax_x = plt.subplots()
         fig_x.suptitle('dac_data')
         natural_delay = 0.23539209365844727     # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
-        time.sleep(self.sequence.duration() * 1e-3 - natural_delay)
+        time.sleep(max(0, self.sequence.duration() * 1e-3 - natural_delay))
         bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
                 self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
         self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [0, 0])
