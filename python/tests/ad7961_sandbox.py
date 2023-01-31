@@ -268,7 +268,7 @@ def ddr_write_finish():
 def read_adc(ddr, blk_multiples=2048):
 
     t, bytes_read_error = ddr.read_adc(  # just reads from the block pipe out
-        sample_size=ddr.parameters["BLOCK_SIZE"] * blk_multiples
+        sample_size=DDR3.BLOCK_SIZE * blk_multiples
     )
     d = np.frombuffer(t, dtype=np.uint8).astype(np.uint32)
     print(f'Bytes read: {bytes_read_error}')
@@ -286,7 +286,7 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 40,
         # ax.plot(data)
         ax.set_xlabel("Time")
         ax.set_ylabel(ylabel)
-    chunk_size = int(ddr.parameters["BLOCK_SIZE"] * blk_multiples / (NUM_CHAN*2))  # readings per ADC
+    chunk_size = int(DDR3.BLOCK_SIZE * blk_multiples / (NUM_CHAN*2))  # readings per ADC
     print(f'Anticipated chunk size {chunk_size}')
     repeat = 0
     adc_readings = chunk_size*num_repeats
@@ -307,12 +307,12 @@ def save_adc_data(data_dir, file_name, num_repeats = 4, blk_multiples = 40,
         data_set = file.create_dataset("adc", (NUM_CHAN, chunk_size), maxshape=(NUM_CHAN, None))
         while repeat < num_repeats:
             d, bytes_read_error = read_adc(ddr, blk_multiples)
-            if ddr.parameters['data_version'] == 'ADC_NO_TIMESTAMPS':
+            if ddr.data_version == 'ADC_NO_TIMESTAMPS':
                 chan_data = ddr.deswizzle(d)
                 timestamp = np.nan
                 read_check = np.nan
                 dac_data = np.nan
-            elif ddr.parameters['data_version'] == 'TIMESTAMPS':
+            elif ddr.data_version == 'TIMESTAMPS':
                 chan_data, timestamp, read_check, dac_data, ads = ddr.deswizzle(d)
 
             if NUM_CHAN==4:

@@ -329,15 +329,16 @@ class Clamp:
         return True
 
 
-    def print_config_options(self):
+    @staticmethod
+    def print_config_options():
         print('Compensation capacitor: ')
-        print(configs['CCOMP_dict'].keys())
+        print(Clamp.configs['CCOMP_dict'].keys())
         print('Inamp gain: ')
-        print(configs['gain_dict'].keys())
+        print(Clamp.configs['gain_dict'].keys())
         print('Feedback gain: ')
-        print(configs['RF1_dict'].keys())
+        print(Clamp.configs['RF1_dict'].keys())
         print('Feedback gain: ')
-        print(configs['ADG_RES_dict'].keys())
+        print(Clamp.configs['ADG_RES_dict'].keys())
 
     def configure_clamp(self, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
                         ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
@@ -553,14 +554,21 @@ class Daq:
         self.ADC_gp = ADS8686.create_chips(fpga=fpga, number_of_chips=1)[0]
         self.ADC = AD7961.create_chips(fpga=fpga, number_of_chips=4)
 
+        self.current_dac_gain = {}
+        default_gain = 200 #TODO - what is the default gain
+        for i in range(6):
+            self.current_dac_gain[i] = default_gain
+
         self.parameters = {}
         self.parameters["dac_gain_fs"] = {
             15: 0xF,
             5: 0xE,
             2: 0xD,  # in volts full-scale
-            500: 0xB,
+            500: 0xB, # in milli-volts full-scale
             200: 0x7,
-        }  # in milli-volts full-scale
+            0.5: 0xB, # in volts full-scale adding to deprecate mV scaling
+            0.2: 0x7
+        }  
 
         # exapander number, nibble_number
         self.parameters["dac_expander_nibble"] = {
@@ -598,6 +606,15 @@ class Daq:
             3: {"CAL": (1,3), "CAL2": (2,3),"UTIL": (2,6)},
         }
 
+        self.parameters['fast_dac_map'] = {
+            0: 'CC0',
+            1: 'CMD0',
+            2: 'CC1',
+            3: 'CMD1',
+            4: 'CMD2',
+            5: 'CMD3'
+        }
+
     def set_dac_gain(self, dac_num, gain, bit_value=None):
         """ set the gain of the AD5453 DACs by configuring switch TMUX6111
         Args:
@@ -624,6 +641,7 @@ class Daq:
         print(
             "Setting DAC gain value = 0x{:02X} with mask = 0x{:02X}".format(
                 gain_val, mask))
+        self.current_dac_gain[dac_num] = gain
 
         return self.TCA[tca_ch].write(gain_val, mask=mask)
 
@@ -634,12 +652,10 @@ class Daq:
         Args:
             bit_value: bits to write to io expander (default of None)
 
-
         Returns:
             expected gain, currently relative (float)
             TODO: verify with measurements to have an absolute gain
         """
-
         feedback_inv = 1 / self.parameters["dac_resistors"]["fixed"]
         for idx, sw_res in enumerate(self.parameters["dac_resistors"]["switched"]):
             r = (1 / sw_res) if ((bit_value & (1 << idx)) >> idx) == 0 else 0
@@ -816,7 +832,7 @@ class Daq:
 
         # --- Optionally plot input and output ---
         if plot:
-            x = [i * self.ddr.parameters['update_period'] * 99 for i in range(len(v_in_voltage))]
+            x = [i * DDR3.UPDATE_PERIOD * 99 for i in range(len(v_in_voltage))]
 
             # First, codes
             plt.plot(x, v_in_code, c='b', label='v_in')
