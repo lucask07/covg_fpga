@@ -203,6 +203,11 @@ def data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections,
         else:
             datastreams[pc_name] = ds 
 
+    ds = Datastream(to_voltage(dac_data[4], num_bits=16, voltage_range=1, use_twos_comp=True), 1e6, units='V', name='OBSV', net='OBSV', t0=0)
+    datastreams['OBSV'] = ds
+    ds = Datastream(to_voltage(dac_data[5], num_bits=16, voltage_range=1, use_twos_comp=True), 1e6, units='V', name='OBSV_CH1', net='OBSV_CH1', t0=0)
+    datastreams['OBSV_CH1'] = ds
+
     return datastreams
 
 

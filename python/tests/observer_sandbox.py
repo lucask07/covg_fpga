@@ -35,13 +35,13 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(boards_path)
 
-
+from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
-
+from calibration.electrodes import EphysSystem
 
 def get_cc_optimize(nums):
 
@@ -145,57 +145,23 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
     ddr.write_finish()
 
 
-def plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, alpha, fig, ax, dc_num=0):
-
-    t = np.arange(0,len(adc_data[0]))*1/FS
-    crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
+def plot_dac_im_vm(datastreams, clr, fig, ax, dc_num=0):
 
     if fig is None:
         fig, ax = plt.subplots(4,1)
 
-    # DACs
-    t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
-    y = dac_data[dc_num*2 + 1][crop_start:] # CMD signal is on channels 1 and 3 for DCs 0 and 1
-    lbl = f'Alpha={round(alpha, 2)}'
-    ax[0].plot(t_dacs*1e6, y, marker = '+', label = lbl)
+    # DAC CMD signal 
+    lbl = ''
+    datastreams[f'CMD{dc_num}'].plot(ax[0], {'label': lbl})
 
     # ADCs 
-    y = to_voltage(adc_data[dc_num][crop_start:], num_bits=16, voltage_range=2**16, use_twos_comp=True)
-    lbl = f'Alpha={round(alpha, 2)}'
-    ax[1].plot(t*1e6, y, marker = '+', label = lbl)
-
-    ############### extract the ADS data just for the last run and plot as a demonstration ############
-    ads_data_v = {}
-    for letter in ['A', 'B']:
-        ads_data_v[letter] = np.array(to_voltage(
-            ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
-
-    total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
-    total_seq_cnt[::2] = ads_seq_cnt[0]
-    total_seq_cnt[1::2] = ads_seq_cnt[1]
-    ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
-
+    datastreams[f'Im'].plot(ax[1], {'marker':'*', 'label': lbl})
     # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-    #t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
-    #ax[2].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
-    #ax[3].plot(t_ads*1e6, ads_separate_data['B'][1], marker='.')
-    t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
-    ax[2].plot(t_ads*1e6, ads_separate_data['A'][1]*((2**15)/2.5), marker='.')
-    ax[3].plot(t_ads*1e6, ads_separate_data['B'][4]*((2**15)/2.5), marker='.')
-    
+    datastreams['P1'].plot(ax[2], {'marker': '.'})
+    datastreams['I'].plot(ax[3], {'marker': '.'}) # this net is being repurposed to directly measure Vm
+    ax[3].set_ylabel('Vm measured [V]')
+
     return fig, ax
-
-def decorate_3by1_plot(ax):
-    ax[0].legend()
-    ax[0].set_title('Fast DAC data')
-    ax[0].set_xlabel('s [us]')
-
-    ax[1].legend()
-    ax[1].set_title('Fast ADC data')
-    ax[1].set_xlabel('s [us]')
-    ax[1].set_ylabel('ADC codes')
-
-    ax[2].set_ylabel('P1 (tracks Vm) [V]')
 
 # Class for Luenberger Observer
 class Observer():
@@ -503,11 +469,13 @@ ads_voltage_range = 5  # need this for to_voltage later
 ads.hw_reset(val=False)
 ads.set_host_mode()
 ads.setup()
-ads.set_range(ads_voltage_range) # TODO: make an ads.current_voltage_range a property of the ADS so we always know it
+ads.set_range(ads_voltage_range) 
 ads.set_lpf(376)
-# 4B - clear sine wave set by the Slow DAC
 #ads_sequencer_setup = [('5', '4'), ('1', '1')]
-ads_sequencer_setup = [('1', '4')]
+# ads_sequencer_setup = [('1', '4')]
+ads_sequencer_setup = [('1', '0')] # with Vm jumpered to 
+
+ads_b_chan = 0
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
 ads.set_fpga_mode()
@@ -519,11 +487,8 @@ for chan in [0, 1, 2, 3]:
 time.sleep(0.1)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
 time.sleep(1)
-time.sleep(1)
 ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
 
-
-# TODO: are the TCA pins already configured in Clamp.configure_clamp()?
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
@@ -532,14 +497,13 @@ file_name = time.strftime("%Y%m%d-%H%M%S") + '_{}' # to append index
 idx = 0
 
 # Set CMD and CC signals
-set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0029, cc_scale=0, cc_delay=0, fc=None,
+set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0100, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
-print('Configuring for oscilloscope: CCOMP=47, RF1=2.1, ADG_RES=100')
-# Configure for better oscilloscope viewing
+dc_configs = {}
 for dc_num in DC_NUMS:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG1",
+        ADC_SEL="CAL_SIG1", # required for comparative Vm measurement 
         DAC_SEL="drive_CAL2",
         CCOMP=47,
         RF1=2.1,  # feedback circuit
@@ -557,6 +521,8 @@ for dc_num in DC_NUMS:
         addr_pins_1=0b110,
         addr_pins_2=0b000,
     )
+    if dc_num < 2:
+        dc_configs[dc_num] = config_dict
 
 color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
 
@@ -597,6 +563,7 @@ obsv_coeff = {0:0x00fd4c52,
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
 
+# TODO: note that only 2 DACs are configured 
 for i in [1]:
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
@@ -630,110 +597,70 @@ ddr.repeat_setup()
 # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
 #chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
 #                                    blk_multiples=40)  # blk multiples multiple of 10
-chan_data_one_repeat = ddr.save_data(r"C:\Users\delg5279\OneDrive - University of St. Thomas\covg_pi_ctrl_files", 'PI_ctrl_data.h5', num_repeats=8,
+data_dir_ian = r"C:\Users\delg5279\OneDrive - University of St. Thomas\covg_pi_ctrl_files"
+file_name = 'PI_ctrl_data.h5'
+chan_data_one_repeat = ddr.save_data(data_dir, file_name, num_repeats=8,
                                     blk_multiples=40)  # blk multiples multiple of 10
 
 # to get the deswizzled data of all repeats need to read the file
-_, chan_data = read_h5(r"C:\Users\delg5279\OneDrive - University of St. Thomas\covg_pi_ctrl_files", file_name='PI_ctrl_data.h5'
-, chan_list=np.arange(8))
+_, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
 
 # Long data sequence -- entire file
-
 # Grab Observer data from here -- dac_data
 adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
 print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+
+ephys_sys = EphysSystem()
+sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+datastreams, log_info = rawh5_to_datastreams(data_dir, file_name, ddr.data_to_names, daq, sys_connections, outfile = None)
+
 
 if idx in [0, 5, 10, 15]:
     clr = next(color)
     if idx == 0:
         fig = None
         ax = None
-    fig, ax = plot_dac_im_vm(adc_data, dac_data, ads_data_tmp, ads_seq_cnt, clr, 0, fig, ax, dc_num=0)
+    fig, ax = plot_dac_im_vm(datastreams, clr, fig, ax, dc_num=0)
 idx = idx + 1
 
-# add legend and labels to the 3x1 plot
-decorate_3by1_plot(ax)
+fig,ax=plt.subplots()
+datastreams['CMD0'].plot(ax)
 
-crop_start = 0 # placeholder in case the first bits of DDR data are unrealiable. Doesn't seem to be the case.
+fig,ax=plt.subplots()
+datastreams['CMD1'].plot(ax)
 
-# DACs
-t = np.arange(0,len(adc_data[0]))*1/FS
-t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
-for dac_ch in range(4):
-    fig,ax=plt.subplots()
-    y = dac_data[dac_ch][crop_start:]
-    lbl = f'Ch{dac_ch}'
-    ax.plot(t_dacs*1e6, y, marker = '+', label = lbl)
-    print(f'Min {np.min(y[2:])}, Max {np.max(y)}') # skip the first 2 readings which are 0
-    #if (dac_ch == 1 or dac_ch == 3):
-    #    y = to_voltage(adc_data[round((dac_ch-1)/2)][crop_start:], num_bits=16, voltage_range=2**14, use_twos_comp=True)
-    #    lbl = f'Ch{round((dac_ch-1)/2)}'
-    #    ax.plot(t*1e6, y, marker = '+', label = lbl)
-    ax.legend()
-    ax.set_title('Fast DAC data')
-    ax.set_xlabel('s [us]')
+fig,ax=plt.subplots()
+datastreams['Im'].plot(ax)
 
-# fast ADC. AD7961
-for ch in range(2):
-    fig,ax=plt.subplots()
-    # Store voltage in list; plot
-    y = to_voltage(adc_data[ch][crop_start:], num_bits=16, voltage_range=2**16, use_twos_comp=True)
-    lbl = f'Ch{ch}'
-    ax.plot(t*1e6, y, marker = '+', label = lbl)
-    ax.legend()
-    ax.set_title('Fast ADC data')
-    ax.set_xlabel('s [us]')
-    ax.set_ylabel('ADC codes')
-
-############### extract the ADS data just for the last run and plot as a demonstration ############
-ads_data_v = {}
-for letter in ['A', 'B']:
-    ads_data_v[letter] = np.array(to_voltage(
-        ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
-
-total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
-total_seq_cnt[::2] = ads_seq_cnt[0]
-total_seq_cnt[1::2] = ads_seq_cnt[1]
-ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+fig,ax=plt.subplots()
+datastreams['Itop'].plot(ax)
 
 fig, ax = plt.subplots(2,1)
 fig.suptitle('ADS data')
 # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-t_ads = np.arange(len(ads_separate_data['A'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
-ax[0].plot(t_ads*1e6, ads_separate_data['A'][1], marker='.')
-ax[0].set_ylabel('P1 (tracks Vm) [V]')
-# CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-#t_ads = np.arange(len(ads_separate_data['B'][1]))*1/(ADS_FS / len(ads_sequencer_setup))
-#ax[1].plot(t_ads*1e6, ads_separate_data['B'][1], marker='.')
-t_ads = np.arange(len(ads_separate_data['B'][4]))*1/(ADS_FS / len(ads_sequencer_setup))
-ax[1].plot(t_ads*1e6, ads_separate_data['B'][4], marker='.')
-ax[1].set_ylabel('P2 [V]')
 
-for ax_s in ax:
-    ax_s.set_xlabel('t [$\mu$s]')
+datastreams['P1'].plot(ax[0], {'marker':'.'})
+datastreams['I'].plot(ax[1], {'marker':'.'})
+ax[1].set_ylabel('Vm measured [V]')
+
+
 
 # plot dac channel 4 data
 fig,ax=plt.subplots()
-fig = ax.plot(to_voltage(dac_data[4], num_bits=16, voltage_range=2**16, use_twos_comp=True))
-ax.set_title('Observer data [0]')
-ax.set_xlabel('s [us]')
+datastreams['OBSV'].plot(ax)
 
 # plot dac channel 5 data
 fig,ax=plt.subplots()
-fig = ax.plot(to_voltage(dac_data[5], num_bits=16, voltage_range=2**16, use_twos_comp=True))
-ax.set_title('Observer data [1]')
-ax.set_xlabel('s [us]')
+datastreams['OBSV_CH1'].plot(ax)
 
 # subplot of Observer Vm and measured Vm
 fig,ax=plt.subplots(2,1)
 fig.suptitle('Observer Vm vs ADS8686')
-# Observer
-fig = ax[0].plot(t_ads, to_voltage(dac_data[4], num_bits=16, voltage_range=1, use_twos_comp=True))
-ax[0].set_ylabel('Observer Vm [V]')
-# ADS8686
-fig = ax[1].plot(t_ads, ads_separate_data['B'][4])
-ax[1].set_ylabel('ADS8686 Vm [V]')
-ax[1].set_xlabel('s [us]')
+# Observer - stored in DDR at 1 MSPS -- dac_data[4] is observer output 0, dac_data[5] is observer output 1, dac_data[6] is obs. output 0 shifted by 400 ns
+datastreams['OBSV'].plot(ax[0], {'marker':'.'})
+datastreams['I'].plot(ax[1], {'marker':'.'})
+ax[1].set_ylabel('Vm measured [V]')
+
 
 def ads_plot_zoom(ax):
     for ax_s in ax:

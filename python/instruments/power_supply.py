@@ -68,13 +68,15 @@ def config_supply(dc_pwr, dc_pwr2, setup=None, neg=16.5):
     if setup == '3dual':  # 3 channel capable supply
         # Channel 2, 3 setup (for +/-15V)
         for ch in [2, 3]:
-            dc_pwr.set('i', 0.49, configs={'chan': ch})
+            dc_pwr.set('i', 0.70, configs={'chan': ch})
             if ch == 3:
                 dc_pwr.set('v', neg, configs={'chan': ch})
             else:
                 dc_pwr.set('v', 16.5, configs={'chan': ch})
             dc_pwr.set('ovp', 16.7, configs={'chan': ch})
-            dc_pwr.set('ocp', 0.500, configs={'chan': ch})
+            dc_pwr.set('ocp', 0.70, configs={'chan': ch})
+            dc_pwr.set('i', 0.60, configs={'chan': ch}) # for calibration testing. Increase due to relay current
+
 
         # Channel 1 on supply1 for Vin
         dc_pwr.set('i', 0.70, configs={'chan': 1}) # for calibration testing. Increase due to relay current

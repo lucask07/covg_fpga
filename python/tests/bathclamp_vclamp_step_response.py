@@ -306,7 +306,7 @@ clamp_cap = 0
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG2", # required to digitize P2 
-        DAC_SEL="gnd_CAL1", # must not be drive_CAL2 
+        DAC_SEL="noDrive", # must not be drive_CAL2 
         CCOMP=clamp_cap,
         RF1=clamp_fb_res,  # feedback circuit
         ADG_RES=clamp_res,
@@ -333,8 +333,8 @@ if 1:
                 # Choose resistor; setup
                 for dc_num in [dc_mapping['bath']]:
                     log_info, config_dict = clamps[dc_num].configure_clamp(
-                        ADC_SEL="CAL_SIG2",  # required to digitize P2 
-                        DAC_SEL="gnd_CAL1",
+                        ADC_SEL="CAL_SIG1",  # required to digitize P2 
+                        DAC_SEL="noDrive",
                         CCOMP=cap,
                         RF1=fb_res,  # feedback circuit
                         ADG_RES=res,
