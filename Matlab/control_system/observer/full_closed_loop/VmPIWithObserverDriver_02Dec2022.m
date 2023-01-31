@@ -25,11 +25,11 @@ close all
 discrete = false;
 discrete_reorder = true;
 
-VmDes = 0.05;
+VmDes = 0.025;
 x0 = [0.1*VmDes 0]'; % Assume non-zero initial condition to help check observer
 
 
-MSPS = 5;
+MSPS = 2.5;
 Ts = 1/(MSPS*1e6);  % allow to set this externally
 N = 3;              % allow to set this externally
 Tsim = 150e-6;
@@ -37,15 +37,15 @@ dTMax = 1e-7;
 t = 0:Ts:Tsim;
 
 Cma = 33e-9;
-RF = 10e3; % Current sense resistor: ranges from 10k, to 10Meg
+RF = 100e3; % Current sense resistor: ranges from 10k, to 10Meg
 RPC = 5e3;
 Rsa = 1e3;
-AOL = 5e6; % Open loop gain of op amps
+AOL =5e6; % Open loop gain of op amps
 
 C1 = 47e-12; % compensator. Programmable from 47 pF to 5 nF
 R3 = 20e3;
-R1 = 1e4;
-R2 = 1e4;
+R1 = 2.1e3;
+R2 = 3.01e3;
 R4 = 20e3;
 
 % Definitions for convenience
@@ -118,14 +118,14 @@ Ldp = LdC_inv*Ld;
 in_amp = 1;
 diff_buf = 499/(120+1500); % correct, refering to signal_chain.py 
 % scaling of digitized current and voltage 
-dn_per_amp = (2^15/5)*(RF*in_amp*diff_buf); % correct 
+dn_per_amp = (2^15/4.096)*(RF*in_amp*diff_buf); % correct 
 Im_scale = dn_per_amp;
 
 ads_full_scale = 2.5;
 dn_per_volt = (2^15/ads_full_scale); %correct
-VP1_scale = dn_per_volt;
+VP1_scale = dn_per_volt*10*1.7;
 
-dac_scale = VP1_scale; % TODO: this is temporary 
+dac_scale = 2^15; % TODO: this is temporary 
 
 % scale L matrix to cancel scaling of the measured Vm and Im 
 Ldp = Ldp*[1/Im_scale, 0; 0, 1/VP1_scale];
@@ -275,3 +275,24 @@ set(gca,'FontSize',fs,'FontWeight',fw,'FontName',fn);
 grid on
 set(gcf,'Color','w','Units','normalized','Position',pos);
 %--------------------------------------------------------------------------
+
+%% print observer coefficients
+fprintf("Observer Coefficients\n");
+fprintf("{0:0x%s,\n", hex(fi(-Ldp(1,1), 1, 32, 50)));
+fprintf("1:0x%s,\n", hex(fi(-Ldp(2,1), 1, 32, 50)));
+fprintf("2:0x%s,\n", hex(fi(Ldp(1,2), 1, 32, 50)));
+fprintf("3:0x%s,\n", hex(fi(Ldp(2,2), 1, 32, 50)));
+fprintf("4:0x%s,\n", hex(fi(Adp(1,1), 1, 32, 24)));
+fprintf("5:0x%s,\n", hex(fi(Adp(2,1), 1, 32, 24)));
+fprintf("6:0x%s,\n", hex(fi(Adp(1,2), 1, 32, 24)));
+fprintf("7:0x%s,\n", hex(fi(Adp(2,2), 1, 32, 24)));
+fprintf("8:0x%s,\n", hex(fi(Bdp(1,1), 0, 32, 50)));
+fprintf("9:0x%s}\n", hex(fi(Bdp(2,1), 0, 32, 50)));
+
+%% print PI coefficients
+fprintf("\nController Coefficients\n");
+fprintf("1: 0x%s,\n", hex(fi(-b0/2, 1, 32, 29)))
+fprintf("2: 0x%s,\n", hex(fi(-b1/2, 1, 32, 29)))
+fprintf("9: 0x%s,\n", hex(fi(a1, 1, 32, 30)))
+
+% close all;
