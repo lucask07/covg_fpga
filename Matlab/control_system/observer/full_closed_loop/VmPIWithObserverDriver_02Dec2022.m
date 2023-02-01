@@ -37,7 +37,7 @@ dTMax = 1e-7;
 t = 0:Ts:Tsim;
 
 Cma = 33e-9;
-RF = 100e3; % Current sense resistor: ranges from 10k, to 10Meg
+RF = 332e3; % Current sense resistor: ranges from 10k, to 10Meg
 RPC = 5e3;
 Rsa = 1e3;
 AOL =5e6; % Open loop gain of op amps
@@ -121,11 +121,11 @@ diff_buf = 499/(120+1500); % correct, refering to signal_chain.py
 dn_per_amp = (2^15/4.096)*(RF*in_amp*diff_buf); % correct 
 Im_scale = dn_per_amp;
 
-ads_full_scale = 2.5;
-dn_per_volt = (2^15/ads_full_scale); %correct
-VP1_scale = dn_per_volt*10*1.7;
+ads_full_scale = 10;
+dn_per_volt = (2^16/ads_full_scale); %correct
+VP1_scale = dn_per_volt*11*1.7; %  
 
-dac_scale = 2^15; % TODO: this is temporary 
+dac_scale = 2^14; % TODO: verify this  
 
 % scale L matrix to cancel scaling of the measured Vm and Im 
 Ldp = Ldp*[1/Im_scale, 0; 0, 1/VP1_scale];

@@ -161,7 +161,7 @@ module top_level_module(
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst);
     assign led[7] = 1'b0;
     
-    reg [31:0] bitfile_version = 32'd00_00_03;	// 00.00.02
+    reg [31:0] bitfile_version = 32'd00_00_04;	// 00.00.04 incorporates the observer
     okWireOut bitfile_version_wo (.okHE(okHE), .okEH(okEHx[ 33*65 +: 65 ]), .ep_addr(`GP_BITFILE_VERSION), .ep_datain(bitfile_version));
 
     // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
@@ -822,7 +822,7 @@ module top_level_module(
                 4'd3:    adc_ddr_data = {timestamp_snapshot[15:0],      timestamp_snapshot[31:16], dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd2:    adc_ddr_data = {timestamp_snapshot[47:32], observer_out_est[0][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd1:    adc_ddr_data = {16'h77bb,                  observer_out_est[1][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd0:    adc_ddr_data = { {11'h28c, ads_sequence_count},                  observer_out_est[0][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd0:    adc_ddr_data = { {11'h28c, ads_sequence_count},                   observer_out_est[0][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 
                 default: adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
             endcase 
@@ -967,6 +967,8 @@ module top_level_module(
 
     wire [15:0] filter_out_signed[0:(AD5453_NUM-1)];
     wire filter_out_signed_rdy[0:(AD5453_NUM-1)];
+    
+    wire [15:0] pi_error_out[0:(AD5453_NUM-1)];
 
     // (TODO: add module/method for storing coefficients from register bridge and make appropriate changes to ep_defines.v)
     obsv_coeff_store #(.ADDR(`OBSV_REGBRIDGE_OFFSET_GEN_ADDR)) observer_coeffs(
@@ -1139,6 +1141,7 @@ module top_level_module(
                  .filter_data_mux_sel(ep_wire_filtdata[(`AD5453_FILTER_DATA_SEL_GEN_BIT + p*`AD5453_FILTER_DATA_SEL_GEN_BIT_LEN) +: `AD5453_FILTER_DATA_SEL_GEN_BIT_LEN]),
                  .filter_out_signed(filter_out_signed[p]),
                  .filter_out_signed_rdy(filter_out_signed_rdy[p])
+                 //.pi_error_signal_reg(pi_error_out[p])
                  );
         end
     endgenerate

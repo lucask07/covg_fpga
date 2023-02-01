@@ -54,6 +54,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      /*****Output of Filter/PI Controller Before Scaling (for observer)*****/
      output wire [15:0] filter_out_signed,
      output wire filter_out_signed_rdy
+     /***** debug of PI error signal ****/
+     //output reg [15:0] pi_error_signal_reg
     );
     
       wire cmd_stb;
@@ -180,11 +182,11 @@ module spi_fifo_driven #(parameter ADDR = 0) (
         if(rst == 1'b1)begin
             pi_error_signal <= 16'b0;
             vm_fbck_data_reg <= 16'b0;
-            temp1 <= 14'b0;
-            temp2 <= 14'b0;
-            temp3 <= 14'b0;
-            temp4 <= 14'b0;
-            temp5 <= 14'b0;
+            temp1 <= 16'b0; //were 14'b0
+            temp2 <= 16'b0;
+            temp3 <= 16'b0;
+            temp4 <= 16'b0;
+            temp5 <= 16'b0;
             cnt <= 4'b0;
         end
         else if(data_rdy_0_filt == 1'b1)begin
@@ -214,17 +216,18 @@ module spi_fifo_driven #(parameter ADDR = 0) (
             1: begin
                 temp1 <= (data_i[13:0] - 14'h1fff);
                 temp2 <= vm_fbck_data_reg[15:2];
+                //temp2 <= vm_fbck_data_reg[15:0]; // LJK change 
                 temp3 <= temp3;
                 temp4 <= temp4;
                 temp5 <= temp5;
             end
             2: begin
-                if (filter_data_mux_sel == 3'b010) begin
+                if (filter_data_mux_sel == 3'b010) begin //ADS channel A
                     temp3 <= (temp1>>>1);
                     temp4 <= (temp2<<3);
                 end
                 else if (filter_data_mux_sel == 3'b011) begin
-                    temp3 <= (temp1);
+                    temp3 <= (temp1<<2);
                     temp4 <= (temp2);
                 end
                 else begin
@@ -243,7 +246,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
                 temp4 <= temp4;
             end
             4: begin
-                pi_error_signal <= {temp5, 2'b0};
+                pi_error_signal <= {temp5, 2'b0}; //LJK change 
+                //pi_error_signal <= temp5;
                 temp1 <= temp1;
                 temp2 <= temp2;
                 temp3 <= temp3;
@@ -282,6 +286,14 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          if ((filter_data_mux_sel == 3'b010) || (filter_data_mux_sel == 3'b011)) filter_mux_data_rdy = data_rdy_pi_error;
          else filter_mux_data_rdy = data_rdy_0_filt;
      end
+     
+     /*
+     always @(posedge clk) begin
+        if (data_rdy_pi_error) begin
+            pi_error_signal_reg <= pi_error_signal;
+        end
+    end
+    */    
 	 
 	 // Real-Time LPF
        Butter_pipelined u_Butterworth_0

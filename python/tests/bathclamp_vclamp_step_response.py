@@ -47,7 +47,7 @@ from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
-
+from observer import Observer
 
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
@@ -231,13 +231,49 @@ ads.set_host_mode()
 ads.setup()
 ads.set_range(ads_voltage_range) 
 ads.set_lpf(376)
-ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
+#ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
+ads_sequencer_setup = [('1', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
+
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge() # 1 MSPS rate 
 ads.set_fpga_mode()
 
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
+
+# set observer data input muxes
+obsv = Observer(f)
+obsv.set_im_data_mux("ad7961_ch0")
+obsv.set_vcmd_data_mux("ad5453_ch1")
+obsv.set_vp1_data_mux("ads8686_chA")
+obsv.set_rdy_data_mux("sync_im")
+
+# observer coeffs - from GitHub
+obsv_coeff = {0:0x00fd4c52,
+1:0x000009ac,
+2:0x054ecf2e,
+3:0xfffec841,
+4:0x00fb6f97,
+5:0x00000005,
+6:0xfcb79653,
+7:0x00f674ae,
+8:0x01987ac9,
+9:0x0004a391}
+
+# MATLAB generated 
+obsv_coeff = {0:0x01fa2f60,
+1:0x00001636,
+2:0x176649c6,
+3:0x000631c1,
+4:0x00f716c3,
+5:0x0000001b,
+6:0xef4d3861,
+7:0x00e74b26,
+8:0x098fc3e8,
+9:0x000e25a6}
+
+obsv.change_observer_coeff(obsv_coeff)
+obsv.write_observer_coeffs()
 
 # fast DAC channels setup
 for i in range(6):
@@ -264,7 +300,7 @@ idx = 0
 
 feedback_resistors = [2.1]
 capacitors = [0, 47, 247]
-bath_res = [33, 100, 332] # Clamp.configs['ADG_RES_dict'].keys()
+bath_res = [332] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -305,7 +341,7 @@ clamp_res = 100 # kOhm should be stable
 clamp_cap = 0
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG2", # required to digitize P2 
+        ADC_SEL="CAL_SIG1", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
         DAC_SEL="noDrive", # must not be drive_CAL2 
         CCOMP=clamp_cap,
         RF1=clamp_fb_res,  # feedback circuit
@@ -460,12 +496,26 @@ fig.suptitle('ADS data')
 # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
 datastreams['P1'].plot(ax[0], {'marker':'.'})
 # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-datastreams['P2'].plot(ax[1], {'marker':'.'})
+try:
+    datastreams['P2'].plot(ax[1], {'marker':'.'})
+except:
+    print('P2 is not measured')
 
 fig, ax = plt.subplots()
 fig.suptitle('Overlay P1 and CMD')
 datastreams['P1'].plot(ax, {'marker':'.'})
 datastreams['CMD0'].plot(ax, {'marker':'.'})  # TODO: use physical connections to allow for setting CMD0 in terms of physical units 
+
+fig, ax = plt.subplots(4,1)
+fig.suptitle('Overlay OBSERVER and I')
+datastreams['OBSV'].plot(ax[0], {'marker':'.'})
+datastreams['I'].plot(ax[1], {'marker':'.'})  
+ax[2].plot(dac_data[1].astype(np.int32)-0x1FFF, marker='.')  
+datastreams['PI_ERR'].plot(ax[3], {'marker':'.'})  
+
+print(f'Max - min of Obsrver: {np.max(datastreams["OBSV"].data)-np.min(datastreams["OBSV"].data)}')
+print(f'Max - min of DDR: {np.max(ddr.data_arrays[1]) - np.min(ddr.data_arrays[1])}')
+print(f'Max - min of DAC data: {np.max(dac_data[1]) - np.min(dac_data[1])}')
 
 # estimate Im 
 Cm = 33e-9

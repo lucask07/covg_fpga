@@ -42,6 +42,7 @@ from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
+from observer import Observer
 
 def get_cc_optimize(nums):
 
@@ -163,222 +164,6 @@ def plot_dac_im_vm(datastreams, clr, fig, ax, dc_num=0):
 
     return fig, ax
 
-# Class for Luenberger Observer
-class Observer():
-    """Class for Luenberger Observer on the FPGA
-
-    Attributes
-    ----------
-    default_im_data_mux : dict
-        Class attribute. Default im_data_mux dictionary.
-    default_vcmd_mux : dict
-        Class attribute. Default vcmd_data_mux dictionary.
-    default_vp1_data_mux : dict
-        Class attribute. Default vp1_data_mux dictionary.
-    fpga : FPGA
-        FPGA instance this controller uses to communicate.
-    endpoints : dict
-        Endpoints on the FPGA this controller uses to communicate.
-    master_config : int
-        Value of the CTRL register in the Wishbone.
-    im_data_mux: dict
-        Name to select value dictionary for source data MUX.
-    vcmd_data_mux: dict
-        Name to select value dictionary for source data MUX.
-    vp1_data_mux: dict
-        Name to select value dictionary for source data MUX.
-    current_im_data_mux : str
-        Name of the current MUX data source.
-    current_vcmd_data_mux : str
-        Name of the current MUX data source.
-    current_vp1_data_mux : str
-        Name of the current MUX data source.
-    
-    """
-
-    default_im_data_mux = {
-        'ad7961_ch0': 0,
-        'ad7961_ch1': 1,
-        'ad7961_ch2': 2,
-        'ad7961_ch3': 3,
-    }
-
-    default_vcmd_data_mux = {
-        'ad5453_ch0': 0,
-        'ad5453_ch1': 1,
-        'ad5453_ch2': 2,
-        'ad5453_ch3': 3,
-        'ad5453_ch4': 4,
-        'ad5453_ch5': 5,
-    }
-
-    default_vp1_data_mux = {
-        'ads8686_chA': 0,
-        'ads8686_chB': 1,
-    }
-
-    default_rdy_data_mux = {
-        'sync_im': 0,
-        'sync_vp1': 1,
-        'sync_vcmd': 2,
-    }
-
-    def __init__(self, fpga, endpoints=None, im_data_mux=default_im_data_mux, 
-    vcmd_data_mux=default_vcmd_data_mux, vp1_data_mux=default_vp1_data_mux, rdy_data_mux=default_rdy_data_mux):
-
-        self.fpga = fpga
-        if endpoints is None:
-            self.endpoints = Endpoint.get_chip_endpoints('OBSV')
-        #self.endpoints = endpoints
-        self.im_data_mux = im_data_mux
-        self.vcmd_data_mux = vcmd_data_mux
-        self.vp1_data_mux = vp1_data_mux
-        self.rdy_data_mux = rdy_data_mux
-        # Start with ad7961_ch0 to minimize unintentional commands from other sources on startup
-        self.current_im_data_mux = None
-        if self.set_im_data_mux('ad7961_ch0') == -1:
-            # 'ad7961_ch0' was not in data_mux dict
-            print("WARNING: no 'ad7961_ch0' in data_mux dict")
-        # Start with ad5453_ch0 to minimize unintentional commands from other sources on startup
-        self.current_vcmd_data_mux = None
-        if self.set_vcmd_data_mux('ad5453_ch0') == -1:
-            # 'ad5453_ch0' was not in data_mux dict
-            print("WARNING: no 'ad5453_ch0' in data_mux dict")
-        # Start with ads8686_chA to minimize unintentional commands from other sources on startup
-        self.current_vp1_data_mux = None
-        if self.set_vp1_data_mux('ads8686_chA') == -1:
-            # 'ads8686_chA' was not in data_mux dict
-            print("WARNING: no 'ads8686_chA' in data_mux dict")
-
-        # Observer coefficients
-        self.observer_offset = 0
-        self.observer_coeff = {0:0x00000000,
-                               1:0x00000000,
-                               2:0x00000000,
-                               3:0x00000000,
-                               4:0x00000000,
-                               5:0x00000000,
-                               6:0x00000000,
-                               7:0x00000000,
-                               8:0x00000000,
-                               9:0x00000000}
-        self.observer_len = np.max(
-            list(self.observer_coeff.keys())) - np.min(list(self.observer_coeff.keys()))
-    
-    def set_im_data_mux(self, source):
-        """Configure the MUX that routes data source to the SPI output.
-
-        Parameters
-        ----------
-        source : str
-            See SPIFifoDriven.data_mux dict for options and conversion.
-        """
-
-        select_val = self.im_data_mux.get(source)
-        if select_val is None:
-            print(f'Set data mux failed, {source} not available')
-            return -1
-
-        endpoint = 'IM_DATA_SEL'
-
-        mask = gen_mask(range(self.endpoints[endpoint].bit_index_low,
-                              self.endpoints[endpoint].bit_index_high))
-        data = (self.im_data_mux[source]
-                << self.endpoints[endpoint].bit_index_low)
-        self.fpga.set_wire(self.endpoints[endpoint].address, data,
-                           mask=mask)
-        self.current_im_data_mux = source
-    
-    def set_vcmd_data_mux(self, source):
-        """Configure the MUX that routes data source to the SPI output.
-
-        Parameters
-        ----------
-        source : str
-            See SPIFifoDriven.data_mux dict for options and conversion.
-        """
-
-        select_val = self.vcmd_data_mux.get(source)
-        if select_val is None:
-            print(f'Set data mux failed, {source} not available')
-            return -1
-
-        endpoint = 'VCMD_DATA_SEL'
-
-        mask = gen_mask(range(self.endpoints[endpoint].bit_index_low,
-                              self.endpoints[endpoint].bit_index_high))
-        data = (self.vcmd_data_mux[source]
-                << self.endpoints[endpoint].bit_index_low)
-        self.fpga.set_wire(self.endpoints[endpoint].address, data,
-                           mask=mask)
-        self.current_vcmd_data_mux = source
-
-    def set_vp1_data_mux(self, source):
-        """Configure the MUX that routes data source to the SPI output.
-
-        Parameters
-        ----------
-        source : str
-            See SPIFifoDriven.data_mux dict for options and conversion.
-        """
-
-        select_val = self.vp1_data_mux.get(source)
-        if select_val is None:
-            print(f'Set data mux failed, {source} not available')
-            return -1
-
-        endpoint = 'VP1_DATA_SEL'
-
-        mask = gen_mask(range(self.endpoints[endpoint].bit_index_low,
-                              self.endpoints[endpoint].bit_index_high))
-        data = (self.vp1_data_mux[source]
-                << self.endpoints[endpoint].bit_index_low)
-        self.fpga.set_wire(self.endpoints[endpoint].address, data,
-                           mask=mask)
-        self.current_vp1_data_mux = source
-
-    def set_rdy_data_mux(self, source):
-        """Configure the MUX that routes data source to the SPI output.
-
-        Parameters
-        ----------
-        source : str
-            See SPIFifoDriven.data_mux dict for options and conversion.
-        """
-
-        select_val = self.rdy_data_mux.get(source)
-        if select_val is None:
-            print(f'Set data mux failed, {source} not available')
-            return -1
-
-        endpoint = 'RDY_DATA_SEL'
-
-        mask = gen_mask(range(self.endpoints[endpoint].bit_index_low,
-                              self.endpoints[endpoint].bit_index_high))
-        data = (self.rdy_data_mux[source]
-                << self.endpoints[endpoint].bit_index_low)
-        self.fpga.set_wire(self.endpoints[endpoint].address, data,
-                           mask=mask)
-        self.current_rdy_data_mux = source
-
-    def write_observer_coeffs(self):
-        # TODO: add method docstring
-
-        # TODO is this correct? and how to parameterize?
-        for i in np.arange(self.observer_offset, 1 + self.observer_offset + self.observer_len):
-            if (i-self.observer_offset) in self.observer_coeff:
-                addr = int(
-                    self.endpoints['REGBRIDGE_OFFSET'].address + i)
-                val = int(self.observer_coeff[i-self.observer_offset])
-                print(
-                    'Write filter addr=0x{:02X}  value=0x{:02X}'.format(addr, val))
-                self.fpga.xem.WriteRegister(addr, val)
-
-    def change_observer_coeff(self, value=None):
-        self.observer_coeff = value
-        self.observer_len = np.max(
-            list(self.observer_coeff.keys())) - np.min(list(self.observer_coeff.keys()))
-
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
@@ -471,9 +256,7 @@ ads.set_host_mode()
 ads.setup()
 ads.set_range(ads_voltage_range) 
 ads.set_lpf(376)
-#ads_sequencer_setup = [('5', '4'), ('1', '1')]
-# ads_sequencer_setup = [('1', '4')]
-ads_sequencer_setup = [('1', '0')] # with Vm jumpered to 
+ads_sequencer_setup = [('1', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
 
 ads_b_chan = 0
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
@@ -497,7 +280,7 @@ file_name = time.strftime("%Y%m%d-%H%M%S") + '_{}' # to append index
 idx = 0
 
 # Set CMD and CC signals
-set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0100, cc_scale=0, cc_delay=0, fc=None,
+set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0080, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
@@ -527,8 +310,8 @@ for dc_num in DC_NUMS:
 color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
 
 PI_coeff = {0: 0x7fffffff,
-            1:0x50404ea5,
-            2:0xb0404ea5,
+1: 0x50809d49,
+2: 0xb0809d49,
             3: 0x00000000,
             4: 0xc0000000,
             5: 0x00000000,
@@ -549,16 +332,16 @@ obsv.set_vp1_data_mux("ads8686_chA")
 obsv.set_rdy_data_mux("sync_im")
 
 # observer coeffs
-obsv_coeff = {0:0x00fd4c52,
-1:0x000009ac,
-2:0x054ecf2e,
-3:0xfffec841,
-4:0x00fb6f97,
-5:0x00000005,
-6:0xfcb79653,
-7:0x00f674ae,
-8:0x01987ac9,
-9:0x0004a391}
+obsv_coeff = {0:0x01fa2f60,
+1:0x00001636,
+2:0x176649c6,
+3:0x000631c1,
+4:0x00f716c3,
+5:0x0000001b,
+6:0xef4d3861,
+7:0x00e74b26,
+8:0x131f87d0,
+9:0x001c4b4c}
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
@@ -569,8 +352,8 @@ for i in [1]:
     daq.DAC[i].set_spi_sclk_divide()
     daq.DAC[i].filter_select(operation="set")
     daq.DAC[i].write(int(0))
-    daq.DAC[i].set_data_mux("DDR")
-    daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True)
+    daq.DAC[i].set_data_mux("DDR") 
+    daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
     daq.DAC[i].filter_sum("clear")
     daq.DAC[i].filter_downsample("clear")
     daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
@@ -646,12 +429,10 @@ ax[1].set_ylabel('Vm measured [V]')
 
 
 # plot dac channel 4 data
-fig,ax=plt.subplots()
-datastreams['OBSV'].plot(ax)
-
-# plot dac channel 5 data
-fig,ax=plt.subplots()
-datastreams['OBSV_CH1'].plot(ax)
+fig,ax=plt.subplots(3,1)
+datastreams['OBSV'].plot(ax[0])
+datastreams['OBSV_CH1'].plot(ax[1])
+datastreams['PI_ERR'].plot(ax[1])
 
 # subplot of Observer Vm and measured Vm
 fig,ax=plt.subplots(2,1)

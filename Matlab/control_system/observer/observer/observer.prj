@@ -1,6 +1,6 @@
 <deployment-project plugin="plugin.matlabhdlcoder" plugin-version="R2020b">
-  <configuration file="/home/delg/Documents/covg_fpga_project/covg_fpga/Matlab/control_system/observer/observer/observer.prj" location="/home/delg/Documents/covg_fpga_project/covg_fpga/Matlab/control_system/observer/observer" name="observer" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
-    <param.AutoInferDefaultFile>${PROJECT_ROOT}/observer_tb.m</param.AutoInferDefaultFile>
+  <configuration file="C:\Users\koer2434\Documents\covg\covg_fpga\Matlab\control_system\observer\observer\observer.prj" location="C:\Users\koer2434\Documents\covg\covg_fpga\Matlab\control_system\observer\observer" name="observer" target="target.matlab.hdlcoder" target-name="HDL Code Generation">
+    <param.AutoInferDefaultFile>${PROJECT_ROOT}\observer_tb.m</param.AutoInferDefaultFile>
     <param.AutoInferUseVariableSize>false</param.AutoInferUseVariableSize>
     <param.AutoInferUseUnboundedSize>false</param.AutoInferUseUnboundedSize>
     <param.AutoInferVariableSizeThreshold>1024</param.AutoInferVariableSizeThreshold>
@@ -17,13 +17,13 @@
     <param.hdl.WorkingSpecifiedDirectory />
     <param.hdl.BuildDirectory>option.hdl.ProjectDirectory</param.hdl.BuildDirectory>
     <param.hdl.BuildSpecifiedDirectory />
-    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}/codegen/observer/fixpt/observer_float_mex.mexa64</param.fixptconv.InstrumentedMexFile>
+    <param.fixptconv.InstrumentedMexFile>${PROJECT_ROOT}\codegen\observer\fixpt\observer_float_mex.mexa64</param.fixptconv.InstrumentedMexFile>
     <param.fixptconv.InstrumentedBuildChecksum>2474647834</param.fixptconv.InstrumentedBuildChecksum>
     <param.fixptconv.ShowCoverage>true</param.fixptconv.ShowCoverage>
     <param.fixptconv.FixedPointValidationChecksum>2214853189</param.fixptconv.FixedPointValidationChecksum>
     <param.fixptconv.FixedPointSourceCodeChecksum>1179372604</param.fixptconv.FixedPointSourceCodeChecksum>
     <param.fixptconv.FixedPointStaticAnalysisChecksum />
-    <param.fixptconv.DefaultTestFile>${PROJECT_ROOT}/observer_tb.m</param.fixptconv.DefaultTestFile>
+    <param.fixptconv.DefaultTestFile>${PROJECT_ROOT}\observer_tb.m</param.fixptconv.DefaultTestFile>
     <param.fixptconv.ExcludedFixedPointVerificationFiles />
     <param.fixptconv.ExcludedFixedPointSimulationFiles />
     <param.fixptconv.FixptProposalKind>option.fixptconv.ProposeFracLenBasedOnWordLen</param.fixptconv.FixptProposalKind>
@@ -341,7 +341,7 @@
     <param.hdl.TargetPlatform />
     <param.hdl.SynthesisTool>No synthesis tool available on system path</param.hdl.SynthesisTool>
     <param.hdl.InputFrequency>100</param.hdl.InputFrequency>
-    <param.hdl.TargetFrequency>100</param.hdl.TargetFrequency>
+    <param.hdl.TargetFrequency>0</param.hdl.TargetFrequency>
     <param.hdl.ReferenceDesign />
     <param.hdl.ReferenceDesignPath />
     <param.hdl.IPCoreName>observer_fixpt_ipcore</param.hdl.IPCoreName>
@@ -436,6 +436,9 @@
     <param.hdl.RegisterInputs>false</param.hdl.RegisterInputs>
     <param.hdl.RegisterOutputs>true</param.hdl.RegisterOutputs>
     <param.hdl.AdaptivePipelining>false</param.hdl.AdaptivePipelining>
+    <param.hdl.ClockRatePipelining>true</param.hdl.ClockRatePipelining>
+    <param.hdl.ClockRatePipelineOutputPorts>false</param.hdl.ClockRatePipelineOutputPorts>
+    <param.hdl.BalanceClockRateOutputPorts>false</param.hdl.BalanceClockRateOutputPorts>
     <param.hdl.DistributedPipelining>false</param.hdl.DistributedPipelining>
     <param.hdl.DistributedPipeliningPriority>option.hdl.NumericalIntegrity</param.hdl.DistributedPipeliningPriority>
     <param.hdl.PreserveDesignDelays>false</param.hdl.PreserveDesignDelays>
@@ -450,6 +453,16 @@
     <param.hdl.ShareAdders>false</param.hdl.ShareAdders>
     <param.hdl.ConstantMultiplierOptimization>option.hdl.NONE</param.hdl.ConstantMultiplierOptimization>
     <param.hdl.LoopOptimization>option.hdl.LoopNone</param.hdl.LoopOptimization>
+    <param.hdl.FloatingPointLibrary>option.hdl.None</param.hdl.FloatingPointLibrary>
+    <param.hdl.NFPLatencyStrategy>option.hdl.MAX</param.hdl.NFPLatencyStrategy>
+    <param.hdl.NFPHandleDenormals>option.hdl.Auto</param.hdl.NFPHandleDenormals>
+    <param.hdl.NFPMantissaMultiplyStrategy>option.hdl.Auto</param.hdl.NFPMantissaMultiplyStrategy>
+    <param.hdl.FrameToSampleConversion>false</param.hdl.FrameToSampleConversion>
+    <param.hdl.SamplesPerCycle>1</param.hdl.SamplesPerCycle>
+    <param.hdl.InputFIFOSize>10</param.hdl.InputFIFOSize>
+    <param.hdl.OutputFIFOSize>10</param.hdl.OutputFIFOSize>
+    <param.hdl.MoveLargeDelaysToMemory>false</param.hdl.MoveLargeDelaysToMemory>
+    <param.hdl.DelaySizeThreshold>1024</param.hdl.DelaySizeThreshold>
     <param.hdl.InitializeBlockRAM>true</param.hdl.InitializeBlockRAM>
     <param.hdl.RAMArchitecture>option.hdl.EnabledRAM</param.hdl.RAMArchitecture>
     <param.hdl.PartitionFunctions>false</param.hdl.PartitionFunctions>
@@ -461,6 +474,7 @@
     <param.hdl.GenerateSLModel>false</param.hdl.GenerateSLModel>
     <param.hdl.SearchPath />
     <param.hdl.GenerateSimulinkModel>false</param.hdl.GenerateSimulinkModel>
+    <param.hdl.TreatRealsInGeneratedCodeAs>option.hdl.Warning</param.hdl.TreatRealsInGeneratedCodeAs>
     <param.hdl.HDLCompileFilePostfix>_compile.do</param.hdl.HDLCompileFilePostfix>
     <param.hdl.HDLCompileInit>vlib %s\n</param.hdl.HDLCompileInit>
     <param.hdl.HDLCompileVHDLCmd>vcom %s %s\n</param.hdl.HDLCompileVHDLCmd>
@@ -682,6 +696,9 @@
       <param.hdl.AggressiveDataflowConversion />
       <param.hdl.RegisterInputs />
       <param.hdl.AdaptivePipelining />
+      <param.hdl.ClockRatePipelining />
+      <param.hdl.ClockRatePipelineOutputPorts />
+      <param.hdl.BalanceClockRateOutputPorts />
       <param.hdl.DistributedPipelining />
       <param.hdl.DistributedPipeliningPriority />
       <param.hdl.PreserveDesignDelays />
@@ -696,6 +713,16 @@
       <param.hdl.ShareAdders />
       <param.hdl.ConstantMultiplierOptimization />
       <param.hdl.LoopOptimization />
+      <param.hdl.FloatingPointLibrary />
+      <param.hdl.NFPLatencyStrategy />
+      <param.hdl.NFPHandleDenormals />
+      <param.hdl.NFPMantissaMultiplyStrategy />
+      <param.hdl.FrameToSampleConversion />
+      <param.hdl.SamplesPerCycle />
+      <param.hdl.InputFIFOSize />
+      <param.hdl.OutputFIFOSize />
+      <param.hdl.MoveLargeDelaysToMemory />
+      <param.hdl.DelaySizeThreshold />
       <param.hdl.InitializeBlockRAM />
       <param.hdl.RAMArchitecture />
       <param.hdl.PartitionFunctions />
@@ -707,6 +734,7 @@
       <param.hdl.GenerateSLModel />
       <param.hdl.SearchPath />
       <param.hdl.GenerateSimulinkModel />
+      <param.hdl.TreatRealsInGeneratedCodeAs />
       <param.hdl.HDLCompileFilePostfix />
       <param.hdl.HDLCompileInit />
       <param.hdl.HDLCompileVHDLCmd />
@@ -775,7 +803,7 @@
       <param.hdl.BitstreamBuildMode />
     </unset>
     <fileset.entrypoints>
-      <file custom-data-expanded="false" value="${PROJECT_ROOT}/observer.m">
+      <file custom-data-expanded="false" value="${PROJECT_ROOT}\observer.m">
         <Inputs fileName="observer.m" functionName="observer">
           <Input Name="y1">
             <Class>double</Class>
@@ -835,7 +863,7 @@
       </file>
     </fileset.entrypoints>
     <fileset.scriptfile>
-      <file>${PROJECT_ROOT}/observer_tb.m</file>
+      <file>${PROJECT_ROOT}\observer_tb.m</file>
     </fileset.scriptfile>
     <fileset.package />
     <build-deliverables />
@@ -856,7 +884,7 @@
       <step key="category.workflow.createsynthesisproject" skipped="false" />
       <step key="category.workflow.logicsynthesis" skipped="false" />
       <step key="category.workflow.vivadosynthesis" skipped="false" />
-      <step key="category.workflow.stratussynthesis" skipped="false" />
+      <step key="category.workflow.highlevelsynthesis" skipped="false" />
       <step key="category.workflow.par" skipped="false" />
       <step key="category.workflow.vivadoimplementation" skipped="false" />
       <step key="category.workflow.reportcriticalpath" skipped="false" />
@@ -869,7 +897,7 @@
       <step key="category.workflow.fpgaturnkeyprogramtargetdevice" skipped="false" />
     </workflow>
     <matlab>
-      <root>/usr/local/MATLAB/R2022a</root>
+      <root>C:\Program Files\MATLAB\R2022b</root>
       <toolboxes>
         <toolbox name="matlabcoder" />
         <toolbox name="fixedpoint" />
@@ -892,18 +920,18 @@
       </toolbox>
     </matlab>
     <platform>
-      <unix>true</unix>
+      <unix>false</unix>
       <mac>false</mac>
-      <windows>false</windows>
+      <windows>true</windows>
       <win2k>false</win2k>
       <winxp>false</winxp>
       <vista>false</vista>
-      <linux>true</linux>
+      <linux>false</linux>
       <solaris>false</solaris>
-      <osver>5.15.0-56-generic</osver>
+      <osver>10.0</osver>
       <os32>false</os32>
       <os64>true</os64>
-      <arch>glnxa64</arch>
+      <arch>win64</arch>
       <matlab>true</matlab>
     </platform>
   </configuration>
