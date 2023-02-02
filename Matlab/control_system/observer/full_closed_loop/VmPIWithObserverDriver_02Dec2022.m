@@ -125,12 +125,15 @@ ads_full_scale = 10;
 dn_per_volt = (2^16/ads_full_scale); %correct
 VP1_scale = dn_per_volt*11*1.7; %  
 
+dac_scale = 2^14/0.589; % TODO: verify this  
 dac_scale = 2^14; % TODO: verify this  
+obsv_scale = dac_scale;
+total_scale = 1; % observer is 16-bit, DAC is 14-bit
 
 % scale L matrix to cancel scaling of the measured Vm and Im 
-Ldp = Ldp*[1/Im_scale, 0; 0, 1/VP1_scale];
-Bdp = Bdp/dac_scale;
-
+Ldp = Ldp*[1/Im_scale, 0; 0, 1/VP1_scale]*total_scale;
+Bdp = Bdp/dac_scale*total_scale;
+Adp = Adp;
 fixed_pt_scaling = 1;
 
 % if false execute a floating point simulation
@@ -211,6 +214,12 @@ hold on
 plot(out.VmHat.Time, out.VmHat.Data, 'g')
 plot(out.Est_fixed.Time, out.Est_fixed.Data(1,:), 'r')
 legend('Vm', 'VmHat', 'Vm-Estimator')
+figure 
+plot(out.VCmd.Time, out.VCmd.Data, 'g');
+hold on
+plot(out.SetPt.Time, out.SetPt.Data, 'r');
+
+title('Vcmd')
 
 % --------------
 % Check max values

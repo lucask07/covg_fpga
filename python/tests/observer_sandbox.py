@@ -332,16 +332,16 @@ obsv.set_vp1_data_mux("ads8686_chA")
 obsv.set_rdy_data_mux("sync_im")
 
 # observer coeffs
-obsv_coeff = {0:0x01fa2f60,
-1:0x00001636,
-2:0x176649c6,
-3:0x000631c1,
+obsv_coeff =  {0:0xfc0ba13f,
+1:0xffffd393,
+2:0xd1336c73,
+3:0xfff39c7d,
 4:0x00f716c3,
 5:0x0000001b,
 6:0xef4d3861,
 7:0x00e74b26,
-8:0x131f87d0,
-9:0x001c4b4c}
+8:0x00000000,
+9:0x00000000}
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
@@ -410,9 +410,6 @@ fig,ax=plt.subplots()
 datastreams['CMD0'].plot(ax)
 
 fig,ax=plt.subplots()
-datastreams['CMD1'].plot(ax)
-
-fig,ax=plt.subplots()
 datastreams['Im'].plot(ax)
 
 fig,ax=plt.subplots()
@@ -426,22 +423,27 @@ datastreams['P1'].plot(ax[0], {'marker':'.'})
 datastreams['I'].plot(ax[1], {'marker':'.'})
 ax[1].set_ylabel('Vm measured [V]')
 
-
-
 # plot dac channel 4 data
 fig,ax=plt.subplots(3,1)
 datastreams['OBSV'].plot(ax[0])
 datastreams['OBSV_CH1'].plot(ax[1])
-datastreams['PI_ERR'].plot(ax[1])
+datastreams['PI_ERR'].plot(ax[2])
 
 # subplot of Observer Vm and measured Vm
-fig,ax=plt.subplots(2,1)
+fig,ax=plt.subplots(3,1)
 fig.suptitle('Observer Vm vs ADS8686')
 # Observer - stored in DDR at 1 MSPS -- dac_data[4] is observer output 0, dac_data[5] is observer output 1, dac_data[6] is obs. output 0 shifted by 400 ns
-datastreams['OBSV'].plot(ax[0], {'marker':'.'})
-datastreams['I'].plot(ax[1], {'marker':'.'})
-ax[1].set_ylabel('Vm measured [V]')
+datastreams['OBSV'].plot(ax[0], {'marker':'.', 'label': 'Obsv.'})
+datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
+ax[0].legend()
+datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
+datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
+ax[1].legend()
+datastreams['CMD0'].plot(ax[2])
 
+ax[1].set_ylabel('Vm measured [V]')
+for axi in ax:
+    axi.set_xlim([3200, 3600])
 
 def ads_plot_zoom(ax):
     for ax_s in ax:

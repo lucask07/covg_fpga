@@ -269,8 +269,8 @@ obsv_coeff = {0:0x01fa2f60,
 5:0x0000001b,
 6:0xef4d3861,
 7:0x00e74b26,
-8:0x098fc3e8,
-9:0x000e25a6}
+8:0x131f87d0,
+9:0x001c4b4c}
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
@@ -282,6 +282,7 @@ for i in range(6):
     daq.DAC[i].filter_select(operation="clear")
     daq.DAC[i].write(int(0))
     daq.DAC[i].set_data_mux("DDR")
+    daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, 5)  # 5V 
@@ -299,7 +300,7 @@ file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
 feedback_resistors = [2.1]
-capacitors = [0, 47, 247]
+capacitors = [0,47]
 bath_res = [332] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
@@ -332,7 +333,7 @@ errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0300, cc_scale=0, cc_delay=0, fc=None,
+set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
@@ -513,7 +514,7 @@ datastreams['I'].plot(ax[1], {'marker':'.'})
 ax[2].plot(dac_data[1].astype(np.int32)-0x1FFF, marker='.')  
 datastreams['PI_ERR'].plot(ax[3], {'marker':'.'})  
 
-print(f'Max - min of Obsrver: {np.max(datastreams["OBSV"].data)-np.min(datastreams["OBSV"].data)}')
+print(f'Max - min of Observer: {np.max(datastreams["OBSV"].data)-np.min(datastreams["OBSV"].data)}')
 print(f'Max - min of DDR: {np.max(ddr.data_arrays[1]) - np.min(ddr.data_arrays[1])}')
 print(f'Max - min of DAC data: {np.max(dac_data[1]) - np.min(dac_data[1])}')
 
@@ -526,6 +527,23 @@ t = datastreams['P1'].create_time()
 dt = t[1] - t[0]
 p1_diff = np.diff(datastreams['P1'].data)/dt
 ax.plot(t[:-1]*1e6, -Cm*p1_diff)
+
+# subplot of Observer Vm and measured Vm
+fig,ax=plt.subplots(3,1)
+fig.suptitle('Observer Vm vs ADS8686')
+# Observer - stored in DDR at 1 MSPS -- dac_data[4] is observer output 0, dac_data[5] is observer output 1, dac_data[6] is obs. output 0 shifted by 400 ns
+datastreams['OBSV'].plot(ax[0], {'marker':'.', 'label': 'Obsv.'})
+datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
+ax[0].legend()
+datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
+datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
+ax[1].plot(datastreams['OBSV'].create_time()*1e6, datastreams['OBSV'].data/900*0.025, marker='o', label='OBSV')
+ax[1].legend()
+datastreams['CMD0'].plot(ax[2])
+
+ax[1].set_ylabel('Vm measured [V]')
+for axi in ax:
+    axi.set_xlim([3200, 3600])
 
 # add log info to datastreams -- any dictionary is ok  
 datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 

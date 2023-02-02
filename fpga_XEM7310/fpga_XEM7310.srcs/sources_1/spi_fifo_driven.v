@@ -53,9 +53,9 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire [2:0] filter_data_mux_sel,
      /*****Output of Filter/PI Controller Before Scaling (for observer)*****/
      output wire [15:0] filter_out_signed,
-     output wire filter_out_signed_rdy
+     output wire filter_out_signed_rdy,
      /***** debug of PI error signal ****/
-     //output reg [15:0] pi_error_signal_reg
+     output reg [15:0] pi_error_signal_reg
     );
     
       wire cmd_stb;
@@ -102,6 +102,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 reg [23:0] spi_data; 
 	 reg data_ready_mux;
+	 
+	 reg [15:0] pi_error_signal_reg_1;
 
      always @(*) begin
          if (filter_sel == 1'b1) spi_data = {11'b0, filter_out_modified};
@@ -194,7 +196,9 @@ module spi_fifo_driven #(parameter ADDR = 0) (
             if (filter_data_mux_sel == 3'b010) begin
                 vm_fbck_data_reg <= filter_data_i[31:16];
             end
-            else if (filter_data_mux_sel == 3'b011) begin
+            //else if (filter_data_mux_sel == 3'b011) begin
+            // Reason for change is to calculate pi_error signal even in open-loop
+            else begin
                 vm_fbck_data_reg <= filter_data_i[15:0];
             end
         end
@@ -215,8 +219,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
             end
             1: begin
                 temp1 <= (data_i[13:0] - 14'h1fff);
-                temp2 <= vm_fbck_data_reg[15:2];
-                //temp2 <= vm_fbck_data_reg[15:0]; // LJK change 
+                //temp2 <= vm_fbck_data_reg[15:2];
+                temp2 <= vm_fbck_data_reg[15:0]; // LJK change 
                 temp3 <= temp3;
                 temp4 <= temp4;
                 temp5 <= temp5;
@@ -230,9 +234,11 @@ module spi_fifo_driven #(parameter ADDR = 0) (
                     temp3 <= (temp1<<2);
                     temp4 <= (temp2);
                 end
-                else begin
-                    temp3 <= temp3;
-                    temp4 <= temp4;
+                else begin // Reason for change is to calculate pi_error signal even in open-loop
+                    //temp3 <= temp3;
+                    //temp4 <= temp4;
+                    temp3 <= (temp1<<2);
+                    temp4 <= (temp2);
                 end
                 temp1 <= temp1;
                 temp2 <= temp2;
@@ -246,8 +252,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
                 temp4 <= temp4;
             end
             4: begin
-                pi_error_signal <= {temp5, 2'b0}; //LJK change 
-                //pi_error_signal <= temp5;
+                //pi_error_signal <= {temp5, 2'b0}; //LJK change 
+                pi_error_signal <= temp5;
                 temp1 <= temp1;
                 temp2 <= temp2;
                 temp3 <= temp3;
@@ -287,13 +293,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          else filter_mux_data_rdy = data_rdy_0_filt;
      end
      
-     /*
      always @(posedge clk) begin
-        if (data_rdy_pi_error) begin
-            pi_error_signal_reg <= pi_error_signal;
+        if (data_rdy_pi_error == 1'b1) begin
+            pi_error_signal_reg_1 <= pi_error_signal; // register this signal before routing to the DDR -- otherwise everything goes haywire 
+            pi_error_signal_reg <= pi_error_signal_reg_1;
         end
-    end
-    */    
+     end
 	 
 	 // Real-Time LPF
        Butter_pipelined u_Butterworth_0
