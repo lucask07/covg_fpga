@@ -556,7 +556,7 @@ class Experiment:
                                             bits=16,
                                             units='V',
                                             net=net)
-            phys_connections[con_name] = pc
+                    phys_connections[con_name] = pc
 
         # P1 is the voltage that is actually at the membrane electrode (divided by gain of feedback amplifier)
 
