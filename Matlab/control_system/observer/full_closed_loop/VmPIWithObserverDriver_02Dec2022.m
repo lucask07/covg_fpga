@@ -22,6 +22,7 @@ close all
 
 % VARIABLE AND PARAMETER DEFINITIONS
 %--------------------------------------------------------------------------
+% determines the type of simulation 
 discrete = false;
 discrete_reorder = true;
 
@@ -29,112 +30,33 @@ VmDes = 0.025;
 x0 = [0.1*VmDes 0]'; % Assume non-zero initial condition to help check observer
 
 
-MSPS = 2.5;
-Ts = 1/(MSPS*1e6);  % allow to set this externally
-N = 3;              % allow to set this externally
+MSPS = 2.5;         % Sample rate in Mega-samples
+Ts = 1/(MSPS*1e6);  % period for Simulink 
+N = 3;              % Latency of 
 Tsim = 150e-6;
 dTMax = 1e-7;
 t = 0:Ts:Tsim;
 
-Cma = 33e-9;
+% 
 RF = 332e3; % Current sense resistor: ranges from 10k, to 10Meg
-RPC = 5e3;
-Rsa = 1e3;
-AOL =5e6; % Open loop gain of op amps
-
 C1 = 47e-12; % compensator. Programmable from 47 pF to 5 nF
-R3 = 20e3;
-R1 = 2.1e3;
-R2 = 3.01e3;
-R4 = 20e3;
-
-% Definitions for convenience
-rho = (RF + RPC)/(RF + RPC + Rsa);
-g = R2/(R1+R2);
-
-tau1 = (RF+RPC+Rsa)*Cma;
-tau2 = R3*C1;
-tau3 = R4*C1;
-
-w1 = 1/tau1;
-w2 = 1/tau2;
-w3 = 1/tau3;
-
-wVM = (w1*w2*rho*(tau1-tau2)/(g + AOL*(1-rho)));
-wV3 = (g/(g+AOL*(1-rho)))*((AOL*rho*w1/g) + w2 + AOL*(1-rho)*w2/g + w3);
-wVcmd = g*w3/(g+AOL*(1-rho));
-
-
-A11 = -w1;
-A12 = -AOL*w1;
-A21 = wVM;
-A22 = -wV3;
-
-B11 = 0;
-B21 = wVcmd;
-
-C11 = 1;
-C12 = 0;
-C21 = -1/(RF+RPC+Rsa);
-C22 = -AOL/(RF+RPC+Rsa);
-C31 = rho;
-C32 = -(1-rho)*(AOL);
-
-A = [A11 A12;A21 A22];
-B = [B11;B21];
-C = [C11 C12;C21 C22;C31 C32]; % Outputs are Vm, Im, and Vp1
-D = zeros(3,1);
-
-
-% Observer, use same model except only allow for measurement of Im and Vp1
-Ao = [A11 A12;A21 A22];
-Bo = [B11;B21];
-Co = [C21 C22;C31 C32]; % Im and Vp1 is outputs in observer model to compare with measurements
-Do = zeros(2,1);
-
-% Check observability
-obsvInfo = obsvEnhanced(Ao,Co);
-disp(obsvInfo.conclusion)
-
-% Observer Design
-pPlant = eig(A);
-pDes = [3*max(pPlant) 5*max(pPlant)]; % Move both poles to left of fastest plant eigenvalue
-L = placeO(Ao,Co,pDes);
-
-% discrete version
-Ad = eye(size(Ao)) + Ts*Ao;
-Bd = Bo*Ts;
-Cd = Co; % Im and Vp1 is outputs in observer model to compare with measurements
-Dd = Do;
-Ld = L*Ts;
-
-% discrete reorder version 
-LdC_inv = inv(eye(size(Ao)) + Ld*Cd);
-Adp = LdC_inv*Ad;
-Adp2 = (eye(size(Ao)) + Ld*Cd)\Ad;  % these are the same results 
-Bdp = LdC_inv*Bd;
-Ldp = LdC_inv*Ld;
 
 in_amp = 1;
 diff_buf = 499/(120+1500); % correct, refering to signal_chain.py 
 % scaling of digitized current and voltage 
 dn_per_amp = (2^15/4.096)*(RF*in_amp*diff_buf); % correct 
-Im_scale = dn_per_amp;
+Im_scale = dn_per_amp;  % DN/Amp 
 
 ads_full_scale = 10;
 dn_per_volt = (2^16/ads_full_scale); %correct
-VP1_scale = dn_per_volt*11*1.7; %  
+VP1_scale = dn_per_volt*11*1.7; % DN / Volt at Vm  
 
 dac_scale = 2^14/0.589; % TODO: verify this  
 dac_scale = 2^14; % TODO: verify this  
 obsv_scale = dac_scale;
 total_scale = 1; % observer is 16-bit, DAC is 14-bit
 
-% scale L matrix to cancel scaling of the measured Vm and Im 
-Ldp = Ldp*[1/Im_scale, 0; 0, 1/VP1_scale]*total_scale;
-Bdp = Bdp/dac_scale*total_scale;
-Adp = Adp;
-fixed_pt_scaling = 1;
+[Ldp, Bdp, Adp] = observer_coeff(Ts, RF, C1, Im_scale, VP1_scale, dac_scale, total_scale);
 
 % if false execute a floating point simulation
 % if true create fixed point representations of the matrices A,B,L -- confirmed that there is good matching using the floating point version 
@@ -164,11 +86,7 @@ else
 end
 Ldp_sim.signals.dimensions = length(Ldp(:));
 
-%pPlant = eig(A);
-%pDes = [3*max(pPlant) 5*max(pPlant)]; % Move both poles to left of fastest plant eigenvalue
-%Ld = placeO(Ao,Co,pDes);
-
-% PI Controller Design
+% ----------- PI Controller Design -------------
 s = tf('s');
 Ac = 5; % Lower for less agressive bandwidth. 5 was nominal design
 
@@ -269,7 +187,6 @@ if OS > 0
     'FontName',fn,'BackgroundColor','w')
 end
 
-
 xlabel('Time (\mus)','FontSize',fs,'FontWeight',fw,'FontName',fn);
 ylabel('Membrane Voltage (V)','FontSize',fs,'FontWeight',fw,'FontName',fn);
 set(gca,'FontSize',fs,'FontWeight',fw,'FontName',fn);
@@ -285,18 +202,21 @@ grid on
 set(gcf,'Color','w','Units','normalized','Position',pos);
 %--------------------------------------------------------------------------
 
-%% print observer coefficients
-fprintf("Observer Coefficients\n");
-fprintf("{0:0x%s,\n", hex(fi(-Ldp(1,1), 1, 32, 50)));
-fprintf("1:0x%s,\n", hex(fi(-Ldp(2,1), 1, 32, 50)));
-fprintf("2:0x%s,\n", hex(fi(Ldp(1,2), 1, 32, 50)));
-fprintf("3:0x%s,\n", hex(fi(Ldp(2,2), 1, 32, 50)));
-fprintf("4:0x%s,\n", hex(fi(Adp(1,1), 1, 32, 24)));
-fprintf("5:0x%s,\n", hex(fi(Adp(2,1), 1, 32, 24)));
-fprintf("6:0x%s,\n", hex(fi(Adp(1,2), 1, 32, 24)));
-fprintf("7:0x%s,\n", hex(fi(Adp(2,2), 1, 32, 24)));
-fprintf("8:0x%s,\n", hex(fi(Bdp(1,1), 0, 32, 50)));
-fprintf("9:0x%s}\n", hex(fi(Bdp(2,1), 0, 32, 50)));
+%% print fixed point observer coefficients
+
+[Ldp_f, Bdp_f, Adp_f] = observer_coeff_fixed(Ldp, Bdp, Adp);
+
+fprintf("Fixed pt Observer Coefficients\n");
+fprintf("{0:0x%s,\n", hex(Ldp_f(1,1)));
+fprintf("1:0x%s,\n", hex(Ldp_f(2,1)));  
+fprintf("2:0x%s,\n", hex(Ldp_f(1,2)));
+fprintf("3:0x%s,\n", hex(Ldp_f(2,2)));
+fprintf("4:0x%s,\n", hex(Adp_f(1,1)));
+fprintf("5:0x%s,\n", hex(Adp_f(2,1)));
+fprintf("6:0x%s,\n", hex(Adp_f(1,2)));
+fprintf("7:0x%s,\n", hex(Adp_f(2,2)));
+fprintf("8:0x%s,\n", hex(Bdp_f(1,1))); 
+fprintf("9:0x%s}\n", hex(Bdp_f(2,1))); 
 
 %% print PI coefficients
 fprintf("\nController Coefficients\n");

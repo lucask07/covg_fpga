@@ -27,6 +27,7 @@ import copy
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
+import matlab.engine 
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -39,7 +40,6 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(boards_path)
 
-
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
 from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
@@ -48,6 +48,9 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
 from observer import Observer
+
+eng = matlab.engine.start_matlab()
+eng.addpath('..\\Matlab\\control_system\\observer\\full_closed_loop\\')
 
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
@@ -224,81 +227,6 @@ for dc_num in DC_NUMS:
     clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
     clamps[dc_num] = clamp
 
-# -------- configure the ADS8686
-ads_voltage_range = 5  # need this for to_voltage later 
-ads.hw_reset(val=False)
-ads.set_host_mode()
-ads.setup()
-ads.set_range(ads_voltage_range) 
-ads.set_lpf(376)
-#ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
-ads_sequencer_setup = [('1', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
-
-codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
-ads.write_reg_bridge() # 1 MSPS rate 
-ads.set_fpga_mode()
-
-daq.TCA[0].configure_pins([0, 0])
-daq.TCA[1].configure_pins([0, 0])
-
-# set observer data input muxes
-obsv = Observer(f)
-obsv.set_im_data_mux("ad7961_ch0")
-obsv.set_vcmd_data_mux("ad5453_ch1")
-obsv.set_vp1_data_mux("ads8686_chA")
-obsv.set_rdy_data_mux("sync_im")
-
-# observer coeffs - from GitHub
-obsv_coeff = {0:0x00fd4c52,
-1:0x000009ac,
-2:0x054ecf2e,
-3:0xfffec841,
-4:0x00fb6f97,
-5:0x00000005,
-6:0xfcb79653,
-7:0x00f674ae,
-8:0x01987ac9,
-9:0x0004a391}
-
-# MATLAB generated 
-obsv_coeff = {0:0x01fa2f60,
-1:0x00001636,
-2:0x176649c6,
-3:0x000631c1,
-4:0x00f716c3,
-5:0x0000001b,
-6:0xef4d3861,
-7:0x00e74b26,
-8:0x131f87d0,
-9:0x001c4b4c}
-
-obsv.change_observer_coeff(obsv_coeff)
-obsv.write_observer_coeffs()
-
-# fast DAC channels setup
-for i in range(6):
-    daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
-    daq.DAC[i].set_spi_sclk_divide()
-    daq.DAC[i].filter_select(operation="clear")
-    daq.DAC[i].write(int(0))
-    daq.DAC[i].set_data_mux("DDR")
-    daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
-    daq.DAC[i].change_filter_coeff(target="passthru")
-    daq.DAC[i].write_filter_coeffs()
-    daq.set_dac_gain(i, 5)  # 5V 
-
-# --------  Enable fast ADCs  --------
-for chan in [0, 1, 2, 3]:
-    ad7961s[chan].power_up_adc()  # standard sampling
-time.sleep(0.1)
-ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
-time.sleep(1)
-ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
-
-# ------ Collect Data --------------
-file_name = time.strftime("%Y%m%d-%H%M%S")
-idx = 0
-
 feedback_resistors = [2.1]
 capacitors = [0,47]
 bath_res = [332] # Clamp.configs['ADG_RES_dict'].keys()
@@ -328,6 +256,97 @@ for dc_num in DC_NUMS:
     ads_seq_cnt_dict[dc_num]= dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
 
 errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store whether an error occurred on the DDR read
+
+# -------- configure the ADS8686
+ads_voltage_range = 5  # need this for to_voltage later 
+ads.hw_reset(val=False)
+ads.set_host_mode()
+ads.setup()
+ads.set_range(ads_voltage_range) 
+ads.set_lpf(376)
+#ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
+ads_sequencer_setup = [('1', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
+
+codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
+ads.write_reg_bridge() # 1 MSPS rate 
+ads.set_fpga_mode()
+
+daq.TCA[0].configure_pins([0, 0])
+daq.TCA[1].configure_pins([0, 0])
+
+# set observer data input muxes
+obsv = Observer(f)
+obsv.set_im_data_mux("ad7961_ch0")
+obsv.set_vcmd_data_mux("ad5453_ch1")
+obsv.set_vp1_data_mux("ads8686_chA")
+obsv.set_rdy_data_mux("sync_im")
+
+RF = bath_res[0]*1.0e3
+in_amp = 1
+diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
+dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
+Im_scale = dn_per_amp  # DN/Amp 
+
+ads_full_scale = 10
+dn_per_volt = (2**16/ads_full_scale) # correct
+VP1_scale = dn_per_volt*11*1.3 # DN / Volt at Vm -- MATLAB already acounts for x1.7 
+
+dac_scale = 2**14/0.58 # TODO: verify this  
+obsv_scale = dac_scale
+total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
+
+Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, capacitors[-1]*1e-12, Im_scale, VP1_scale, -dac_scale, total_scale, nargout=3)
+
+# observer coeffs
+obsv_coeff = {}
+max_bit_width = 0xFFFFFFFF
+obsv_coeff[0] = Ldp[0][0] & max_bit_width
+obsv_coeff[1] = Ldp[1][0] & max_bit_width
+obsv_coeff[2] = Ldp[0][1] & max_bit_width
+obsv_coeff[3] = Ldp[1][1] & max_bit_width
+
+obsv_coeff[4] = Adp[0][0] & max_bit_width
+obsv_coeff[5] = Adp[1][0] & max_bit_width
+obsv_coeff[6] = Adp[0][1] & max_bit_width
+obsv_coeff[7] = Adp[1][1] & max_bit_width
+
+# zero out all but the DAC coefficients
+#for i in range(8):
+#    obsv_coeff[i] = 0
+
+obsv_coeff[8] = Bdp[0][0] & max_bit_width
+obsv_coeff[9] = Bdp[1][0] & max_bit_width
+
+for oc in obsv_coeff:
+    print(f'{oc}: {hex(obsv_coeff[oc])}')
+
+obsv.change_observer_coeff(obsv_coeff)
+obsv.write_observer_coeffs()
+
+# fast DAC channels setup
+for i in range(6):
+    daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
+    daq.DAC[i].set_spi_sclk_divide()
+    daq.DAC[i].filter_select(operation="clear")
+    #daq.DAC[i].write(int(0))
+    daq.DAC[i].set_data_mux("DDR")
+    #daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
+    daq.DAC[i].set_data_mux("DDR", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
+    daq.DAC[i].change_filter_coeff(target="passthru")
+    daq.DAC[i].write_filter_coeffs()
+    daq.set_dac_gain(i, 5)  # 5V 
+
+# --------  Enable fast ADCs  --------
+for chan in [0, 1, 2, 3]:
+    ad7961s[chan].power_up_adc()  # standard sampling
+time.sleep(0.1)
+ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
+time.sleep(1)
+ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
+
+# ------ Collect Data --------------
+file_name = time.strftime("%Y%m%d-%H%M%S")
+idx = 0
 
 # set all fast-DAC DDR data to midscale
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
@@ -505,18 +524,28 @@ except:
 fig, ax = plt.subplots()
 fig.suptitle('Overlay P1 and CMD')
 datastreams['P1'].plot(ax, {'marker':'.'})
-datastreams['CMD0'].plot(ax, {'marker':'.'})  # TODO: use physical connections to allow for setting CMD0 in terms of physical units 
+datastreams['CMD0'].plot(ax, {'marker':'.'})  
 
 fig, ax = plt.subplots(4,1)
 fig.suptitle('Overlay OBSERVER and I')
 datastreams['OBSV'].plot(ax[0], {'marker':'.'})
 datastreams['I'].plot(ax[1], {'marker':'.'})  
 ax[2].plot(dac_data[1].astype(np.int32)-0x1FFF, marker='.')  
-datastreams['PI_ERR'].plot(ax[3], {'marker':'.'})  
+ax[2].set_ylabel('CMD offset DAC')
+#datastreams['PI_ERR'].plot(ax[3], {'marker':'.'})  
 
 print(f'Max - min of Observer: {np.max(datastreams["OBSV"].data)-np.min(datastreams["OBSV"].data)}')
 print(f'Max - min of DDR: {np.max(ddr.data_arrays[1]) - np.min(ddr.data_arrays[1])}')
 print(f'Max - min of DAC data: {np.max(dac_data[1]) - np.min(dac_data[1])}')
+
+fig, ax = plt.subplots()
+cmd_arr = 4*((dac_data[1].astype(np.int16)-0x1fff)[::5])
+obsv_arr = dac_data[4][::2].astype(np.int16)
+pi_error_est = cmd_arr - obsv_arr
+ax.plot(pi_error_est, label='pi_error')
+ax.plot(cmd_arr, label='cmd')
+ax.plot(obsv_arr, label='obsv')
+ax.legend()
 
 # estimate Im 
 Cm = 33e-9
@@ -537,7 +566,7 @@ datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
 ax[0].legend()
 datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
 datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
-ax[1].plot(datastreams['OBSV'].create_time()*1e6, datastreams['OBSV'].data/900*0.025, marker='o', label='OBSV')
+ax[1].plot(datastreams['OBSV'].create_time()*1e6, datastreams['OBSV'].data/3000*0.025, marker='o', label='OBSV')
 ax[1].legend()
 datastreams['CMD0'].plot(ax[2])
 

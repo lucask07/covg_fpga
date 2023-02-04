@@ -23,6 +23,7 @@ import copy
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients, gen_mask
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
+import matlab.engine 
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -43,6 +44,9 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
 from observer import Observer
+
+eng = matlab.engine.start_matlab()
+eng.addpath('..\\Matlab\\control_system\\observer\\full_closed_loop\\')
 
 def get_cc_optimize(nums):
 
@@ -280,17 +284,19 @@ file_name = time.strftime("%Y%m%d-%H%M%S") + '_{}' # to append index
 idx = 0
 
 # Set CMD and CC signals
-set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0080, cc_scale=0, cc_delay=0, fc=None,
+set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
+bath_res = 332 # in kOhm
+c_comp = 47 # in pF
 dc_configs = {}
 for dc_num in DC_NUMS:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG1", # required for comparative Vm measurement 
         DAC_SEL="drive_CAL2",
-        CCOMP=47,
+        CCOMP=c_comp,
         RF1=2.1,  # feedback circuit
-        ADG_RES=332,
+        ADG_RES=bath_res,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
@@ -342,6 +348,41 @@ obsv_coeff =  {0:0xfc0ba13f,
 7:0x00e74b26,
 8:0x00000000,
 9:0x00000000}
+
+RF = bath_res*1.0e3
+in_amp = 1
+diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
+dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
+Im_scale = dn_per_amp  # DN/Amp 
+
+ads_full_scale = 10
+dn_per_volt = (2**16/ads_full_scale) # correct
+VP1_scale = dn_per_volt*11*1.3 # DN / Volt at Vm
+
+dac_scale = 2**14*1.0/ # TODO: verify this  
+total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
+
+Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, c_comp*1e-12, Im_scale, VP1_scale, -dac_scale, total_scale, nargout=3)
+
+# observer coeffs
+obsv_coeff = {}
+max_bit_width = 0xFFFFFFFF
+obsv_coeff[0] = Ldp[0][0] & max_bit_width
+obsv_coeff[1] = Ldp[1][0] & max_bit_width
+obsv_coeff[2] = Ldp[0][1] & max_bit_width
+obsv_coeff[3] = Ldp[1][1] & max_bit_width
+
+obsv_coeff[4] = Adp[0][0] & max_bit_width
+obsv_coeff[5] = Adp[1][0] & max_bit_width
+obsv_coeff[6] = Adp[0][1] & max_bit_width
+obsv_coeff[7] = Adp[1][1] & max_bit_width
+
+# zero out all but the DAC coefficients
+#for i in range(8):
+#    obsv_coeff[i] = 0
+
+obsv_coeff[8] = Bdp[0][0] & max_bit_width
+obsv_coeff[9] = Bdp[1][0] & max_bit_width
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
