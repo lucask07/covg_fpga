@@ -398,6 +398,73 @@ class ExperimentSetup:
             else:
                 self.daq_peripherals[k] = yaml_dict['daq'][k]
 
+    @staticmethod
+    def from_yaml(file_path: str):
+        """Create an ExperimentSetup from a YAML file.
+        
+        Parameters
+        ----------
+        file_path : str
+            Path to the setup YAML file.
+
+        Returns
+        -------
+        ExperimentSetup : the loaded setup.
+        """
+
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f'ExperimentSetup file {os.path.abspath(file_path)} not found.')
+
+        with open(file_path, 'r') as file:
+            yaml_dict = yaml.safe_load(file)
+
+        return ExperimentSetup(yaml_dict)
+
+    def to_yaml(self, file_path: str, overwrite: bool = False):
+        """Store the information in ExperimentSetup in a YAML file.
+        
+        Parameters
+        ----------
+        file_path : str
+            Path to the save the setup YAML file at.
+        overwrite : bool
+            Whether to overwrite an existing YAML file at the path given.
+            
+        Returns
+        -------
+        str : absolute path to the saved YAML file.
+        """
+        
+        abs_path = os.path.abspath(file_path)
+        directory = os.path.dirname(abs_path)
+
+        # Create directory if it does not exist
+        if not os.path.isdir(directory):
+            print('Directory does not exist. Creating directory...')
+            os.makedirs(directory)
+
+        # Overwrite an existing file if allowed
+        if os.path.isfile(abs_path):
+            if overwrite:
+                print(f'File already exists at {abs_path}, overwriting...')
+            else:
+                raise FileExistsError(f'File already exists at {abs_path}. Use overwrite=True to overwrite it.')
+
+        # Save setup data to the file
+        d = {
+            'daq': {
+                0: self.daq_ports[0],
+                1: self.daq_ports[1],
+                2: self.daq_ports[2],
+                3: self.daq_ports[3],
+            }
+        }
+        d['daq'].update(self.daq_peripherals)
+        with open(abs_path, 'w') as file:
+            yaml.safe_dump(d, file)
+
+        return abs_path
+
     def get_electrode_by_name(self, name: str):
         """Get an Electrode instance from setup by name.
         
@@ -477,17 +544,10 @@ class Experiment:
         """
 
         if file_path is None:
-            if self.setup_file_path is None:
-                raise AttributeError('Setup file path must be specified as file_path argument or Experiment.setup_file_path attribute, both are None')
-            else:
-                file_path = self.setup_file_path
+            file_path = self.setup_file_path
+        self.experiment_setup = ExperimentSetup.from_yaml(file_path)
 
-        with open(file_path, 'r') as file:
-            yaml_dict = yaml.safe_load(file)
-
-        self.experiment_setup = ExperimentSetup(yaml_dict)
-
-        return self.setup
+        return self.experiment_setup
 
     def create_phys_connections(self):
         """Return a dictionary of PhysicalConnections based on the current setup.
