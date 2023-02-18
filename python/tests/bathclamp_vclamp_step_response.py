@@ -229,7 +229,7 @@ for dc_num in DC_NUMS:
 
 feedback_resistors = [2.1]
 capacitors = [0,47]
-bath_res = [332] # Clamp.configs['ADG_RES_dict'].keys()
+bath_res = [100] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -285,17 +285,40 @@ RF = bath_res[0]*1.0e3
 in_amp = 1
 diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
 dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
-Im_scale = dn_per_amp  # DN/Amp 
+Im_scale = dn_per_amp/2  # DN/Amp 
 
 ads_full_scale = 10
 dn_per_volt = (2**16/ads_full_scale) # correct
-VP1_scale = dn_per_volt*11*1.3 # DN / Volt at Vm -- MATLAB already acounts for x1.7 
+VP1_scale = dn_per_volt*11/2.182*1.5 # DN / Volt at Vm -- MATLAB already acounts for x1.7 
 
-dac_scale = 2**14/0.58 # TODO: verify this  
+dac_scale = 2**14*4.0 # DN/Volt TODO: verify this  # /0.58 ? 
+# In [13]: datastreams['CMD0'].conversion_factor
+# Out[13]: 3.595221532534246e-05
+# In [5]: datastreams['Im'].conversion_factor
+# Out[5]: 4.0581162324649296e-08
+
+# In [6]: Im_scale
+# Out[6]: 24641975.308641974
+
+# In [7]: 1/Im_scale
+# Out[7]: 4.05811623246493e-08
+
+# In [8]: VP1_scale
+# Out[8]: 93716.48000000001
+
+# In [9]: VP1_scale
+# Out[9]: 93716.48000000001
+
+# In [10]: datastreams['P1'].conversion_factor
+# Out[10]: 8.170958028486923e-06
+
+# In [11]: 1/VP1_scale
+# Out[11]: 1.0670481861888111e-05
 obsv_scale = dac_scale
-total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
+# total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
+total_scale = 1.0*1.5
 
-Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, capacitors[-1]*1e-12, Im_scale, VP1_scale, -dac_scale, total_scale, nargout=3)
+Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, capacitors[-1]*1e-12, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
 
 # observer coeffs
 obsv_coeff = {}
@@ -339,10 +362,11 @@ for i in range(6):
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
-time.sleep(0.1)
+time.sleep(0.5)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
-time.sleep(1)
+time.sleep(2)
 ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
+time.sleep(1)
 
 # ------ Collect Data --------------
 file_name = time.strftime("%Y%m%d-%H%M%S")
@@ -352,7 +376,7 @@ idx = 0
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=None,
+set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0800, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
@@ -555,7 +579,8 @@ datastreams['Im'].plot(ax, {'marker':'.', 'label': 'Meas. Im'})
 t = datastreams['P1'].create_time()
 dt = t[1] - t[0]
 p1_diff = np.diff(datastreams['P1'].data)/dt
-ax.plot(t[:-1]*1e6, -Cm*p1_diff)
+ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
+ax.legend()
 
 # subplot of Observer Vm and measured Vm
 fig,ax=plt.subplots(3,1)
@@ -572,7 +597,7 @@ datastreams['CMD0'].plot(ax[2])
 
 ax[1].set_ylabel('Vm measured [V]')
 for axi in ax:
-    axi.set_xlim([3200, 3600])
+    axi.set_xlim([3250, 3400])
 
 # add log info to datastreams -- any dictionary is ok  
 datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
@@ -581,10 +606,14 @@ datastreams.add_log_info({'dc_configs': dc_configs})
 print(datastreams.__dict__)
 # test writing and reading datastream h5
 datastreams.to_h5(data_dir, 'test.h5', log_info)
-
 datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
 # this datastreams has the log info but as a dictionary, not as Python classes
 # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
 
 for n in datastreams:
     assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
+
+
+print(f'CMD scaling for observer {1/dac_scale} [DN/Volt] and from datastreams {datastreams["CMD0"].conversion_factor}')
+print(f'Im scaling for observer  {1/Im_scale} [DN/Amp] and from datastreams {datastreams["Im"].conversion_factor}')
+print(f'P1 scaling for observer {1/VP1_scale} [DN/Volt] and from datastreams {datastreams["P1"].conversion_factor}')

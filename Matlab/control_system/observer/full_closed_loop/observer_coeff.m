@@ -1,4 +1,4 @@
-function [Ldp, Bdp, Adp] = observer_coeff(Ts, RF, C1, Im_scale, VP1_scale, dac_scale, total_scale)
+function [Ldp, Bdp, Adp, A, B, C, D] = observer_coeff(Ts, RF, C1, Im_scale, VP1_scale, dac_scale, total_scale)
 
     % calculate full precision observer coefficients 
     % function so that this can be called by Python using the MATLAB engine

@@ -26,7 +26,7 @@ close all
 discrete = false;
 discrete_reorder = true;
 
-VmDes = 0.025;
+VmDes = 0.025; % mV final membrane voltage 
 x0 = [0.1*VmDes 0]'; % Assume non-zero initial condition to help check observer
 
 
@@ -49,14 +49,14 @@ Im_scale = dn_per_amp;  % DN/Amp
 
 ads_full_scale = 10;
 dn_per_volt = (2^16/ads_full_scale); %correct
-VP1_scale = dn_per_volt*11*1.7; % DN / Volt at Vm  
+VP1_scale = dn_per_volt*11; % DN / Volt at Vm  
 
-dac_scale = 2^14/0.589; % TODO: verify this  
-dac_scale = 2^14; % TODO: verify this  
+%dac_scale = 2^14/0.589; % TODO: verify this  
+dac_scale = 2^14*4; % TODO: verify this  
 obsv_scale = dac_scale;
 total_scale = 1; % observer is 16-bit, DAC is 14-bit
 
-[Ldp, Bdp, Adp] = observer_coeff(Ts, RF, C1, Im_scale, VP1_scale, dac_scale, total_scale);
+[Ldp, Bdp, Adp, A, B, C, D] = observer_coeff(Ts, RF, C1, Im_scale, VP1_scale, dac_scale, total_scale);
 
 % if false execute a floating point simulation
 % if true create fixed point representations of the matrices A,B,L -- confirmed that there is good matching using the floating point version 
@@ -88,9 +88,9 @@ Ldp_sim.signals.dimensions = length(Ldp(:));
 
 % ----------- PI Controller Design -------------
 s = tf('s');
-Ac = 5; % Lower for less agressive bandwidth. 5 was nominal design
+Ac = 3; % Lower for less agressive bandwidth. 5 was nominal design
 
-Gc = -Ac*(s+3.14e4)/s;
+Gc = -Ac*(s+3.14e4)/s;  % 5 kHz
 Gcd = c2d(Gc,Ts,'tustin');
 
 b0 = Gcd.num{1}(1);
@@ -133,10 +133,18 @@ plot(out.VmHat.Time, out.VmHat.Data, 'g')
 plot(out.Est_fixed.Time, out.Est_fixed.Data(1,:), 'r')
 legend('Vm', 'VmHat', 'Vm-Estimator')
 figure 
+subplot(2,1,1);
 plot(out.VCmd.Time, out.VCmd.Data, 'g');
 hold on
 plot(out.SetPt.Time, out.SetPt.Data, 'r');
+legend('Vcmd', 'SetPt')
 
+subplot(2,1,2);
+plot(out.Cmd_prePI.Time, out.Cmd_prePI.Data, 'k');
+hold on;
+plot(out.Cmd_afterPI.Time, out.Cmd_afterPI.Data, 'b');
+
+legend('prePI', 'postPI')
 title('Vcmd')
 
 % --------------
@@ -222,6 +230,6 @@ fprintf("9:0x%s}\n", hex(Bdp_f(2,1)));
 fprintf("\nController Coefficients\n");
 fprintf("1: 0x%s,\n", hex(fi(-b0/2, 1, 32, 29)))
 fprintf("2: 0x%s,\n", hex(fi(-b1/2, 1, 32, 29)))
-fprintf("9: 0x%s,\n", hex(fi(a1, 1, 32, 30)))
+fprintf("9: 0x%s,\n", hex(fi(-a1, 1, 32, 30)))  % TODO: check this sign, was originally a1 
 
 % close all;

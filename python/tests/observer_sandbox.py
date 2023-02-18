@@ -316,13 +316,13 @@ for dc_num in DC_NUMS:
 color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
 
 PI_coeff = {0: 0x7fffffff,
-1: 0x50809d49,
-2: 0xb0809d49,
+1: 0x304d2b2c,
+2: 0xd04d2b2c,
             3: 0x00000000,
             4: 0xc0000000,
             5: 0x00000000,
             8: 0x7fffffff,
-            9: 0x20000000,
+            9: 0x40000000,
             10: 0x00000000,
             11: 0x00000000,
             12: 0x00000000,
@@ -353,16 +353,24 @@ RF = bath_res*1.0e3
 in_amp = 1
 diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
 dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
-Im_scale = dn_per_amp  # DN/Amp 
+Im_scale = dn_per_amp/1.6  # DN/Amp 
 
 ads_full_scale = 10
 dn_per_volt = (2**16/ads_full_scale) # correct
-VP1_scale = dn_per_volt*11*1.3 # DN / Volt at Vm
 
-dac_scale = 2**14*1.0/ # TODO: verify this  
-total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
+dac_scale = 2**14*4.0 # DN/Volt TODO: verify this  # /0.58 ? 
 
-Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, c_comp*1e-12, Im_scale, VP1_scale, -dac_scale, total_scale, nargout=3)
+ads_full_scale = 10
+dn_per_volt = (2**16/ads_full_scale) # correct
+VP1_scale = dn_per_volt*11 # DN / Volt at Vm
+VP1_scale = dn_per_volt*11/2.182*1.5 # DN / Volt at Vm -- MATLAB already acounts for x1.7 
+
+dac_scale = 2**14*4.0 # TODO: verify this  
+obsv_scale = dac_scale
+# total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
+total_scale = 1.0*1.5
+
+Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, c_comp*1e-12, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
 
 # observer coeffs
 obsv_coeff = {}
@@ -463,12 +471,16 @@ fig.suptitle('ADS data')
 datastreams['P1'].plot(ax[0], {'marker':'.'})
 datastreams['I'].plot(ax[1], {'marker':'.'})
 ax[1].set_ylabel('Vm measured [V]')
+for axi in ax:
+    axi.set_xlim([3200, 3400])
 
 # plot dac channel 4 data
 fig,ax=plt.subplots(3,1)
 datastreams['OBSV'].plot(ax[0])
 datastreams['OBSV_CH1'].plot(ax[1])
 datastreams['PI_ERR'].plot(ax[2])
+for axi in ax:
+    axi.set_xlim([3200, 3400])
 
 # subplot of Observer Vm and measured Vm
 fig,ax=plt.subplots(3,1)
@@ -484,7 +496,7 @@ datastreams['CMD0'].plot(ax[2])
 
 ax[1].set_ylabel('Vm measured [V]')
 for axi in ax:
-    axi.set_xlim([3200, 3600])
+    axi.set_xlim([3250, 3400])
 
 def ads_plot_zoom(ax):
     for ax_s in ax:

@@ -170,11 +170,11 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      /*****Special case of selecting ADS data (Direct Vm Feedback for PI control)*****/
      reg data_rdy_pi_error;
      reg [15:0] pi_error_signal;
-     reg signed [13:0] temp1;
-     reg signed [13:0] temp2;
-     reg signed [13:0] temp3;
-     reg signed [13:0] temp4;
-     reg signed [13:0] temp5;
+     reg signed [15:0] temp1;
+     reg signed [15:0] temp2;
+     reg signed [15:0] temp3;
+     reg signed [15:0] temp4;
+     reg signed [15:0] temp5;
      reg [15:0] vm_fbck_data_reg;
      reg [15:0] filter_mux_data;
      reg filter_mux_data_rdy;
@@ -211,11 +211,11 @@ module spi_fifo_driven #(parameter ADDR = 0) (
         case(cnt)
             0: begin
                 pi_error_signal <= 16'b0;
-                temp1 <= 14'b0;
-                temp2 <= 14'b0;
-                temp3 <= 14'b0;
-                temp4 <= 14'b0;
-                temp5 <= 14'b0;
+                temp1 <= 16'b0;
+                temp2 <= 16'b0;
+                temp3 <= 16'b0;
+                temp4 <= 16'b0;
+                temp5 <= 16'b0;
             end
             1: begin
                 temp1 <= (data_i[13:0] - 14'h1fff);

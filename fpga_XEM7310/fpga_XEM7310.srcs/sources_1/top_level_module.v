@@ -723,6 +723,7 @@ module top_level_module(
          .cmd_byte_addr_rd2  (ddr_adc_rd)
          );
     
+    // debug outputs
     okWireOut ddr_dac_wr (.okHE(okHE), .okEH(okEHx[ 34*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_WR), .ep_datain(ddr_dac_wr));
     okWireOut ddr_dac_rd (.okHE(okHE), .okEH(okEHx[ 35*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_RD), .ep_datain(ddr_dac_rd));
     okWireOut ddr_adc_wr (.okHE(okHE), .okEH(okEHx[ 36*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_WR), .ep_datain(ddr_adc_wr));
@@ -812,7 +813,7 @@ module top_level_module(
     wire [15:0] pi_error_out[0:(AD5453_NUM-1)];
 
     always @(*) begin 
-        if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin 
+        //if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin 
             case (cycle_cnt)
                 4'd9:    adc_ddr_data = {ads_last_read[15:0],       ads_last_read[31:16],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd8:    adc_ddr_data = {timestamp_snapshot[15:0],      timestamp_snapshot[31:16], dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
@@ -830,11 +831,11 @@ module top_level_module(
             endcase 
             if (ep03wire[`DDR3_USE_ADC_READY] == 1'b1) adc_ddr_wr_en = write_en_adc_o[0]; // Pulse to use to synchronize DACs and the ADS8686
             else adc_ddr_wr_en = adc_rd_en_emulator;
-        end
-        else begin
-            adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};
-            adc_ddr_wr_en = ddr_data_valid;
-        end
+        //end
+        //else begin
+        //    adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};
+        //    adc_ddr_wr_en = ddr_data_valid;
+        //end
     end
 
     // synchronize the OpalKelly wire in DDR3_READ_ENABLE signals with the cycle count so data always starts at cycle cnt of 9
@@ -991,7 +992,8 @@ module top_level_module(
     wire [31:0] ep_wire_obsvdata;
     okWireIn wi_obsv_data (.okHE(okHE), .ep_addr(`OBSV_DATA_SEL_WIRE_IN), .ep_dataout(ep_wire_obsvdata));
 
-    mux8to1_32wide observer_mux_bus_im( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+    mux8to1_32wide_clocked observer_mux_bus_im( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .clk(clk_sys),
             .datain_0({write_en_adc_o[0], 15'b0, adc_val[0][15:0]}), // data from AD7961 
             .datain_1({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961 
             .datain_2({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961 
@@ -1000,14 +1002,16 @@ module top_level_module(
             .dataout({observer_in_im})
         );
 
-    mux8to1_32wide observer_mux_bus_vp1( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+    mux8to1_32wide_clocked observer_mux_bus_vp1( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .clk(clk_sys),
             .datain_0({ads_data_valid, 15'b0, ads_data_out[15:0]}),
             .datain_1({ads_data_valid, 15'b0, ads_data_out[31:16]}), 
             .sel(ep_wire_obsvdata[(`OBSV_VP1_DATA_SEL_GEN_BIT) +: `OBSV_VP1_DATA_SEL_GEN_BIT_LEN]),
             .dataout({observer_in_vp1})
         );
 
-    mux8to1_32wide observer_mux_bus_vcmd( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+    mux8to1_32wide_clocked observer_mux_bus_vcmd( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .clk(clk_sys),    
             .datain_0({filter_out_signed_rdy[0], 15'b0, filter_out_signed[0][15:0]}),
             .datain_1({filter_out_signed_rdy[1], 15'b0, filter_out_signed[1][15:0]}),
             .datain_2({filter_out_signed_rdy[2], 15'b0, filter_out_signed[2][15:0]}),
