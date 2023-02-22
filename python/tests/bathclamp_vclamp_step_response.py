@@ -28,6 +28,7 @@ from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficien
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
 import matlab.engine 
+from control.matlab import stepinfo
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -617,3 +618,23 @@ for n in datastreams:
 print(f'CMD scaling for observer {1/dac_scale} [DN/Volt] and from datastreams {datastreams["CMD0"].conversion_factor}')
 print(f'Im scaling for observer  {1/Im_scale} [DN/Amp] and from datastreams {datastreams["Im"].conversion_factor}')
 print(f'P1 scaling for observer {1/VP1_scale} [DN/Volt] and from datastreams {datastreams["P1"].conversion_factor}')
+
+def stepinfo_range(ds, time_range):
+    t = ds.create_time()
+    idx = (t>=time_range[0]) & (t<=time_range[1])
+    y = ds.data[idx]
+    t = t[idx]
+
+    si = stepinfo(y, t)
+
+    return si
+
+t_step = 3.277e-3
+print('-'*100)
+for sig in ['I', 'OBSV', 'P1', 'CMD0']:
+    sig_name = sig 
+    if sig_name == 'I':
+        sig_name = 'Vm'
+    si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
+    print(f'{sig} step info: {si}')
+    print('-'*100)

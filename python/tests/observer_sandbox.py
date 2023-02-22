@@ -24,6 +24,7 @@ from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficien
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
 import matlab.engine 
+from control.matlab import stepinfo
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -316,19 +317,19 @@ for dc_num in DC_NUMS:
 color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
 
 PI_coeff = {0: 0x7fffffff,
-1: 0x304d2b2c,
-2: 0xd04d2b2c,
-            3: 0x00000000,
-            4: 0xc0000000,
-            5: 0x00000000,
-            8: 0x7fffffff,
-            9: 0x40000000,
-            10: 0x00000000,
-            11: 0x00000000,
-            12: 0x00000000,
-            13: 0x00000000,
-            7: 0x7fffffff,
-            15: 0x0000_089a}
+1: 0x504056fe,
+2: 0xb04056fe,
+3: 0x00000000,
+4: 0xc0000000, # a1, keep this at -1 
+5: 0x00000000,
+8: 0x7fffffff,
+9: 0x60000000, # gain 
+10: 0x00000000,
+11: 0x00000000,
+12: 0x00000000,
+13: 0x00000000,
+7: 0x7fffffff,
+15: 0x0000_089a} # ask Ian what this coefficient is for 
 
 # set observer data input muxes
 obsv = Observer(f)
@@ -502,3 +503,24 @@ def ads_plot_zoom(ax):
     for ax_s in ax:
         ax_s.set_xlim([3250, 3330])
         ax_s.grid('on')
+
+
+def stepinfo_range(ds, time_range):
+    t = ds.create_time()
+    idx = (t>=time_range[0]) & (t<=time_range[1])
+    y = ds.data[idx]
+    t = t[idx]
+
+    si = stepinfo(y, t)
+
+    return si
+
+t_step = 3.277e-3
+print('-'*100)
+for sig in ['I', 'OBSV', 'P1', 'CMD0']:
+    sig_name = sig 
+    if sig_name == 'I':
+        sig_name = 'Vm'
+    si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
+    print(f'{sig} step info: {si}')
+    print('-'*100)
