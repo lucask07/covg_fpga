@@ -25,10 +25,16 @@ close all
 % determines the type of simulation 
 discrete = false;
 discrete_reorder = true;
+open_loop = true;
 
 VmDes = 0.025; % mV final membrane voltage 
 x0 = [0.1*VmDes 0]'; % Assume non-zero initial condition to help check observer
 
+if open_loop 
+    scaling = -1.712;
+    VmDes = VmDes*scaling;
+    x0 = [0 0]';
+end
 
 MSPS = 2.5;         % Sample rate in Mega-samples
 Ts = 1/(MSPS*1e6);  % period for Simulink 
@@ -53,9 +59,17 @@ VP1_scale = dn_per_volt*11; % DN / Volt at Vm
 
 %dac_scale = 2^14/0.589; % TODO: verify this  
 dac_scale = 2^14*4; % TODO: verify this  
+total_scale = 1;
 obsv_scale = dac_scale;
-total_scale = 1; % observer is 16-bit, DAC is 14-bit
 
+if open_loop 
+    obsv_scale = 0; % eliminate the feedback loop
+else
+    obsv_scale = 1; % observer is 16-bit, DAC is 14-bit
+end
+% dac_scale = 10;
+% Im_scale = 1e-12;
+% Vp1_scale = 1e-20;
 [Ldp, Bdp, Adp, A, B, C, D] = observer_coeff(Ts, RF, C1, Im_scale, VP1_scale, dac_scale, total_scale);
 
 % if false execute a floating point simulation
@@ -72,7 +86,7 @@ Adp_sim.signals.dimensions = length(Adp(:));
 
 Bdp_sim.time = t;
 if FIXPT
-    Bdp_sim.signals.values = fi(repmat(Bdp(:)', length(t), 1), 0, 32, 50);
+    Bdp_sim.signals.values = fi(repmat(Bdp(:)', length(t), 1), 0, 32, 50); % 50
 else
     Bdp_sim.signals.values = repmat(Bdp(:)', length(t), 1);
 end
@@ -89,7 +103,7 @@ Ldp_sim.signals.dimensions = length(Ldp(:));
 % ----------- PI Controller Design -------------
 s = tf('s');
 Ac = 5; % Lower for less agressive bandwidth. 5 was nominal design
-fc_pi = 2.5e3;
+fc_pi = 5e3;
 Gc = -Ac*(s+fc_pi*2*pi)/s;  % nominally 5 kHz
 Gcd = c2d(Gc,Ts,'tustin');
 
@@ -98,7 +112,16 @@ b1 = Gcd.num{1}(2);
 b2 = 0;
 a1 = -1;
 a2 = 0;
+
+if open_loop % make the PI filter a direct pass through
+    b0=1;
+    b1=0;
+    a1=0;
+end
+
 bode(Gc);
+
+
 %--------------------------------------------------------------------------
 
 % RUN SIMULATION
@@ -130,9 +153,10 @@ plot(t,Im)
 subplot(2,1,2)
 plot(t,Vm)
 hold on
-plot(out.VmHat.Time, out.VmHat.Data, 'g')
+plot(out.VmHat.Time, out.VmHat.Data, 'g*')
 plot(out.Est_fixed.Time, out.Est_fixed.Data(1,:), 'r')
 legend('Vm', 'VmHat', 'Vm-Estimator')
+
 figure 
 subplot(2,1,1);
 plot(out.VCmd.Time, out.VCmd.Data, 'g');
@@ -160,7 +184,7 @@ max(abs(out.V3.Data))
 max(Ldp)
 max(Adp)  % a down scaling here may be ok since yest is a longer word (33 bits?) 
 
-performanceInfo = stepinfo(Vm,t,VmDes);
+performanceInfo = stepinfo(Vm,t,VmDes/scaling);
 Tsettle = performanceInfo.SettlingTime*1e6; % us
 OS = performanceInfo.Overshoot;
 Tpeak = performanceInfo.PeakTime*1e6; % us
@@ -183,15 +207,15 @@ figure
 plot(t*1e6,Vm,'LineWidth',lw,'Color','b')
 
 % Settling time label
-line(Tsettle*[1 1],[0 VmDes],'Color','k','LineStyle','--','LineWidth',2)
-text(Tsettle,VmDes/2,['T_{settle} = ' num2str(Tsettle,'%.1f') ' \mus'],...
+line(Tsettle*[1 1],[0 VmDes/scaling],'Color','k','LineStyle','--','LineWidth',2)
+text(Tsettle,VmDes/scaling/2,['T_{settle} = ' num2str(Tsettle,'%.1f') ' \mus'],...
     'HorizontalAlignment','center','FontSize',fs,'FontWeight',fw,...
     'FontName',fn,'BackgroundColor','w')
 
 % Overshoot label
 if OS > 0
     line(Tpeak*[1 1],[0 VmPeak],'Color','k','LineStyle','--','LineWidth',2)
-    text(Tpeak,VmDes/1.5,['%OS = ' num2str(OS,'%.1f') '%'],...
+    text(Tpeak,VmDes/scaling/1.5,['%OS = ' num2str(OS,'%.1f') '%'],...
     'HorizontalAlignment','center','FontSize',fs,'FontWeight',fw,...
     'FontName',fn,'BackgroundColor','w')
 end
@@ -233,4 +257,5 @@ fprintf("1: 0x%s,\n", hex(fi(-b0/2, 1, 32, 29)))
 fprintf("2: 0x%s,\n", hex(fi(-b1/2, 1, 32, 29)))
 fprintf("9: 0x%s,\n", hex(fi(-a1, 1, 32, 30)))  % TODO: check this sign, was originally a1 
 
+figure(2)
 % close all;
