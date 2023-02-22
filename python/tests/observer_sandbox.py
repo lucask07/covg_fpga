@@ -288,7 +288,7 @@ idx = 0
 set_cmd_cc(dc_nums=DC_NUMS, cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
-bath_res = 332 # in kOhm
+bath_res = 100 # in kOhm
 c_comp = 47 # in pF
 dc_configs = {}
 for dc_num in DC_NUMS:
@@ -317,13 +317,14 @@ for dc_num in DC_NUMS:
 color = iter(cm.rainbow(np.linspace(0, 1, 4))) 
 
 PI_coeff = {0: 0x7fffffff,
-1: 0x504056fe,
-2: 0xb04056fe,
+1: 0x5080adfd,
+2: 0xb080adfd,
+9: 0x40000000,
 3: 0x00000000,
 4: 0xc0000000, # a1, keep this at -1 
 5: 0x00000000,
 8: 0x7fffffff,
-9: 0x60000000, # gain 
+9: 0x40000000, # gain 
 10: 0x00000000,
 11: 0x00000000,
 12: 0x00000000,
@@ -338,38 +339,49 @@ obsv.set_vcmd_data_mux("ad5453_ch1")
 obsv.set_vp1_data_mux("ads8686_chA")
 obsv.set_rdy_data_mux("sync_im")
 
-# observer coeffs
-obsv_coeff =  {0:0xfc0ba13f,
-1:0xffffd393,
-2:0xd1336c73,
-3:0xfff39c7d,
-4:0x00f716c3,
-5:0x0000001b,
-6:0xef4d3861,
-7:0x00e74b26,
-8:0x00000000,
-9:0x00000000}
 
+dac_range = 5
 RF = bath_res*1.0e3
+
 in_amp = 1
 diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
 dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
-Im_scale = dn_per_amp/1.6  # DN/Amp 
+Im_scale = dn_per_amp/2  # DN/Amp 
+Im_scale = dn_per_amp  # DN/Amp 
 
 ads_full_scale = 10
 dn_per_volt = (2**16/ads_full_scale) # correct
-
-dac_scale = 2**14*4.0 # DN/Volt TODO: verify this  # /0.58 ? 
-
-ads_full_scale = 10
-dn_per_volt = (2**16/ads_full_scale) # correct
-VP1_scale = dn_per_volt*11 # DN / Volt at Vm
 VP1_scale = dn_per_volt*11/2.182*1.5 # DN / Volt at Vm -- MATLAB already acounts for x1.7 
 
-dac_scale = 2**14*4.0 # TODO: verify this  
+VP1_scale = dn_per_volt*11.0*1.7
+
+dac_range = 5
+dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
+# In [13]: datastreams['CMD0'].conversion_factor
+# Out[13]: 3.595221532534246e-05
+# In [5]: datastreams['Im'].conversion_factor
+# Out[5]: 4.0581162324649296e-08
+
+# In [6]: Im_scale
+# Out[6]: 24641975.308641974
+
+# In [7]: 1/Im_scale
+# Out[7]: 4.05811623246493e-08
+
+# In [8]: VP1_scale
+# Out[8]: 93716.48000000001
+
+# In [9]: VP1_scale
+# Out[9]: 93716.48000000001
+
+# In [10]: datastreams['P1'].conversion_factor
+# Out[10]: 8.170958028486923e-06
+
+# In [11]: 1/VP1_scale
+# Out[11]: 1.0670481861888111e-05
 obsv_scale = dac_scale
 # total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
-total_scale = 1.0*1.5
+total_scale = 1.0/3*2*4*(dac_range/5)  # this scaling gets the steady-state value in closed-loop to match the steady-state value in open-loop
 
 Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, c_comp*1e-12, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
 
@@ -409,7 +421,7 @@ for i in [1]:
     daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
     #daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
-    daq.set_dac_gain((i-1), 5)  # 5V to see easier on oscilloscope
+    daq.set_dac_gain((i-1), dac_range)  # 5V to see easier on oscilloscope
 
 for i in [3]:
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
@@ -524,3 +536,7 @@ for sig in ['I', 'OBSV', 'P1', 'CMD0']:
     si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
     print(f'{sig} step info: {si}')
     print('-'*100)
+
+
+for oc in obsv_coeff:
+    print(f'{oc}: {hex(obsv_coeff[oc])}')

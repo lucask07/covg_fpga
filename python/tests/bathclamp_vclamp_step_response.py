@@ -230,7 +230,7 @@ for dc_num in DC_NUMS:
 
 feedback_resistors = [2.1]
 capacitors = [0,47]
-bath_res = [100] # Clamp.configs['ADG_RES_dict'].keys()
+bath_res = [33] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -287,12 +287,16 @@ in_amp = 1
 diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
 dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
 Im_scale = dn_per_amp/2  # DN/Amp 
+Im_scale = dn_per_amp  # DN/Amp 
 
 ads_full_scale = 10
 dn_per_volt = (2**16/ads_full_scale) # correct
 VP1_scale = dn_per_volt*11/2.182*1.5 # DN / Volt at Vm -- MATLAB already acounts for x1.7 
 
-dac_scale = 2**14*4.0 # DN/Volt TODO: verify this  # /0.58 ? 
+VP1_scale = dn_per_volt*11.0*1.7
+
+dac_range = 5
+dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
 # In [13]: datastreams['CMD0'].conversion_factor
 # Out[13]: 3.595221532534246e-05
 # In [5]: datastreams['Im'].conversion_factor
@@ -317,7 +321,8 @@ dac_scale = 2**14*4.0 # DN/Volt TODO: verify this  # /0.58 ?
 # Out[11]: 1.0670481861888111e-05
 obsv_scale = dac_scale
 # total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
-total_scale = 1.0*1.5
+# total_scale = 1.0*4/(dac_range/5)
+total_scale = 1.0/(dac_range/5)
 
 Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, capacitors[-1]*1e-12, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
 
@@ -358,7 +363,7 @@ for i in range(6):
     daq.DAC[i].set_data_mux("DDR", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
-    daq.set_dac_gain(i, 5)  # 5V 
+    daq.set_dac_gain(i, dac_range)  # 5V 
 
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
@@ -377,7 +382,7 @@ idx = 0
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0800, cc_scale=0, cc_delay=0, fc=None,
+set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
@@ -564,7 +569,7 @@ print(f'Max - min of DDR: {np.max(ddr.data_arrays[1]) - np.min(ddr.data_arrays[1
 print(f'Max - min of DAC data: {np.max(dac_data[1]) - np.min(dac_data[1])}')
 
 fig, ax = plt.subplots()
-cmd_arr = 4*((dac_data[1].astype(np.int16)-0x1fff)[::5])
+cmd_arr = ((dac_data[1].astype(np.int16)-0x1fff)[::5])
 obsv_arr = dac_data[4][::2].astype(np.int16)
 pi_error_est = cmd_arr - obsv_arr
 ax.plot(pi_error_est, label='pi_error')
@@ -592,7 +597,7 @@ datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
 ax[0].legend()
 datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
 datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
-ax[1].plot(datastreams['OBSV'].create_time()*1e6, datastreams['OBSV'].data/3000*0.025, marker='o', label='OBSV')
+ax[1].plot(datastreams['OBSV'].create_time()*1e6, datastreams['OBSV'].data/3000*0.1, marker='o', label='OBSV')
 ax[1].legend()
 datastreams['CMD0'].plot(ax[2])
 
@@ -638,3 +643,6 @@ for sig in ['I', 'OBSV', 'P1', 'CMD0']:
     si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
     print(f'{sig} step info: {si}')
     print('-'*100)
+
+for oc in obsv_coeff:
+    print(f'{oc}: {hex(obsv_coeff[oc])}')
