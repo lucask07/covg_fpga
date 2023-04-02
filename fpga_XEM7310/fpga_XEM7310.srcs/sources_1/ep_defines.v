@@ -190,13 +190,14 @@
 //ep40trig[10] reset the programmable clock divider for the ADS8686 spi
 //ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode
 
-
 // trigger in at 0x40
 // `define TI40_ 0
 `define GP_SYSTEM_RESET 1 // address=GP_RST_VALID_TRIG_IN bit_width=1
-// `define TI40_ 2 // not used
+`define GP_FILTER_DATA_RESET 2 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD7961_PLL_RESET 3 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define DAC80508_REG_TRIG_GEN_BIT 4 // address=GP_RST_VALID_TRIG_IN bit_width=1
+`define GP_FILTER_COEFF_RESET 5 // address=GP_RST_VALID_TRIG_IN bit_width=1
+`define OBSV_RESET_DATA 6 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD5453_REG_TRIG_GEN_BIT 8 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_CLK_DIV_RESET 14 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_WB_CONVERT 15 // address=GP_RST_VALID_TRIG_IN bit_width=1

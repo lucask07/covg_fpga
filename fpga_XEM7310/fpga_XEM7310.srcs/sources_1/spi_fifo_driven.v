@@ -24,6 +24,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire clk,
 	 input wire fifoclk,
      input wire rst,
+     input wire filter_data_reset,
+     input wire coeff_reset, // filter coefficients are not connected to the main reset. 
 	 /*****AD796x signals*****/
 	 input wire data_rdy_0,
 	 output wire ss_0,
@@ -305,7 +307,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          (
          .clk(clk),
          .clk_enable(filter_mux_data_rdy | write_enable | write_done),  // input data is registered when clk_enable is high 
-         .reset(rst),
+         .reset(filter_data_reset),
+         .coeff_reset(coeff_reset),
          .filter_in(filter_mux_data),
          .write_enable(write_enable),
          .write_done(write_done),

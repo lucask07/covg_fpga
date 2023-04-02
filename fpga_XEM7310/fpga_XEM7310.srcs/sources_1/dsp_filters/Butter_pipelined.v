@@ -57,6 +57,7 @@ module Butter_pipelined
                 clk,
                 clk_enable,
                 reset,
+                coeff_reset,
                 filter_in,
                 write_enable,
                 write_done,
@@ -69,6 +70,7 @@ module Butter_pipelined
   input   clk; 
   input   clk_enable; 
   input   reset; 
+  input   coeff_reset;
   input   signed [15:0] filter_in; //sfix16_En15
   input   write_enable; 
   input   write_done; 
@@ -433,7 +435,7 @@ module Butter_pipelined
                             coeff_a3_section1_reg;
   always @ ( posedge clk)
     begin: coeff_reg_process_section1
-      if (reset == 1'b1) begin
+      if (coeff_reset == 1'b1) begin  // need to be able to reset data and not reset coefficients
         coeff_scale1_reg <= 0;
         coeff_b1_section1_reg <= 0;
         coeff_b2_section1_reg <= 0;
@@ -455,7 +457,7 @@ module Butter_pipelined
 
   always @ ( posedge clk)
     begin: coeff_shadow_reg_process_section1
-      if (reset == 1'b1) begin
+      if (coeff_reset == 1'b1) begin
         coeff_scale1_shadow_reg <= 0;
         coeff_b1_section1_shadow_reg <= 0;
         coeff_b2_section1_shadow_reg <= 0;
@@ -570,7 +572,7 @@ module Butter_pipelined
                             coeff_a3_section2_reg;
   always @ ( posedge clk)
     begin: coeff_reg_process_section2
-      if (reset == 1'b1) begin
+      if (coeff_reset == 1'b1) begin // reset coefficients separate from data 
         coeff_scale2_reg <= 0;
         coeff_b1_section2_reg <= 0;
         coeff_b2_section2_reg <= 0;
@@ -592,7 +594,7 @@ module Butter_pipelined
 
   always @ ( posedge clk)
     begin: coeff_shadow_reg_process_section2
-      if (reset == 1'b1) begin
+      if (coeff_reset == 1'b1) begin
         coeff_scale2_shadow_reg <= 0;
         coeff_b1_section2_shadow_reg <= 0;
         coeff_b2_section2_shadow_reg <= 0;
@@ -674,7 +676,7 @@ module Butter_pipelined
                        coeff_scale3_reg;
   always @ ( posedge clk)
     begin: coeff_reg_process_Last_ScaleValue
-      if (reset == 1'b1) begin
+      if (coeff_reset == 1'b1) begin
         coeff_scale3_reg <= 0;
       end
       else begin

@@ -222,8 +222,11 @@ elif pwr_setup == "3dual":
 # Initialize FPGA
 f = FPGA()
 f.init_device()
-sleep(2)
+sleep(0.4)
 f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset
+f.send_trig(eps["GP"]["FILTER_DATA_RESET"])  # data reset
+f.send_trig(eps["GP"]["FILTER_COEFF_RESET"])  # coeff reset
+f.send_trig(eps["OBSV"]["RESET_DATA"])  # data reset
 
 pwr = Daq.Power(f)
 pwr.all_off()  # disable all power enables
@@ -274,7 +277,7 @@ for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 time.sleep(0.1)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
-time.sleep(1)
+time.sleep(0.1)
 ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
 
 daq.TCA[0].configure_pins([0, 0])
@@ -330,7 +333,7 @@ PI_coeff = {0: 0x7fffffff,
 12: 0x00000000,
 13: 0x00000000,
 7: 0x7fffffff,
-15: 0x0000_089a} # ask Ian what this coefficient is for 
+15: 0x0000_089a} # this coefficient is not used but must write something to ensure coefficient writing works.
 
 # set observer data input muxes
 obsv = Observer(f)
@@ -339,49 +342,23 @@ obsv.set_vcmd_data_mux("ad5453_ch1")
 obsv.set_vp1_data_mux("ads8686_chA")
 obsv.set_rdy_data_mux("sync_im")
 
-
 dac_range = 5
 RF = bath_res*1.0e3
 
 in_amp = 1
 diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
 dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
-Im_scale = dn_per_amp/2  # DN/Amp 
 Im_scale = dn_per_amp  # DN/Amp 
 
 ads_full_scale = 10
 dn_per_volt = (2**16/ads_full_scale) # correct
-VP1_scale = dn_per_volt*11/2.182*1.5 # DN / Volt at Vm -- MATLAB already acounts for x1.7 
-
 VP1_scale = dn_per_volt*11.0*1.7
 
 dac_range = 5
-dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
-# In [13]: datastreams['CMD0'].conversion_factor
-# Out[13]: 3.595221532534246e-05
-# In [5]: datastreams['Im'].conversion_factor
-# Out[5]: 4.0581162324649296e-08
+dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt 
 
-# In [6]: Im_scale
-# Out[6]: 24641975.308641974
-
-# In [7]: 1/Im_scale
-# Out[7]: 4.05811623246493e-08
-
-# In [8]: VP1_scale
-# Out[8]: 93716.48000000001
-
-# In [9]: VP1_scale
-# Out[9]: 93716.48000000001
-
-# In [10]: datastreams['P1'].conversion_factor
-# Out[10]: 8.170958028486923e-06
-
-# In [11]: 1/VP1_scale
-# Out[11]: 1.0670481861888111e-05
 obsv_scale = dac_scale
-# total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
-total_scale = 1.0/3*2*4*(dac_range/5)  # this scaling gets the steady-state value in closed-loop to match the steady-state value in open-loop
+total_scale = 1.0/(dac_range/5)  # this scaling gets the steady-state value in closed-loop to match the steady-state value in open-loop
 
 Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, c_comp*1e-12, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
 
@@ -398,145 +375,145 @@ obsv_coeff[5] = Adp[1][0] & max_bit_width
 obsv_coeff[6] = Adp[0][1] & max_bit_width
 obsv_coeff[7] = Adp[1][1] & max_bit_width
 
-# zero out all but the DAC coefficients
-#for i in range(8):
-#    obsv_coeff[i] = 0
-
 obsv_coeff[8] = Bdp[0][0] & max_bit_width
 obsv_coeff[9] = Bdp[1][0] & max_bit_width
 
 obsv.change_observer_coeff(obsv_coeff)
 obsv.write_observer_coeffs()
 
-# TODO: note that only 2 DACs are configured 
-for i in [1]:
+for i in [0,2,3,4,5]:
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
     daq.DAC[i].filter_select(operation="set")
     daq.DAC[i].write(int(0))
-    daq.DAC[i].set_data_mux("DDR") 
-    daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
-    daq.DAC[i].filter_sum("clear")
-    daq.DAC[i].filter_downsample("clear")
-    daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
-    #daq.DAC[i].change_filter_coeff(target="passthru")
-    daq.DAC[i].write_filter_coeffs()
-    daq.set_dac_gain((i-1), dac_range)  # 5V to see easier on oscilloscope
 
-for i in [3]:
-    daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
-    daq.DAC[i].set_spi_sclk_divide()
-    daq.DAC[i].filter_select(operation="set")
-    daq.DAC[i].write(int(0))
-    #daq.DAC[i].set_data_mux("DDR")
-    #daq.DAC[i].set_data_mux("ads8686_chA", filter_data=True)
-    #daq.DAC[i].filter_sum("set")
-    #daq.DAC[i].filter_downsample("set")
-    #daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
-    #daq.DAC[i].write_filter_coeffs()
-    #daq.set_dac_gain((i-1), 5)  # 5V to see easier on oscilloscope
+for pi_gain in [5,5,5,5]:
+    [b0_h, b1_h, a1_h] = eng.pi_coeff_total(pi_gain, 5e3, 400e-9, False, nargout=3)
 
-time.sleep(0.1)
-ddr.repeat_setup()
-# Get data
-# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-#chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-#                                    blk_multiples=40)  # blk multiples multiple of 10
-data_dir_ian = r"C:\Users\delg5279\OneDrive - University of St. Thomas\covg_pi_ctrl_files"
-file_name = 'PI_ctrl_data.h5'
-chan_data_one_repeat = ddr.save_data(data_dir, file_name, num_repeats=8,
-                                    blk_multiples=40)  # blk multiples multiple of 10
+    max_bit_width = 0xFFFFFFFF
+    PI_coeff[1] = b0_h & max_bit_width
+    PI_coeff[2] = b1_h & max_bit_width
+    PI_coeff[9] = a1_h & max_bit_width
 
-# to get the deswizzled data of all repeats need to read the file
-_, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
+    # TODO: note that only 2 DACs are configured 
+    for i in [1]:
+        daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
+        daq.DAC[i].set_spi_sclk_divide()
+        daq.DAC[i].filter_select(operation="set")
+        daq.DAC[i].write(int(0))
+        daq.DAC[i].set_data_mux("host") 
+        daq.DAC[i].set_data_mux("host", filter_data=True) 
+        f.send_trig(eps["GP"]["FILTER_DATA_RESET"])  # data reset
+        daq.DAC[i].filter_sum("clear")
+        daq.DAC[i].filter_downsample("clear")
+        daq.DAC[i].change_filter_coeff(target="generated", value=PI_coeff)
+        #daq.DAC[i].change_filter_coeff(target="passthru")
+        daq.DAC[i].write_filter_coeffs()
+        daq.set_dac_gain((i-1), dac_range)  # 5V to see easier on oscilloscope
+        daq.DAC[i].set_data_mux("DDR") 
+        daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
 
-# Long data sequence -- entire file
-# Grab Observer data from here -- dac_data
-adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
-print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+    f.send_trig(eps["OBSV"]["RESET_DATA"])  # data reset
 
-ephys_sys = EphysSystem()
-sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
-datastreams, log_info = rawh5_to_datastreams(data_dir, file_name, ddr.data_to_names, daq, sys_connections, outfile = None)
+    time.sleep(0.1)
+    ddr.repeat_setup()
+    # Get data
+    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+    #chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+    #                                    blk_multiples=40)  # blk multiples multiple of 10
+    data_dir_ian = r"C:\Users\delg5279\OneDrive - University of St. Thomas\covg_pi_ctrl_files"
+    file_name = 'PI_ctrl_data.h5'
+    chan_data_one_repeat = ddr.save_data(data_dir, file_name, num_repeats=8,
+                                        blk_multiples=40)  # blk multiples multiple of 10
+
+    # to get the deswizzled data of all repeats need to read the file
+    _, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
+
+    # Long data sequence -- entire file
+    # Grab Observer data from here -- dac_data
+    adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
+    print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
+
+    ephys_sys = EphysSystem()
+    sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+    datastreams, log_info = rawh5_to_datastreams(data_dir, file_name, ddr.data_to_names, daq, sys_connections, outfile = None)
+
+    if idx in [0, 5, 10, 15]:
+        clr = next(color)
+        if idx == 0:
+            fig = None
+            ax = None
+        fig, ax = plot_dac_im_vm(datastreams, clr, fig, ax, dc_num=0)
+    idx = idx + 1
+
+    fig,ax=plt.subplots()
+    datastreams['CMD0'].plot(ax)
+
+    fig,ax=plt.subplots()
+    datastreams['Im'].plot(ax)
+
+    fig,ax=plt.subplots()
+    datastreams['Itop'].plot(ax)
+
+    fig, ax = plt.subplots(2,1)
+    fig.suptitle('ADS data')
+    # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
+
+    datastreams['P1'].plot(ax[0], {'marker':'.'})
+    datastreams['I'].plot(ax[1], {'marker':'.'})
+    ax[1].set_ylabel('Vm measured [V]')
+    for axi in ax:
+        axi.set_xlim([3200, 3400])
+
+    # plot dac channel 4 data
+    fig,ax=plt.subplots(3,1)
+    datastreams['OBSV'].plot(ax[0])
+    datastreams['OBSV_CH1'].plot(ax[1])
+    datastreams['PI_ERR'].plot(ax[2])
+    for axi in ax:
+        axi.set_xlim([3200, 3400])
+
+    # subplot of Observer Vm and measured Vm
+    fig,ax=plt.subplots(3,1)
+    fig.suptitle('Observer Vm vs ADS8686')
+    # Observer - stored in DDR at 1 MSPS -- dac_data[4] is observer output 0, dac_data[5] is observer output 1, dac_data[6] is obs. output 0 shifted by 400 ns
+    datastreams['OBSV'].plot(ax[0], {'marker':'.', 'label': 'Obsv.'})
+    datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
+    ax[0].legend()
+    datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
+    datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
+    ax[1].legend()
+    datastreams['CMD0'].plot(ax[2])
+
+    ax[1].set_ylabel('Vm measured [V]')
+    for axi in ax:
+        axi.set_xlim([3250, 3400])
+
+    def ads_plot_zoom(ax):
+        for ax_s in ax:
+            ax_s.set_xlim([3250, 3330])
+            ax_s.grid('on')
 
 
-if idx in [0, 5, 10, 15]:
-    clr = next(color)
-    if idx == 0:
-        fig = None
-        ax = None
-    fig, ax = plot_dac_im_vm(datastreams, clr, fig, ax, dc_num=0)
-idx = idx + 1
+    def stepinfo_range(ds, time_range):
+        t = ds.create_time()
+        idx = (t>=time_range[0]) & (t<=time_range[1])
+        y = ds.data[idx]
+        t = t[idx]
 
-fig,ax=plt.subplots()
-datastreams['CMD0'].plot(ax)
+        si = stepinfo(y, t)
 
-fig,ax=plt.subplots()
-datastreams['Im'].plot(ax)
+        return si
 
-fig,ax=plt.subplots()
-datastreams['Itop'].plot(ax)
-
-fig, ax = plt.subplots(2,1)
-fig.suptitle('ADS data')
-# AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-
-datastreams['P1'].plot(ax[0], {'marker':'.'})
-datastreams['I'].plot(ax[1], {'marker':'.'})
-ax[1].set_ylabel('Vm measured [V]')
-for axi in ax:
-    axi.set_xlim([3200, 3400])
-
-# plot dac channel 4 data
-fig,ax=plt.subplots(3,1)
-datastreams['OBSV'].plot(ax[0])
-datastreams['OBSV_CH1'].plot(ax[1])
-datastreams['PI_ERR'].plot(ax[2])
-for axi in ax:
-    axi.set_xlim([3200, 3400])
-
-# subplot of Observer Vm and measured Vm
-fig,ax=plt.subplots(3,1)
-fig.suptitle('Observer Vm vs ADS8686')
-# Observer - stored in DDR at 1 MSPS -- dac_data[4] is observer output 0, dac_data[5] is observer output 1, dac_data[6] is obs. output 0 shifted by 400 ns
-datastreams['OBSV'].plot(ax[0], {'marker':'.', 'label': 'Obsv.'})
-datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
-ax[0].legend()
-datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
-datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
-ax[1].legend()
-datastreams['CMD0'].plot(ax[2])
-
-ax[1].set_ylabel('Vm measured [V]')
-for axi in ax:
-    axi.set_xlim([3250, 3400])
-
-def ads_plot_zoom(ax):
-    for ax_s in ax:
-        ax_s.set_xlim([3250, 3330])
-        ax_s.grid('on')
-
-
-def stepinfo_range(ds, time_range):
-    t = ds.create_time()
-    idx = (t>=time_range[0]) & (t<=time_range[1])
-    y = ds.data[idx]
-    t = t[idx]
-
-    si = stepinfo(y, t)
-
-    return si
-
-t_step = 3.277e-3
-print('-'*100)
-for sig in ['I', 'OBSV', 'P1', 'CMD0']:
-    sig_name = sig 
-    if sig_name == 'I':
-        sig_name = 'Vm'
-    si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
-    print(f'{sig} step info: {si}')
+    t_step = 3.277e-3
     print('-'*100)
+    for sig in ['I', 'OBSV', 'P1', 'CMD0']:
+        sig_name = sig 
+        if sig_name == 'I':
+            sig_name = 'Vm'
+        si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
+        print(f'{sig} step info: {si}')
+        print('-'*100)
 
-
-for oc in obsv_coeff:
-    print(f'{oc}: {hex(obsv_coeff[oc])}')
+    for oc in obsv_coeff:
+        print(f'{oc}: {hex(obsv_coeff[oc])}')

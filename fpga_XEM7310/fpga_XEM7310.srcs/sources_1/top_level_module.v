@@ -933,6 +933,7 @@ module top_level_module(
             
         spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_ADDR + k*20))spi_fifo1 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+                 .filter_data_reset(ep40trig[`GP_FILTER_DATA_RESET]), .coeff_reset(ep40trig[`GP_FILTER_COEFF_RESET]),
                  .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
                  .data_rdy_0(data_ready_ds[k]), 
                  .data_i(ds_spi_data[k][23:0]), 
@@ -1031,7 +1032,7 @@ module top_level_module(
         );
 
     observer_fixpt_folded u_observer_fixpt_folded (.clk(clk_sys),
-                                   .reset(sys_rst),
+                                   .reset(ep40trig[`OBSV_RESET_DATA]),
                                    .clk_enable(observer_in_data_rdy[31]),
                                    .y1(observer_in_im[15:0]),  // sfix16_En0
                                    .y1_rdy(observer_in_im[31]),
@@ -1123,6 +1124,7 @@ module top_level_module(
             
         spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_ADDR + p*20))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+                 .filter_data_reset(ep40trig[`GP_FILTER_DATA_RESET]), .coeff_reset(ep40trig[`GP_FILTER_COEFF_RESET]),
                  .ss_0(d_csb[p]), .mosi_0(d_sdi[p]), .sclk_0(d_sclk[p]), 
                  .data_rdy_0(data_ready_fast_dac[p]), 
                  .data_i(spi_data[p]),

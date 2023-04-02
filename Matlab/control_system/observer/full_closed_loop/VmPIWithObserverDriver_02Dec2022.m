@@ -25,7 +25,7 @@ close all
 % determines the type of simulation 
 discrete = false;
 discrete_reorder = true;
-open_loop = true;
+open_loop = false;
 
 VmDes = 0.025; % mV final membrane voltage 
 x0 = [0.1*VmDes 0]'; % Assume non-zero initial condition to help check observer
@@ -64,8 +64,6 @@ obsv_scale = dac_scale;
 
 if open_loop 
     obsv_scale = 0; % eliminate the feedback loop
-else
-    obsv_scale = 1; % observer is 16-bit, DAC is 14-bit
 end
 % dac_scale = 10;
 % Im_scale = 1e-12;
@@ -101,26 +99,14 @@ end
 Ldp_sim.signals.dimensions = length(Ldp(:));
 
 % ----------- PI Controller Design -------------
-s = tf('s');
-Ac = 5; % Lower for less agressive bandwidth. 5 was nominal design
-fc_pi = 5e3;
-Gc = -Ac*(s+fc_pi*2*pi)/s;  % nominally 5 kHz
-Gcd = c2d(Gc,Ts,'tustin');
-
-b0 = Gcd.num{1}(1);
-b1 = Gcd.num{1}(2);
 b2 = 0;
-a1 = -1;
 a2 = 0;
 
-if open_loop % make the PI filter a direct pass through
-    b0=1;
-    b1=0;
-    a1=0;
-end
+Ac = 5;
+fc_pi = 5e3;
+[b0,b1,a1,Gc] = pi_controller_coeff(Ac, fc_pi, Ts, open_loop);
 
 bode(Gc);
-
 
 %--------------------------------------------------------------------------
 

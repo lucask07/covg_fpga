@@ -49,6 +49,8 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
 from observer import Observer
+from filters.filter_tools import butter_lowpass_filter
+
 
 eng = matlab.engine.start_matlab()
 eng.addpath('..\\Matlab\\control_system\\observer\\full_closed_loop\\')
@@ -69,6 +71,9 @@ def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8
 
     cmd_signal = ddr.make_step(
         low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len)  # 1.6 ms between edges
+
+    if fc is not None:
+        cmd_signal = butter_lowpass_filter(cmd_signal, cutoff=fc, fs=2.5e6, order=1)
 
     # create the cc using multiple methods
     if cc_pickle_num is not None:
@@ -146,8 +151,6 @@ ADS_FS = 1e6
 dc_mapping = {'bath': 0, 'clamp': 1} 
 DC_NUMS = [0, 1]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
-feedback_resistors = [2.1]                  # list of RF1 values; use None to get all options
-capacitors = [47, 200, 1000, 4700]          # list of CCOMP values; use None to get all options
 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
@@ -229,8 +232,8 @@ for dc_num in DC_NUMS:
     clamps[dc_num] = clamp
 
 feedback_resistors = [2.1]
-capacitors = [0,47]
-bath_res = [33] # Clamp.configs['ADG_RES_dict'].keys()
+capacitors = [47, 47]
+bath_res = [100] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -266,7 +269,7 @@ ads.setup()
 ads.set_range(ads_voltage_range) 
 ads.set_lpf(376)
 #ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
-ads_sequencer_setup = [('1', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
+ads_sequencer_setup = [('1', '0'), ('2', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
 
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge() # 1 MSPS rate 
@@ -291,37 +294,12 @@ Im_scale = dn_per_amp  # DN/Amp
 
 ads_full_scale = 10
 dn_per_volt = (2**16/ads_full_scale) # correct
-VP1_scale = dn_per_volt*11/2.182*1.5 # DN / Volt at Vm -- MATLAB already acounts for x1.7 
-
 VP1_scale = dn_per_volt*11.0*1.7
 
 dac_range = 5
 dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
-# In [13]: datastreams['CMD0'].conversion_factor
-# Out[13]: 3.595221532534246e-05
-# In [5]: datastreams['Im'].conversion_factor
-# Out[5]: 4.0581162324649296e-08
 
-# In [6]: Im_scale
-# Out[6]: 24641975.308641974
-
-# In [7]: 1/Im_scale
-# Out[7]: 4.05811623246493e-08
-
-# In [8]: VP1_scale
-# Out[8]: 93716.48000000001
-
-# In [9]: VP1_scale
-# Out[9]: 93716.48000000001
-
-# In [10]: datastreams['P1'].conversion_factor
-# Out[10]: 8.170958028486923e-06
-
-# In [11]: 1/VP1_scale
-# Out[11]: 1.0670481861888111e-05
 obsv_scale = dac_scale
-# total_scale = 3.5/1.3 # observer is 16-bit, DAC is 14-bit
-# total_scale = 1.0*4/(dac_range/5)
 total_scale = 1.0/(dac_range/5)
 
 Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, capacitors[-1]*1e-12, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
@@ -382,13 +360,15 @@ idx = 0
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=None,
+fc_cmd = 5e3
+# fc_cmd = None
+set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
-clamp_fb_res = 2.1  # gain is 1 + clamp_fb_res/3.0 
-clamp_res = 100 # kOhm should be stable 
-clamp_cap = 0
+clamp_fb_res = 2.4 # resistors and cap have changed so this does not correspond to typical bath clamp board
+clamp_res = 10 # kOhm 
+clamp_cap = 47
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG1", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
@@ -400,7 +380,7 @@ for dc_num in [dc_mapping['clamp']]:
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
         P2_E_CTRL=0,
-        P2_CAL_CTRL=1,
+        P2_CAL_CTRL=0,
         gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -518,107 +498,214 @@ if 1:
                 if i == 0:
                     fig.legend(loc='lower right')
 
-ddr.repeat_setup() # Get data
+def ads_plot_zoom(ax, t_range=[3250,3300]):
+    try:
+        for ax_s in ax:
+            ax_s.set_xlim(t_range)
+            ax_s.grid('on')
+    except:
+        ax.set_xlim(t_range)
+        ax.grid('on')   
 
-# saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-                                    blk_multiples=40)  # blk multiples multiple of 10
+plt.close('all')
+first_time = True
+PLT_OBSV = False
+PLT_IM_EST = False
 
-# to get the deswizzled data of all repeats need to read the file
-_, chan_data = read_h5(data_dir, file_name=file_name.format(
-    idx) + '.h5', chan_list=np.arange(8))
+def capture_data():
+    ddr.repeat_setup() # Get data
 
-# Long data sequence -- entire file
-adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
+    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+    chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
+                                        blk_multiples=40)  # blk multiples multiple of 10
 
-def ads_plot_zoom(ax):
-    for ax_s in ax:
-        ax_s.set_xlim([3250, 3330])
-        ax_s.grid('on')
+    # to get the deswizzled data of all repeats need to read the file
+    _, chan_data = read_h5(data_dir, file_name=file_name.format(
+        idx) + '.h5', chan_list=np.arange(8))
 
-# update system connections since the daughtercard configurations have changed
-sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+    # Long data sequence -- entire file
+    adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
 
-# Plot using datastreams 
-datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, daq, sys_connections, outfile = None)
-fig, ax = plt.subplots(2,1)
-fig.suptitle('ADS data')
-# AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-datastreams['P1'].plot(ax[0], {'marker':'.'})
-# CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-try:
-    datastreams['P2'].plot(ax[1], {'marker':'.'})
-except:
-    print('P2 is not measured')
+    # update system connections since the daughtercard configurations have changed
+    sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
 
-fig, ax = plt.subplots()
-fig.suptitle('Overlay P1 and CMD')
-datastreams['P1'].plot(ax, {'marker':'.'})
-datastreams['CMD0'].plot(ax, {'marker':'.'})  
+    # Plot using datastreams 
+    datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, daq, sys_connections, outfile = None)
+ 
+    return datastreams 
+    
+def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None):
 
-fig, ax = plt.subplots(4,1)
-fig.suptitle('Overlay OBSERVER and I')
-datastreams['OBSV'].plot(ax[0], {'marker':'.'})
-datastreams['I'].plot(ax[1], {'marker':'.'})  
-ax[2].plot(dac_data[1].astype(np.int32)-0x1FFF, marker='.')  
-ax[2].set_ylabel('CMD offset DAC')
-#datastreams['PI_ERR'].plot(ax[3], {'marker':'.'})  
+    if first_time:
+        figs = []
+        fig, ax = plt.subplots(2,2, figsize=(10,8))
+        fig.canvas.manager.window.move(0,0)
+        figs.append(fig)
+        # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
+        l1 = datastreams['P1'].plot(ax[0,0], {'marker':'.'})
+        # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
+        try:
+            l2 = datastreams['P2'].plot(ax[0,1], {'marker':'.'})
+            ax[1].set_title('P2')
+        except:
+            l2 = datastreams['CMD0'].plot(ax[0,1], {'marker':'.'})
+        l3 = datastreams['V1'].plot(ax[1,0], {'marker':'.'})
+        l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
+        lines1 = [l1,l2,l3,l4]
+    else:
+        datastreams['P1'].update_lines(lines1[0][0])
+        # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
+        try:
+            datastreams['P2'].update_lines(lines1[1][0])
+        except:
+            datastreams['CMD0'].update_lines(lines1[1][0])
+        datastreams['V1'].update_lines(lines1[2][0])
+        datastreams['I'].update_lines(lines1[3][0])
 
-print(f'Max - min of Observer: {np.max(datastreams["OBSV"].data)-np.min(datastreams["OBSV"].data)}')
-print(f'Max - min of DDR: {np.max(ddr.data_arrays[1]) - np.min(ddr.data_arrays[1])}')
-print(f'Max - min of DAC data: {np.max(dac_data[1]) - np.min(dac_data[1])}')
+    if first_time:
+        fig, axs = plt.subplots(2,1,figsize=(10,8))
+        fig.canvas.manager.window.move(600,0)
+        figs.append(fig)
+        lines2 = []
+        for idx,ax in enumerate(axs):
+            ax_right = ax.twinx()
+            l1 = datastreams['CMD0'].plot(ax_right, {'linestyle':'--', 'color':'r', 'label': 'CMD'})
+            l2 = datastreams['P1'].plot(ax_right, {'linestyle':'-', 'color': 'b', 'label': 'P1'})
+            l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'fc':5e3, 'invert':-1})
+            if idx==1:
+                ax.set_ylim([-5e-6, 20e-6])
+            else:
+                ax.set_ylim([-20e-6, 20e-6])           
+            lns = l1+l2+l3
+            labs = [l.get_label() for l in lns]
+            ax.legend(lns, labs, loc=2)
+            lines2.append([l1,l2,l3])
 
-fig, ax = plt.subplots()
-cmd_arr = ((dac_data[1].astype(np.int16)-0x1fff)[::5])
-obsv_arr = dac_data[4][::2].astype(np.int16)
-pi_error_est = cmd_arr - obsv_arr
-ax.plot(pi_error_est, label='pi_error')
-ax.plot(cmd_arr, label='cmd')
-ax.plot(obsv_arr, label='obsv')
-ax.legend()
+            if idx==1:
+                ads_plot_zoom(ax, t_range=[3200,3650])
+                ads_plot_zoom(ax_right, t_range=[3200,3650])
+            else:
+                ads_plot_zoom(ax, t_range=[3200,7250])
+                ads_plot_zoom(ax_right, t_range=[3200,7250])
 
-# estimate Im 
-Cm = 33e-9
-fig, ax = plt.subplots()
-fig.suptitle('Overlay Meas. Im and Im estimate')
-datastreams['Im'].plot(ax, {'marker':'.', 'label': 'Meas. Im'})
-t = datastreams['P1'].create_time()
-dt = t[1] - t[0]
-p1_diff = np.diff(datastreams['P1'].data)/dt
-ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
-ax.legend()
+    else:
+        for l2 in lines2:
+            datastreams['CMD0'].update_lines(l2[0][0]) # TODO: why is this a list?
+            datastreams['P1'].update_lines(l2[1][0])
+            datastreams['Im'].update_lines(l2[2][0], {'fc':5e3, 'invert':-1})
+        
+        im_data = datastreams['Im'].data
+        t = datastreams['Im'].create_time()
+        fc = 5e3
+        im_data_filt = butter_lowpass_filter(im_data, cutoff=5e3, fs=1/(t[1]-t[0]), order=5)
+        idx = (t > 4500e-6) & (t < 5500e-6)
+        im_noise_wb = np.std(im_data[idx])
+        im_noise_filt = np.std(im_data_filt[idx])
+        print(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
 
-# subplot of Observer Vm and measured Vm
-fig,ax=plt.subplots(3,1)
-fig.suptitle('Observer Vm vs ADS8686')
-# Observer - stored in DDR at 1 MSPS -- dac_data[4] is observer output 0, dac_data[5] is observer output 1, dac_data[6] is obs. output 0 shifted by 400 ns
-datastreams['OBSV'].plot(ax[0], {'marker':'.', 'label': 'Obsv.'})
-datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
-ax[0].legend()
-datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
-datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
-ax[1].plot(datastreams['OBSV'].create_time()*1e6, datastreams['OBSV'].data/3000*0.1, marker='o', label='OBSV')
-ax[1].legend()
-datastreams['CMD0'].plot(ax[2])
+    for fig in figs:
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+    
+    first_time = False
 
-ax[1].set_ylabel('Vm measured [V]')
-for axi in ax:
-    axi.set_xlim([3250, 3400])
+    return first_time, lines1, lines2, figs
+
+datastreams = capture_data()
+first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
+
+for adg_r in [33, 100, 332]:
+    print(r'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
+    dc_configs[0]['ADG_RES'] = adg_r
+    clamps[0].configure_clamp(**dc_configs[0])
+    
+    for i in range(10):
+        time.sleep(0.2)
+        datastreams = capture_data()
+        update_plots(first_time, datastreams, lines1, lines2, figs)
+
+TO_CLAMPFIT = True
+if TO_CLAMPFIT:
+    sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\test_abf\\pyABF\\src\\')
+    from pyabf.abfWriter import writeABF1 
+    t = datastreams['Im'].create_time()
+    # if the current is in Amps the 16-bit precision makes it all zero 
+    x = np.reshape(datastreams['Im'].data, (1,-1))*1e6
+    writeABF1(x, os.path.join(data_dir, 'test_im.abf'), 1/(t[1]-t[0]), units=['uA'], nADCNumChannels=1)
+
+if PLT_OBSV:
+    fig, ax = plt.subplots()
+    fig.suptitle('Overlay P1 and CMD')
+    datastreams['P1'].plot(ax, {'marker':'.'})
+    datastreams['CMD0'].plot(ax, {'marker':'.'})  
+
+    fig, ax = plt.subplots(4,1)
+    fig.suptitle('Overlay OBSERVER and I')
+    datastreams['OBSV'].plot(ax[0], {'marker':'.'})
+    datastreams['I'].plot(ax[1], {'marker':'.'})  
+    ax[2].plot(dac_data[1].astype(np.int32)-0x1FFF, marker='.')  
+    ax[2].set_ylabel('CMD offset DAC')
+    #datastreams['PI_ERR'].plot(ax[3], {'marker':'.'})  
+
+    print(f'Max - min of Observer: {np.max(datastreams["OBSV"].data)-np.min(datastreams["OBSV"].data)}')
+    print(f'Max - min of DDR: {np.max(ddr.data_arrays[1]) - np.min(ddr.data_arrays[1])}')
+    print(f'Max - min of DAC data: {np.max(dac_data[1]) - np.min(dac_data[1])}')
+
+    fig, ax = plt.subplots()
+    cmd_arr = ((dac_data[1].astype(np.int16)-0x1fff)[::5])
+    obsv_arr = dac_data[4][::2].astype(np.int16)
+    pi_error_est = cmd_arr - obsv_arr
+    ax.plot(pi_error_est, label='pi_error')
+    ax.plot(cmd_arr, label='cmd')
+    ax.plot(obsv_arr, label='obsv')
+    ax.legend()
+
+    # subplot of Observer Vm and measured Vm
+    fig,ax=plt.subplots(3,1)
+    fig.suptitle('Observer Vm vs ADS8686')
+    # Observer - stored in DDR at 1 MSPS -- dac_data[4] is observer output 0, dac_data[5] is observer output 1, dac_data[6] is obs. output 0 shifted by 400 ns
+    datastreams['OBSV'].plot(ax[0], {'marker':'.', 'label': 'Obsv.'})
+    datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
+    ax[0].legend()
+    datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
+    datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
+    ax[1].plot(datastreams['OBSV'].create_time()*1e6, datastreams['OBSV'].data/3000*0.1, marker='o', label='OBSV')
+    ax[1].legend()
+    datastreams['CMD0'].plot(ax[2])
+
+    ax[1].set_ylabel('Vm measured [V]')
+    for axi in ax:
+        axi.set_xlim([3250, 3400])
+
+if PLT_IM_EST:
+    # estimate Im 
+    Cm = 33e-9
+    fig, ax = plt.subplots()
+    fig.suptitle('Overlay Meas. Im and Im estimate')
+    datastreams['Im'].plot(ax, {'marker':'.', 'label': 'Meas. Im'})
+    t = datastreams['P1'].create_time()
+    dt = t[1] - t[0]
+    p1_diff = np.diff(datastreams['P1'].data)/dt
+    #ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
+    ax.legend()
+
 
 # add log info to datastreams -- any dictionary is ok  
 datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
 datastreams.add_log_info({'dc_configs': dc_configs})
-
 print(datastreams.__dict__)
-# test writing and reading datastream h5
 datastreams.to_h5(data_dir, 'test.h5', log_info)
-datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
-# this datastreams has the log info but as a dictionary, not as Python classes
-# if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
 
-for n in datastreams:
-    assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
+# test writing and reading datastream h5
+TST_DATASTREAM_RW = False
 
+if TST_DATASTREAM_RW:
+    datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
+    # this datastreams has the log info but as a dictionary, not as Python classes
+    # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
+
+    for n in datastreams:
+        assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
 
 print(f'CMD scaling for observer {1/dac_scale} [DN/Volt] and from datastreams {datastreams["CMD0"].conversion_factor}')
 print(f'Im scaling for observer  {1/Im_scale} [DN/Amp] and from datastreams {datastreams["Im"].conversion_factor}')
@@ -630,7 +717,10 @@ def stepinfo_range(ds, time_range):
     y = ds.data[idx]
     t = t[idx]
 
-    si = stepinfo(y, t)
+    try:
+        si = stepinfo(y, t)
+    except:
+        si = None
 
     return si
 

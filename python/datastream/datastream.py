@@ -50,13 +50,38 @@ class Datastream():
         return np.arange(len(self.data))*(1/self.sample_rate) + self.initial_time
 
     def plot(self, ax, kwargs={}):
-        ax.plot(self.create_time()*1e6, self.data, **kwargs)
+
+        t = self.create_time()
+        invert = kwargs.pop('invert', 1)
+        if 'fc' in kwargs:
+            fs = 1/(t[1] - t[0])
+            fc = kwargs.pop('fc', None) # default None should never happen
+            data = invert*butter_lowpass_filter(self.data, fc, fs, order=kwargs.pop('order', 5))
+        else:
+            data = invert*self.data
+
+        l = ax.plot(t*1e6, data, **kwargs)
         # TODO: allow for scaling of time to present in milliseconds or seconds. Fixed at us
         ax.set_xlabel('time [$\mu$s]')
         if self.net is not None:
             ax.set_ylabel(f'{self.net} [{self.units}]')
         else:
             ax.set_ylabel(f'{self.name} [{self.units}]')
+        return l
+
+    def update_lines(self, line, kwargs={}):
+        t = self.create_time()
+        invert = kwargs.pop('invert', 1)
+        if 'fc' in kwargs:
+            fs = 1/(t[1] - t[0])
+            fc = kwargs.pop('fc', None) # default None should never happen
+            data = invert*butter_lowpass_filter(self.data, fc, fs, order=kwargs.pop('order', 5))
+        else:
+            data = invert*self.data
+
+        line.set_xdata(t*1e6)
+        line.set_ydata(data)
+
 
     def get_impulse(self, t0=6553.6e-6, tl_tr=(-150e-6, 200e-6), fc=None):
         """ get the impulse of a trace produced by a step function by calculating the derivative
