@@ -615,7 +615,7 @@ datastreams = capture_data()
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 
 for adg_r in [33, 100, 332]:
-    print(r'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
+    print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
     dc_configs[0]['ADG_RES'] = adg_r
     clamps[0].configure_clamp(**dc_configs[0])
     
