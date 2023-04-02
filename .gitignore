@@ -136,6 +136,12 @@ python/tests/unit_tests/test_defines.v
 !docs/block_diagram/*.tex
 !docs/block_diagram/*.pdf
 
+# For results 
+!python/results/README.md
+!python/results/*.pdf
+!python/results/*.png
+!python/results/*.csv
+
 ## exclude data 
 data/*
 covg/data/*

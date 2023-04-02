@@ -117,6 +117,42 @@ def adjust_step2(x, cc_step_func):
     return cc_step_adj
 
 
+def adjust_step3(x, cc_step_func, PLT=False):
+    """
+        processing of the CC signal that is appropriate for FPGA implementation
+        a scale and a delay + 4-order low-pass
+        (3 copies )
+    """
+    if PLT:
+        fig,ax=plt.subplots()
+
+    cc_step_adj0 = delayseq_interp(cc_step_func*x[0], x[1], FS) # direct delay and scale that will then be filtered 
+    cc_step_adj1 = delayseq_interp(cc_step_func*x[2], x[3], FS) # delay that will then be filtered 
+    cc_step_adj2 = delayseq_interp(cc_step_func*x[4], x[5], FS) # delay and scale that will be added to the filtered results 
+    cc_step_adj3 = delayseq_interp(cc_step_func*x[6], x[7], FS) # delay and scale that will be added to the filtered results 
+
+    if PLT:
+        ax.plot(cc_step_adj2, label='adj2')
+        ax.plot(cc_step_adj1, label='1')
+
+    order = 4
+    cc_step_adj1 = butter_lowpass_filter(cc_step_adj1, cutoff=x[8], fs=FS, order=order)
+    if PLT:
+        ax.plot(cc_step_adj1, label='2')
+    cc_step_adj2 = butter_lowpass_filter(cc_step_adj2, cutoff=x[9], fs=FS, order=order)
+
+    cc_step_adj3 = butter_lowpass_filter(cc_step_adj3, cutoff=x[10], fs=FS, order=order)
+
+    if PLT:
+        ax.plot(cc_step_adj1, label='3')
+
+    cc_step_adj = cc_step_adj1 + cc_step_adj2 + cc_step_adj3 + cc_step_adj0
+    if PLT:
+        ax.plot(cc_step_adj1, label='4')
+        ax.legend()
+
+    return cc_step_adj
+
 if 'im_noise_v0' in analysis_type:
     file_name = 'cc_swp_0.h5'
     t, adc = read_h5(data_dir_covg.format(2022, 1, 7), file_name, [0,1])

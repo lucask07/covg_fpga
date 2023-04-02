@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import scipy.fftpack
 import matplotlib.pyplot as plt
@@ -190,3 +191,20 @@ def get_impulse(data_dir, filename, t_offset_idx, t0=6400e-6):
     #  seems better to simply take the derivative ... this gives the impulse response
     imp_resp_d = np.gradient(y, t[1]-t[0])
     return imp_resp_d
+
+
+def my_savefig(fig, figure_dir, figname):
+    """ 
+    save a figure given a handle and directory
+    Params: 
+        fig: matplotlib handle
+        figure_dir: directory 
+        figname: desired output name 
+
+    Returns:
+        None
+    """
+    fig.tight_layout()
+    for e in ['.png', '.pdf']: # use pdf rather than eps to support transparency
+        fig.savefig(os.path.join(figure_dir,
+                                 figname + e))
