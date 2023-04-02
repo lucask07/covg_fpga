@@ -135,6 +135,22 @@ class Datastreams(dict):
             
             grp.attrs['json'] = json.dumps(self.__dict__, default=vars)
 
+    def get_log_info(self):
+        """ 
+        extract log info from datastreams and placed into a dict
+        removes the data array (consumes the most disk space)
+        but keeps the other info
+        """
+        log_dict = {}
+        for dk in self:
+            d_stream = copy.deepcopy(self[dk])
+            dstream_attrs = d_stream.__dict__
+            dstream_attrs.pop('data', None)
+            # get attributes from the datastream and set these attributes to the dataset 
+            log_dict.update(dstream_attrs)
+
+        return log_dict
+
 
 def h5_to_datastreams(directory, filename):
 
@@ -274,11 +290,15 @@ class PhysicalConnection():
 
 # I channels 0 - 3, node, conversion, factor 
 
-def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq_v2'):
+def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq_v2', calibration=False):
 
     # build up the connectivity to ADCs  
+    
     # dc_config_dicts are dictionaries of the daughercard connectivity that are returned by configure_clamp
-    # TODO: need an update_conv_factor method
+    # daq_brd is the daq object 
+    # ephys_sys class EphysSystem from electrodes.py describes the particular system 
+    # system: str the type of daq board. Only supported is daq_v2
+    # calibration: bool if True removes specific net names like P2 from CAL_ADC since it will change based on relay settings 
 
     ads = daq_brd.ADC_gp
     connections = {}
@@ -299,12 +319,12 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
             else:
                 net = None
 
-            pc =                        PhysicalConnection(f'{dc_config}', 
-                                                              conv_factor, 
-                                                              converter='AD7961',
-                                                              bits = 16, 
-                                                              units='A',
-                                                              net=net)
+            pc = PhysicalConnection(f'{dc_config}', 
+                                  conv_factor, 
+                                  converter='AD7961',
+                                  bits = 16, 
+                                  units='A',
+                                  net=net)
             connections[int(dc_config)] = pc
 
 
@@ -324,8 +344,11 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
                 conv_factor = ads.ranges[ads_chan]*2/gain # ads.current_voltage_range is a len 16 list
                 con_name = f'{ads_map[dc_config][amp_net][0]}{ads_map[dc_config][amp_net][1]}' # example 'A0' or 'B2'
                 if ephys_sys is not None:
-                    dc_type = ephys_sys.dc_mapping[dc_config] 
-                    net = ephys_sys.daughtercard_to_net[dc_type][amp_net]
+                    dc_type = ephys_sys.dc_mapping[dc_config]
+                    if calibration and (amp_net=='CAL_ADC'):
+                        net = 'CAL_ADC'
+                    else:
+                        net = ephys_sys.daughtercard_to_net[dc_type][amp_net]
                 else:
                     net = None
                 pc = PhysicalConnection(f'{net}_{dc_config}', 
