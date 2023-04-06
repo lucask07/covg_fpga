@@ -528,7 +528,7 @@ class Experiment:
         if self.setup_file_path is not None and autoload_setup:
             self.load_setup()
         else:
-            self.experiment_setup = ExperimentSetup({})
+            self.experiment_setup = None
 
     def load_setup(self, file_path: str = None):
         """Load setup from a YAML file.
