@@ -250,6 +250,7 @@ class Protocol:
                 t = np.linspace(0, len(data) - 1, len(data)) * DDR3.UPDATE_PERIOD * 1e3
             ax.plot(t, data, color=cmap(1.*i / len(self.sweeps)), label=i + 1)   # Number sweeps on plot starting at 1
         ax.legend(loc='upper right')
+        plt.pause(0.001)
         return ax
 
     @staticmethod
