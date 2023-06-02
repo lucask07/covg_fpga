@@ -24,6 +24,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire clk,
 	 input wire fifoclk,
      input wire rst,
+     input wire filter_data_reset,
+     input wire coeff_reset, // filter coefficients are not connected to the main reset. 
 	 /*****AD796x signals*****/
 	 input wire data_rdy_0,
 	 output wire ss_0,
@@ -50,7 +52,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      input wire downsample_en,
      input wire sum_en,
      /*****Filter mux select signal to allow for special case of selecting ADS data*****/
-     input wire [2:0] filter_data_mux_sel
+     input wire [2:0] filter_data_mux_sel,
+     /*****Output of Filter/PI Controller Before Scaling (for observer)*****/
+     output wire [15:0] filter_out_signed,
+     output wire filter_out_signed_rdy,
+     /***** debug of PI error signal ****/
+     output reg [15:0] pi_error_signal_reg
     );
     
       wire cmd_stb;
@@ -97,6 +104,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
 	 
 	 reg [23:0] spi_data; 
 	 reg data_ready_mux;
+	 
+	 reg [15:0] pi_error_signal_reg_1;
 
      always @(*) begin
          if (filter_sel == 1'b1) spi_data = {11'b0, filter_out_modified};
@@ -163,12 +172,12 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      /*****Special case of selecting ADS data (Direct Vm Feedback for PI control)*****/
      reg data_rdy_pi_error;
      reg [15:0] pi_error_signal;
-     reg signed [13:0] temp1;
-     reg signed [13:0] temp2;
-     reg signed [13:0] temp3;
-     reg signed [13:0] temp4;
-     reg signed [13:0] temp5;
-     reg [15:0] ads_data_reg;
+     reg signed [15:0] temp1;
+     reg signed [15:0] temp2;
+     reg signed [15:0] temp3;
+     reg signed [15:0] temp4;
+     reg signed [15:0] temp5;
+     reg [15:0] vm_fbck_data_reg;
      reg [15:0] filter_mux_data;
      reg filter_mux_data_rdy;
      reg [3:0] cnt;
@@ -176,17 +185,24 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      always @(posedge clk) begin
         if(rst == 1'b1)begin
             pi_error_signal <= 16'b0;
-            ads_data_reg <= 16'b0;
-            temp1 <= 14'b0;
-            temp2 <= 14'b0;
-            temp3 <= 14'b0;
-            temp4 <= 14'b0;
-            temp5 <= 14'b0;
+            vm_fbck_data_reg <= 16'b0;
+            temp1 <= 16'b0; //were 14'b0
+            temp2 <= 16'b0;
+            temp3 <= 16'b0;
+            temp4 <= 16'b0;
+            temp5 <= 16'b0;
             cnt <= 4'b0;
         end
         else if(data_rdy_0_filt == 1'b1)begin
             cnt <= 4'b0;
-            ads_data_reg <= filter_data_i[31:16];
+            if (filter_data_mux_sel == 3'b010) begin
+                vm_fbck_data_reg <= filter_data_i[31:16];
+            end
+            //else if (filter_data_mux_sel == 3'b011) begin
+            // Reason for change is to calculate pi_error signal even in open-loop
+            else begin
+                vm_fbck_data_reg <= filter_data_i[15:0];
+            end
         end
         else if(cnt <= 4'd6)begin
             cnt <= cnt + 1'b1;
@@ -197,22 +213,35 @@ module spi_fifo_driven #(parameter ADDR = 0) (
         case(cnt)
             0: begin
                 pi_error_signal <= 16'b0;
-                temp1 <= 14'b0;
-                temp2 <= 14'b0;
-                temp3 <= 14'b0;
-                temp4 <= 14'b0;
-                temp5 <= 14'b0;
+                temp1 <= 16'b0;
+                temp2 <= 16'b0;
+                temp3 <= 16'b0;
+                temp4 <= 16'b0;
+                temp5 <= 16'b0;
             end
             1: begin
                 temp1 <= (data_i[13:0] - 14'h1fff);
-                temp2 <= ads_data_reg[15:2];
+                //temp2 <= vm_fbck_data_reg[15:2];
+                temp2 <= vm_fbck_data_reg[15:0]; // LJK change 
                 temp3 <= temp3;
                 temp4 <= temp4;
                 temp5 <= temp5;
             end
             2: begin
-                temp3 <= (temp1>>>1);
-                temp4 <= (temp2<<3);
+                if (filter_data_mux_sel == 3'b010) begin //ADS channel A
+                    temp3 <= (temp1>>>1);
+                    temp4 <= (temp2<<3);
+                end
+                else if (filter_data_mux_sel == 3'b011) begin
+                    temp3 <= (temp1<<2);
+                    temp4 <= (temp2);
+                end
+                else begin // Reason for change is to calculate pi_error signal even in open-loop
+                    //temp3 <= temp3;
+                    //temp4 <= temp4;
+                    temp3 <= (temp1<<2);
+                    temp4 <= (temp2);
+                end
                 temp1 <= temp1;
                 temp2 <= temp2;
                 temp5 <= temp5;
@@ -225,7 +254,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
                 temp4 <= temp4;
             end
             4: begin
-                pi_error_signal <= {temp5, 2'b0};
+                //pi_error_signal <= {temp5, 2'b0}; //LJK change 
+                pi_error_signal <= temp5;
                 temp1 <= temp1;
                 temp2 <= temp2;
                 temp3 <= temp3;
@@ -256,13 +286,20 @@ module spi_fifo_driven #(parameter ADDR = 0) (
      end
      
      always @(*) begin
-         if (filter_data_mux_sel == 3'b010) filter_mux_data = pi_error_signal;
+         if ((filter_data_mux_sel == 3'b010) || (filter_data_mux_sel == 3'b011)) filter_mux_data = pi_error_signal;
          else filter_mux_data = filter_data_i[15:0];
      end
      
      always @(*) begin
-         if (filter_data_mux_sel == 3'b010) filter_mux_data_rdy = data_rdy_pi_error;
+         if ((filter_data_mux_sel == 3'b010) || (filter_data_mux_sel == 3'b011)) filter_mux_data_rdy = data_rdy_pi_error;
          else filter_mux_data_rdy = data_rdy_0_filt;
+     end
+     
+     always @(posedge clk) begin
+        if (data_rdy_pi_error == 1'b1) begin
+            pi_error_signal_reg_1 <= pi_error_signal; // register this signal before routing to the DDR -- otherwise everything goes haywire 
+            pi_error_signal_reg <= pi_error_signal_reg_1;
+        end
      end
 	 
 	 // Real-Time LPF
@@ -270,7 +307,8 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          (
          .clk(clk),
          .clk_enable(filter_mux_data_rdy | write_enable | write_done),  // input data is registered when clk_enable is high 
-         .reset(rst),
+         .reset(filter_data_reset),
+         .coeff_reset(coeff_reset),
          .filter_in(filter_mux_data),
          .write_enable(write_enable),
          .write_done(write_done),
@@ -281,7 +319,10 @@ module spi_fifo_driven #(parameter ADDR = 0) (
          //.coeff_debug_out1(coeff_debug_out1),
          //.coeff_debug_out2(coeff_debug_out2)
          );
-              
+
+        assign filter_out_signed = {(filter_out<<1), 2'b0}; //filter output is sfix14_en12 --> multiply x2 (PI numerator coeffs are halved to fit into the filter module numerator), and bitshift left once to convert to sfix16_en15 for observer
+        assign filter_out_signed_rdy = filter_out_ready;
+    
 //     LPF_data_modify_fixpt u_dat_mod(  // combinatorial -- not pipeline delay
 //     .din(filter_out_scaled), .dout(filter_out_modified)
 //     );

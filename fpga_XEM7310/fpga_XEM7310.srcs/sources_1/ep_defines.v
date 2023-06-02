@@ -105,6 +105,16 @@
 `define AD5453_DOWNSAMPLE_ENABLE_GEN_BIT 18 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
 `define AD5453_SUMMATION_ENABLE_GEN_BIT 24 // address=AD5453_SERIES_RES_WIRE_IN bit_width=1
 
+`define OBSV_DATA_SEL_WIRE_IN 8'h07 // bit_width=32
+`define OBSV_IM_DATA_SEL_GEN_BIT 0 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_IM_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_VP1_DATA_SEL_GEN_BIT 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_VP1_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_VCMD_DATA_SEL_GEN_BIT 6 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_VCMD_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_RDY_DATA_SEL_GEN_BIT 9 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+`define OBSV_RDY_DATA_SEL_GEN_BIT_LEN 3 // address=OBSV_DATA_SEL_WIRE_IN bit_width=3
+
 `define FILTER_SEL_WIRE_IN 8'h11 // bit_width=32
 `define AD5453_FILTER_SEL_GEN_BIT 0 // address=FILTER_SEL_WIRE_IN bit_width=1
 `define AD5453_FILTER_SEL_GEN_BIT_LEN 1 // address=FILTER_SEL_WIRE_IN bit_width=1
@@ -180,13 +190,14 @@
 //ep40trig[10] reset the programmable clock divider for the ADS8686 spi
 //ep40trig[11] trigger the ADS8686 SPI wishbone when in host driven mode
 
-
 // trigger in at 0x40
 // `define TI40_ 0
 `define GP_SYSTEM_RESET 1 // address=GP_RST_VALID_TRIG_IN bit_width=1
-// `define TI40_ 2 // not used
+`define GP_FILTER_DATA_RESET 2 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD7961_PLL_RESET 3 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define DAC80508_REG_TRIG_GEN_BIT 4 // address=GP_RST_VALID_TRIG_IN bit_width=1
+`define GP_FILTER_COEFF_RESET 5 // address=GP_RST_VALID_TRIG_IN bit_width=1
+`define OBSV_RESET_DATA 6 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define AD5453_REG_TRIG_GEN_BIT 8 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_CLK_DIV_RESET 14 // address=GP_RST_VALID_TRIG_IN bit_width=1
 `define ADS8686_WB_CONVERT 15 // address=GP_RST_VALID_TRIG_IN bit_width=1
@@ -291,6 +302,7 @@
 `define ADS8686_REGBRIDGE_OFFSET 8'h00 // bit_width=32
 `define DAC80508_REGBRIDGE_OFFSET_GEN_ADDR 8'h05 // bit_width=32 addr_step=20
 `define AD5453_REGBRIDGE_OFFSET_GEN_ADDR 8'h2D // bit_width=32 addr_step=20
+`define OBSV_REGBRIDGE_OFFSET_GEN_ADDR 8'hA5 // bit_width=32 addr_step=10
 
 // FPGA test Endpoints
 `define FPGATEST_STATIC_READ_WO 8'h3F // bit_width=32

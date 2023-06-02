@@ -33,7 +33,7 @@ localparam FADC_NUM = 4;
 localparam DAC80508_NUM = 2;
 localparam AD5453_NUM = 6;
 localparam I2C_DCARDS_NUM = 4;
-localparam NUM_OK_EPS = 39;
+localparam NUM_OK_EPS = 40;
 
 module top_level_module(
 	input wire [4:0] okUH,
@@ -161,7 +161,7 @@ module top_level_module(
 	assign led[6] = ~(ep40trig[`AD7961_RESET_GEN_BIT+i] | adc_sync_rst);
     assign led[7] = 1'b0;
     
-    reg [31:0] bitfile_version = 32'd00_00_03;	// 00.00.02
+    reg [31:0] bitfile_version = 32'd00_00_04;	// 00.00.04 incorporates the observer
     okWireOut bitfile_version_wo (.okHE(okHE), .okEH(okEHx[ 33*65 +: 65 ]), .ep_addr(`GP_BITFILE_VERSION), .ep_datain(bitfile_version));
 
     // WireIn 0 configures MUX for logic analyzer debug. CSB signals 
@@ -723,6 +723,7 @@ module top_level_module(
          .cmd_byte_addr_rd2  (ddr_adc_rd)
          );
     
+    // debug outputs
     okWireOut ddr_dac_wr (.okHE(okHE), .okEH(okEHx[ 34*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_WR), .ep_datain(ddr_dac_wr));
     okWireOut ddr_dac_rd (.okHE(okHE), .okEH(okEHx[ 35*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_RD), .ep_datain(ddr_dac_rd));
     okWireOut ddr_adc_wr (.okHE(okHE), .okEH(okEHx[ 36*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_WR), .ep_datain(ddr_adc_wr));
@@ -808,31 +809,33 @@ module top_level_module(
     
     wire [23:0] dac_val_out[0:(AD5453_NUM-1)]; //for AD5453 data 
     wire dac_val_out_ready[0:(AD5453_NUM-1)]; //for AD5453 data 
+    
+    wire [15:0] pi_error_out[0:(AD5453_NUM-1)];
 
     always @(*) begin 
-        if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin 
+        //if (ep03wire[`DDR3_ADC_DEBUG] == 1'b0) begin 
             case (cycle_cnt)
                 4'd9:    adc_ddr_data = {ads_last_read[15:0],       ads_last_read[31:16],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd8:    adc_ddr_data = {timestamp_snapshot[15:0],      timestamp_snapshot[31:16], dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd7:    adc_ddr_data = {timestamp_snapshot[47:32], dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd6:    adc_ddr_data = {16'haa55,                  dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd5:    adc_ddr_data = {{11'h28b, ads_sequence_count},                  dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd7:    adc_ddr_data = {timestamp_snapshot[47:32], observer_out_est[0][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd6:    adc_ddr_data = {16'haa55,                  observer_out_est[1][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd5:    adc_ddr_data = {{11'h28b, ads_sequence_count},                  pi_error_out[1][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
 
                 4'd4:    adc_ddr_data = {ads_last_read[15:0],       ads_last_read[31:16],  dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 4'd3:    adc_ddr_data = {timestamp_snapshot[15:0],      timestamp_snapshot[31:16], dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd2:    adc_ddr_data = {timestamp_snapshot[47:32], dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd1:    adc_ddr_data = {16'h77bb,                  dac_val_out[4][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
-                4'd0:    adc_ddr_data = { {11'h28c, ads_sequence_count},                  dac_val_out[5][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd2:    adc_ddr_data = {timestamp_snapshot[47:32], observer_out_est[0][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd1:    adc_ddr_data = {16'h77bb,                  observer_out_est[1][15:0],      dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
+                4'd0:    adc_ddr_data = { {11'h28c, ads_sequence_count},                   pi_error_out[1][15:0],      dac_val_out[3][15:0], dac_val_out[1][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
                 
                 default: adc_ddr_data = {ads_last_read[15:0],       timestamp_snapshot[15:0],  dac_val_out[2][15:0], dac_val_out[0][15:0], adc_val[3][15:0], adc_val[2][15:0], adc_val[1][15:0], adc_val[0][15:0]};
             endcase 
             if (ep03wire[`DDR3_USE_ADC_READY] == 1'b1) adc_ddr_wr_en = write_en_adc_o[0]; // Pulse to use to synchronize DACs and the ADS8686
             else adc_ddr_wr_en = adc_rd_en_emulator;
-        end
-        else begin
-            adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};
-            adc_ddr_wr_en = ddr_data_valid;
-        end
+        //end
+        //else begin
+        //    adc_ddr_data = {po0_ep_datain[47:0], adc_debug_cnt[15:0]};
+        //    adc_ddr_wr_en = ddr_data_valid;
+        //end
     end
 
     // synchronize the OpalKelly wire in DDR3_READ_ENABLE signals with the cycle count so data always starts at cycle cnt of 9
@@ -930,6 +933,7 @@ module top_level_module(
             
         spi_fifo_driven #(.ADDR(`DAC80508_REGBRIDGE_OFFSET_GEN_ADDR + k*20))spi_fifo1 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+                 .filter_data_reset(ep40trig[`GP_FILTER_DATA_RESET]), .coeff_reset(ep40trig[`GP_FILTER_COEFF_RESET]),
                  .ss_0(ds_csb[k]), .mosi_0(ds_sdi[k]), .sclk_0(ds_sclk[k]), 
                  .data_rdy_0(data_ready_ds[k]), 
                  .data_i(ds_spi_data[k][23:0]), 
@@ -949,6 +953,109 @@ module top_level_module(
         end
     endgenerate
     /*---------------- END DAC80508 -------------------*/
+    
+    /*---------------- LUENBERGER OBSERVER ----------------*/
+
+    wire [31:0] observer_in_vp1; // 32 bit bus for VP1 signal mux
+    wire [31:0] observer_in_im; // 32 bit bus for Im signal mux
+    wire [31:0] observer_in_vcmd; // 32 bit bus for Vcmd signal mux
+    wire [15:0] observer_out_est [1:0]; // 16 bit buses for observer outputs
+    wire [31:0] L_matrix_coeff [3:0]; // 32 bit buses for L matrix coefficients
+    wire [31:0] A_matrix_coeff [3:0]; // 32 bit buses for A matrix coefficients
+    wire [31:0] B_matrix_coeff [1:0]; // 32 bit buses for B matrix coefficients
+
+    wire [31:0] observer_in_data_rdy; // observer data input ready signal
+    //assign observer_in_data_rdy = observer_in_im[31];
+
+    wire observer_ce_out; // observer data output ready signal
+
+    wire [15:0] filter_out_signed[0:(AD5453_NUM-1)];
+    wire filter_out_signed_rdy[0:(AD5453_NUM-1)];
+    
+    // (TODO: add module/method for storing coefficients from register bridge and make appropriate changes to ep_defines.v)
+    obsv_coeff_store #(.ADDR(`OBSV_REGBRIDGE_OFFSET_GEN_ADDR)) observer_coeffs(
+            .okClk(okClk),
+            .ep_write(regWrite),
+            .ep_address(regAddress),
+            .ep_dataout(regDataOut),
+            .L_0(L_matrix_coeff[0][31:0]),
+            .L_1(L_matrix_coeff[1][31:0]),
+            .L_2(L_matrix_coeff[2][31:0]),
+            .L_3(L_matrix_coeff[3][31:0]),
+            .A_0(A_matrix_coeff[0][31:0]),
+            .A_1(A_matrix_coeff[1][31:0]),
+            .A_2(A_matrix_coeff[2][31:0]),
+            .A_3(A_matrix_coeff[3][31:0]),
+            .B_0(B_matrix_coeff[0][31:0]),
+            .B_1(B_matrix_coeff[1][31:0])
+    );
+
+    wire [31:0] ep_wire_obsvdata;
+    okWireIn wi_obsv_data (.okHE(okHE), .ep_addr(`OBSV_DATA_SEL_WIRE_IN), .ep_dataout(ep_wire_obsvdata));
+
+    mux8to1_32wide_clocked observer_mux_bus_im( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .clk(clk_sys),
+            .datain_0({write_en_adc_o[0], 15'b0, adc_val[0][15:0]}), // data from AD7961 
+            .datain_1({write_en_adc_o[1], 15'b0, adc_val[1][15:0]}), // data from AD7961 
+            .datain_2({write_en_adc_o[2], 15'b0, adc_val[2][15:0]}), // data from AD7961 
+            .datain_3({write_en_adc_o[3], 15'b0, adc_val[3][15:0]}), // data from AD7961 
+            .sel(ep_wire_obsvdata[(`OBSV_IM_DATA_SEL_GEN_BIT) +: `OBSV_IM_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({observer_in_im})
+        );
+
+    mux8to1_32wide_clocked observer_mux_bus_vp1( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .clk(clk_sys),
+            .datain_0({ads_data_valid, 15'b0, ads_data_out[15:0]}),
+            .datain_1({ads_data_valid, 15'b0, ads_data_out[31:16]}), 
+            .sel(ep_wire_obsvdata[(`OBSV_VP1_DATA_SEL_GEN_BIT) +: `OBSV_VP1_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({observer_in_vp1})
+        );
+
+    mux8to1_32wide_clocked observer_mux_bus_vcmd( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .clk(clk_sys),    
+            .datain_0({filter_out_signed_rdy[0], 15'b0, filter_out_signed[0][15:0]}),
+            .datain_1({filter_out_signed_rdy[1], 15'b0, filter_out_signed[1][15:0]}),
+            .datain_2({filter_out_signed_rdy[2], 15'b0, filter_out_signed[2][15:0]}),
+            .datain_3({filter_out_signed_rdy[3], 15'b0, filter_out_signed[3][15:0]}),
+            .datain_4({filter_out_signed_rdy[4], 15'b0, filter_out_signed[4][15:0]}),
+            .datain_5({filter_out_signed_rdy[5], 15'b0, filter_out_signed[5][15:0]}),
+            .sel(ep_wire_obsvdata[(`OBSV_VCMD_DATA_SEL_GEN_BIT) +: `OBSV_VCMD_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({observer_in_vcmd})
+        );
+    
+    mux8to1_32wide observer_mux_bus_rdy( // lower 24 bits are data, most-significant bit (bit 31) is the data_ready signal 
+            .datain_0({observer_in_im}),
+            .datain_1({observer_in_vp1}),
+            .datain_2({observer_in_vcmd}),
+            .sel(ep_wire_obsvdata[(`OBSV_RDY_DATA_SEL_GEN_BIT) +: `OBSV_RDY_DATA_SEL_GEN_BIT_LEN]),
+            .dataout({observer_in_data_rdy})
+        );
+
+    observer_fixpt_folded u_observer_fixpt_folded (.clk(clk_sys),
+                                   .reset(ep40trig[`OBSV_RESET_DATA]),
+                                   .clk_enable(observer_in_data_rdy[31]),
+                                   .y1(observer_in_im[15:0]),  // sfix16_En0
+                                   .y1_rdy(observer_in_im[31]),
+                                   .y2(observer_in_vp1[15:0]),  // sfix16_En0
+                                   .y2_rdy(observer_in_vp1[31]),
+                                   .u(observer_in_vcmd[15:0]),  // sfix16_En0
+                                   .u_rdy(observer_in_vcmd[31]),
+                                   .L_0(L_matrix_coeff[0][31:0]),  // sfix32_En50
+                                   .L_1(L_matrix_coeff[1][31:0]),  // sfix32_En50
+                                   .L_2(L_matrix_coeff[2][31:0]),  // sfix32_En50
+                                   .L_3(L_matrix_coeff[3][31:0]),  // sfix32_En50
+                                   .A_0(A_matrix_coeff[0][31:0]),  // sfix32_En24
+                                   .A_1(A_matrix_coeff[1][31:0]),  // sfix32_En24
+                                   .A_2(A_matrix_coeff[2][31:0]),  // sfix32_En24
+                                   .A_3(A_matrix_coeff[3][31:0]),  // sfix32_En24
+                                   .B_0(B_matrix_coeff[0][31:0]),  // ufix32_En50
+                                   .B_1(B_matrix_coeff[1][31:0]),  // ufix32_En50
+                                   .ce_out(observer_ce_out),
+                                   .out_0(observer_out_est[0][15:0]),  // sfix16_En15
+                                   .out_1(observer_out_est[1][15:0])  // sfix16_En15
+                                   );
+
+    /*---------------- END LUENBERGER OBSERVER ----------------*/
     
     /* ------------------ AD5453 SPI ------------------- */
     wire [(AD5453_NUM-1):0] rd_en_fast_dac;
@@ -1004,7 +1111,7 @@ module top_level_module(
             .datain_0({ddr_data_valid, 18'b0, po0_ep_datain[(p*16) +:14]}),
             .datain_1({spi_host_trigger_fast_dac[p], 8'b0, host_spi_data[p][23:0]}), 
             .datain_2({ads_data_valid, ads_data_out[31:0]}), // 
-            .datain_3({ddr_data_valid_norepeat[p], 18'b0, last_ddr_read[p]}), // 
+            .datain_3({observer_ce_out, 16'b0, observer_out_est[0][15:0]}), // data from Luenberger observer
             .datain_4({write_en_adc_o[0], 16'b0, adc_val[0][15:0]}), // data from AD7961  
             .datain_5({write_en_adc_o[1], 16'b0, adc_val[1][15:0]}), // data from AD7961
             .datain_6({write_en_adc_o[2], 16'b0, adc_val[2][15:0]}), // data from AD7961
@@ -1017,6 +1124,7 @@ module top_level_module(
             
         spi_fifo_driven #(.ADDR(`AD5453_REGBRIDGE_OFFSET_GEN_ADDR + p*20))spi_fifo0 (
                  .clk(clk_sys), .fifoclk(okClk), .rst(sys_rst),
+                 .filter_data_reset(ep40trig[`GP_FILTER_DATA_RESET]), .coeff_reset(ep40trig[`GP_FILTER_COEFF_RESET]),
                  .ss_0(d_csb[p]), .mosi_0(d_sdi[p]), .sclk_0(d_sclk[p]), 
                  .data_rdy_0(data_ready_fast_dac[p]), 
                  .data_i(spi_data[p]),
@@ -1036,7 +1144,10 @@ module top_level_module(
                  .data_rdy_0_filt(filter_data_ready_fast_dac[p]),
                  .downsample_en(ep_wire_filtdata[`AD5453_DOWNSAMPLE_ENABLE_GEN_BIT + p]),
                  .sum_en(ep_wire_filtdata[`AD5453_SUMMATION_ENABLE_GEN_BIT + p]),
-                 .filter_data_mux_sel(ep_wire_filtdata[(`AD5453_FILTER_DATA_SEL_GEN_BIT + p*`AD5453_FILTER_DATA_SEL_GEN_BIT_LEN) +: `AD5453_FILTER_DATA_SEL_GEN_BIT_LEN])
+                 .filter_data_mux_sel(ep_wire_filtdata[(`AD5453_FILTER_DATA_SEL_GEN_BIT + p*`AD5453_FILTER_DATA_SEL_GEN_BIT_LEN) +: `AD5453_FILTER_DATA_SEL_GEN_BIT_LEN]),
+                 .filter_out_signed(filter_out_signed[p]),
+                 .filter_out_signed_rdy(filter_out_signed_rdy[p]),
+                 .pi_error_signal_reg(pi_error_out[p])
                  );
         end
     endgenerate

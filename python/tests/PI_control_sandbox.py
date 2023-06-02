@@ -357,7 +357,7 @@ PI_coeff = {0: 0x7fffffff,
             12: 0x00000000,
             13: 0x00000000,
             7: 0x7fffffff,
-            15: 0x0000_2000}
+            15: 0x0000_1800}
 
 for i in [1]:
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)

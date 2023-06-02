@@ -10,7 +10,7 @@
 //
 // ResetType: Synchronous
 // OptimizeForHDL: on
-// TargetDirectory: C:\Users\iande\Desktop\FilterCoefficients
+// Target`directory: C:\Users\iande\Desktop\FilterCoefficients
 // AddPipelineRegisters: on
 // Name: Butter_pipelined
 // CoefficientSource: ProcessorInterface

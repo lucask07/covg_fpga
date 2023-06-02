@@ -3,8 +3,8 @@
 // Tool Version: Vivado v.2018.2 (win64) Build 2258646 Thu Jun 14 20:03:12 MDT 2018
 // Date        : Mon Nov 14 13:15:13 2022
 // Host        : FDC212-04 running 64-bit major release  (build 9200)
-// Command     : write_verilog -force -mode synth_stub
-//               C:/Users/koer2434/Documents/covg/covg_fpga/fpga_XEM7310/fpga_XEM7310.srcs/sources_1/ip/mult_gen_0/mult_gen_0_stub.v
+// Command     : write_verilog -force -mode synth_stub -rename_top mult_gen_0 -prefix
+//               mult_gen_0_ mult_gen_0_stub.v
 // Design      : mult_gen_0
 // Purpose     : Stub declaration of top-level module interface
 // Device      : xc7a75tfgg484-1

@@ -3,23 +3,23 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="tb_spi_top_behav.wdb" id="1">
+      <db_ref path="observer_fixpt_folded_tb_behav.wdb" id="1">
          <top_modules>
             <top_module name="glbl" />
-            <top_module name="tb_spi_top" />
+            <top_module name="observer_fixpt_folded_tb" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0fs"></ZoomStartTime>
-      <ZoomEndTime time="37740693197fs"></ZoomEndTime>
-      <Cursor1Time time="28883184000fs"></Cursor1Time>
+      <ZoomStartTime time="36259667fs"></ZoomStartTime>
+      <ZoomEndTime time="184059668fs"></ZoomEndTime>
+      <Cursor1Time time="60893000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="233"></NameColumnWidth>
-      <ValueColumnWidth column_width="147"></ValueColumnWidth>
+      <ValueColumnWidth column_width="143"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="32" />
+   <WVObjectSize size="23" />
    <wave_markers>
       <marker time="6192500000" label="" />
       <marker time="3015000000" label="" />
@@ -29,132 +29,96 @@
       <marker time="602500000" label="" />
       <marker time="802500000" label="" />
    </wave_markers>
-   <wvobject fp_name="/tb_spi_top/clk" type="logic">
-      <obj_property name="ElementShortName">clk</obj_property>
-      <obj_property name="ObjectShortName">clk</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/ce_out" type="logic">
+      <obj_property name="ElementShortName">ce_out</obj_property>
+      <obj_property name="ObjectShortName">ce_out</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/fifoclk" type="logic">
-      <obj_property name="ElementShortName">fifoclk</obj_property>
-      <obj_property name="ObjectShortName">fifoclk</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/A_0" type="array">
+      <obj_property name="ElementShortName">A_0[15:0]</obj_property>
+      <obj_property name="ObjectShortName">A_0[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/rst" type="logic">
-      <obj_property name="ElementShortName">rst</obj_property>
-      <obj_property name="ObjectShortName">rst</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/A_1" type="array">
+      <obj_property name="ElementShortName">A_1[15:0]</obj_property>
+      <obj_property name="ObjectShortName">A_1[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_dataout" type="array">
-      <obj_property name="ElementShortName">ep_dataout[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ep_dataout[31:0]</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/A_2" type="array">
+      <obj_property name="ElementShortName">A_2[15:0]</obj_property>
+      <obj_property name="ObjectShortName">A_2[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/trigger" type="logic">
-      <obj_property name="ElementShortName">trigger</obj_property>
-      <obj_property name="ObjectShortName">trigger</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/A_3" type="array">
+      <obj_property name="ElementShortName">A_3[15:0]</obj_property>
+      <obj_property name="ObjectShortName">A_3[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/readFifo" type="logic">
-      <obj_property name="ElementShortName">readFifo</obj_property>
-      <obj_property name="ObjectShortName">readFifo</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/B_0" type="array">
+      <obj_property name="ElementShortName">B_0[15:0]</obj_property>
+      <obj_property name="ObjectShortName">B_0[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/rstFifo" type="logic">
-      <obj_property name="ElementShortName">rstFifo</obj_property>
-      <obj_property name="ObjectShortName">rstFifo</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/B_1" type="array">
+      <obj_property name="ElementShortName">B_1[15:0]</obj_property>
+      <obj_property name="ObjectShortName">B_1[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_write" type="logic">
-      <obj_property name="ElementShortName">ep_write</obj_property>
-      <obj_property name="ObjectShortName">ep_write</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/ce_out" type="logic">
+      <obj_property name="ElementShortName">ce_out</obj_property>
+      <obj_property name="ObjectShortName">ce_out</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_address" type="array">
-      <obj_property name="ElementShortName">ep_address[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ep_address[31:0]</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0" type="array">
+      <obj_property name="ElementShortName">out_0[15:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_dataout_coeff" type="array">
-      <obj_property name="ElementShortName">ep_dataout_coeff[31:0]</obj_property>
-      <obj_property name="ObjectShortName">ep_dataout_coeff[31:0]</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_1" type="array">
+      <obj_property name="ElementShortName">out_1[15:0]</obj_property>
+      <obj_property name="ObjectShortName">out_1[15:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/en_period" type="array">
-      <obj_property name="ElementShortName">en_period[9:0]</obj_property>
-      <obj_property name="ObjectShortName">en_period[9:0]</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0_cast" type="array">
+      <obj_property name="ElementShortName">out_0_cast[48:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0_cast[48:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ddr3_rst" type="logic">
-      <obj_property name="ElementShortName">ddr3_rst</obj_property>
-      <obj_property name="ObjectShortName">ddr3_rst</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_1_cast" type="array">
+      <obj_property name="ElementShortName">out_1_cast[48:0]</obj_property>
+      <obj_property name="ObjectShortName">out_1_cast[48:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/regTrigger" type="logic">
-      <obj_property name="ElementShortName">regTrigger</obj_property>
-      <obj_property name="ObjectShortName">regTrigger</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/ce_out1" type="logic">
+      <obj_property name="ElementShortName">ce_out1</obj_property>
+      <obj_property name="ObjectShortName">ce_out1</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/filter_sel" type="logic">
-      <obj_property name="ElementShortName">filter_sel</obj_property>
-      <obj_property name="ObjectShortName">filter_sel</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/ce_out2" type="logic">
+      <obj_property name="ElementShortName">ce_out2</obj_property>
+      <obj_property name="ObjectShortName">ce_out2</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/hostinterrupt" type="logic">
-      <obj_property name="ElementShortName">hostinterrupt</obj_property>
-      <obj_property name="ObjectShortName">hostinterrupt</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/ce_out3" type="logic">
+      <obj_property name="ElementShortName">ce_out3</obj_property>
+      <obj_property name="ObjectShortName">ce_out3</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/dout" type="array">
-      <obj_property name="ElementShortName">dout[31:0]</obj_property>
-      <obj_property name="ObjectShortName">dout[31:0]</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0_A" type="array">
+      <obj_property name="ElementShortName">out_0_A[48:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0_A[48:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/lastWrite" type="array">
-      <obj_property name="ElementShortName">lastWrite[31:0]</obj_property>
-      <obj_property name="ObjectShortName">lastWrite[31:0]</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_1_A" type="array">
+      <obj_property name="ElementShortName">out_1_A[48:0]</obj_property>
+      <obj_property name="ObjectShortName">out_1_A[48:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/ep_ready" type="logic">
-      <obj_property name="ElementShortName">ep_ready</obj_property>
-      <obj_property name="ObjectShortName">ep_ready</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0_A" type="array">
+      <obj_property name="ElementShortName">out_0_A[48:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0_A[48:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/slow_pulse" type="logic">
-      <obj_property name="ElementShortName">slow_pulse</obj_property>
-      <obj_property name="ObjectShortName">slow_pulse</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0_B" type="array">
+      <obj_property name="ElementShortName">out_0_B[32:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0_B[32:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/clk_en" type="logic">
-      <obj_property name="ElementShortName">clk_en</obj_property>
-      <obj_property name="ObjectShortName">clk_en</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0_L" type="array">
+      <obj_property name="ElementShortName">out_0_L[32:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0_L[32:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/i" type="array">
-      <obj_property name="ElementShortName">i[31:0]</obj_property>
-      <obj_property name="ObjectShortName">i[31:0]</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0_A_reg" type="array">
+      <obj_property name="ElementShortName">out_0_A_reg[48:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0_A_reg[48:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/data_rdy" type="logic">
-      <obj_property name="ElementShortName">data_rdy</obj_property>
-      <obj_property name="ObjectShortName">data_rdy</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0_B_reg" type="array">
+      <obj_property name="ElementShortName">out_0_B_reg[32:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0_B_reg[32:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb_spi_top/filter_in" type="array">
-      <obj_property name="ElementShortName">filter_in[23:0]</obj_property>
-      <obj_property name="ObjectShortName">filter_in[23:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/count_enable" type="array">
-      <obj_property name="ElementShortName">count_enable[7:0]</obj_property>
-      <obj_property name="ObjectShortName">count_enable[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/count" type="array">
-      <obj_property name="ElementShortName">count[7:0]</obj_property>
-      <obj_property name="ObjectShortName">count[7:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/filter_out_modified" type="array">
-      <obj_property name="ElementShortName">filter_out_modified[13:0]</obj_property>
-      <obj_property name="ObjectShortName">filter_out_modified[13:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/spi_data" type="array">
-      <obj_property name="ElementShortName">spi_data[23:0]</obj_property>
-      <obj_property name="ObjectShortName">spi_data[23:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/data_ready_mux" type="logic">
-      <obj_property name="ElementShortName">data_ready_mux</obj_property>
-      <obj_property name="ObjectShortName">data_ready_mux</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/filter_data_rdy" type="logic">
-      <obj_property name="ElementShortName">filter_data_rdy</obj_property>
-      <obj_property name="ObjectShortName">filter_data_rdy</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/write_enable" type="logic">
-      <obj_property name="ElementShortName">write_enable</obj_property>
-      <obj_property name="ObjectShortName">write_enable</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/write_done" type="logic">
-      <obj_property name="ElementShortName">write_done</obj_property>
-      <obj_property name="ObjectShortName">write_done</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb_spi_top/uut/read_coeff" type="logic">
-      <obj_property name="ElementShortName">read_coeff</obj_property>
-      <obj_property name="ObjectShortName">read_coeff</obj_property>
+   <wvobject fp_name="/observer_fixpt_folded_tb/u_observer_fixpt/out_0_L_reg" type="array">
+      <obj_property name="ElementShortName">out_0_L_reg[32:0]</obj_property>
+      <obj_property name="ObjectShortName">out_0_L_reg[32:0]</obj_property>
    </wvobject>
 </wave_config>

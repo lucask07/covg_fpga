@@ -36,7 +36,7 @@ SYS_CLK = 5e-9 # period (1/200 MHz)
 
 class Datastream():
 
-    def __init__(self, data, sample_rate, units=None, name = None, net=None, t0 = 0):
+    def __init__(self, data, sample_rate, units=None, name = None, net=None, t0 = 0, conv_factor = None):
         self.data = data # 100% require that this data is in correct physical units
                          # such that all conversions have been completed
         self.sample_rate = sample_rate
@@ -44,18 +44,44 @@ class Datastream():
         self.net = net   # a name of the net related to the DUT and electrode connections  
         self.units = units
         self.initial_time = t0
+        self.conversion_factor = conv_factor # describes how to get back to DDR codes 
 
     def create_time(self):
         return np.arange(len(self.data))*(1/self.sample_rate) + self.initial_time
 
     def plot(self, ax, kwargs={}):
-        ax.plot(self.create_time()*1e6, self.data, **kwargs)
+
+        t = self.create_time()
+        invert = kwargs.pop('invert', 1)
+        if 'fc' in kwargs:
+            fs = 1/(t[1] - t[0])
+            fc = kwargs.pop('fc', None) # default None should never happen
+            data = invert*butter_lowpass_filter(self.data, fc, fs, order=kwargs.pop('order', 5))
+        else:
+            data = invert*self.data
+
+        l = ax.plot(t*1e6, data, **kwargs)
         # TODO: allow for scaling of time to present in milliseconds or seconds. Fixed at us
         ax.set_xlabel('time [$\mu$s]')
         if self.net is not None:
             ax.set_ylabel(f'{self.net} [{self.units}]')
         else:
             ax.set_ylabel(f'{self.name} [{self.units}]')
+        return l
+
+    def update_lines(self, line, kwargs={}):
+        t = self.create_time()
+        invert = kwargs.pop('invert', 1)
+        if 'fc' in kwargs:
+            fs = 1/(t[1] - t[0])
+            fc = kwargs.pop('fc', None) # default None should never happen
+            data = invert*butter_lowpass_filter(self.data, fc, fs, order=kwargs.pop('order', 5))
+        else:
+            data = invert*self.data
+
+        line.set_xdata(t*1e6)
+        line.set_ydata(data)
+
 
     def get_impulse(self, t0=6553.6e-6, tl_tr=(-150e-6, 200e-6), fc=None):
         """ get the impulse of a trace produced by a step function by calculating the derivative
@@ -212,13 +238,19 @@ def data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections,
 
         else:
             continue # don't add to datastream dictionary 
-        ds = Datastream(data, sample_rate, units=pc.units, name=pc_name, net=pc.net, t0=0)
+        ds = Datastream(data, sample_rate, units=pc.units, name=pc_name, net=pc.net, t0=0, conv_factor=pc.conv_factor/2**pc.bits)
 
         if pc.net is not None:
             datastreams[pc.net] = ds         
         else:
             datastreams[pc_name] = ds 
-
+    conv_factor = phys_connections['D1'].conv_factor
+    ds = Datastream(to_voltage(dac_data[4], num_bits=16, voltage_range=2**16, use_twos_comp=True), 1e6, units='DAC', name='OBSV', net='OBSV', t0=0, conv_factor=1)
+    datastreams['OBSV'] = ds
+    ds = Datastream(to_voltage(dac_data[5], num_bits=16, voltage_range=2**16, use_twos_comp=True), 1e6, units='DAC', name='OBSV_CH1', net='OBSV_CH1', t0=0, conv_factor=1)
+    datastreams['OBSV_CH1'] = ds
+    ds = Datastream(to_voltage(dac_data[6], num_bits=16, voltage_range=2**16, use_twos_comp=True), 1e6, units='DAC', name='PI_ERR', net='PI_ERR', t0=0, conv_factor=1)
+    datastreams['PI_ERR'] = ds
     return datastreams
 
 
@@ -340,7 +372,7 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
                 gain = gain/(1 + dc_config_dicts[dc_config]['RF1']/3.01)/10 # TODO x10 is a property of the clamp board, can we have a parameter for this? 
             con_name = f'D{ch}'
             pc = PhysicalConnection(con_name, 
-                                    gain*2,  # this is more accurately the full-scale range
+                                    gain*2,  # this is more accurately the full-scale range on the positive side
                                     converter='AD5453',
                                     bits=14, 
                                     units='V',
