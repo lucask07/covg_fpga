@@ -12,6 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import atexit
 import h5py
+import yaml
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.utils import to_voltage, from_voltage, read_h5
 from pyripherals.peripherals.DDR3 import DDR3
@@ -31,6 +32,7 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from analysis.adc_data import separate_ads_sequence
 from boards import Daq, Clamp
 from filters.filter_tools import butter_lowpass_filter
+from datastream.datastream import PhysicalConnection
 
 # Constants
 FS = 5e6
@@ -248,6 +250,7 @@ class Protocol:
                 t = np.linspace(0, len(data) - 1, len(data)) * DDR3.UPDATE_PERIOD * 1e3
             ax.plot(t, data, color=cmap(1.*i / len(self.sweeps)), label=i + 1)   # Number sweeps on plot starting at 1
         ax.legend(loc='upper right')
+        plt.pause(0.001)
         return ax
 
     @staticmethod
@@ -345,11 +348,149 @@ class Sequence:
         return sum([p.duration() for p in self.protocols])
 
 
+class ExperimentSetup:
+    """Contains information from YAML setup file.
+    
+    This includes how daughtercards are connected to DAQ ports and which pins of which daughtercards are used for what in an experiment.
+    
+    Attributes
+    ----------
+    daq_ports : List[Dict[str : Electrode]]
+        The setup connection structure: DAQ port number, daughtercard pins, Electrode
+    electrodes : List[Electrode]
+        A list of all Electrodes in the setup. This is used to help access Electrodes by their name. To avoid confusion, it is recommended to use the ExperimentSetup.get_electrode_by_name method rather than accessing this dictionary directly.
+    daq_peripherals : Dict[str: Dict[str: any]]
+        Configuration information for DAQ chips such as the ADS8686 (ADC_GP).
+    """
+
+    def __init__(self, yaml_dict):
+        """Create ExperimentSetup object.
+        
+        Meant to be used after loading a YAML setup file with yaml.safe_load(file).
+        
+        Parameters
+        ----------
+        yaml_dict : dict
+            Dictionary of YAML setup file after yaml.safe_load(file).
+        """
+
+        self.electrodes = []
+
+        # Accessing the ports explicitly in case other numbered attributes are added later.
+        self.daq_ports = [None] * 4
+        for i in range(4):
+            # Copy everything
+            try:
+                self.daq_ports[i] = yaml_dict['daq'][i]
+            except KeyError:
+                self.daq_ports[i] = {}
+                continue
+
+            # Now create Electrodes and replace the innermost dictionaries with Electrodes
+            # TODO: need to understand which parts of the dictionaries should be replaced with Electrodes first
+
+            # TODO: append to electrodes list as we go
+
+        self.daq_peripherals = {}
+        for k in yaml_dict['daq']:
+            # Skip ports, already did that above
+            if k in [0, 1, 2, 3]:
+                continue
+            else:
+                self.daq_peripherals[k] = yaml_dict['daq'][k]
+
+    @staticmethod
+    def from_yaml(file_path: str):
+        """Create an ExperimentSetup from a YAML file.
+        
+        Parameters
+        ----------
+        file_path : str
+            Path to the setup YAML file.
+
+        Returns
+        -------
+        ExperimentSetup : the loaded setup.
+        """
+
+        if not os.path.isfile(file_path):
+            raise FileNotFoundError(f'ExperimentSetup file {os.path.abspath(file_path)} not found.')
+
+        with open(file_path, 'r') as file:
+            yaml_dict = yaml.safe_load(file)
+
+        return ExperimentSetup(yaml_dict)
+
+    def to_yaml(self, file_path: str, overwrite: bool = False):
+        """Store the information in ExperimentSetup in a YAML file.
+        
+        Parameters
+        ----------
+        file_path : str
+            Path to the save the setup YAML file at.
+        overwrite : bool
+            Whether to overwrite an existing YAML file at the path given.
+            
+        Returns
+        -------
+        str : absolute path to the saved YAML file.
+        """
+        
+        abs_path = os.path.abspath(file_path)
+        directory = os.path.dirname(abs_path)
+
+        # Create directory if it does not exist
+        if not os.path.isdir(directory):
+            print('Directory does not exist. Creating directory...')
+            os.makedirs(directory)
+
+        # Overwrite an existing file if allowed
+        if os.path.isfile(abs_path):
+            if overwrite:
+                print(f'File already exists at {abs_path}, overwriting...')
+            else:
+                raise FileExistsError(f'File already exists at {abs_path}. Use overwrite=True to overwrite it.')
+
+        # Save setup data to the file
+        d = {
+            'daq': {
+                0: self.daq_ports[0],
+                1: self.daq_ports[1],
+                2: self.daq_ports[2],
+                3: self.daq_ports[3],
+            }
+        }
+        d['daq'].update(self.daq_peripherals)
+        with open(abs_path, 'w') as file:
+            yaml.safe_dump(d, file)
+
+        return abs_path
+
+    def get_electrode_by_name(self, name: str):
+        """Get an Electrode instance from setup by name.
+        
+        Parameters
+        ----------
+        name : str
+            The name of the Electrode.
+        
+        Returns
+        -------
+        Electrode : the Electrode with that name. None if the Electrode is not in self.electrodes list.
+        """
+
+
 class Experiment:
     """Holds all objects needed for an Experiment.
     
     Attributes
     ----------
+    sequence : Sequence
+        The Sequence to be run in this Experiment.
+    setup_file_path : str
+        Path to the setup YAML file.
+    experiment_setup : ExperimentSetup
+        ExperimentSetup instance containing information about connections for the experiment.
     endpoints : Dict[str, Endpoint]
         All Endpoints used in the experiment.
     fpga : FPGA
@@ -364,11 +505,9 @@ class Experiment:
         Power for Daq board.
     dc_pwr : ???
         The power supply instances powering the Daq board.
-    sequence : Sequence
-        The Sequence to be run in this Experiment.
     """
 
-    def __init__(self, sequence: Sequence or Protocol):
+    def __init__(self, sequence: Sequence or Protocol, setup_file_path: str = None, autoload_setup: bool = True):
 
         # Initialize FPGA
         self.endpoints = Endpoint.update_endpoints_from_defines()
@@ -386,6 +525,127 @@ class Experiment:
             self.sequence = Sequence(protocols=sequence)
         else:
             self.sequence = sequence
+        self.setup_file_path = setup_file_path
+        if self.setup_file_path is not None and autoload_setup:
+            self.load_setup()
+        else:
+            self.experiment_setup = None
+
+    def load_setup(self, file_path: str = None):
+        """Load setup from a YAML file.
+        
+        Parameters
+        ----------
+        file_path : str
+            Path to the setup YAML file. Defaults to None in which case Experiment.setup_yaml_path is used instead.
+
+        Returns
+        -------
+        ExperimentSetup : the loaded setup.
+        """
+
+        if file_path is None:
+            file_path = self.setup_file_path
+        self.experiment_setup = ExperimentSetup.from_yaml(file_path)
+
+        return self.experiment_setup
+
+    def create_phys_connections(self):
+        """Return a dictionary of PhysicalConnections based on the current setup.
+        
+        Returns
+        -------
+        dict : int or str to PhysicalConnections pairs
+        """
+
+        phys_connections = {}
+
+        ad7961_fs = 4.096*2
+        # ADC data
+        # 1) AD7961 - dictionary key is an integer [0, 3]
+        for dc_num in range(4):
+            dc = self.experiment_setup.daq_ports[dc_num]
+            # Skip any daughtercards not defined in setup YAML
+            if dc == {}:
+                continue
+            else:
+                RF = dc['clamp_configs']['ADG_RES'] * \
+                    1e3  # all resistor values are in kilo-Ohms
+                inamp_gain = dc['clamp_configs']['gain']
+                # daughter-card differential buffer (resistor values). Gain is less than x1
+                diff_buffer_gain = 499/(1500+120)
+                conv_factor = ad7961_fs/inamp_gain/RF/diff_buffer_gain
+
+                net = dc['AD7961']['name']
+                pc = PhysicalConnection(f'{dc_num}',
+                                        conv_factor,
+                                        converter='AD7961',
+                                        bits=16,
+                                        units='A',
+                                        net=net)
+            phys_connections[int(dc_num)] = pc
+
+        # 2) ADS8686
+        ads_map = self.daq.parameters["ads_map"]
+        for dc_num in range(4):
+            dc = self.experiment_setup.daq_ports[dc_num]
+            # Skip any daughtercards not defined in setup YAML
+            if dc == {}:
+                continue
+            else:
+                for amp_net in ['AMP_OUT', 'CAL_ADC']:
+                    if amp_net == 'AMP_OUT':
+                        # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
+                        gain = 11*(1+dc['clamp_configs']['RF1']/3.01)
+                    else:
+                        gain = 1
+                    if ads_map[dc_num][amp_net][0] == 'A':
+                        ads_chan = 0
+                    else:
+                        ads_chan = 8
+                    # channel goes from 0 - 15 for the voltage range
+                    ads_chan += int(ads_map[dc_num][amp_net][1])
+                    # ads.current_voltage_range is a len 16 list
+                    conv_factor = self.daq.ADC_gp.ranges[ads_chan]*2/gain
+                    # example 'A0' or 'B2'
+                    con_name = f'{ads_map[dc_num][amp_net][0]}{ads_map[dc_num][amp_net][1]}'
+
+                    net = dc[amp_net]['name']
+                    pc = PhysicalConnection(f'{net}_{dc_num}',
+                                            conv_factor,
+                                            converter='ADS8686',
+                                            bits=16,
+                                            units='V',
+                                            net=net)
+                    phys_connections[con_name] = pc
+
+        # P1 is the voltage that is actually at the membrane electrode (divided by gain of feedback amplifier)
+
+        # CMD is the target membrane voltage with a closed-loop configuration
+        # 3) DAC data -- AD5453, does not depend on daughtercard config, unsigned
+        for dc_num in range(4):
+            dc = self.experiment_setup.daq_ports[dc_num]
+            # Skip any daughtercards not defined in setup YAML
+            if dc == {}:
+                continue
+            else:
+                net = self.daq.parameters['fast_dac_map'][dc_num]
+                gain = self.daq.current_dac_gain[dc_num]  # +/-
+                if gain > 99:  # must by mV -- convert to volts
+                    gain = gain/1000
+                if 'CMD' in net:
+                    # TODO x10 is a property of the clamp board, can we have a parameter for this?
+                    gain = gain/(1 + dc['clamp_configs']['RF1']/3.01)/10
+                con_name = f'D{dc_num}'
+                pc = PhysicalConnection(con_name,
+                                        gain*2,  # this is more accurately the full-scale range
+                                        converter='AD5453',
+                                        bits=14,
+                                        units='V',
+                                        net=net)
+            phys_connections[con_name] = pc
+
+        return phys_connections
 
     def setup(self):
         """Setup necessary for reading and writing data with a connection to a model cell."""
@@ -441,14 +701,12 @@ class Experiment:
 
 
         # -------- configure the ADS8686
-        ads_voltage_range = 5  # need this for to_voltage later 
         self.daq.ADC_gp.hw_reset(val=False)
         self.daq.ADC_gp.set_host_mode()
         self.daq.ADC_gp.setup()
-        self.daq.ADC_gp.set_range(ads_voltage_range) # TODO: make an self.daq.ADC_gp.current_voltage_range a property of the ADS so we always know it
+        self.daq.ADC_gp.set_range(self.experiment_setup.daq_peripherals['ADS8686']['voltage_range'])
         self.daq.ADC_gp.set_lpf(39)
-        ads_sequencer_setup = [('1', '1'), ('2', '2')]
-        codes = self.daq.ADC_gp.setup_sequencer(chan_list=ads_sequencer_setup, lpf=39)
+        codes = self.daq.ADC_gp.setup_sequencer(chan_list=self.experiment_setup.daq_peripherals['ADS8686']['sequencer_setup'])
         self.daq.ADC_gp.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value of 1000 which is 200 ksps)
         self.daq.ADC_gp.set_fpga_mode()
 
@@ -472,6 +730,55 @@ class Experiment:
             self.daq.ADC[chan].power_up_adc()  # standard sampling
         self.daq.ADC[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
         self.daq.ADC[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
+
+    def configure_clamps(self, clamps: list = [0, 1, 2, 3]):
+        """Configure the clamps (daughtercards) as defined in the self.setup attribute.
+        
+        To change the configuration of the clamps, change the values in self.setup and run this method again.
+
+        Parameters
+        ----------
+        clamps : List[int]
+            A list of which clamps to configure. Defaults to [0, 1, 2, 3] to configure all clamps.
+        
+        Returns
+        -------
+        List[Dict] : the configuration parameters just set for each daughtercard. DC 0 at index 0, DC 1 at index 1, etc.
+        """
+
+        config_list = [{}] * 4
+
+        for dc_num in clamps:
+            dc = self.experiment_setup.daq_ports[dc_num]
+            # Skip any daughtercard (clamp) with no specified configuration
+            if dc is None or dc.get('clamp_configs') is None:
+                continue
+
+            configs = dc['clamp_configs']
+            # Configure any daughtercard with a specified configuration
+            # We use .get() instead of [] to access dict here so we get None instead of a KeyError
+            # This way, any parameter not specified in the 'clamp_configs' dict will be left as the default Clamp.configure_clamp() argument for that parameter.
+            _, config_list[dc_num] = self.clamps[dc_num].configure_clamp(
+                ADC_SEL     = configs.get('ADC_SEL'),
+                DAC_SEL     = configs.get('DAC_SEL'),
+                CCOMP       = configs.get('CCOMP'),
+                RF1         = configs.get('RF1'),
+                ADG_RES     = configs.get('ADG_RES'),
+                PClamp_CTRL = configs.get('PClamp_CTRL'),
+                P1_E_CTRL   = configs.get('P1_E_CTRL'),
+                P1_CAL_CTRL = configs.get('P1_CAL_CTRL'),
+                P2_E_CTRL   = configs.get('P2_E_CTRL'),
+                P2_CAL_CTRL = configs.get('P2_CAL_CTRL'),
+                gain        = configs.get('gain'),
+                FDBK        = configs.get('FDBK'),
+                mode        = configs.get('mode'),
+                EN_ipump    = configs.get('EN_ipump'),
+                RF_1_Out    = configs.get('RF_1_Out'),
+                addr_pins_1 = configs.get('addr_pins_1'),
+                addr_pins_2 = configs.get('addr_pins_2'),
+            )
+
+        return config_list
 
     def close(self):
         """Close opened devices from setup."""
@@ -723,7 +1030,7 @@ class Experiment:
 
         return t, data
 
-    def record(self, clamp_num, filter_current=None, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
+    def record(self, clamp_num, file_name=None, filter_current=None, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7, plot=True):
         """Send out Sequence and display updating graph.
         
         We read back the data by Sweep so we can update the graph in pieces,
@@ -735,6 +1042,8 @@ class Experiment:
         ----------
         clamp_num : int or List[int]
             Which Clamp to write to (0, 1, 2, or 3).
+        file_name : str
+            The h5 file name for the data which will be stored in ~/ephys_data/file_name. If left as None, the current date will be used.
         filter_current : float or None
             The cutoff frequency in Hertz for a Low Pass Filter (LPF) to
             apply to the current data. None to apply no filter. Defaults to
@@ -753,6 +1062,8 @@ class Experiment:
             The scaling factor (uA/mV) for current when the CMD voltage is
             greater than or equal to the cutoff.
             current = voltage * low_scaling_factor  * 1e3.
+        plot : bool
+            Whether to plot membrane voltage and current data as it comes in.
         
         Returns
         -------
@@ -768,20 +1079,36 @@ class Experiment:
             raise TypeError('record parameter clamp_num must be int or list of ints.')
 
         ads_voltage_range = 5
-        ads_sequencer_setup = [('1', '1'), ('2', '2')]
         sequence_length = self.write_sequence(clamp_num=clamp_nums, inject_current=inject_current, low_scaling_factor=low_scaling_factor, cutoff=cutoff, high_scaling_factor=high_scaling_factor)
-        start = time.time()
 
         # Split Sequence into Sweeps. Write full sequence but read each Sweep individually
         sweeps = np.concatenate([p.sweeps for p in self.sequence.protocols])
 
-        # Hold data from h5 from each sweep so we can write all at the end
-        # data = np.array([[] for i in range(DDR3.NUM_ADC_CHANNELS)], dtype=int)
-
         data_dir = os.path.join(os.path.expanduser('~'), 'ephys_data')
         if not os.path.exists(data_dir):
             os.makedirs(data_dir)
-        file_name = time.strftime("%Y%m%d-%H%M%S.h5")
+        # Assign file name according to the date if None is given
+        if file_name is None:
+            file_name = time.strftime("%Y%m%d-%H%M%S.h5")
+
+        if not plot:
+            # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
+            natural_delay = 0.23539209365844727
+            time.sleep(max(0, self.sequence.duration() * 1e-3 - natural_delay))
+            blk_multiples = 40
+            # total bytes from save data = 2048 * num_repeats * blk_multiples
+            # 128 bits per read point -> 16 bytes per read point
+            # Need 2*len(sweep) points read to read the same amount of time since ADC 2 times faster than DAC (5 MSPS vs. 2.5 MSPS)
+            # num_repeats = 2*len(sweep) * 16 / 2048 / blk_multiples --> simplifies to the below
+            total_sweep_len = sum([len(sweep) for sweep in sweeps])
+            num_repeats = np.ceil(total_sweep_len / 64 / blk_multiples)
+            # Get data
+            # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+            chan_data = self.daq.ddr.save_data(data_dir, file_name, num_repeats=num_repeats,
+                                               blk_multiples=blk_multiples, append=True)  # blk multiples multiple of 10
+            return data_dir, file_name
+
+        start = time.time()
 
         # Graph membrane current on top row, membrane voltage on bottom row,
         # each clamp board gets a different column.
@@ -805,8 +1132,7 @@ class Experiment:
         current_offset = [None] * 4
         fig_x, ax_x = plt.subplots()
         fig_x.suptitle('dac_data')
-        natural_delay = 0.23539209365844727     # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
-        time.sleep(self.sequence.duration() * 1e-3 - natural_delay)
+        time.sleep(max(0, self.sequence.duration() * 1e-3 - natural_delay))
         bits = [self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].bit_index_low,
                 self.daq.ddr.endpoints['DAC_READ_ENABLE'].bit_index_low]
         self.daq.ddr.fpga.set_ep_simultaneous(self.daq.ddr.endpoints['ADC_WRITE_ENABLE'].address, bits, [0, 0])
@@ -835,7 +1161,7 @@ class Experiment:
             # to get the deswizzled data of all repeats need to read the file
             # _t, chan_data = read_h5(data_dir, file_name=file_name, chan_list=np.arange(8))
             adc_cutoff_len = len(sweep) * 2
-            ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS) / len(ads_sequencer_setup))
+            ads_cutoff_len = int(adc_cutoff_len // (FS / ADS_FS) / len(self.experiment_setup.daq_peripherals['ADS8686']['sequencer_setup']))
 
             adc_data, timestamp, dac_data, ads, ads_seq_cnt, reading_error = self.daq.ddr.data_to_names(chan_data, self.daq.ddr.fpga.bitfile_version)
             if reading_error:
@@ -859,7 +1185,7 @@ class Experiment:
             total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
             total_seq_cnt[::2] = ads_seq_cnt[0]
             total_seq_cnt[1::2] = ads_seq_cnt[1]
-            ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+            ads_separate_data = separate_ads_sequence(self.experiment_setup.daq_peripherals['ADS8686']['sequencer_setup'], ads_data_v, total_seq_cnt, slider_value=4)
 
             for clamp_num in clamp_nums:
                 # Need leftover_adc_data to keep track of any data not part of the current sweep that came with the last read of data.
@@ -890,7 +1216,7 @@ class Experiment:
                 # Multiply by 1e3 to put in mV units
                 vm = combined_ads_data[:ads_cutoff_len] * 1e3 / 1.7
 
-                t_ads = np.arange(len(vm))*1/(ADS_FS / len(ads_sequencer_setup)) * 1e3
+                t_ads = np.arange(len(vm))*1/(ADS_FS / len(self.experiment_setup.daq_peripherals['ADS8686']['sequencer_setup'])) * 1e3
                 # Because we recalculate the length of data to read each sweep,
                 # the current_data in later sweeps may be a different length
                 # than initial sweeps, so we cut off time with current to

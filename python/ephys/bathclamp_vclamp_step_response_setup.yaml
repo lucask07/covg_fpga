@@ -1,0 +1,87 @@
+daq:
+  0:
+    name: bath
+    AMP_OUT:
+      name: P1  # TODO
+      nominal:
+        resistance: 0
+    CAL_ADC:
+      name: P2  # TODO
+      nominal:
+        resistance: 0
+    AD7961:
+      name: Im  # TODO
+      nominal:
+        resistance: 0
+    DAC0: null  # TODO
+    # Command
+    DAC1: null  # TODO
+    # CC
+    clamp_configs:
+      ADC_SEL: CAL_SIG2  # required to digitize P2 
+      DAC_SEL: gnd_CAL1
+      CCOMP: 0
+      RF1: 2.1  # feedback circuit
+      ADG_RES: 100
+      PClamp_CTRL: 0
+      P1_E_CTRL: 0
+      P1_CAL_CTRL: 0
+      P2_E_CTRL: 0
+      P2_CAL_CTRL: 1
+      gain: 1  # instrumentation amplifier
+      FDBK: 1
+      mode: voltage
+      EN_ipump: 0
+      RF_1_Out: 1
+      addr_pins_1: 0b110
+      addr_pins_2: 0b000
+
+  1:
+    name: clamp
+    AMP_OUT:
+      name: V1  # TODO
+      nominal:
+        resistance: 0
+    CAL_ADC:
+      name: I   # TODO
+      nominal:
+        resistance: 0
+    AD7961:
+      name: Itop  # TODO
+      nominal:
+        resistance: 0
+    DAC0: null  # TODO
+    # Command
+    DAC1: null  # TODO
+    # CC
+    clamp_configs:
+      ADC_SEL: CAL_SIG2 # required to digitize P2 
+      DAC_SEL: gnd_CAL1 # must not be drive_CAL2 
+      CCOMP: 0
+      RF1: 2.1  # feedback circuit
+      ADG_RES: 100
+      PClamp_CTRL: 0
+      P1_E_CTRL: 0
+      P1_CAL_CTRL: 0
+      P2_E_CTRL: 0
+      P2_CAL_CTRL: 1
+      gain: 1  # instrumentation amplifier
+      FDBK: 1
+      mode: voltage
+      EN_ipump: 0
+      RF_1_Out: 1
+      addr_pins_1: 0b110
+      addr_pins_2: 0b000
+  ADS8686:
+    sequencer_setup:
+      - ['0', '0']
+      - ['1', '1']
+      - ['2', '2']
+    voltage_range: 5
+
+cell:
+  name: model_cell
+  nominal:
+    resistance: 4.7e6
+    capacitance: 33e-9
+    current_leak: 0

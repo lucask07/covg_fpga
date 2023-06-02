@@ -65,30 +65,31 @@ class Clamp:
     """
 
     configs = {}
-    #Dictonaries
+    # Dictonaries
+    # None is the default configuration
     configs['ADC_SEL_dict'] = {  # Select the signal to output (Usually only output one signal at a time)
         'CAL_SIG1': 0b0111,
         'CAL_SIG2': 0b1011,
         'INAMP_OUT': 0b1101,
         'CC': 0b1110,
         'noDrive': 0b1111,
-            None: 0b0000
-        }
+        None: 0b0000
+    }
 
     configs['DAC_SEL_dict'] = {  # Choose to drive, gnd, or high-z CAL_Sig1 and CAL_Sig2
-         'drive_CAL1': 0b0111,
-         'drive_CAL2': 0b1011,
-         'drive_CAL1_gnd_CAL2': 0b0101,
-         'drive_CAL2_gnd_CAL1': 0b1010,
-		 'drive_CAL2_gnd_CAL2': 0b1001,
-		 'drive_CAL1_gnd_CAL1': 0b0110,
-     'gnd_CAL2': 0b1101,
-            'gnd_CAL1': 0b1110,
-     'gnd_both': 0b1100,
-     'drive_both': 0b0011,
-            'noDrive': 0b1111,
-            None: 0b0000
-         }
+        'drive_CAL1': 0b0111,
+        'drive_CAL2': 0b1011,
+        'drive_CAL1_gnd_CAL2': 0b0101,
+        'drive_CAL2_gnd_CAL1': 0b1010,
+        'drive_CAL2_gnd_CAL2': 0b1001,
+        'drive_CAL1_gnd_CAL1': 0b0110,
+        'gnd_CAL2': 0b1101,
+        'gnd_CAL1': 0b1110,
+        'gnd_both': 0b1100,
+        'drive_both': 0b0011,
+        'noDrive': 0b1111,
+        None: 0b0000
+    }
 
     comp_caps = np.array([4700, 1000, 200, 47])
     CCOMP_dict = {}
@@ -99,6 +100,7 @@ class Clamp:
                 cap_val += comp_caps[bit]
         CCOMP_dict[cap_val] = i
     configs['CCOMP_dict'] = CCOMP_dict
+    configs['CCOMP_dict'][None] = 0 # default
 
     configs['RF1_dict'] = {  # Selecting the resistor value for the feedback circuit, all in kilo-ohms
         0: 0b0000,
@@ -169,7 +171,8 @@ class Clamp:
         60: 0b101,
         63: 0b110,
         64: 0b111,
-        1: 0b000
+        1: 0b000,
+        None: 0
     }
 
     configs['FDBK_dict'] = {
@@ -340,11 +343,26 @@ class Clamp:
         print('Feedback gain: ')
         print(Clamp.configs['ADG_RES_dict'].keys())
 
-    def configure_clamp(self, ADC_SEL=None, DAC_SEL=None, CCOMP=None, RF1=None,
-                        ADG_RES=None, PClamp_CTRL=None, P1_E_CTRL=None,
-                        P1_CAL_CTRL=None, P2_E_CTRL=None, P2_CAL_CTRL=None,
-                        gain=None, FDBK=None, mode=None, EN_ipump=None,
-                        RF_1_Out=None, addr_pins_1=0b110, addr_pins_2=0b000):
+    def configure_clamp(
+            self,
+            ADC_SEL=None,
+            DAC_SEL=None,
+            CCOMP=None,
+            RF1=None,
+            ADG_RES=None,
+            PClamp_CTRL=None,
+            P1_E_CTRL=None,
+            P1_CAL_CTRL=None,
+            P2_E_CTRL=None,
+            P2_CAL_CTRL=None,
+            gain=None,
+            FDBK=None,
+            mode=None,
+            EN_ipump=None,
+            RF_1_Out=None,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000):
+
         config_params = Register.get_chip_registers('clamp_configuration')
         """Configures the board using the I/O Expanders."""
 
@@ -355,31 +373,54 @@ class Clamp:
                           'P2_E_CTRL': P2_E_CTRL, 'P2_CAL_CTRL': P2_CAL_CTRL, 'gain': gain, 'FDBK': FDBK, 'mode': mode, 'EN_ipump': EN_ipump, 'RF_1_Out': RF_1_Out}
 
         # Get codes from the corresponding dictionaries
-        # I/O Expander 1 (self.TCA_0)
-        # Using .get so if the value is not in the dictionary it returns None
-        def get_dict_none_zero(d, key):
-            tmp = d.get(key)
-            if tmp is None:
-                tmp = 0
-            return tmp
+        # All dictionaries are set up with a {None: 0} key-value pair for default use
+        # Using try, except, finally blocks to catch all unknown arguments
+        # This lets us find every mistake the user makes rather than forcing
+        # the user to run the program and fix them one at a time
+        unknown_arguments = []
+        def get_record_unknown(d, k):
+            """get method that records any KeyError keys in unknown_arguments list.
+            
+            Parameters
+            ----------
+            d : dict
+                Dictionary to access.
+            k : any
+                Key to access dictionary with.
+            
+            Returns
+            -------
+            any : value associated with key k, or None.
+            """
 
-        ADC_SEL_code = get_dict_none_zero(Clamp.configs['ADC_SEL_dict'], ADC_SEL)
-        DAC_SEL_code = get_dict_none_zero(Clamp.configs['DAC_SEL_dict'], DAC_SEL)
-        CCOMP_code = get_dict_none_zero(Clamp.configs['CCOMP_dict'], CCOMP)
-        RF1_code = get_dict_none_zero(Clamp.configs['RF1_dict'], RF1)
+            try:
+                return d[k]
+            except KeyError:
+                unknown_arguments.append(k)
+                return None
+
+        # I/O Expander 1 (self.TCA_0)
+        ADC_SEL_code = get_record_unknown(Clamp.configs['ADC_SEL_dict'], ADC_SEL)
+        DAC_SEL_code = get_record_unknown(Clamp.configs['DAC_SEL_dict'], DAC_SEL)
+        CCOMP_code = get_record_unknown(Clamp.configs['CCOMP_dict'], CCOMP)
+        RF1_code = get_record_unknown(Clamp.configs['RF1_dict'], RF1)
 
         # I/O Expander 2 (self.TCA_1)
-        ADG_RES_code = get_dict_none_zero(Clamp.configs['ADG_RES_dict'], ADG_RES)
-        PClamp_CTRL_code = get_dict_none_zero(Clamp.configs['PClamp_CTRL_dict'], PClamp_CTRL)
-        P1_E_CTRL_code = get_dict_none_zero(Clamp.configs['P1_E_CTRL_dict'], P1_E_CTRL)
-        P1_CAL_CTRL_code = get_dict_none_zero(Clamp.configs['P1_CAL_CTRL_dict'], P1_CAL_CTRL)
-        P2_E_CTRL_code = get_dict_none_zero(Clamp.configs['P2_E_CTRL_dict'], P2_E_CTRL)
-        P2_CAL_CTRL_code = get_dict_none_zero(Clamp.configs['P2_CAL_CTRL_dict'], P2_CAL_CTRL)
-        gain_code = get_dict_none_zero(Clamp.configs['gain_dict'], gain)
-        FDBK_code = get_dict_none_zero(Clamp.configs['FDBK_dict'], FDBK)
-        mode_code = get_dict_none_zero(Clamp.configs['mode_dict'], mode)
-        EN_ipump_code = get_dict_none_zero(Clamp.configs['EN_ipump_dict'], EN_ipump)
-        RF_1_Out_code = get_dict_none_zero(Clamp.configs['RF_1_Out_dict'], RF_1_Out)
+        ADG_RES_code = get_record_unknown(Clamp.configs['ADG_RES_dict'], ADG_RES)
+        PClamp_CTRL_code = get_record_unknown(Clamp.configs['PClamp_CTRL_dict'], PClamp_CTRL)
+        P1_E_CTRL_code = get_record_unknown(Clamp.configs['P1_E_CTRL_dict'], P1_E_CTRL)
+        P1_CAL_CTRL_code = get_record_unknown(Clamp.configs['P1_CAL_CTRL_dict'], P1_CAL_CTRL)
+        P2_E_CTRL_code = get_record_unknown(Clamp.configs['P2_E_CTRL_dict'], P2_E_CTRL)
+        P2_CAL_CTRL_code = get_record_unknown(Clamp.configs['P2_CAL_CTRL_dict'], P2_CAL_CTRL)
+        gain_code = get_record_unknown(Clamp.configs['gain_dict'], gain)
+        FDBK_code = get_record_unknown(Clamp.configs['FDBK_dict'], FDBK)
+        mode_code = get_record_unknown(Clamp.configs['mode_dict'], mode)
+        EN_ipump_code = get_record_unknown(Clamp.configs['EN_ipump_dict'], EN_ipump)
+        RF_1_Out_code = get_record_unknown(Clamp.configs['RF_1_Out_dict'], RF_1_Out)
+
+        # Raise error for any unrecognized arguments
+        if len(unknown_arguments) > 0:
+            raise ValueError(f'Unrecognized arguments: {", ".join(unknown_arguments)}')
 
         # Assemble messages
         s0 = ''
