@@ -51,6 +51,8 @@ from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
 
+from instrbuilder.instrument_opening import open_by_name 
+osc = open_by_name('msox_scope')
 
 eng = matlab.engine.start_matlab()
 eng.addpath('..\\Matlab\\control_system\\observer\\full_closed_loop\\')
@@ -145,6 +147,21 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
     ddr.reset_mig_interface()
     ddr.write_finish()
 
+
+def stepinfo_range(ds, time_range):
+    t = ds.create_time()
+    idx = (t>=time_range[0]) & (t<=time_range[1])
+    y = ds.data[idx]
+    t = t[idx]
+
+    try:
+        si = stepinfo(y, t)
+    except:
+        si = None
+
+    return si
+
+
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
@@ -232,8 +249,8 @@ for dc_num in DC_NUMS:
     clamps[dc_num] = clamp
 
 feedback_resistors = [2.1]
-capacitors = [47, 47]
-bath_res = [100] # Clamp.configs['ADG_RES_dict'].keys()
+capacitors = [47,47]
+bath_res = [10, 100, 332, 3000] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -302,7 +319,10 @@ dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ?
 obsv_scale = dac_scale
 total_scale = 1.0/(dac_range/5)
 
-Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, capacitors[-1]*1e-12, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
+cap = capacitors[-1]*1e-12
+if cap == 0:
+    cap = 47e-12
+Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, cap, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
 
 # observer coeffs
 obsv_coeff = {}
@@ -360,14 +380,14 @@ idx = 0
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
-fc_cmd = 5e3
-# fc_cmd = None
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
+fc_cmd = 10e3
+#fc_cmd = None
+set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0800, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
-clamp_fb_res = 2.4 # resistors and cap have changed so this does not correspond to typical bath clamp board
-clamp_res = 10 # kOhm 
+clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
+clamp_res = 10000 # should be zero with modified board when set to 10 MOhms 
 clamp_cap = 47
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
@@ -392,8 +412,8 @@ for dc_num in [dc_mapping['clamp']]:
     dc_configs[dc_num] = config_dict
 
 if 1:
-    for fb_res in feedback_resistors:
-        for cap in capacitors:
+    for cap in capacitors:
+        for fb_res in feedback_resistors:
             # Try with 5 different resistors
             for res in [x for x in bath_res if type(x) == int]:
                 # Choose resistor; setup
@@ -534,7 +554,7 @@ def capture_data():
  
     return datastreams 
     
-def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None):
+def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=332):
 
     if first_time:
         figs = []
@@ -573,9 +593,9 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None):
             l2 = datastreams['P1'].plot(ax_right, {'linestyle':'-', 'color': 'b', 'label': 'P1'})
             l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'fc':5e3, 'invert':-1})
             if idx==1:
-                ax.set_ylim([-5e-6, 20e-6])
+                ax.set_ylim([-5e-6, 50e-6])
             else:
-                ax.set_ylim([-20e-6, 20e-6])           
+                ax.set_ylim([-20e-6, 50e-6])           
             lns = l1+l2+l3
             labs = [l.get_label() for l in lns]
             ax.legend(lns, labs, loc=2)
@@ -596,7 +616,7 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None):
         
         im_data = datastreams['Im'].data
         t = datastreams['Im'].create_time()
-        fc = 5e3
+        fc = 100e3 #5e3
         im_data_filt = butter_lowpass_filter(im_data, cutoff=5e3, fs=1/(t[1]-t[0]), order=5)
         idx = (t > 4500e-6) & (t < 5500e-6)
         im_noise_wb = np.std(im_data[idx])
@@ -614,19 +634,61 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None):
 datastreams = capture_data()
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 
-for adg_r in [33, 100, 332]:
-    print(r'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
-    dc_configs[0]['ADG_RES'] = adg_r
-    clamps[0].configure_clamp(**dc_configs[0])
-    
-    for i in range(10):
-        time.sleep(0.2)
-        datastreams = capture_data()
-        update_plots(first_time, datastreams, lines1, lines2, figs)
+scope_data = {} 
+components = ['CC', 'RTIA', 'CLAMP_TIA', 'CLAMP_RF']
+scope_meas = ['OVER', 'RIS']
+for sm in scope_meas:
+    scope_data[sm] = np.array([])
+for c in components:
+    scope_data[c] = np.array([])
 
-TO_CLAMPFIT = True
-if TO_CLAMPFIT:
-    sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\test_abf\\pyABF\\src\\')
+osc.set('run_acq')
+#adg_r_arr = [10, 33, 100, 332, 1000]
+#ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
+
+adg_r_arr = [100]
+ccomp_arr = [200]
+
+
+for ccomp in ccomp_arr:
+    for adg_r in adg_r_arr:
+        print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
+        scope_data['CC'] = np.append(scope_data['CC'], ccomp)
+        scope_data['RTIA'] = np.append(scope_data['RTIA'], adg_r)
+        scope_data['CLAMP_RF'] = np.append(scope_data['CLAMP_RF'], clamp_fb_res)
+        scope_data['CLAMP_TIA'] = np.append(scope_data['CLAMP_TIA'], clamp_res)
+
+        dc_configs[0]['ADG_RES'] = adg_r
+        dc_configs[0]['CCOMP'] = ccomp
+        clamps[0].configure_clamp(**dc_configs[0])
+        
+        for i in range(10):
+            time.sleep(0.2)
+            datastreams = capture_data()
+            update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+
+        t_step = 3.1e-3 # time of the command step 
+        sig = 'Im' 
+        si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
+        print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
+        print(f'{sig} step info: {si}')
+        print('-'*100)
+        osc.set('single_acq')
+        time.sleep(0.05)
+        for sm in scope_meas:
+            scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))
+        osc.set('run_acq')
+
+for adg_r in adg_r_arr:
+    idx = scope_data['RTIA']==adg_r
+    fig,ax=plt.subplots(2,1)
+    ax[0].plot(scope_data['CC'][idx], scope_data['OVER'][idx], marker='o')
+    ax[1].plot(scope_data['CC'][idx], scope_data['RIS'][idx], marker='o')
+    fig.suptitle(f'RTIA = {adg_r}')
+
+TO_CLAMPFIT = False
+if TO_CLAMPFIT: # TODO 
+    sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
     from pyabf.abfWriter import writeABF1 
     t = datastreams['Im'].create_time()
     # if the current is in Amps the 16-bit precision makes it all zero 
@@ -711,20 +773,7 @@ print(f'CMD scaling for observer {1/dac_scale} [DN/Volt] and from datastreams {d
 print(f'Im scaling for observer  {1/Im_scale} [DN/Amp] and from datastreams {datastreams["Im"].conversion_factor}')
 print(f'P1 scaling for observer {1/VP1_scale} [DN/Volt] and from datastreams {datastreams["P1"].conversion_factor}')
 
-def stepinfo_range(ds, time_range):
-    t = ds.create_time()
-    idx = (t>=time_range[0]) & (t<=time_range[1])
-    y = ds.data[idx]
-    t = t[idx]
-
-    try:
-        si = stepinfo(y, t)
-    except:
-        si = None
-
-    return si
-
-t_step = 3.277e-3
+t_step = 3.277e-3 # time of the command step 
 print('-'*100)
 for sig in ['I', 'OBSV', 'P1', 'CMD0']:
     sig_name = sig 
