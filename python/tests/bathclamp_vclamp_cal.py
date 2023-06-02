@@ -42,82 +42,6 @@ from calibration.electrodes import EphysSystem
 
 ephys_sys = EphysSystem()
 
-
-def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
-               cc_val=None):
-    """Return the CMD and CC signals determined by the parameters.
-    
-    Parameters
-    ----------
-    
-    Returns
-    -------
-    np.ndarray, np.ndarray : the CMD signal data, the CC signal data.
-    """
-
-    dac_offset = 0x2000
-
-    cmd_signal = ddr.make_step(
-        low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len)  # 1.6 ms between edges
-
-
-    if cc_val is None:  # get the cc signal from scaling the cmd signal
-        if fc is not None:
-            cc_signal = butter_lowpass_filter(
-                cmd_signal - dac_offset, cutoff=fc, fs=2.5e6, order=1)*cc_scale + dac_offset
-        else:
-            cc_signal = (
-                cmd_signal - dac_offset)*cc_scale + dac_offset
-        if cc_delay != 0:
-            cc_signal = delayseq_interp(
-                cc_signal, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
-
-    else:  # needed so that the cmd signal can be zero with a non-zero cc signal
-        cc_signal = ddr.make_step(low=dac_offset - int(cc_val),
-                                               high=dac_offset + int(cc_val),
-                                               length=step_len)  # 1.6 ms between edges
-        if fc is not None:
-            cc_signal = butter_lowpass_filter(
-                cc_signal, cutoff=fc, fs=2.5e6, order=1)
-        if cc_delay != 0:
-            cc_signal = delayseq_interp(
-                cc_signal, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
-
-    return cmd_signal, cc_signal
-
-
-def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
-               cc_val=None, cc_pickle_num=None):
-    """Write the CMD and CC signals to the DDR for the specified daughtercards.
-    
-    Parameters
-    ----------
-    dc_nums : int or list
-        The port number(s) of the daughtercard(s) to write signals for.
-
-    Returns
-    -------
-    None
-    """
-
-    # TODO: move to Clamp board class in boards.py
-    if (type(dc_nums) == int):
-        dc_nums = [dc_nums]
-    elif (type(dc_nums) != list):
-        raise TypeError('dc_nums must be int or list')
-
-    for dc_num in dc_nums:
-        cmd_ch = dc_num * 2 + 1
-        cc_ch = dc_num * 2
-        ddr.data_arrays[cmd_ch], ddr.data_arrays[cc_ch] = make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
-    
-    # write channels to the DDR
-    ddr.write_setup()
-    # clear read, set write, etc. handled within write_channels
-    block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
-    ddr.reset_mig_interface()
-    ddr.write_finish()
-
 results_dir = os.path.join(boards_path, 'results') 
 UPDATE_RESULTS = True
 
@@ -391,8 +315,8 @@ ddr.data_arrays[6] = sdac_sine # TODO: just one
 ddr.data_arrays[7] = sdac_sine
 
 # daughter-card settings should be a do not care 
-fb_res = 2.1
-res = 100
+fb_res = 2.4 # resistors and cap have changed so this does not correspond to typical bath clamp board
+res = 10 # kOhm 
 cap = 47
 component_results = {} 
 
@@ -583,6 +507,9 @@ for testing in ['bath', 'vclamp']:
 	component_results[testing]['total_resistance'] = predicted_res
 	component_results[testing]['resistance_msg'] = res_fit_mesg
 	component_results[testing]['fit_notes'] = fit_notes
+        
+print('final component results ' + '-'*40)
+print(component_results)
 
 import json
 with open(os.path.join(data_dir, 'data.json'), 'w') as fp:

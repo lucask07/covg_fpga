@@ -262,7 +262,7 @@ class Clamp:
         'addr_pins_2': 0b000}
 
 
-    def init_board(self, skip_dac=True):
+    def init_board(self, relay_options=None, skip_dac=True):
         """Tests and configures the board.
 
         Tests connectivity with each chip, configures board for Voltage Clamp
@@ -293,12 +293,27 @@ class Clamp:
 
         # Configure clamp
         # Command for Voltage Clamp Feedback loop
-        self.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2',
-                             CCOMP=47, RF1=3, ADG_RES=10, PClamp_CTRL=1,
-                             P1_E_CTRL=1, P1_CAL_CTRL=0, P2_E_CTRL=1,
-                             P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage',
-                             EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110,
-                             addr_pins_2=0b000)
+        if relay_options=='GND2':
+            self.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='gnd_CAL2',
+                                CCOMP=47, RF1=3, ADG_RES=10, PClamp_CTRL=1,
+                                P1_E_CTRL=1, P1_CAL_CTRL=0, P2_E_CTRL=1,
+                                P2_CAL_CTRL=1, gain=2, FDBK=1, mode='voltage',
+                                EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110,
+                                addr_pins_2=0b000)            
+        elif relay_options=='NoCoils':
+            self.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='gnd_CAL2',
+                                CCOMP=47, RF1=3, ADG_RES=10, PClamp_CTRL=0,
+                                P1_E_CTRL=0, P1_CAL_CTRL=0, P2_E_CTRL=0,
+                                P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage',
+                                EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110,
+                                addr_pins_2=0b000)            
+        else:
+            self.configure_clamp(ADC_SEL='CAL_SIG1', DAC_SEL='drive_CAL2',
+                                CCOMP=47, RF1=3, ADG_RES=10, PClamp_CTRL=1,
+                                P1_E_CTRL=1, P1_CAL_CTRL=0, P2_E_CTRL=1,
+                                P2_CAL_CTRL=0, gain=2, FDBK=1, mode='voltage',
+                                EN_ipump=0, RF_1_Out=1, addr_pins_1=0b110,
+                                addr_pins_2=0b000)
 
         # UID
         read = self.UID.get_manufacturer_code()
@@ -309,6 +324,8 @@ class Clamp:
             return False
 
         read = self.UID.get_device_code()
+        print(f'READ UID DEVICE_CODE of \n    '
+                  f'(read) {read}')    
         default = self.UID.registers['DEVICE_CODE'].default
         if read != default:
             print(f'UID DEVICE_CODE FAILED\n    '
