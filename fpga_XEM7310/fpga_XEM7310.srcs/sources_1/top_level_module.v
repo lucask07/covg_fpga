@@ -720,14 +720,15 @@ module top_level_module(
          .cmd_byte_addr_wr   (ddr_dac_wr),
          .cmd_byte_addr_rd   (ddr_dac_rd),
          .cmd_byte_addr_wr2  (ddr_adc_wr),
-         .cmd_byte_addr_rd2  (ddr_adc_rd)
+         .cmd_byte_addr_rd2  (ddr_adc_rd),
+         .adc_write_rollover (ep03wire[`DDR3_ADC_WRITE_ROLLOVER])
          );
     
     // debug outputs
-    okWireOut ddr_dac_wr (.okHE(okHE), .okEH(okEHx[ 34*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_WR), .ep_datain(ddr_dac_wr));
-    okWireOut ddr_dac_rd (.okHE(okHE), .okEH(okEHx[ 35*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_RD), .ep_datain(ddr_dac_rd));
-    okWireOut ddr_adc_wr (.okHE(okHE), .okEH(okEHx[ 36*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_WR), .ep_datain(ddr_adc_wr));
-    okWireOut ddr_adc_rd (.okHE(okHE), .okEH(okEHx[ 37*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_RD), .ep_datain(ddr_adc_rd));
+    okWireOut ddr_dac_wr_wo (.okHE(okHE), .okEH(okEHx[ 34*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_WR), .ep_datain(ddr_dac_wr));
+    okWireOut ddr_dac_rd_wo (.okHE(okHE), .okEH(okEHx[ 35*65 +: 65 ]), .ep_addr(`DDR3_ADDR_DAC_RD), .ep_datain(ddr_dac_rd));
+    okWireOut ddr_adc_wr_wo (.okHE(okHE), .okEH(okEHx[ 36*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_WR), .ep_datain(ddr_adc_wr));
+    okWireOut ddr_adc_rd_wo (.okHE(okHE), .okEH(okEHx[ 37*65 +: 65 ]), .ep_addr(`DDR3_ADDR_ADC_RD), .ep_datain(ddr_adc_rd));
 
      //Block Throttle OK interfaces: check for enough space or enough data
      always @(posedge okClk) begin

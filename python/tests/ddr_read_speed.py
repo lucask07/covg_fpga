@@ -343,7 +343,7 @@ ad7961s[0].reset_trig() # this IS required because it resets the timing generato
 time.sleep(1)
 
 # ------ Collect Data --------------
-file_name = time.strftime("%Y%m%d-%H%M%S")
+file_name = 'test' + time.strftime("%Y%m%d-%H%M%S") + '_{}'
 idx = 0
 
 # set all fast-DAC DDR data to midscale
@@ -524,9 +524,10 @@ def capture_track_pointers(loops, READ=True):
 
     for idx in range(loops):
         
+        print(idx)
         # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
         chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-                                            blk_multiples=40)  # blk multiples must be multiple of 10 
+                                            blk_multiples=400)  # blk multiples must be multiple of 10 
         # each block multiple is 256 bytes 
         dac_rd, adc_rd, adc_wr = get_ddr_pointers()
 
@@ -534,6 +535,20 @@ def capture_track_pointers(loops, READ=True):
         pointers['adc_rd'] = np.append(pointers['adc_rd'], adc_rd)
         pointers['adc_wr'] = np.append(pointers['adc_wr'], adc_wr)
         pointers['time'] = np.append(pointers['time'], time.time_ns())
+
+        if adc_rd > 2.0e8 and adc_wr == 209715200:
+            print('Setting ADC Write rollover bit')
+            dac_rd, adc_rd, adc_wr = get_ddr_pointers()
+            daq.fpga.set_wire_bit(daq.ddr.endpoints['FIFO_ADC_IN_RST'].address, 
+                        daq.ddr.endpoints['FIFO_ADC_IN_RST'].bit_index_low)
+            daq.fpga.set_wire_bit(daq.ddr.endpoints['ADC_WRITE_ROLLOVER'].address, 
+                                  daq.ddr.endpoints['ADC_WRITE_ROLLOVER'].bit_index_low)
+            daq.fpga.clear_wire_bit(daq.ddr.endpoints['FIFO_ADC_IN_RST'].address, 
+                        daq.ddr.endpoints['FIFO_ADC_IN_RST'].bit_index_low)
+            daq.fpga.clear_wire_bit(daq.ddr.endpoints['ADC_WRITE_ROLLOVER'].address, 
+                        daq.ddr.endpoints['ADC_WRITE_ROLLOVER'].bit_index_low)                        
+            print('Done setting ADC Write rollover bit')
+            dac_rd, adc_rd, adc_wr = get_ddr_pointers()
 
         if READ == True:
             # to get the deswizzled data of all repeats need to read the file
@@ -547,7 +562,7 @@ def capture_track_pointers(loops, READ=True):
     return pointers
 
 ddr.repeat_setup() # Get data
-pointers = capture_track_pointers(5000, READ=False)
+pointers = capture_track_pointers(200, READ=False)
 fig, ax = plt.subplots(2,1)
 ax[0].plot(pointers['adc_wr'], 'k', label='write', marker='o') # each address pointer is 4 bytes 
 ax[0].plot(pointers['adc_rd'], 'r', label='read', marker='o')
@@ -628,9 +643,9 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
             l2 = datastreams['P1'].plot(ax_right, {'linestyle':'-', 'color': 'b', 'label': 'P1'})
             l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'fc':5e3, 'invert':-1})
             if idx==1:
-                ax.set_ylim([-5e-6, 50e-6])
+                ax.set_ylim([-200e-6, 500e-6])
             else:
-                ax.set_ylim([-20e-6, 50e-6])           
+                ax.set_ylim([-200e-6, 500e-6])           
             lns = l1+l2+l3
             labs = [l.get_label() for l in lns]
             ax.legend(lns, labs, loc=2)

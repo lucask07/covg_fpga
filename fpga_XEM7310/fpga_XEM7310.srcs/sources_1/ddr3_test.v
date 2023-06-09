@@ -62,7 +62,9 @@ module ddr3_test
     (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_wr,
     (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_rd,
     (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_wr2,
-    (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_rd2
+    (* KEEP = "TRUE" *)output reg  [29:0] cmd_byte_addr_rd2,
+    
+    (* KEEP = "TRUE" *)input  wire          adc_write_rollover  // if true than the buffer2 pointer rollsover when it reaches the end, otherwise it is paused
 	);
 
 localparam FIXED_INDEX = 30'h3_7f_ff_f8;
@@ -85,6 +87,9 @@ localparam ADDRESS_INCREMENT   = 5'd8; // UI Address is a word address. BL8 Burs
 (* KEEP = "TRUE" *)reg         read2_mode;
 (* KEEP = "TRUE" *)reg         reset_d;
 (* KEEP = "TRUE" *)reg         adc_addr_reset_reg;
+(* KEEP = "TRUE" *)reg         wr2_buf_pause;
+(* KEEP = "TRUE" *)reg         adc_write_rollover_reg;
+
 
 assign app_wdf_mask = 16'h0000;
 
@@ -93,6 +98,7 @@ always @(posedge clk) read1_mode <= read1_en;
 always @(posedge clk) write2_mode <= write2_en;
 always @(posedge clk) read2_mode <= read2_en;
 always @(posedge clk) reset_d <= reset;
+always @(posedge clk) adc_write_rollover_reg <= adc_write_rollover;
 
 
 (* KEEP = "TRUE" *)integer state;
@@ -132,6 +138,7 @@ always @(posedge clk) begin
 		app_wdf_wren      <= 1'b0;
 		app_wdf_end       <= 1'b0;
 		adc_data_count    <= 16'b0;
+		wr2_buf_pause     <= 1'b0;
 	end else begin
 		app_en            <= 1'b0;
 		app_wdf_wren      <= 1'b0;
@@ -166,7 +173,7 @@ always @(posedge clk) begin
 					state <= s_read_0;
 				end
 				// w128_256_r256_128 (to DDR)  [ADC data to DDR - prevent from filling]
-                else if (calib_done==1 && write2_mode==1 && (ib2_count >= HALF_FIFO_SIZE)  ) begin  // changed to ensure not always serviced 
+                else if (calib_done==1 && write2_mode==1 && (ib2_count >= HALF_FIFO_SIZE) && (wr2_buf_pause == 1'b0 || adc_write_rollover_reg == 1'b1)) begin  // changed to ensure not always serviced, only when not paused
                     app_addr <= cmd_byte_addr_wr2;
                     app_cmd <= 3'b000; 
                     state <= s_write2_0;
@@ -267,7 +274,14 @@ always @(posedge clk) begin
 			s_write2_4: begin
 				if (app_rdy == 1'b1) begin
 				    if(cmd_byte_addr_wr2 >= FIXED_INDEX2) begin // write2 needs a circular buffer 
-                        cmd_byte_addr_wr2 <= FIXED_INDEX2_START;
+				        if (adc_write_rollover_reg == 1'b0) begin
+    				        cmd_byte_addr_wr2 <= cmd_byte_addr_wr2; // stay at this address pointer so that the rollover doesn't overwrite data before it is read
+	                        wr2_buf_pause <= 1'b1;
+                        end
+	                    else begin
+	                        cmd_byte_addr_wr2 <= FIXED_INDEX2_START;
+	                        wr2_buf_pause <= 1'b0;   
+	                    end			        
                     end
                     else begin
                         cmd_byte_addr_wr2 <= cmd_byte_addr_wr2 + ADDRESS_INCREMENT;
