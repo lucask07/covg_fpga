@@ -1,15 +1,11 @@
-"""This script attempts to replicate Figure 4 on the biophysical poster. This
-consists of measuring the membrane current (Im) with the AD7961 after
-supplying a step voltage of 0-50mV by the AD5453.
-The system uses two Daughtercards with:
- 1) the bath clamp - has a non-zero CMD voltage measures Im 
- 2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
+"""This script studies the read and write speed to and from 
+DDR using the address pointers available from the FPGA.
 
-Sept 2022
+corresponding Excel sheet is in docs/ddr_rates.xlsx
+
+June 2023
 
 Dervied from clamp_step_response.py 
-
-Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 
@@ -41,7 +37,6 @@ for i in range(15):
         # If we aren't in covg_fpga, move up a folder and check again
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(boards_path)
-
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
@@ -324,33 +319,6 @@ total_scale = 1.0/(dac_range/5)
 cap = capacitors[-1]*1e-12
 if cap == 0:
     cap = 47e-12
-Ldp, Bdp, Adp = eng.observer_coeff_total(400e-9, RF, cap, Im_scale, VP1_scale, dac_scale, total_scale, nargout=3)
-
-# observer coeffs
-obsv_coeff = {}
-max_bit_width = 0xFFFFFFFF
-obsv_coeff[0] = Ldp[0][0] & max_bit_width
-obsv_coeff[1] = Ldp[1][0] & max_bit_width
-obsv_coeff[2] = Ldp[0][1] & max_bit_width
-obsv_coeff[3] = Ldp[1][1] & max_bit_width
-
-obsv_coeff[4] = Adp[0][0] & max_bit_width
-obsv_coeff[5] = Adp[1][0] & max_bit_width
-obsv_coeff[6] = Adp[0][1] & max_bit_width
-obsv_coeff[7] = Adp[1][1] & max_bit_width
-
-# zero out all but the DAC coefficients
-#for i in range(8):
-#    obsv_coeff[i] = 0
-
-obsv_coeff[8] = Bdp[0][0] & max_bit_width
-obsv_coeff[9] = Bdp[1][0] & max_bit_width
-
-for oc in obsv_coeff:
-    print(f'{oc}: {hex(obsv_coeff[oc])}')
-
-obsv.change_observer_coeff(obsv_coeff)
-obsv.write_observer_coeffs()
 
 # fast DAC channels setup
 for i in range(6):
@@ -579,10 +547,11 @@ def capture_track_pointers(loops, READ=True):
     return pointers
 
 ddr.repeat_setup() # Get data
-pointers = capture_track_pointers(100, READ=False)
+pointers = capture_track_pointers(5000, READ=False)
 fig, ax = plt.subplots(2,1)
-ax[0].plot(pointers['adc_wr'], 'k', label='write') # each address pointer is 4 bytes 
-ax[0].plot(pointers['adc_rd'], 'r', label='read')
+ax[0].plot(pointers['adc_wr'], 'k', label='write', marker='o') # each address pointer is 4 bytes 
+ax[0].plot(pointers['adc_rd'], 'r', label='read', marker='o')
+ax[0].plot(pointers['dac_rd'], 'g', label='DAC read', marker='o')
 ax[1].plot((pointers['time']-pointers['time'][0])/1e9)
 ax[0].legend()
 # 1.6 read to 7.2 write 
@@ -848,6 +817,3 @@ for sig in ['I', 'OBSV', 'P1', 'CMD0']:
     si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
     print(f'{sig} step info: {si}')
     print('-'*100)
-
-for oc in obsv_coeff:
-    print(f'{oc}: {hex(obsv_coeff[oc])}')

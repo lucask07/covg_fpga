@@ -74,6 +74,7 @@ for fb_res in feedback_resistors:
 
 # Plot data
 for file_name in file_names:
+    print(f'read datasreams for file {file_name}')
     # Plot using datastreams
     datastreams, log_info = rawh5_to_datastreams(
         data_dir=data_dir,
@@ -109,22 +110,24 @@ for file_name in file_names:
     ax.plot(t[:-1]*1e6, -Cm*p1_diff)
 plt.show()
 
-# Plot the different setups
-fig, ax = plt.subplots()
-phys_connections = experiment.create_phys_connections()
-for file_name in file_names:
-    datastreams, log_info = rawh5_to_datastreams(
-        data_dir=data_dir,
-        infile=file_name,
-        data_to_names=experiment.daq.ddr.data_to_names,
-        daq=experiment.daq,
-        phys_connections=phys_connections,
-        outfile=None
-    )
 
-    datastreams['Im'].plot(ax, {'marker': '.', 'label': file_name})
-# Zoom to one protocol length
-# Plot is in microseconds, protocol duration in milliseconds
-ax.set_xlim([0, protocol.duration() * 1e3])
-ax.legend(loc='upper right')
-plt.show()
+if 0:
+    # Plot the different setups
+    fig, ax = plt.subplots()
+    phys_connections = experiment.create_phys_connections()
+    for file_name in file_names:
+        datastreams, log_info = rawh5_to_datastreams(
+            data_dir=data_dir,
+            infile=file_name,
+            data_to_names=experiment.daq.ddr.data_to_names,
+            daq=experiment.daq,
+            phys_connections=phys_connections,
+            outfile=None
+        )
+
+        datastreams['Im'].plot(ax, {'marker': '.', 'label': file_name})
+    # Zoom to one protocol length
+    # Plot is in microseconds, protocol duration in milliseconds
+    ax.set_xlim([0, protocol.duration() * 1e3])
+    ax.legend(loc='upper right')
+    plt.show()

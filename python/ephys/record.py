@@ -12,9 +12,12 @@ protocol.preview()
 # Pause to show user preview
 plt.show(block=True)
 
+# Set up Experiment
+setup_yaml_path = 'bathclamp_vclamp_step_response_setup.yaml'
+cmd_protocol_path = 'bathclamp_vclamp_step_response_cmd.csv'
 # Run experiment
 clamp_nums = [1]
-experiment = Experiment(protocol)
+experiment = Experiment(protocol, setup_file_path=setup_yaml_path)
 experiment.setup()
 
 cap = 47

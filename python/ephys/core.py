@@ -1091,9 +1091,9 @@ class Experiment:
         if file_name is None:
             file_name = time.strftime("%Y%m%d-%H%M%S.h5")
 
+        natural_delay = 0.23539209365844727
         if not plot:
             # Time it takes from starting the fast DACs on DDR mode through stopping them without a time.sleep() delay
-            natural_delay = 0.23539209365844727
             time.sleep(max(0, self.sequence.duration() * 1e-3 - natural_delay))
             blk_multiples = 40
             # total bytes from save data = 2048 * num_repeats * blk_multiples
