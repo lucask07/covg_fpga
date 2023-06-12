@@ -245,35 +245,10 @@ for dc_num in DC_NUMS:
     clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
     clamps[dc_num] = clamp
 
+dac_range = 5
 feedback_resistors = [2.1]
-capacitors = [47,47]
-bath_res = [10, 100, 332, 3000] # Clamp.configs['ADG_RES_dict'].keys()
-
-# Try with different capacitors
-if feedback_resistors is None:
-    feedback_resistors = [x for x in Clamp.configs['RF1_dict'].keys() if type(x) == int or type(x) == float] # RF1 Resistor values in kilo-ohms for Offset Adjust amplifier
-    feedback_resistors.sort()
-if capacitors is None:
-    capacitors = [x for x in Clamp.configs['CCOMP_dict'] if type(x) == int or type(x) == np.int32]  # CCOMP Capacitor values in pF
-    capacitors.sort()
-
-voltage_data = dict([(x, None) for x in bath_res if type(x) == int])    # Rf Resistor values in kilo-ohms for Figure 4 graph
-for key in voltage_data:
-    voltage_data[key] = []  # Lists to hold voltage data at each resistor value
-
-dc_data = {}    # To store voltage data for each configuration of each daughtercard
-ads_data = {}    # To store voltage data for each configuration of each daughtercard
-ads_data_dict = {}
-ads_seq_cnt_dict = {}
-
-for dc_num in DC_NUMS:
-    # access data with dc_data[dc_num][fb_res][cap][res]
-    dc_data[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
-    ads_data[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
-    ads_data_dict[dc_num] = dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
-    ads_seq_cnt_dict[dc_num]= dict([(fb_res, dict([(cap, dict(voltage_data)) for cap in capacitors])) for fb_res in feedback_resistors])
-
-errors = copy.deepcopy(dc_data)  # Instead of voltage data, this dict will store whether an error occurred on the DDR read
+capacitors = [47]
+bath_res = [10] # Clamp.configs['ADG_RES_dict'].keys()
 
 # -------- configure the ADS8686
 ads_voltage_range = 5  # need this for to_voltage later 
@@ -291,34 +266,6 @@ ads.set_fpga_mode()
 
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
-
-# set observer data input muxes
-obsv = Observer(f)
-obsv.set_im_data_mux("ad7961_ch0")
-obsv.set_vcmd_data_mux("ad5453_ch1")
-obsv.set_vp1_data_mux("ads8686_chA")
-obsv.set_rdy_data_mux("sync_im")
-
-RF = bath_res[0]*1.0e3
-in_amp = 1
-diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
-dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
-Im_scale = dn_per_amp/2  # DN/Amp 
-Im_scale = dn_per_amp  # DN/Amp 
-
-ads_full_scale = 10
-dn_per_volt = (2**16/ads_full_scale) # correct
-VP1_scale = dn_per_volt*11.0*1.7
-
-dac_range = 5
-dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
-
-obsv_scale = dac_scale
-total_scale = 1.0/(dac_range/5)
-
-cap = capacitors[-1]*1e-12
-if cap == 0:
-    cap = 47e-12
 
 # fast DAC channels setup
 for i in range(6):
@@ -359,6 +306,7 @@ dc_configs = {}
 clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
 clamp_res = 10000 # should be zero with modified board when set to 10 MOhms 
 clamp_cap = 47
+
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG1", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
@@ -380,127 +328,39 @@ for dc_num in [dc_mapping['clamp']]:
         addr_pins_2=0b000,
     )
     dc_configs[dc_num] = config_dict
-
-if 1:
-    for cap in capacitors:
-        for fb_res in feedback_resistors:
-            # Try with 5 different resistors
-            for res in [x for x in bath_res if type(x) == int]:
+    
+    
+cap = capacitors[0]
+fb_res = feedback_resistors[0]
+# Try with 5 different resistors
+res = [x for x in bath_res if type(x) == int][0]
                 # Choose resistor; setup
-                for dc_num in [dc_mapping['bath']]:
-                    log_info, config_dict = clamps[dc_num].configure_clamp(
-                        ADC_SEL="CAL_SIG1",  # required to digitize P2 
-                        DAC_SEL="noDrive",
-                        CCOMP=cap,
-                        RF1=fb_res,  # feedback circuit
-                        ADG_RES=res,
-                        PClamp_CTRL=0,
-                        P1_E_CTRL=0,
-                        P1_CAL_CTRL=0,
-                        P2_E_CTRL=0,
-                        P2_CAL_CTRL=1,
-                        gain=1,  # instrumentation amplifier
-                        FDBK=1,
-                        mode="voltage",
-                        EN_ipump=0,
-                        RF_1_Out=1,
-                        addr_pins_1=0b110,
-                        addr_pins_2=0b000,
-                    )
-                    dc_configs[dc_num] = config_dict
-
-                ddr.repeat_setup()
-                # Get data
-                # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-                infile = file_name.format(idx) + '.h5'
-                chan_data_one_repeat = ddr.save_data(data_dir, infile, num_repeats=8,
-                                                    blk_multiples=40)  # blk multiples multiple of 10
-
-                # to get the deswizzled data of all repeats need to read the file
-                _, chan_data = read_h5(data_dir, infile, chan_list=np.arange(8))
-
-                adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
-                print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
-
-                ############### extract the ADS data just for the last run and plot as a demonstration ############
-                ads_data_v = {}
-                for letter in ['A', 'B']:
-                    ads_data_v[letter] = np.array(to_voltage(
-                        ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range, use_twos_comp=False))
-
-                total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
-                total_seq_cnt[::2] = ads_seq_cnt[0]
-                total_seq_cnt[1::2] = ads_seq_cnt[1]
-                ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
-
-                ephys_sys = EphysSystem()
-                sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
-                datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, daq, sys_connections, outfile = None)
-
-                # Store voltage in list; plot
-                for dc_num in DC_NUMS:
-                    dc_data[dc_num][fb_res][cap][res] = to_voltage(
-                        adc_data[dc_num], num_bits=16, voltage_range=10, use_twos_comp=True)
-                    ads_data_dict[dc_num][fb_res][cap][res] = ads_data    
-                    ads_seq_cnt_dict[dc_num][fb_res][cap][res] = ads_seq_cnt    
-                    errors[dc_num][fb_res][cap][res] = reading_error
-
-                # TODO: save as datastream h5s
+for dc_num in [dc_mapping['bath']]:
+    log_info, config_dict = clamps[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG1",  # required to digitize P2 
+        DAC_SEL="noDrive",
+        CCOMP=cap,
+        RF1=fb_res,  # feedback circuit
+        ADG_RES=res,
+        PClamp_CTRL=0,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=1,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
+    dc_configs[dc_num] = config_dict
 
 
-    print('Data collected. DDR read error report below.')
-    print('|'.join([x.center(6, ' ') for x in ['dc_num', 'fb_res', 'cap', 'res', 'ERROR']]))
-    error_cnt = 0
-    for dc_num in errors:
-        for fb_res in errors[dc_num]:
-            for cap in errors[dc_num][fb_res]:
-                for res in errors[dc_num][fb_res][cap]:
-                    if errors[dc_num][fb_res][cap][res]:
-                        # An error occurred in the DDR read
-                        print('|'.join([str(x).center(6, ' ') for x in [dc_num, fb_res, cap, res, 'ERROR']]))
-                        error_cnt += 1
-    print('Total DDR read errors:', error_cnt)
-    print('Plotting...')
+ephys_sys = EphysSystem()
+sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
 
-    # Time in seconds
-    t = np.arange(0, len(adc_data[0]))*1/FS
-    for dc_num in DC_NUMS:
-        for fb_res in dc_data[dc_num].keys():
-            rows = ceil(len(capacitors)**(1/2))
-            fig, axes = plt.subplots(rows, rows)
-            fig.suptitle(f'DC{dc_num} Current response to CMD step voltage (RF1={fb_res})')
-
-            for i in range(len(capacitors)):
-                cap = capacitors[i]
-                current_ax = axes[i // rows][i % rows]
-                current_ax.set_title(f'CCOMP={cap}pF')
-                current_ax.set_xlabel('Time (\N{GREEK SMALL LETTER MU}s)')
-                current_ax.set_ylabel('Current (\N{GREEK SMALL LETTER MU}A)')
-                
-                for res in dc_data[dc_num][fb_res][cap].keys():
-                    # Plot current (uA) against time (us) -> uA because resistor values are in kilo-ohms, we multiply current by 1e3
-                    current_ax.plot(t * 1e6, [(v / res) * 1e3 for v in dc_data[dc_num][fb_res][cap][res]], label=str(res) + 'k\N{GREEK CAPITAL LETTER OMEGA}')
-                    # Zoom in on the data
-                    current_ax.set_xlim(6550, 7000)
-                    current_ax.set_ylim(-10, 40)
-                
-                # Set up the legend after the first subplot so there are no repeat labels from following subplots
-                if i == 0:
-                    fig.legend(loc='lower right')
-
-def ads_plot_zoom(ax, t_range=[3250,3300]):
-    try:
-        for ax_s in ax:
-            ax_s.set_xlim(t_range)
-            ax_s.grid('on')
-    except:
-        ax.set_xlim(t_range)
-        ax.grid('on')   
-
-plt.close('all')
-first_time = True
-PLT_OBSV = False
-PLT_IM_EST = False
 
 def get_ddr_pointers():
     adc_start_idx = daq.ddr.PORT1_INDEX
@@ -514,9 +374,6 @@ def get_ddr_pointers():
     print('ADDR_ADC_RD:', adc_rd) #896 difference from index without a DDR.save_data (probably because some fills the FIFO)
 
     return dac_rd, adc_rd, adc_wr
-
-# update system connections since the daughtercard configurations have changed
-sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
 
 def capture_track_pointers(loops, READ=True):
 
@@ -536,7 +393,8 @@ def capture_track_pointers(loops, READ=True):
         pointers['adc_wr'] = np.append(pointers['adc_wr'], adc_wr)
         pointers['time'] = np.append(pointers['time'], time.time_ns())
 
-        if adc_rd > 2.0e8 and adc_wr == 209715200:
+        if adc_rd > 2.0e8 and adc_wr == 209715200: # if the adc_rd pointer is nearly done and the adc_wr pointer is stalled at the end
+            # allow adc_wr to roll-over and reset the ADC input FIFO 
             print('Setting ADC Write rollover bit')
             dac_rd, adc_rd, adc_wr = get_ddr_pointers()
             daq.fpga.set_wire_bit(daq.ddr.endpoints['FIFO_ADC_IN_RST'].address, 
@@ -562,7 +420,7 @@ def capture_track_pointers(loops, READ=True):
     return pointers
 
 ddr.repeat_setup() # Get data
-pointers = capture_track_pointers(200, READ=False)
+pointers = capture_track_pointers(200, READ=False) # multiple reads and track the DDR address pointers 
 fig, ax = plt.subplots(2,1)
 ax[0].plot(pointers['adc_wr'], 'k', label='write', marker='o') # each address pointer is 4 bytes 
 ax[0].plot(pointers['adc_rd'], 'r', label='read', marker='o')
@@ -571,264 +429,3 @@ ax[1].plot((pointers['time']-pointers['time'][0])/1e9)
 ax[0].legend()
 # 1.6 read to 7.2 write 
 # 5.7 with the time.sleep removed 
-
-
-def capture_data():
-    ddr.repeat_setup() # Get data
-
-    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-    chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-                                        blk_multiples=40)  # blk multiples must be multiple of 10 
-    # each block multiple is 256 bytes 
-    dac_rd1, adc_rd1, adc_wr1 = get_ddr_pointers()
-
-    time.sleep(0.01)
-    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-    chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', num_repeats=8,
-                                        blk_multiples=40)  # blk multiples multiple of 10
-    dac_rd1, adc_rd2, adc_wr2 = get_ddr_pointers()
-
-
-    # to get the deswizzled data of all repeats need to read the file
-    _, chan_data = read_h5(data_dir, file_name=file_name.format(
-        idx) + '.h5', chan_list=np.arange(8))
-
-    # Long data sequence -- entire file
-    # adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, read_errors = ddr.data_to_names(chan_data)
-
-    # update system connections since the daughtercard configurations have changed
-    sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
-
-    # Plot using datastreams 
-    datastreams, log_info = rawh5_to_datastreams(data_dir, infile, ddr.data_to_names, daq, sys_connections, outfile = None)
- 
-    return datastreams 
-    
-def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=332):
-
-    if first_time:
-        figs = []
-        fig, ax = plt.subplots(2,2, figsize=(10,8))
-        fig.canvas.manager.window.move(0,0)
-        figs.append(fig)
-        # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-        l1 = datastreams['P1'].plot(ax[0,0], {'marker':'.'})
-        # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-        try:
-            l2 = datastreams['P2'].plot(ax[0,1], {'marker':'.'})
-            ax[1].set_title('P2')
-        except:
-            l2 = datastreams['CMD0'].plot(ax[0,1], {'marker':'.'})
-        l3 = datastreams['V1'].plot(ax[1,0], {'marker':'.'})
-        l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
-        lines1 = [l1,l2,l3,l4]
-    else:
-        datastreams['P1'].update_lines(lines1[0][0])
-        # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-        try:
-            datastreams['P2'].update_lines(lines1[1][0])
-        except:
-            datastreams['CMD0'].update_lines(lines1[1][0])
-        datastreams['V1'].update_lines(lines1[2][0])
-        datastreams['I'].update_lines(lines1[3][0])
-
-    if first_time:
-        fig, axs = plt.subplots(2,1,figsize=(10,8))
-        fig.canvas.manager.window.move(600,0)
-        figs.append(fig)
-        lines2 = []
-        for idx,ax in enumerate(axs):
-            ax_right = ax.twinx()
-            l1 = datastreams['CMD0'].plot(ax_right, {'linestyle':'--', 'color':'r', 'label': 'CMD'})
-            l2 = datastreams['P1'].plot(ax_right, {'linestyle':'-', 'color': 'b', 'label': 'P1'})
-            l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'fc':5e3, 'invert':-1})
-            if idx==1:
-                ax.set_ylim([-200e-6, 500e-6])
-            else:
-                ax.set_ylim([-200e-6, 500e-6])           
-            lns = l1+l2+l3
-            labs = [l.get_label() for l in lns]
-            ax.legend(lns, labs, loc=2)
-            lines2.append([l1,l2,l3])
-
-            if idx==1:
-                ads_plot_zoom(ax, t_range=[3200,3650])
-                ads_plot_zoom(ax_right, t_range=[3200,3650])
-            else:
-                ads_plot_zoom(ax, t_range=[3200,7250])
-                ads_plot_zoom(ax_right, t_range=[3200,7250])
-
-    else:
-        for l2 in lines2:
-            datastreams['CMD0'].update_lines(l2[0][0]) # TODO: why is this a list?
-            datastreams['P1'].update_lines(l2[1][0])
-            datastreams['Im'].update_lines(l2[2][0], {'fc':5e3, 'invert':-1})
-        
-        im_data = datastreams['Im'].data
-        t = datastreams['Im'].create_time()
-        fc = 100e3 #5e3
-        im_data_filt = butter_lowpass_filter(im_data, cutoff=5e3, fs=1/(t[1]-t[0]), order=5)
-        idx = (t > 4500e-6) & (t < 5500e-6)
-        im_noise_wb = np.std(im_data[idx])
-        im_noise_filt = np.std(im_data_filt[idx])
-        print(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
-
-    for fig in figs:
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-    
-    first_time = False
-
-    return first_time, lines1, lines2, figs
-
-datastreams = capture_data()
-first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
-
-scope_data = {} 
-components = ['CC', 'RTIA', 'CLAMP_TIA', 'CLAMP_RF']
-scope_meas = ['OVER', 'RIS']
-for sm in scope_meas:
-    scope_data[sm] = np.array([])
-for c in components:
-    scope_data[c] = np.array([])
-
-osc.set('run_acq')
-#adg_r_arr = [10, 33, 100, 332, 1000]
-#ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
-
-adg_r_arr = [100]
-ccomp_arr = [200]
-
-
-for ccomp in ccomp_arr:
-    for adg_r in adg_r_arr:
-        print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
-        scope_data['CC'] = np.append(scope_data['CC'], ccomp)
-        scope_data['RTIA'] = np.append(scope_data['RTIA'], adg_r)
-        scope_data['CLAMP_RF'] = np.append(scope_data['CLAMP_RF'], clamp_fb_res)
-        scope_data['CLAMP_TIA'] = np.append(scope_data['CLAMP_TIA'], clamp_res)
-
-        dc_configs[0]['ADG_RES'] = adg_r
-        dc_configs[0]['CCOMP'] = ccomp
-        clamps[0].configure_clamp(**dc_configs[0])
-        
-        for i in range(10):
-            time.sleep(0.2)
-            datastreams = capture_data()
-            update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
-
-        t_step = 3.1e-3 # time of the command step 
-        sig = 'Im' 
-        si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
-        print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
-        print(f'{sig} step info: {si}')
-        print('-'*100)
-        osc.set('single_acq')
-        time.sleep(0.05)
-        for sm in scope_meas:
-            scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))
-        osc.set('run_acq')
-
-for adg_r in adg_r_arr:
-    idx = scope_data['RTIA']==adg_r
-    fig,ax=plt.subplots(2,1)
-    ax[0].plot(scope_data['CC'][idx], scope_data['OVER'][idx], marker='o')
-    ax[1].plot(scope_data['CC'][idx], scope_data['RIS'][idx], marker='o')
-    fig.suptitle(f'RTIA = {adg_r}')
-
-TO_CLAMPFIT = False
-if TO_CLAMPFIT: # TODO 
-    sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
-    from pyabf.abfWriter import writeABF1 
-    t = datastreams['Im'].create_time()
-    # if the current is in Amps the 16-bit precision makes it all zero 
-    x = np.reshape(datastreams['Im'].data, (1,-1))*1e6
-    writeABF1(x, os.path.join(data_dir, 'test_im.abf'), 1/(t[1]-t[0]), units=['uA'], nADCNumChannels=1)
-
-if PLT_OBSV:
-    fig, ax = plt.subplots()
-    fig.suptitle('Overlay P1 and CMD')
-    datastreams['P1'].plot(ax, {'marker':'.'})
-    datastreams['CMD0'].plot(ax, {'marker':'.'})  
-
-    fig, ax = plt.subplots(4,1)
-    fig.suptitle('Overlay OBSERVER and I')
-    datastreams['OBSV'].plot(ax[0], {'marker':'.'})
-    datastreams['I'].plot(ax[1], {'marker':'.'})  
-    ax[2].plot(dac_data[1].astype(np.int32)-0x1FFF, marker='.')  
-    ax[2].set_ylabel('CMD offset DAC')
-    #datastreams['PI_ERR'].plot(ax[3], {'marker':'.'})  
-
-    print(f'Max - min of Observer: {np.max(datastreams["OBSV"].data)-np.min(datastreams["OBSV"].data)}')
-    print(f'Max - min of DDR: {np.max(ddr.data_arrays[1]) - np.min(ddr.data_arrays[1])}')
-    print(f'Max - min of DAC data: {np.max(dac_data[1]) - np.min(dac_data[1])}')
-
-    fig, ax = plt.subplots()
-    cmd_arr = ((dac_data[1].astype(np.int16)-0x1fff)[::5])
-    obsv_arr = dac_data[4][::2].astype(np.int16)
-    pi_error_est = cmd_arr - obsv_arr
-    ax.plot(pi_error_est, label='pi_error')
-    ax.plot(cmd_arr, label='cmd')
-    ax.plot(obsv_arr, label='obsv')
-    ax.legend()
-
-    # subplot of Observer Vm and measured Vm
-    fig,ax=plt.subplots(3,1)
-    fig.suptitle('Observer Vm vs ADS8686')
-    # Observer - stored in DDR at 1 MSPS -- dac_data[4] is observer output 0, dac_data[5] is observer output 1, dac_data[6] is obs. output 0 shifted by 400 ns
-    datastreams['OBSV'].plot(ax[0], {'marker':'.', 'label': 'Obsv.'})
-    datastreams['PI_ERR'].plot(ax[0], {'marker':'.', 'label': 'PI_ERR.'})
-    ax[0].legend()
-    datastreams['I'].plot(ax[1], {'marker':'.', 'label': 'Vm Meas.'})
-    datastreams['P1'].plot(ax[1], {'marker':'*', 'label': 'P1'})
-    ax[1].plot(datastreams['OBSV'].create_time()*1e6, datastreams['OBSV'].data/3000*0.1, marker='o', label='OBSV')
-    ax[1].legend()
-    datastreams['CMD0'].plot(ax[2])
-
-    ax[1].set_ylabel('Vm measured [V]')
-    for axi in ax:
-        axi.set_xlim([3250, 3400])
-
-if PLT_IM_EST:
-    # estimate Im 
-    Cm = 33e-9
-    fig, ax = plt.subplots()
-    fig.suptitle('Overlay Meas. Im and Im estimate')
-    datastreams['Im'].plot(ax, {'marker':'.', 'label': 'Meas. Im'})
-    t = datastreams['P1'].create_time()
-    dt = t[1] - t[0]
-    p1_diff = np.diff(datastreams['P1'].data)/dt
-    #ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
-    ax.legend()
-
-
-# add log info to datastreams -- any dictionary is ok  
-datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
-datastreams.add_log_info({'dc_configs': dc_configs})
-print(datastreams.__dict__)
-datastreams.to_h5(data_dir, 'test.h5', log_info)
-
-# test writing and reading datastream h5
-TST_DATASTREAM_RW = False
-
-if TST_DATASTREAM_RW:
-    datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
-    # this datastreams has the log info but as a dictionary, not as Python classes
-    # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
-
-    for n in datastreams:
-        assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
-
-print(f'CMD scaling for observer {1/dac_scale} [DN/Volt] and from datastreams {datastreams["CMD0"].conversion_factor}')
-print(f'Im scaling for observer  {1/Im_scale} [DN/Amp] and from datastreams {datastreams["Im"].conversion_factor}')
-print(f'P1 scaling for observer {1/VP1_scale} [DN/Volt] and from datastreams {datastreams["P1"].conversion_factor}')
-
-t_step = 3.277e-3 # time of the command step 
-print('-'*100)
-for sig in ['I', 'OBSV', 'P1', 'CMD0']:
-    sig_name = sig 
-    if sig_name == 'I':
-        sig_name = 'Vm'
-    si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
-    print(f'{sig} step info: {si}')
-    print('-'*100)

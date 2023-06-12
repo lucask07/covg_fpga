@@ -28,7 +28,7 @@ import json
 import numpy as np
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from analysis.adc_data import read_h5, separate_ads_sequence
-from filters.filter_tools import butter_lowpass_filter
+from filters.filter_tools import butter_lowpass_filter, decimate_datastream
 
 FS = 5e6
 FS_ADS = 1e6 
@@ -57,6 +57,11 @@ class Datastream():
             fs = 1/(t[1] - t[0])
             fc = kwargs.pop('fc', None) # default None should never happen
             data = invert*butter_lowpass_filter(self.data, fc, fs, order=kwargs.pop('order', 5))
+        elif 'decimate' in kwargs:
+            factors = kwargs.pop('decimate', None) # default None should never happen
+            new_ds = decimate_datastream(self, factors)
+            data = invert*new_ds.data 
+            t = new_ds.create_time()
         else:
             data = invert*self.data
 
@@ -76,6 +81,11 @@ class Datastream():
             fs = 1/(t[1] - t[0])
             fc = kwargs.pop('fc', None) # default None should never happen
             data = invert*butter_lowpass_filter(self.data, fc, fs, order=kwargs.pop('order', 5))
+        elif 'decimate' in kwargs:
+            factors = kwargs.pop('decimate', None) # default None should never happen
+            new_ds = decimate_datastream(self, factors)
+            data = invert*new_ds.data 
+            t = new_ds.create_time()
         else:
             data = invert*self.data
 
