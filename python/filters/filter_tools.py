@@ -2,12 +2,13 @@
 Filters: low-pass, high-pass, delays
 
 """
+import copy
 import numpy as np
 from numpy.fft import fft, ifftshift, ifft
 from numpy import exp, pi, arange, zeros_like, isreal
 from scipy import signal
 from scipy.interpolate import interp1d
-
+import matplotlib.pyplot as plt
 
 def delayseq_interp(x, delay_sec: float, fs: int):
     """ Delay 1D signal using shift and linear interpolation (no FFT)
@@ -149,3 +150,32 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
     b, a = butter_lowpass(cutoff, fs, order=order)
     y = signal.filtfilt(b, a, data)
     return y
+
+def bode_plot(b,a):
+
+    w, h = signal.freqz(b,a)
+
+    fig, ax1 = plt.subplots()
+    ax1.set_title('Digital filter frequency response')
+    ax1.plot(w, 20 * np.log10(abs(h)), 'b')
+    ax1.set_ylabel('Amplitude [dB]', color='b')
+    ax1.set_xlabel('Frequency [rad/sample]')
+
+    ax2 = ax1.twinx()
+    angles = np.unwrap(np.angle(h))
+    ax2.plot(w, angles, 'g')
+    ax2.set_ylabel('Angle (radians)', color='g')
+    ax2.grid(True)
+    ax2.axis('tight')
+
+    plt.show()
+
+def decimate_datastream(datastream, factors = [10,10,10]):
+
+    d_out = copy.deepcopy(datastream)
+    
+    for f in factors:
+        d_out.data = signal.decimate(d_out.data, f)
+        d_out.sample_rate = d_out.sample_rate/f
+
+    return d_out
