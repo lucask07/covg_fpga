@@ -56,9 +56,6 @@ from filters.filter_tools import butter_lowpass_filter
 from instrbuilder.instrument_opening import open_by_name 
 osc = open_by_name('msox_scope')
 
-eng = matlab.engine.start_matlab()
-eng.addpath('..\\Matlab\\control_system\\observer\\full_closed_loop\\')
-
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
     """Return the CMD and CC signals determined by the parameters.
@@ -418,9 +415,6 @@ def capture_data(idx=0):
                                         blk_multiples=40)  # blk multiples must be multiple of 10 
     # each block multiple is 256 bytes 
 
-    # to get the deswizzled data of all repeats need to read the file
-    _, chan_data = read_h5(data_dir, file_name=filename, chan_list=np.arange(8))
-
     # update system connections since the daughtercard configurations have changed
     sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
     # Plot using datastreams 
@@ -532,12 +526,12 @@ for c in components:
 
 osc.set('run_acq')
 
+# extensive sweep
 adg_r_arr = [10, 33, 100, 332]
 ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
 
-#ccomp_arr = [47]
-#adg_r_arr = [100]
-# ccomp_arr = [47]
+ccomp_arr = [47]
+adg_r_arr = [33, 100, 332, 1000]
 
 for ccomp in ccomp_arr:
     for adg_r in adg_r_arr:
@@ -580,14 +574,25 @@ for adg_r in adg_r_arr:
     ax[1].set_ylabel('Rise time [us]')
     fig.suptitle(f'RTIA = {adg_r}')
 
-TO_CLAMPFIT = False
+TO_CLAMPFIT = True
 if TO_CLAMPFIT: # TODO 
     sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
     from pyabf.abfWriter import writeABF1 
-    t = datastreams['Im'].create_time()
-    # if the current is in Amps the 16-bit precision makes it all zero 
-    x = np.reshape(datastreams['Im'].data, (1,-1))*1e6
-    writeABF1(x, os.path.join(data_dir, 'test_im.abf'), 1/(t[1]-t[0]), units=['uA'], nADCNumChannels=1)
+    from pyabf.tools.covg import interleave_np
+
+    ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'V1', 'P1'])
+
+    t = ds_equal['Im'].create_time()
+
+    names_pclamp = ['Im', 'CMD0', 'V1', 'P1']
+    im = np.reshape(ds_equal['Im'].data, (1,-1))
+    cmd = np.reshape(ds_equal['CMD0'].data, (1,-1))
+    v1 = np.reshape(ds_equal['V1'].data, (1,-1))
+    p1 = np.reshape(ds_equal['P1'].data, (1,-1))
+
+    x_write = interleave_np([im, cmd, v1, p1])
+    writeABF1(x_write, os.path.join(data_dir, 'test_step.abf'), 1/(t[1]-t[0]), 
+              units=['A', 'V', 'V', 'V'], nADCNumChannels=4, FLOAT=True, names_input = names_pclamp)
 
 PLT_IM_EST = False 
 
@@ -607,11 +612,10 @@ if PLT_IM_EST:
 datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
 datastreams.add_log_info({'dc_configs': dc_configs})
 print(datastreams.__dict__)
-datastreams.to_h5(data_dir, 'test.h5', log_info)
+datastreams.to_h5(data_dir, 'datastreams_output.h5', log_info)
 
 # test writing and reading datastream h5
 TST_DATASTREAM_RW = False
-
 if TST_DATASTREAM_RW:
     datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
     # this datastreams has the log info but as a dictionary, not as Python classes

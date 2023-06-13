@@ -170,12 +170,3 @@ def bode_plot(b,a):
 
     plt.show()
 
-def decimate_datastream(datastream, factors = [10,10,10]):
-
-    d_out = copy.deepcopy(datastream)
-    
-    for f in factors:
-        d_out.data = signal.decimate(d_out.data, f)
-        d_out.sample_rate = d_out.sample_rate/f
-
-    return d_out

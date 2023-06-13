@@ -361,7 +361,6 @@ for dc_num in [dc_mapping['bath']]:
 ephys_sys = EphysSystem()
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
 
-
 def get_ddr_pointers():
     adc_start_idx = daq.ddr.PORT1_INDEX
     dac_rd = daq.ddr.fpga.read_wire(daq.ddr.endpoints['ADDR_DAC_RD'].address)

@@ -26,9 +26,10 @@ import datetime
 import h5py
 import json
 import numpy as np
+from scipy import signal
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from analysis.adc_data import read_h5, separate_ads_sequence
-from filters.filter_tools import butter_lowpass_filter, decimate_datastream
+from filters.filter_tools import butter_lowpass_filter
 
 FS = 5e6
 FS_ADS = 1e6 
@@ -59,7 +60,7 @@ class Datastream():
             data = invert*butter_lowpass_filter(self.data, fc, fs, order=kwargs.pop('order', 5))
         elif 'decimate' in kwargs:
             factors = kwargs.pop('decimate', None) # default None should never happen
-            new_ds = decimate_datastream(self, factors)
+            new_ds = self.decimate(factors)
             data = invert*new_ds.data 
             t = new_ds.create_time()
         else:
@@ -83,7 +84,7 @@ class Datastream():
             data = invert*butter_lowpass_filter(self.data, fc, fs, order=kwargs.pop('order', 5))
         elif 'decimate' in kwargs:
             factors = kwargs.pop('decimate', None) # default None should never happen
-            new_ds = decimate_datastream(self, factors)
+            new_ds = self.decimate(factors)
             data = invert*new_ds.data 
             t = new_ds.create_time()
         else:
@@ -115,6 +116,18 @@ class Datastream():
         #  seems better to simply take the derivative ... this gives the impulse response
         imp_resp_d = np.gradient(y, t[1]-t[0])
         return imp_resp_d, t, t0
+
+    def decimate(self, factors = [10,10,10]):
+
+        d_out = copy.deepcopy(self)
+
+        total_factor = 1        
+        for f in factors:
+            d_out.data = signal.decimate(d_out.data, f)
+            total_factor = total_factor*f
+        d_out.sample_rate = d_out.sample_rate/total_factor
+
+        return d_out
 
 class Datastreams(dict):
 
@@ -161,6 +174,80 @@ class Datastreams(dict):
 
         return log_dict
 
+    def equalize_sampling(self, names):
+        # first find the sampling rates 
+        ds_new = copy.deepcopy(self)
+        srs = []
+        for n in names:
+            srs.append(int(self[n].sample_rate))
+        srs = np.array(srs)
+        gcd = np.gcd.reduce(srs)
+
+        for n in names:
+            sr = self[n].sample_rate
+            if int(sr) == gcd:
+                pass
+            else:
+                dec_factor = int(sr/gcd)
+                print(f'Decimating {n} by {dec_factor}')
+
+                if dec_factor > 10:
+                    for num_try in [10,8,5,4,3,2]:
+                        if dec_factor / num_try % 0:
+                            factors = [num_try, dec_factor/num_try]
+                            break
+                else:
+                    factors = [dec_factor]
+
+                ds_new[n] = self[n].decimate(factors)
+
+        return ds_new
+    
+    def append(self, append_ds):
+        # append two datastreams in place  
+        def check_same(ds1, ds2):
+            # confirm that important properties are consistent
+            all_same = True
+
+            if ds1.sample_rate != ds2.sample_rate:
+                all_same = False
+            if ds1.conversion_factor != ds2.conversion_factor:
+                all_same = False
+            return all_same
+
+        for n in self:
+            if check_same(self[n], append_ds[n]):
+                self[n].data = np.append(self[n].data, append_ds[n].data)
+            else:
+                print('error')
+                break
+        
+    def crop(self, to_length):
+        """
+            reduce the length of a datastream useful when dividing into sweeps 
+
+        Parameters
+        ----------
+        to_length : int
+            final length after crop
+        """
+        for n in self:
+            try:
+                self[n].data = self[n].data[0:(to_length)]
+            except:
+                print(f'Error! Datastream length of {len(self[n].data)} cannot be cropped to length of {to_length}')
+
+    def to_sweeps(self, num_sweeps):
+
+        sweeps = [] # a list of datastreams 
+        for i in range(num_sweeps):
+            sweeps.append(copy.deepcopy(self))
+        for n in self:
+            split_data = np.split(self[n].data, num_sweeps) 
+            for i in range(num_sweeps):
+                sweeps[i][n].data = split_data[i]
+
+        return sweeps        
 
 def h5_to_datastreams(directory, filename):
 
@@ -189,7 +276,7 @@ def h5_to_datastreams(directory, filename):
 
 
 
-def rawh5_to_datastreams(data_dir, infile, data_to_names, daq, phys_connections, outfile = None):
+def rawh5_to_datastreams(data_dir, infile, data_to_names, daq, phys_connections, outfile = None, out_log_info={}):
     """
     parameters: 
         data_dir: directory for both input and output files 
@@ -203,7 +290,6 @@ def rawh5_to_datastreams(data_dir, infile, data_to_names, daq, phys_connections,
         datastreams 
 
     """
-
     # to get the deswizzled data of all repeats need to read the file
     _, chan_data = read_h5(data_dir, file_name=infile, chan_list=np.arange(8))
 
@@ -217,7 +303,7 @@ def rawh5_to_datastreams(data_dir, infile, data_to_names, daq, phys_connections,
     datastreams = data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections, log_info)
 
     if outfile is not None:
-        pass
+        datastreams.to_h5(data_dir, outfile, {**log_info, **out_log_info}) # merge the two dictionaries of log info
 
     return datastreams, log_info  
 
@@ -321,7 +407,7 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
             RF = dc_config_dicts[dc_config]['ADG_RES']*1e3 # all resistor values are in kilo-Ohms
             inamp_gain = dc_config_dicts[dc_config]['gain']
             diff_buffer_gain = 499/(1500+120) # daughter-card differential buffer (resistor values). Gain is less than x1
-            conv_factor = ad7961_fs/inamp_gain/RF/diff_buffer_gain
+            conv_factor = -ad7961_fs/inamp_gain/RF/diff_buffer_gain # add negative sign so an increase in the cell voltage is positive current
 
             if ephys_sys is not None:
                 dc_type = ephys_sys.dc_mapping[dc_config] 

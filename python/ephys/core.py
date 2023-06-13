@@ -347,6 +347,89 @@ class Sequence:
 
         return sum([p.duration() for p in self.protocols])
 
+    def to_ddr(self, clamp_num, daq, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7):
+        """Write a Sequence into the DDR data_arrays. 
+        
+        Write to the CMD channel of the specified Clamp board with the option
+        to write a corresponding injected current to pins 16, 18 of J11 on the
+        DAQ board.
+        
+        Parameters
+        ----------
+        clamp_num : int or List[int]
+            Which Clamp to write to (0, 1, 2, or 3).
+        daq : The data acquisition system object
+            The DDR instance has daq.ddr.data_arrays
+        inject_current : bool
+            Whether to include a corresponding injected current.
+        low_scaling_factor : float
+            The scaling factor (uA/mV) for current when the CMD voltage is
+            less than the cutoff.
+            current = voltage * low_scaling_factor  * 1e3.
+        cutoff : float
+            The voltage in millivolts at which to switch from the
+            low_scaling_factor to the high_scaling_factor for the injected
+            current.
+        high_scaling_factor : float
+            The scaling factor (uA/mV) for current when the CMD voltage is
+            greater than or equal to the cutoff.
+            current = voltage * high_scaling_factor  * 1e3.
+
+        Returns
+        -------
+        sequence_len : int
+            Length of the Sequence data np.ndarray of np.uint16.
+        """
+
+        if type(clamp_num) is int:
+            clamp_nums = [clamp_num]
+        elif type(clamp_num) is list:
+            clamp_nums = clamp_num
+        else:
+            raise TypeError('write_sequence parameter clamp_num must be int or list of ints.')
+
+        # Offset adjust gain k is multiply by 3k/feedback resistor. To counteract this we multiply by feedback resistor/3k
+        fb_res = 2.1
+        offset_adjust_k = 1 + fb_res / 3    # fb_res is already in kOhms, so 3 instead of 3e3
+        dac_offset = 0x2000 # was: 0x1E00
+        target_len = len(daq.ddr.data_arrays[0])
+
+        # Create data
+        # Multiply data by 1e-3 because sequence data is given in mV, need in V for from_voltage conversion
+        sequence_data = self.data() * 1e-3
+        sequence_len = len(sequence_data)
+        for clamp_num in clamp_nums:
+            cmd_ch = clamp_num * 2 + 1
+            cc_ch = clamp_num * 2
+
+            # In addition to the offset adjust amplifier, the CMD signal is
+            # attennuated 10x from the DAQ board to the daughtercard so we
+            # have to multiply our signal by 10 to get it back to what we want
+            cmd_voltage = sequence_data * offset_adjust_k * 10
+            # Pad with zeros to make correct size. TODO: make constant_values the holding voltage for the Protocol. For now, assuming the Protocol begins at the holding voltage and use its first value.
+            cmd_voltage = np.pad(cmd_voltage, (0, target_len - len(cmd_voltage)), 'constant', constant_values=cmd_voltage[0])
+            # TODO: determine voltage_range for AD5453
+            cmd_signal = np.array(from_voltage(voltage=cmd_voltage, num_bits=14, voltage_range=daq.current_dac_gain[cmd_ch]*2, with_negatives=False), dtype=np.uint16) + dac_offset
+            cc_signal = np.ones(len(cmd_signal), dtype=np.uint16) * dac_offset
+            daq.ddr.data_arrays[cmd_ch] = cmd_signal
+            daq.ddr.data_arrays[cc_ch] = cc_signal
+
+            # Write channels to the DDR
+            # LJK: daq.DAC.write switches to host driven mode.
+            # daq.DAC[cmd_ch].write(int(daq.ddr.data_arrays[cmd_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+            # daq.DAC[cc_ch].write(int(daq.ddr.data_arrays[cc_ch][0]) & 0x3FFF)    # Write first output code from host to make smooth transition
+
+        # Create injected current data
+        if inject_current:
+            # sequence_data in V, cutoff in mV, scaling factors in uA/mv, current needs to be in nA
+            current = np.where(
+                sequence_data < cutoff * 1e-3,
+                sequence_data * 1e3 * low_scaling_factor * 1e3,
+                sequence_data * 1e3 * high_scaling_factor * 1e3
+            )
+            self.inject_current(current=current, write_ddr=False)
+
+        return sequence_len
 
 class ExperimentSetup:
     """Contains information from YAML setup file.
