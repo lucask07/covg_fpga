@@ -1,18 +1,14 @@
-"""This script attempts to replicate Figure 4 on the biophysical poster. This
-consists of measuring the membrane current (Im) with the AD7961 after
-supplying a step voltage of 0-50mV by the AD5453.
-The system uses two Daughtercards with:
+"""
+The system uses three Daughtercards with:
  1) the bath clamp - has a non-zero CMD voltage measures Im 
- 2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
-
-Sept 2022
+ 2) the voltage clamp I source  zero CMD voltage, goal is to hold capacitor plate at ground 
+ 3) the voltage clamp - sensing board 
 
 Dervied from clamp_step_response.py 
 
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
-
 from math import ceil
 import os
 import sys
@@ -29,7 +25,6 @@ from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficien
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
 import matlab.engine 
-from control.matlab import stepinfo
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -54,7 +49,7 @@ from filters.filter_tools import butter_lowpass_filter
 
 from ephys.core import Sequence, Protocol
 
-protocol = Protocol.create_from_csv(filepath=r'ephys/protocol.csv', num_sweeps=5)
+protocol = Protocol.create_from_csv(filepath=r'ephys/protocol.csv', num_sweeps=10)
 protocol.preview()
 first_step_time_us = protocol.sweeps[0].epochs[0].first_duration*1e3 # in milliseconds *1e3 to microseconds 
 
@@ -155,25 +150,11 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
     if WRITE_DDR:
         write_ddr(ddr)
 
-
-def stepinfo_range(ds, time_range):
-    t = ds.create_time()
-    idx = (t>=time_range[0]) & (t<=time_range[1])
-    y = ds.data[idx]
-    t = t[idx]
-
-    try:
-        si = stepinfo(y, t)
-    except:
-        si = None
-
-    return si
-
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
-dc_mapping = {'bath': 0, 'clamp': 1} 
-DC_NUMS = [0, 1]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
+dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3} 
+DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
@@ -499,49 +480,49 @@ if 1:
         return first_time, lines1, lines2, figs
 
     # first sweep
+    # TODO: why 40 and 100? 
     datastreams, log_info = capture_data(idx=0, num_repeats=40, blk_multiples=100, RESTART=False)
     first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 
-    for i in range(4):
+    for i in range(len(protocol.sweeps) - 1):
         datastreams2, log_info = capture_data(idx=i+1, num_repeats=40, blk_multiples=100, RESTART=False)
         update_plots(first_time, datastreams2, lines1, lines2, figs, res)
         datastreams.append(datastreams2)
 
     TO_CLAMPFIT = True
     if TO_CLAMPFIT: # TODO 
-        sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
-        from pyabf.abfWriter import writeABF1 
-        from pyabf.tools.covg import interleave_np
+        datastreams.to_clampfit(data_dir, 'protocol_tests_rtia{}_ccomp{}.abf'.format(res, cap),
+                        names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
+                        dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=len(protocol.sweeps))
 
-        ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'V1', 'P1'])
-
-        dac_sample_rate = 2.5e6
-        downsample_factor = int(dac_sample_rate/ds_equal['CMD0'].sample_rate)        
-        ds_equal.crop(int(len(protocol)/downsample_factor))
-
-        t = ds_equal['Im'].create_time()
-
-        names_pclamp = ['Im', 'CMD0', 'V1', 'P1']
-        # if the current is in Amps the 16-bit precision makes it all zero 
-        im = np.reshape(ds_equal['Im'].data, (1,-1))
-        cmd = np.reshape(ds_equal['CMD0'].data, (1,-1))
-        v1 = np.reshape(ds_equal['V1'].data, (1,-1))
-        p1 = np.reshape(ds_equal['P1'].data, (1,-1))
-
-        x_write = interleave_np([im, cmd, v1, p1])
-        x_write = np.reshape(x_write, (len(protocol.sweeps), -1))
-        num_channels = len(names_pclamp)
-        # the sample-rate is assumed to be divided among all ADC channels
-        # so if we are sampling in parallel increase the sample rate by the number of channels
-        writeABF1(x_write, os.path.join(data_dir, 'test_step.abf'), 1/(t[1]-t[0])*num_channels, 
-                units=['A', 'V', 'V', 'V'], nADCNumChannels=num_channels, FLOAT=True, names_input = names_pclamp)
-
-        x_write = interleave_np([im, cmd])
-        num_channels = 2
-        writeABF1(x_write, os.path.join(data_dir, 'test_step_2chans.abf'), 1/(t[1]-t[0])*num_channels, 
-                units=['A', 'V'], nADCNumChannels=num_channels, FLOAT=True, names_input = names_pclamp[0:1])
+        # sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
+        # from pyabf.abfWriter import writeABF1 
+        # from pyabf.tools.covg import interleave_np
 
 
+
+        # t = ds_equal['Im'].create_time()
+
+        # names_pclamp = ['Im', 'CMD0', 'V1', 'P1']
+        # # if the current is in Amps the 16-bit precision makes it all zero 
+        # im = np.reshape(ds_equal['Im'].data, (1,-1))
+        # cmd = np.reshape(ds_equal['CMD0'].data, (1,-1))
+        # v1 = np.reshape(ds_equal['V1'].data, (1,-1))
+        # p1 = np.reshape(ds_equal['P1'].data, (1,-1))
+
+        # x_write = interleave_np([im, cmd, v1, p1])
+        # x_write = np.reshape(x_write, (len(protocol.sweeps), -1))
+        # num_channels = len(names_pclamp)
+        # # the sample-rate is assumed to be divided among all ADC channels
+        # # so if we are sampling in parallel increase the sample rate by the number of channels
+        # writeABF1(x_write, os.path.join(data_dir, 'test_step.abf'), 1/(t[1]-t[0])*num_channels, 
+        #        units=['A', 'V', 'V', 'V'], nADCNumChannels=num_channels, FLOAT=True, names_input = names_pclamp)
+
+    ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'V1', 'P1'])
+    dac_sample_rate = 2.5e6
+    downsample_factor = int(dac_sample_rate/ds_equal['CMD0'].sample_rate)        
+    ds_equal.crop(int(len(protocol)/downsample_factor))
+    # Plot various sweeps 
     fig,ax = plt.subplots(2,1)
     sweeps = ds_equal.to_sweeps(len(protocol.sweeps))
     

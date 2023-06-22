@@ -30,6 +30,10 @@ from scipy import signal
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from analysis.adc_data import read_h5, separate_ads_sequence
 from filters.filter_tools import butter_lowpass_filter
+from control.matlab import stepinfo
+sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
+from pyabf.abfWriter import writeABF1 
+from pyabf.tools.covg import interleave_np
 
 FS = 5e6
 FS_ADS = 1e6 
@@ -128,6 +132,26 @@ class Datastream():
         d_out.sample_rate = d_out.sample_rate/total_factor
 
         return d_out
+    
+    def stepinfo_range(self, time_range):
+        """
+        get step info using the control systems toolbox stepinfo function
+        specify a time range [in seconds] 
+        """
+        t = self.create_time()
+        idx = (t>=time_range[0]) & (t<=time_range[1])
+        if sum(idx) == 0:
+            print('Error time range of {time_range} is not part of datastream')
+            return None
+
+        y = self.data[idx]
+        t = t[idx]
+        try:
+            si = stepinfo(y, t)
+        except:
+            si = None
+
+        return si
 
 class Datastreams(dict):
 
@@ -248,6 +272,34 @@ class Datastreams(dict):
                 sweeps[i][n].data = split_data[i]
 
         return sweeps        
+
+    def to_clampfit(self, data_dir, filename, 
+                    names_pclamp, dac_len, dac_sample_rate, sweeps=1):
+        """
+        names_pclamp: list (must include CMD0)
+        
+        """        
+        ds_equal = self.equalize_sampling(names=names_pclamp)
+        downsample_factor = int(dac_sample_rate/ds_equal['CMD0'].sample_rate)        
+        ds_equal.crop(int(dac_len/downsample_factor))
+
+        t = ds_equal['CMD0'].create_time()
+
+        data_list = []
+        units = []
+        # if the current is in Amps the 16-bit precision makes it all zero 
+        for n in names_pclamp:
+            data_list.append(np.reshape(ds_equal[n].data, (1,-1)))
+            units.append(ds_equal[n].units)
+        x_write = interleave_np(data_list)
+        x_write = np.reshape(x_write, (sweeps, -1))
+        num_channels = len(names_pclamp)
+        # the sample-rate is assumed to be divided among all ADC channels
+        # so if we are sampling in parallel increase the sample rate by the number of channels
+        writeABF1(x_write, os.path.join(data_dir, filename), 1/(t[1]-t[0])*num_channels, 
+                units=units, nADCNumChannels=num_channels, FLOAT=True, names_input=names_pclamp)
+
+
 
 def h5_to_datastreams(directory, filename):
 

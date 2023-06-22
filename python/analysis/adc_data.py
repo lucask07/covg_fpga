@@ -11,7 +11,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
-from scipy.signal import find_peaks, find_peaks_cwt
+from scipy.signal import find_peaks, find_peaks_cwt, welch
 import pandas as pd
 from filters.filter_tools import butter_lowpass_filter
 
@@ -314,3 +314,12 @@ def separate_ads_sequence(chan_list, ads_data, ads_seq_cnt, slider_value=4):
                 ads_out[letter][chan_list[schan][adc_chan[1]]] = ads_data[letter][(ads_seq_cnt%num_seq_chan) == schan]
 
     return ads_out
+
+def calc_psd(x, fs, nperseg=131072, scaling='density'):
+    """
+    Return frequencies, mean square amplitude, and cumulative amplitude
+    of noise
+    """
+    f, Pxx_den = welch(x, fs, nperseg=nperseg, scaling=scaling)
+ 
+    return f, Pxx_den

@@ -29,7 +29,6 @@ from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficien
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
 import matlab.engine 
-from control.matlab import stepinfo
 
 # The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
 covg_fpga_path = os.getcwd()
@@ -53,13 +52,18 @@ from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
 
+sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork
+from pyabf.abfWriter import writeABF1 
+from pyabf.tools.covg import interleave_np
+
 from instrbuilder.instrument_opening import open_by_name 
 osc = open_by_name('msox_scope')
 
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
     """Return the CMD and CC signals determined by the parameters.
-    
+        Does not write to DDR 
+
     Parameters
     ----------
     
@@ -103,7 +107,7 @@ def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8
     else:  # needed so that the cmd signal can be zero with a non-zero cc signal
         cc_signal = ddr.make_step(low=dac_offset - int(cc_val),
                                                high=dac_offset + int(cc_val),
-                                               length=step_len)  # 1.6 ms between edges
+                                               length=step_len) 
         if fc is not None:
             cc_signal = butter_lowpass_filter(
                 cc_signal, cutoff=fc, fs=2.5e6, order=1)
@@ -146,27 +150,12 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
     ddr.reset_mig_interface()
     ddr.write_finish()
 
-
-def stepinfo_range(ds, time_range):
-    t = ds.create_time()
-    idx = (t>=time_range[0]) & (t<=time_range[1])
-    y = ds.data[idx]
-    t = t[idx]
-
-    try:
-        si = stepinfo(y, t)
-    except:
-        si = None
-
-    return si
-
-
+DAC_FS = 2.5e6
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
-dc_mapping = {'bath': 0, 'clamp': 1} 
-DC_NUMS = [0, 1]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
-
+dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3} 
+DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
@@ -248,8 +237,8 @@ for dc_num in DC_NUMS:
     clamps[dc_num] = clamp
 
 feedback_resistors = [2.1]
-capacitors = [47,47]
-bath_res = [10, 100, 332, 3000] # Clamp.configs['ADG_RES_dict'].keys()
+capacitors = [47]
+bath_res = [10, 100, 332, 1000] # Clamp.configs['ADG_RES_dict'].keys()
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -297,15 +286,24 @@ VP1_scale = dn_per_volt*11.0*1.7
 dac_range = 5
 dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
 
+# ------ Collect Data --------------
+QUIET_DACS = False # if True use the host driven DAC to test noise
+file_name = time.strftime("%Y%m%d-%H%M%S")
+datastream_out_fname = 'clamptest1_rtia{}_ccomp{}.h5'
+
+idx = 0
+
 # fast DAC channels setup
 for i in range(6):
     daq.DAC[i].set_ctrl_reg(daq.DAC[i].master_config)
     daq.DAC[i].set_spi_sclk_divide()
     daq.DAC[i].filter_select(operation="clear")
-    #daq.DAC[i].write(int(0))
-    daq.DAC[i].set_data_mux("DDR")
-    #daq.DAC[i].set_data_mux("DDR_norepeat", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
-    daq.DAC[i].set_data_mux("DDR", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
+    if QUIET_DACS:
+        daq.DAC[i].write(int(0x2000)) # midscale 
+    else:
+        daq.DAC[i].write(int(0x2000))
+        daq.DAC[i].set_data_mux("DDR")
+        daq.DAC[i].set_data_mux("DDR", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, dac_range)  # 5V 
@@ -315,22 +313,20 @@ for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 time.sleep(0.5)
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
-time.sleep(2)
+time.sleep(0.1)
 ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
-time.sleep(1)
-
-# ------ Collect Data --------------
-file_name = time.strftime("%Y%m%d-%H%M%S")
-idx = 0
+time.sleep(0.1)
 
 # set all fast-DAC DDR data to midscale
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
-# fc_cmd = 10e3
-fc_cmd = None
+fc_cmd = 100e3
+#fc_cmd = None
+step_len = 16384*8
+first_pos_step = step_len/2*1/DAC_FS # in seconds 
 set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
-        step_len=16384, cc_val=None, cc_pickle_num=None)
+        step_len=16384*8, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
 clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
@@ -360,6 +356,7 @@ for dc_num in [dc_mapping['clamp']]:
 
 cap = capacitors[0]
 fb_res = feedback_resistors[0]
+fb_res = 2.1
 # Try with 5 different resistors
 res = [x for x in bath_res if type(x) == int][0]
 # Choose resistor; setup
@@ -388,7 +385,6 @@ for dc_num in [dc_mapping['bath']]:
 ephys_sys = EphysSystem()
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
 
-
 def ads_plot_zoom(ax, t_range=[3250,3300]):
     try:
         for ax_s in ax:
@@ -411,8 +407,8 @@ def capture_data(idx=0):
     filename = file_name.format(idx) + '.h5'
 
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-    chan_data_one_repeat = ddr.save_data(data_dir, filename, num_repeats=8,
-                                        blk_multiples=40)  # blk multiples must be multiple of 10 
+    chan_data_one_repeat = ddr.save_data(data_dir, filename, num_repeats=32,
+                                        blk_multiples=80)  # blk multiples must be multiple of 10 
     # each block multiple is 256 bytes 
 
     # update system connections since the daughtercard configurations have changed
@@ -467,7 +463,7 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
             ax_right = ax.twinx()
             l1 = datastreams['CMD0'].plot(ax_right, {'linestyle':'--', 'color':'r', 'label': 'CMD'})
             l2 = datastreams['P1'].plot(ax_right, {'linestyle':'-', 'color': 'b', 'label': 'P1'})
-            l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'decimate':[10,10], 'invert':-1})
+            l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'decimate':[5,5], 'invert':-1})
             #l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'invert':-1})
 
             if idx==1:
@@ -479,26 +475,24 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
             ax.legend(lns, labs, loc=2)
             lines2.append([l1,l2,l3])
 
-            if idx==1:
-                ads_plot_zoom(ax, t_range=[3200,3650])
-                ads_plot_zoom(ax_right, t_range=[3200,3650])
-            else:
-                ads_plot_zoom(ax, t_range=[3200,7250])
-                ads_plot_zoom(ax_right, t_range=[3200,7250])
+            if idx==1: # zoom in at edge 
+                ads_plot_zoom(ax, t_range=[first_pos_step*1e6-50, first_pos_step*1e6+200])
+                ads_plot_zoom(ax_right, t_range=[first_pos_step*1e6-50, first_pos_step*1e6+200])
+            else: 
+                ads_plot_zoom(ax, t_range=[first_pos_step*1e6-300, first_pos_step*1e6*2+300])
+                ads_plot_zoom(ax_right, t_range=[first_pos_step*1e6-300, first_pos_step*1e6*2+300])
 
     else:
         for l2 in lines2:
             datastreams['CMD0'].update_lines(l2[0][0]) # TODO: why is this a list?
             datastreams['P1'].update_lines(l2[1][0])
             datastreams['Im'].update_lines(l2[2][0], {'decimate':[10,10], 'invert':-1})
-            #datastreams['Im'].update_lines(l2[2][0], {'fc':500e3, 'invert':-1})
-            #datastreams['Im'].update_lines(l2[2][0], {'invert':-1})
         
         im_data = datastreams['Im'].data
         t = datastreams['Im'].create_time()
         fc = 500e3 #5e3
         im_data_filt = butter_lowpass_filter(im_data, cutoff=fc, fs=1/(t[1]-t[0]), order=5)
-        idx = (t > 4500e-6) & (t < 5500e-6)
+        idx = (t > first_pos_step + 2e-3) & (t < first_pos_step + 5e-3)
         im_noise_wb = np.std(im_data[idx])
         im_noise_filt = np.std(im_data_filt[idx])
         print(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
@@ -516,30 +510,37 @@ datastreams, log_info = capture_data()
 datastreams, log_info = capture_data()
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 
-scope_data = {} 
-components = ['CC', 'RTIA', 'CLAMP_TIA', 'CLAMP_RF']
-scope_meas = ['OVER', 'RIS']
-for sm in scope_meas:
-    scope_data[sm] = np.array([])
-for c in components:
-    scope_data[c] = np.array([])
-
-osc.set('run_acq')
+OSCOPE = False
+if OSCOPE:
+    scope_data = {} 
+    components = ['CC', 'RTIA', 'CLAMP_TIA', 'CLAMP_RF']
+    scope_meas = ['OVER', 'RIS']
+    for sm in scope_meas:
+        scope_data[sm] = np.array([])
+    for c in components:
+        scope_data[c] = np.array([])
+    osc.set('run_acq')
 
 # extensive sweep
 adg_r_arr = [10, 33, 100, 332]
 ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
 
-ccomp_arr = [47]
+ccomp_arr = [47, 247, 1000, 4700]
 adg_r_arr = [33, 100, 332, 1000]
+
+#ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
+ccomp_arr = [47]
+adg_r_arr = [33, 100, 332, 1000, 3000, 10000]
 
 for ccomp in ccomp_arr:
     for adg_r in adg_r_arr:
         print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
-        scope_data['CC'] = np.append(scope_data['CC'], ccomp)
-        scope_data['RTIA'] = np.append(scope_data['RTIA'], adg_r)
-        scope_data['CLAMP_RF'] = np.append(scope_data['CLAMP_RF'], clamp_fb_res)
-        scope_data['CLAMP_TIA'] = np.append(scope_data['CLAMP_TIA'], clamp_res)
+
+        if OSCOPE: 
+            scope_data['CC'] = np.append(scope_data['CC'], ccomp)
+            scope_data['RTIA'] = np.append(scope_data['RTIA'], adg_r)
+            scope_data['CLAMP_RF'] = np.append(scope_data['CLAMP_RF'], clamp_fb_res)
+            scope_data['CLAMP_TIA'] = np.append(scope_data['CLAMP_TIA'], clamp_res)
 
         dc_configs[0]['ADG_RES'] = adg_r
         dc_configs[0]['CCOMP'] = ccomp
@@ -547,52 +548,49 @@ for ccomp in ccomp_arr:
         
         for i in range(10):
             time.sleep(0.2)
-            datastreams, log_info = capture_data()
+            datastreams, log_info = capture_data(idx=1)
             update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
 
-        t_step = 3.1e-3 # time of the command step 
         sig = 'Im' 
-        si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
+        si = datastreams[sig].stepinfo_range([first_pos_step-0.02e-3, first_pos_step+170e-6])
         print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
         print(f'{sig} step info: {si}')
         print('-'*100)
-        osc.set('single_acq')
-        time.sleep(0.05)
-        for sm in scope_meas:
-            scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))
-        t = osc.save_display_data(os.path.join(data_dir, 'test_scope_ccomp{}_rtia{}'.format(ccomp, adg_r)))
-        osc.set('run_acq')
 
-for adg_r in adg_r_arr:
-    idx = scope_data['RTIA']==adg_r
-    fig,ax=plt.subplots(2,1)
-    ax[0].plot(scope_data['CC'][idx], scope_data['OVER'][idx], marker='o')
-    fig.suptitle(f'RTIA = {adg_r}')
-    ax[0].set_ylabel('Vm Overshoot [%]')
-    ax[1].plot(scope_data['CC'][idx], scope_data['RIS'][idx]*1e6, marker='o')
-    ax[1].set_xlabel('CCOMP [pF]')
-    ax[1].set_ylabel('Rise time [us]')
-    fig.suptitle(f'RTIA = {adg_r}')
+        if OSCOPE:
+            osc.set('single_acq')
+            time.sleep(0.05)
+            for sm in scope_meas:
+                scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))
+            t = osc.save_display_data(os.path.join(data_dir, 'test_scope_ccomp{}_rtia{}'.format(ccomp, adg_r)))
+            osc.set('run_acq')
 
-TO_CLAMPFIT = True
-if TO_CLAMPFIT: # TODO 
-    sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
-    from pyabf.abfWriter import writeABF1 
-    from pyabf.tools.covg import interleave_np
+        TO_CLAMPFIT = True
+        if TO_CLAMPFIT:
+            datastreams.to_clampfit(data_dir, 'test2_step_quietdacs_rtia{}_ccomp{}.abf'.format(adg_r, ccomp),
+                                    names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
+                                    dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
 
-    ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'V1', 'P1'])
+        # add log info to datastreams -- any dictionary is ok  
+        datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+        datastreams.add_log_info({'dc_configs': dc_configs})
+        datastreams.add_log_info({'ddr_step_peak': first_pos_step})
+        datastreams.add_log_info({'dut': 'model_cell'})
+        datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
+        datastreams.to_h5(data_dir, datastream_out_fname.format(adg_r, ccomp), log_info)
 
-    t = ds_equal['Im'].create_time()
-
-    names_pclamp = ['Im', 'CMD0', 'V1', 'P1']
-    im = np.reshape(ds_equal['Im'].data, (1,-1))
-    cmd = np.reshape(ds_equal['CMD0'].data, (1,-1))
-    v1 = np.reshape(ds_equal['V1'].data, (1,-1))
-    p1 = np.reshape(ds_equal['P1'].data, (1,-1))
-
-    x_write = interleave_np([im, cmd, v1, p1])
-    writeABF1(x_write, os.path.join(data_dir, 'test_step.abf'), 1/(t[1]-t[0]), 
-              units=['A', 'V', 'V', 'V'], nADCNumChannels=4, FLOAT=True, names_input = names_pclamp)
+# plot oscilloscope data vs. parameters 
+if OSCOPE:
+    for adg_r in adg_r_arr:
+        idx = scope_data['RTIA']==adg_r
+        fig,ax=plt.subplots(2,1)
+        ax[0].plot(scope_data['CC'][idx], scope_data['OVER'][idx], marker='o')
+        fig.suptitle(f'RTIA = {adg_r}')
+        ax[0].set_ylabel('Vm Overshoot [%]')
+        ax[1].plot(scope_data['CC'][idx], scope_data['RIS'][idx]*1e6, marker='o')
+        ax[1].set_xlabel('CCOMP [pF]')
+        ax[1].set_ylabel('Rise time [us]')
+        fig.suptitle(f'RTIA = {adg_r}')
 
 PLT_IM_EST = False 
 
@@ -608,28 +606,28 @@ if PLT_IM_EST:
     #ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
     ax.legend()
 
-# add log info to datastreams -- any dictionary is ok  
-datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
-datastreams.add_log_info({'dc_configs': dc_configs})
-print(datastreams.__dict__)
-datastreams.to_h5(data_dir, 'datastreams_output.h5', log_info)
-
 # test writing and reading datastream h5
 TST_DATASTREAM_RW = False
 if TST_DATASTREAM_RW:
     datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
     # this datastreams has the log info but as a dictionary, not as Python classes
     # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
-
     for n in datastreams:
         assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
 
-t_step = 3.277e-3 # time of the command step 
 print('-'*100)
 for sig in ['I', 'P1', 'CMD0']:
     sig_name = sig 
     if sig_name == 'I':
         sig_name = 'Vm'
-    si = stepinfo_range(datastreams[sig], [t_step-0.02e-3, t_step+170e-6])
+    si = datastreams[sig].stepinfo_range([first_pos_step-20e-6, first_pos_step+170e-6])
     print(f'{sig} step info: {si}')
     print('-'*100)
+
+if 0:
+    # sweep the gain of the voltage clamp 
+    for rf in Clamp.configs['RF1_dict']:
+        dc_configs[1]['RF1'] = rf
+        clamps[1].configure_clamp(**dc_configs[1])
+        print(f'RF = {rf}')
+        input('next?')
