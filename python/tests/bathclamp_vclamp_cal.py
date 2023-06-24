@@ -3,10 +3,11 @@ The system uses two Daughtercards with:
  1) the bath clamp - has a non-zero CMD voltage measures Im 
  2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
 
+ and 
+ 3) a voltage sense board that cannot be disconnected via relays (combines with the voltage clamp board to create feedback loop)
+
 Demonstrate calibrations to determine electrode impedances
-
 Step 1) measure CAL_SIG2 when injecting sinusoid at CAL_SIG1. Disconnect active feedback loop 
-
 
 Sept 2022
 
@@ -49,7 +50,7 @@ FS = 5e6
 SAMPLE_PERIOD = 1/FS
 FS_ADS = 1e6
 dac80508_offset = 0x8000
-DC_NUMS = [0,1]
+DC_NUMS = [0,1,3]
 dc_mapping = {'bath': 0, 'clamp': 1}  # TODO get from System class in electrodes.py
 
 eps = Endpoint.endpoints_from_defines
@@ -125,10 +126,17 @@ except NameError:
     ads.set_range(ads_voltage_range) # 
     ads.set_lpf(376)
 
-    dc_under_test = 0 # TODO: 
+    '''
+    daq.parameters['ads_map']
+        {0: {'CAL_ADC': ('A', 0), 'AMP_OUT': ('A', 1)},
+        1: {'CAL_ADC': ('B', 0), 'AMP_OUT': ('A', 2)},
+        2: {'CAL_ADC': ('B', 1), 'AMP_OUT': ('A', 3)},
+        3: {'CAL_ADC': ('A', 4), 'AMP_OUT': ('B', 2)}}
+    '''
+    dc_under_test = 0 
     adc_chan0 = daq.parameters['ads_map'][dc_under_test]['CAL_ADC'] # ('A', 0)
     adc_chan1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT'] # ('A', 1)
-    ads_sequencer_setup = [('0', '0'), ('1', '1')] #DC 0 has both to ADS 'A'.
+    ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')] #DC 0 has both to ADS 'A'.
     codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
     ads.write_reg_bridge(clk_div=200) # 1 MSPS rate (do not use default value which is 200 ksps)
     ads.set_fpga_mode()
@@ -191,7 +199,8 @@ def dac_waveform(dc_under_test, amp, freq=1000, shape='SINE', source='v'):
 
     sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
     # subtract one since if this value is precisely 2^15 we in effect get 0 for both high and low amplitude.
-    sdac_amp_code = sdac_amp_code - 1
+    if sdac_amp_code == 2**15:
+        sdac_amp_code = sdac_amp_code - 1
     print(f'Max sdac amp {sdac_amp_code}')
     
     # Data for the 2 DAC80508 "Slow DACs"
@@ -237,6 +246,41 @@ def dac_waveform(dc_under_test, amp, freq=1000, shape='SINE', source='v'):
 
     return sdac_wave
  
+
+def get_ads_voltages(ddr, num_repeats=1, blk_multiples=10):
+    ddr.repeat_setup() #Setup for reading new data without writing to the DDR again.
+
+    # saves data to a file
+    chan_data_one_repeat = ddr.save_data(data_dir, 'voltage_read.h5', num_repeats=num_repeats, blk_multiples=blk_multiples)  # blk multiples multiple of 10
+
+    # to get the deswizzled data of all repeats need to read the file
+    _, chan_data = read_h5(data_dir, file_name='voltage_read.h5', chan_list=np.arange(8))
+
+    adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
+
+    ############### extract the ADS data ############
+    ads_data_v = {}
+    for letter in ['A', 'B']:
+        ads_data_v[letter] = np.array(to_voltage(
+            ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range*2, use_twos_comp=False))
+
+    total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
+    total_seq_cnt[::2] = ads_seq_cnt[0]
+    total_seq_cnt[1::2] = ads_seq_cnt[1]
+    ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
+
+    volts = {}
+
+    for chan in ads_separate_data:
+        volts[chan] = {}
+        for num in ads_separate_data[chan]:
+            v = np.mean(ads_separate_data[chan][num])
+            volts[chan][num] = v
+            print(f'Channel {chan}{num} at {v:.4g} [V]')
+
+    return volts
+
+
 def collect_data(ddr, PLT=True, ads_chan=('A', 0), num_repeats=10, blk_multiples=40):
     
     ddr.repeat_setup() #Setup for reading new data without writing to the DDR again.
@@ -252,7 +296,7 @@ def collect_data(ddr, PLT=True, ads_chan=('A', 0), num_repeats=10, blk_multiples
     adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
     print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
 
-    ############### extract the ADS data just for the last run and plot as a demonstration ############
+    ############### extract the ADS data ############
     ads_data_v = {}
     for letter in ['A', 'B']:
         ads_data_v[letter] = np.array(to_voltage(
@@ -267,19 +311,19 @@ def collect_data(ddr, PLT=True, ads_chan=('A', 0), num_repeats=10, blk_multiples
     volt = ads_separate_data[ads_chan[0]][ads_chan[1]]
     t_ads = np.arange(0,len(volt))*(1/FS_ADS)*len(ads_sequencer_setup)
     if PLT:
-        fig,ax = plt.subplots()
+        fig, ax = plt.subplots()
         ax.plot(t_ads*1e6, volt, marker = '+', label = f'ADS: {chan}')
         ax.legend()
         ax.set_xlabel('s [us]')
         ax.set_title('ADS8686 data')
-    return volt, t_ads
+    return volt, t_ads, ads_separate_data, ax
 
   
 # ------ Collect Data --------------
 file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
-for i in range(4):
+for i in range(6):
     # set all fast-DAC DDR data to midscale
     ddr.data_arrays[i][:] = 0x2000
 
@@ -315,198 +359,231 @@ ddr.data_arrays[6] = sdac_sine # TODO: just one
 ddr.data_arrays[7] = sdac_sine
 
 # daughter-card settings should be a do not care 
-fb_res = 2.4 # resistors and cap have changed so this does not correspond to typical bath clamp board
-res = 10 # kOhm 
+fb_res = 2.1 # resistors and cap have changed so this does not correspond to typical bath clamp board
+res = 100 # kOhm 
 cap = 47
 component_results = {} 
 
+# for testing in ['bath']:
 for testing in ['bath', 'vclamp']:
-	if testing == 'bath':
-		dc_under_test = dc_mapping['bath']  # TODO: get these indices from the boards configuration
-		dc_disconnect = dc_mapping['clamp']
-	elif testing == 'vclamp':
-		dc_under_test = dc_mapping['clamp'] 
-		dc_disconnect = dc_mapping['bath']
+    if testing == 'bath':
+        dc_under_test = dc_mapping['bath']  # TODO: get these indices from the boards configuration
+        dc_disconnect = dc_mapping['clamp']
+    elif testing == 'vclamp':
+        dc_under_test = dc_mapping['clamp'] 
+        dc_disconnect = dc_mapping['bath']
 
-	for dc_num in [dc_under_test]:
-		log_info_test, config_dict_test = clamps[dc_num].configure_clamp(
-			ADC_SEL="CAL_SIG2",
-			DAC_SEL="drive_CAL2",
-			CCOMP=cap,
-			RF1=fb_res,  # feedback circuit
-			ADG_RES=res,
-			PClamp_CTRL=0, # keep open for calibration 
-			P1_E_CTRL=1,
-			P1_CAL_CTRL=1,
-			P2_E_CTRL=1,
-			P2_CAL_CTRL=1,
-			gain=1,  # instrumentation amplifier
-			FDBK=1,
-			mode="voltage",
-			EN_ipump=0,
-			RF_1_Out=1,
-			addr_pins_1=0b110,
-			addr_pins_2=0b000,
-		)
+    for dc_num in [dc_under_test]:
+        log_info_test, config_dict_test = clamps[dc_num].configure_clamp(
+            ADC_SEL="CAL_SIG2",
+            DAC_SEL="drive_CAL2",
+            CCOMP=cap,
+            RF1=fb_res,  # feedback circuit
+            ADG_RES=res,
+            PClamp_CTRL=0, # keep open for calibration 
+            P1_E_CTRL=1,
+            P1_CAL_CTRL=1,
+            P2_E_CTRL=1,
+            P2_CAL_CTRL=1,
+            gain=1,  # instrumentation amplifier
+            FDBK=1,
+            mode="voltage",
+            EN_ipump=0,
+            RF_1_Out=1,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000,
+        )
 
-	for dc_num in [dc_disconnect]:
-		log_info_disconnect, config_dict_disconnect = clamps[dc_num].configure_clamp(
-			ADC_SEL="CAL_SIG1",
-			DAC_SEL="gnd_both",
-			CCOMP=cap,
-			RF1=fb_res,  # feedback circuit
-			ADG_RES=res,
-			PClamp_CTRL=0, # open relay (default)
-			P1_E_CTRL=1,  # open relay
-			P1_CAL_CTRL=0, # open relay (default)
-			P2_E_CTRL=1,   # open relay
-			P2_CAL_CTRL=0, # open relay (default)
-			gain=1,  # instrumentation amplifier
-			FDBK=1,
-			mode="voltage",
-			EN_ipump=0,
-			RF_1_Out=1,
-			addr_pins_1=0b110,
-			addr_pins_2=0b000,
-		)
+    for dc_num in [dc_disconnect]:
+        log_info_disconnect, config_dict_disconnect = clamps[dc_num].configure_clamp(
+            ADC_SEL="CAL_SIG1",
+            DAC_SEL="gnd_both",
+            CCOMP=cap,
+            RF1=fb_res,  # feedback circuit
+            ADG_RES=res,
+            PClamp_CTRL=0, # open relay (default)
+            P1_E_CTRL=1,  # open relay
+            P1_CAL_CTRL=0, # open relay (default)
+            P2_E_CTRL=1,   # open relay
+            P2_CAL_CTRL=0, # open relay (default)
+            gain=1,  # instrumentation amplifier
+            FDBK=1,
+            mode="voltage",
+            EN_ipump=0,
+            RF_1_Out=1,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000,
+        )
 
-	ddr.write_setup()
-	block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
-	ddr.reset_mig_interface()
-	ddr.write_finish()
+    ddr.write_setup()
+    block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
+    ddr.reset_mig_interface()
+    ddr.write_finish()
 
-	current_amp = 0.8 # uA # TODO: input? store in log?
-	voltage_amp = 0.2 
+    voltage_amp = 0.2 
+    data = {}
 
-	data = {}
+    # Measure a current For Re1 + Re2 
+    step = 1
+    if testing=='bath':
+        freq = 200
+        num_repeats=10 
+        blk_multiples=40
+        current_amp = 0.8
+    if testing=='vclamp':
+        freq = 40
+        num_repeats=50 
+        blk_multiples=40
+        current_amp = 0.01 # 10 nA TODO: ensure that current is source only for a short amount of time so that we don't blow up the cell
+        
+    daq.set_isel(port=1, channels=[dc_under_test]) # current based on DC#  
+    config_dict_test['ADC_SEL'] = 'CAL_SIG2' # this is the force terminal 
+    if testing == 'bath':
+        config_dict_test['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'
+    elif testing == 'vlcamp':
+        config_dict_test['DAC_SEL'] = 'drive_CAL2'
+        #config_dict_test['DAC_SEL'] = 'gnd_CAL2'
+        config_dict_test['P1_E_CTRL'] = 0 # open relay
+    log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
+    # inject current square wave, expect around 8 mV amplitude from 0.8 uA*10e3, 16 mV pk-pk 
+    dac_wave = dac_waveform(0, amp=current_amp, freq=freq, shape='SQ', source='i') # howland pump is always driven by BP_OUT0
+    volt, t, ads_separate_data, ax = collect_data(ddr, PLT=True, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
+                            num_repeats=num_repeats, blk_multiples=blk_multiples)
+    v_vclamp = ads_separate_data['B'][2]
+    idx = np.min([len(t), len(v_vclamp)])
+    ax.plot(t[:idx]*1e6, v_vclamp[:idx]/78.07)    
 
-	# Measure a current For Re1 + Re2 
-	step = 1
-	if testing=='bath':
-		freq = 200
-		num_repeats=10 
-		blk_multiples=40
-	if testing=='vclamp':
-		freq = 40
-		num_repeats=50 
-		blk_multiples=40
-		
-	daq.set_isel(port=1, channels=[dc_under_test]) # current based on DC#  
-	config_dict_test['ADC_SEL'] = 'CAL_SIG2'
-	config_dict_test['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'
-	log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
-	# inject current square wave, expect around 8 mV amplitude from 0.8 uA*10e3, 16 mV pk-pk 
-	dac_wave = dac_waveform(0, amp=current_amp, freq=freq, shape='SQ', source='i') # howland pump is always driven by BP_OUT0
-	volt, t = collect_data(ddr, PLT=True, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
-							num_repeats=num_repeats, blk_multiples=blk_multiples)
+    idx = np.min([len(t), len(v_vclamp), len(volt)])
+    fig,ax = plt.subplots()
+    ax.plot(t[:idx]*1e6, v_vclamp[:idx]/78.07 - volt[:idx])
+
+    # disable the current source 
+    daq.set_isel(port=1, channels=None) # channel select works correctly -- this turns off the signal 
+    config_dict_test['ADC_SEL'] = 'CAL_SIG2' # this is the force terminal 
+    if testing == 'bath':
+        config_dict_test['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'
+    elif testing == 'vlcamp':
+        config_dict_test['DAC_SEL'] = 'drive_CAL2'
+        #config_dict_test['DAC_SEL'] = 'gnd_CAL2'
+        config_dict_test['P1_E_CTRL'] = 0 # close relay to measure amplifier
+    log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
+    # inject current square wave, expect around 8 mV amplitude from 0.8 uA*10e3, 16 mV pk-pk 
+    dac_wave = dac_waveform(dc_under_test, amp=20e-3, freq=100, shape='SQ', source='v') # howland pump is always driven by BP_OUT0
+    volt, t, ads_separate_data, ax = collect_data(ddr, PLT=True, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
+                            num_repeats=num_repeats, blk_multiples=blk_multiples)
+    
+    v_vclamp = ads_separate_data['B'][2]
+    idx = np.min([len(t), len(v_vclamp)])
+    ax.plot(t[:idx]*1e6, v_vclamp[:idx]/60)
 
     # TODO: change just saving the H5 file? However h5 does not save the slow DAC waveforms 
-	np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
+    # save the data and the information of the step function 
+    np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
+    data[step] = {'volt': volt,
+                  't': t,
+                  'src': 'i',
+                  'shape': 'SQ',
+                  'freq': freq,
+                  'amp': current_amp,
+                  'vclamp': 'disconnect',
+                  'bath_clamp': copy.deepcopy(config_dict_test),
+                  'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
 
-	data[step] = {'volt': volt,
-				  't': t,
-				  'src': 'i',
-				  'shape': 'SQ',
-				  'freq': freq,
-				  'amp': current_amp,
-				  'vclamp': 'disconnect',
-				  'bath_clamp': copy.deepcopy(config_dict_test),
-				  'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
+    if testing == 'bath':
+        config_dict_disconnect['P1_CAL_CTRL'] = 0
+        config_dict_disconnect['P2_CAL_CTRL'] = 0
+        config_dict_disconnect['DAC_SEL'] = 'drive_CAL2'  
+        #freq_arr = [40, 100, 200, 400, 1000, 4000, 7000, 10000, 20000, 50000]
+        freq_arr = np.logspace(np.log10(400), np.log10(50000), 8)
+    elif testing == 'vclamp': # ground the bath clamp electrodes since 5k is small compared to the 200kOhm of the voltage clamp 
+        config_dict_disconnect['P1_CAL_CTRL'] = 1
+        config_dict_disconnect['P2_CAL_CTRL'] = 1
+        config_dict_disconnect['DAC_SEL'] = 'gnd_both' 
+        #freq_arr = [40, 100, 200, 500, 1000]
+        freq_arr = np.logspace(np.log10(40), np.log10(2000), 8)
 
-	if testing == 'bath':
-		config_dict_disconnect['P1_CAL_CTRL'] = 0
-		config_dict_disconnect['P2_CAL_CTRL'] = 0
-		config_dict_disconnect['DAC_SEL'] = 'drive_CAL2'  
-		#freq_arr = [40, 100, 200, 400, 1000, 4000, 7000, 10000, 20000, 50000]
-		freq_arr = np.logspace(np.log10(400), np.log10(50000), 8)
-	elif testing == 'vclamp': # ground the bath clamp electrodes since 5k is small compared to the 200kOhm of the voltage clamp 
-		config_dict_disconnect['P1_CAL_CTRL'] = 1
-		config_dict_disconnect['P2_CAL_CTRL'] = 1
-		config_dict_disconnect['DAC_SEL'] = 'gnd_both' 
-		#freq_arr = [40, 100, 200, 500, 1000]
-		freq_arr = np.logspace(np.log10(40), np.log10(2000), 8)
+    log_info_bath, config_dict_disconnect = clamps[dc_disconnect].configure_clamp(**config_dict_disconnect)
 
-	log_info_bath, config_dict_disconnect = clamps[dc_disconnect].configure_clamp(**config_dict_disconnect)
+    # disable the current source 
+    daq.set_isel(port=1, channels=None) # channel select works correctly -- this turns off the signal 
 
-	# disable the current source 
-	daq.set_isel(port=1, channels=None) # channel select works correctly -- this turns off the signal 
+    # Measure voltage with CC load connected at multiple frequencies on both electrodes 
+    for drive_elec in [1, 2]:
+        for idx,freq in enumerate(freq_arr):
+            print(freq)
+            # inject voltage sine wave of 1 V amplitude 
+            step += 1
+            if drive_elec == 1 and testing == 'vclamp':
+                break
+            elif drive_elec == 1:
+                config_dict_test['ADC_SEL'] = 'CAL_SIG1' 
+                config_dict_test['DAC_SEL'] = 'drive_CAL1' # do not ground CAL2; won't work for isolated Vsense board
+            elif drive_elec == 2:
+                config_dict_test['ADC_SEL'] = 'CAL_SIG2'
+                config_dict_test['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
+            
+            log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
 
-	# Measure voltage with CC load connected at two different frequencies 
-	for drive_elec in [1, 2]:
-		for idx,freq in enumerate(freq_arr):
-			print(freq)
-			# inject voltage sine wave of 1 V amplitude 
-			step += 1
-			
-			if drive_elec == 1:
-				config_dict_test['ADC_SEL'] = 'CAL_SIG1'
-				config_dict_test['DAC_SEL'] = 'drive_CAL1' # do not ground CAL2 
-			elif drive_elec == 2:
-				config_dict_test['ADC_SEL'] = 'CAL_SIG2'
-				config_dict_test['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
-			
-			log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
+            # load into DDR voltage sine wave
+            dac_wave = dac_waveform(dc_under_test, amp=voltage_amp, freq=freq, shape='SINE', source='v')
+            volt, t, ads_separate_data, ax = collect_data(ddr, PLT=False, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
+                                    num_repeats=num_repeats, blk_multiples=blk_multiples)
+            np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
 
-			# load into DDR voltage sine wave
-			dac_wave = dac_waveform(dc_under_test, amp=voltage_amp, freq=freq, shape='SINE', source='v')
-			volt, t = collect_data(ddr, PLT=False, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
-									num_repeats=num_repeats, blk_multiples=blk_multiples)
-			np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
+            data[step] = {'volt': volt, # data 
+                          't': t,
+                          'src': 'v',
+                          'shape': 'SINE',
+                          'freq': freq,
+                          'amp': voltage_amp,
+                          'vclamp': 'disconnect',                  
+                          'bath_clamp': copy.deepcopy(config_dict_test),
+                          'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
 
-			data[step] = {'volt': volt, # data 
-						  't': t,
-						  'src': 'v',
-						  'shape': 'SINE',
-						  'freq': freq,
-						  'amp': voltage_amp,
-						  'vclamp': 'disconnect',                  
-						  'bath_clamp': copy.deepcopy(config_dict_test),
-						  'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
+            # swap roles of electrodes 
+            step += 1
+            if drive_elec == 1:
+                config_dict_test['ADC_SEL'] = 'CAL_SIG2'
+                config_dict_test['DAC_SEL'] = 'drive_CAL1' # do not ground CAL2 
+            elif drive_elec == 2:
+                config_dict_test['ADC_SEL'] = 'CAL_SIG1'
+                config_dict_test['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
 
-			# swap roles of electrodes 
-			step += 1
-			if drive_elec == 1:
-				config_dict_test['ADC_SEL'] = 'CAL_SIG2'
-				config_dict_test['DAC_SEL'] = 'drive_CAL1' # do not ground CAL2 
-			elif drive_elec == 2:
-				config_dict_test['ADC_SEL'] = 'CAL_SIG1'
-				config_dict_test['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
+            log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
 
-			log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
+            # use same injection waveform as in previous test
+            volt, t, ads_separate_data, ax = collect_data(ddr, PLT=False, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
+                                    num_repeats=num_repeats, blk_multiples=blk_multiples)
+            np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
+            data[step] = {'volt': volt,
+                          't': t,
+                          'src': 'v',
+                          'shape': 'SINE',
+                          'freq': freq,
+                          'amp': voltage_amp,
+                          'vclamp': 'disconnect',
+                          'bath_clamp': copy.deepcopy(config_dict_test),
+                          'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
 
-			# use same injection waveform as in previous test
-			volt, t = collect_data(ddr, PLT=False, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
-									num_repeats=num_repeats, blk_multiples=blk_multiples)
-			np.savez(os.path.join(data_dir, f'imp_step{step}.npy'), dac_wave, volt, t)
-			data[step] = {'volt': volt,
-						  't': t,
-						  'src': 'v',
-						  'shape': 'SINE',
-						  'freq': freq,
-						  'amp': voltage_amp,
-						  'vclamp': 'disconnect',
-						  'bath_clamp': copy.deepcopy(config_dict_test),
-						  'voltage_clamp': copy.deepcopy(config_dict_disconnect)}
+    filename = f'imp_all_steps.npy'
+    np.savez(os.path.join(data_dir, f'imp_all_steps.npy'), data)
 
-	filename = f'imp_all_steps.npy'
-	np.savez(os.path.join(data_dir, f'imp_all_steps.npy'), data)
-
-	if testing == 'vclamp':
-		tf_type = 'vclamp'
-		r_total_guess = 300e3 
-	elif testing == 'bath':
-		tf_type = 'elec_r_cc'
-		r_total_guess = 8e3
+    if testing == 'vclamp':
+        tf_type = 'vclamp'
+        r_total_guess = 300e3 
+    elif testing == 'bath':
+        tf_type = 'elec_r_cc'
+        r_total_guess = 8e3
 
     # calculates both the total resistance (measured via current injection)
-    # and the isolated resistance 
-	predicted_res, res_fit_mesg, component_fits, fit_notes, components = total_res_iso_res(data_dir, filename + '.npz',  r_total_guess, tf_type, PLT=True)
-	print(components)
-	# components is calculated from component_fits so its ok to not capture component_fits
-	component_results[testing] = components
-	component_results[testing]['total_resistance'] = predicted_res
-	component_results[testing]['resistance_msg'] = res_fit_mesg
-	component_results[testing]['fit_notes'] = fit_notes
+    # and the isolated resistance infered by transfer functions 
+    predicted_res, res_fit_mesg, component_fits, fit_notes, components = total_res_iso_res(data_dir, filename + '.npz',  r_total_guess, tf_type, PLT=True)
+    print(components)
+    # components is calculated from component_fits so its ok to not capture component_fits
+    component_results[testing] = components
+    component_results[testing]['total_resistance'] = predicted_res
+    component_results[testing]['resistance_msg'] = res_fit_mesg
+    component_results[testing]['fit_notes'] = fit_notes
         
 print('final component results ' + '-'*40)
 print(component_results)
@@ -518,3 +595,37 @@ with open(os.path.join(data_dir, 'data.json'), 'w') as fp:
 if UPDATE_RESULTS:
     df = pd.DataFrame.from_dict(component_results)
     df.to_csv(os.path.join(results_dir, 'calibration.csv'))
+
+def electrode_offset_cal(clamp_num=3, chan=('B',2), v_range=[-0.04, 0.04]):
+    '''
+    '''
+
+    # The LSB step size is ~4.8 mV
+    # offset adjustment is vdac*1.662 - 0.9940 
+    dac_v = (v_range[0] + 0.9940)/1.662
+    dac_low = from_voltage(voltage=float(dac_v), num_bits=10, voltage_range=5, with_negatives=False)
+    dac_v = (v_range[1] + 0.9940)/1.662
+    dac_high = from_voltage(voltage=float(dac_v), num_bits=10, voltage_range=5, with_negatives=False)
+
+    dac_val_arr = np.arange(dac_low, dac_high)
+    print(dac_val_arr)
+    dac_v_arr = to_voltage(data = dac_val_arr, num_bits=10, voltage_range=5, use_twos_comp=False)
+
+    vclamp_v = np.array([])
+    for dac_val in dac_val_arr:
+        # if the input to from_voltage is a numpy. then it makes an array which causes the i2c write to fail
+        clamps[clamp_num].DAC.write(int(dac_val))
+        v = get_ads_voltages(ddr)
+
+        vclamp_v = np.append(vclamp_v, v[chan[0]][chan[1]])
+
+    fig, ax = plt.subplots()
+    ax.plot(dac_v_arr, vclamp_v, marker='o')
+
+    idx = np.argmin(np.abs(vclamp_v))
+    print(f'Writing DAC value of {int(dac_val_arr[idx])}')
+    clamps[clamp_num].DAC.write(int(dac_val_arr[idx]))
+    v = get_ads_voltages(ddr)
+    print(f'Check of optimized voltage gives {v[chan[0]][chan[1]]}')
+
+    return dac_val_arr[idx]
