@@ -1,8 +1,8 @@
 ,bath
-fit_notes,"{'success': True, 'chisqr': 4.766096012789866e-05, 'message': 'Fit succeeded. Could not estimate error-bars.'}"
-r1,6580.899374680488
-r2,4809.432383849659
-r3,4751.885501208869
+fit_notes,"{'success': True, 'chisqr': 5.812069123463726e-05, 'message': 'Fit succeeded. Could not estimate error-bars.'}"
+r1,6483.6746730659215
+r2,4729.787397485809
+r3,4683.967363564692
 resistance_msg,"Both actual and predicted relative reductions in the sum of squares
   are at most 0.000000"
-total_resistance,11687.869775756497
+total_resistance,23444.02991918791

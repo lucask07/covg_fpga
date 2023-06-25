@@ -109,6 +109,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
 				freq_arr = freq_arr[freq_arr != freq]
 				log.debug(f'Found pair of keys {data_key} and {key_pair} at frequency of {freq} with drive electrode {drive_elec}')
 				t = d['t'][chop_idx:]
+				t = t - t[0] # configure the time to start at 0 for compatibility with chirp measurements
 				y = d['volt'][chop_idx:] # if chopped at an arbitrary point there will be a phase shift that varies with frequency if compared to an ideal sine
 				y_pair = data[key_pair]['volt'][chop_idx:]
 
