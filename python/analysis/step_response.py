@@ -38,8 +38,7 @@ data_dir = r'C:\Users\koer2434\Documents\covg\data\clamp\20230629'
 #filename = 'datastreams2_output_quietdacs_rtia{}_ccomp{}.h5' # 3 uses RF1 = 30
 filename = 'noisetest9_quietdacs_rtia{}_ccomp{}.h5'
 filename = 'clamptest1_rtia{}_ccomp{}.h5'
-filename = 'clamptest2_quietdacsFalse_rtia{}_ccomp{}.h5'
-
+filename = 'clamptest5_quietdacsFalse_rtia{}_ccomp{}.h5'
 
 time_range = [-50, 400] # [us] before and after peak; datastream plotting uses units of us
 
@@ -48,7 +47,7 @@ ccomp = 47
 
 figs = []
 axs = []
-for i in range(7):
+for i in range(8):
     fig, ax=plt.subplots()
     figs.append(fig)
     axs.append(ax)
@@ -74,6 +73,7 @@ for ccomp in [47]:
             t0_us_stop = datastreams.ddr_step_peak*1e6*2
         
 
+
         # plot current Im 
         t = datastreams['Im'].create_time()*1e6 - t0_us
         idx = (t > time_range[0]) & (t < time_range[1])
@@ -84,6 +84,11 @@ for ccomp in [47]:
         axs[0].set_xlim(time_range)
         axs[0].set_xlabel('t [$\mu$s]')
         axs[0].set_ylabel('I (a.u.)')
+
+        axs[7].plot(t[idx], y*1e6, label=f'R={rtia} k$\Omega$, C={ccomp} pF')
+        axs[7].set_xlim(time_range)
+        axs[7].set_xlabel('t [$\mu$s]')
+        axs[7].set_ylabel('I (uA)')
 
         axs[1].plot(t[idx], np.cumsum(y)/np.sum(y), label=f'R={rtia} k$\Omega$, C={ccomp} pF')
         axs[1].set_xlim(time_range)
@@ -152,12 +157,13 @@ for i in range(7):
 
 fig_t, ax_t = plt.subplots()
 
-fs = 5e-6
+fs = 5e6
 f = 1e3
 amp = 1
-t = np.linspace(0, 80000-1, 80000)*fs
+N = 10000000
+t = np.arange(N)*(1/fs)
 y = amp*np.sin(2*np.pi*t*f)
-f, im_pd = calc_psd(y, fs, nperseg=1024*8, scaling='spectrum')
+f, im_pd = calc_psd(y, fs, nperseg=1024*1024, scaling='spectrum')
 
 ax_t.loglog(f, np.sqrt(im_pd), marker='*')
 ax_t.set_ylabel('V/$\sqrt{Hz}$ [V]')
