@@ -2,8 +2,10 @@
 Oct 2022
 
 Lucas Koerner, koerner.lucas@stthomas.edu
+Analyze impedance analyzer spectrum to determine resistances and capacitances 
 
-Analyze impedance analyzer spectrum to determine 
+A square-wave with a current amplitude is used for static resistance
+A sinusoid at varying frequencies is measured to fit to a transfer function and derive an RC circuit 
 
 """
 
@@ -72,9 +74,9 @@ def r_from_square(r_total_guess, data, PLT=False):
 			predicted_res = yfit[1]/current_amp
 			log.info(f'Predicted resistance {predicted_res}')
 			if PLT:
-				plt.figure(data_key)
-				plt.plot(t*1e6,y, marker='.')
-				plt.plot(t*1e6, soft_sq_wave(t, *yfit))
+				ax = plt.gca() # gets an axes if none exists
+				ax.plot(t*1e6, y, marker='.')
+				ax.plot(t*1e6, soft_sq_wave(t, *yfit))
 				
 	return predicted_res, pcov, mesg
 
@@ -191,8 +193,13 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
 def total_res_iso_res(data_dir, filename, r_total_guess, tf_type, PLT=False):
 	data = read_cal_data(data_dir=data_dir, filename=filename)
 	predicted_res, pcov, res_fit_mesg = r_from_square(r_total_guess, data, PLT=PLT)  # get resistance from a square wave 
-	component_fits, fit_notes, components = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=PLT)
 	
+	shapes = [data[d]['shape'] for d in data]
+	if shapes.count('SINE') > 1:
+		component_fits, fit_notes, components = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=PLT)
+	else:
+		component_fits = fit_notes = components = None
+		
 	return predicted_res, res_fit_mesg, component_fits, fit_notes, components
 
 def main():
