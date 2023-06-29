@@ -273,7 +273,7 @@ obsv.set_vp1_data_mux("ads8686_chA")
 obsv.set_rdy_data_mux("sync_im")
 
 RF = bath_res[0]*1.0e3
-in_amp = 1
+in_amp = 10
 diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
 dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
 Im_scale = dn_per_amp/2  # DN/Amp 
@@ -289,7 +289,7 @@ dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ?
 # ------ Collect Data --------------
 QUIET_DACS = False # if True use the host driven DAC to test noise
 file_name = time.strftime("%Y%m%d-%H%M%S")
-datastream_out_fname = 'clamptest2_quietdacs{}_rtia{}_ccomp{}.h5'
+datastream_out_fname = 'clamptest6_quietdacs{}_rtia{}_ccomp{}.h5'
 idx = 0
 
 # fast DAC channels setup
@@ -343,7 +343,7 @@ for dc_num in [dc_mapping['clamp']]:
         P1_CAL_CTRL=0,
         P2_E_CTRL=0,
         P2_CAL_CTRL=0,
-        gain=1,  # instrumentation amplifier
+        gain=in_amp,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
         EN_ipump=0,
@@ -371,7 +371,7 @@ for dc_num in [dc_mapping['bath']]:
         P1_CAL_CTRL=0,
         P2_E_CTRL=0,
         P2_CAL_CTRL=1,
-        gain=1,  # instrumentation amplifier
+        gain=in_amp,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
         EN_ipump=0,
