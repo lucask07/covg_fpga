@@ -34,9 +34,12 @@ elif sys.platform == "win32":
 
 
 # data_dir = r'C:\Users\koer2434\Documents\covg\data\clamp\20230619'
-data_dir = r'C:\Users\koer2434\Documents\covg\data\clamp\20230621'
+data_dir = r'C:\Users\koer2434\Documents\covg\data\clamp\20230629'
 #filename = 'datastreams2_output_quietdacs_rtia{}_ccomp{}.h5' # 3 uses RF1 = 30
 filename = 'noisetest9_quietdacs_rtia{}_ccomp{}.h5'
+filename = 'clamptest1_rtia{}_ccomp{}.h5'
+filename = 'clamptest2_quietdacsFalse_rtia{}_ccomp{}.h5'
+
 
 time_range = [-50, 400] # [us] before and after peak; datastream plotting uses units of us
 
@@ -59,16 +62,17 @@ for ccomp in [47]:
         neg_pks = find_peak(datastreams['CMD0'].create_time(), -np.diff(datastreams['CMD0'].data), th=0.2e-3, height=1e-3, distance=100)
 
         print(pos_pks)
+        print(neg_pks)
+
         try:
             t0_us = pos_pks[0][0]*1e6
         except: # if no peak is found use the logfile information in datastreams
             t0_us = datastreams.ddr_step_peak*1e6
         try:
-            t0_us_stop = pos_pks[0][0]*1e6
+            t0_us_stop = neg_pks[0][0]*1e6
         except:
             t0_us_stop = datastreams.ddr_step_peak*1e6*2
         
-        print(neg_pks)
 
         # plot current Im 
         t = datastreams['Im'].create_time()*1e6 - t0_us

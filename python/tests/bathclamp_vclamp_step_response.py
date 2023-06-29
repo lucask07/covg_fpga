@@ -289,8 +289,7 @@ dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ?
 # ------ Collect Data --------------
 QUIET_DACS = False # if True use the host driven DAC to test noise
 file_name = time.strftime("%Y%m%d-%H%M%S")
-datastream_out_fname = 'clamptest1_rtia{}_ccomp{}.h5'
-
+datastream_out_fname = 'clamptest2_quietdacs{}_rtia{}_ccomp{}.h5'
 idx = 0
 
 # fast DAC channels setup
@@ -577,7 +576,7 @@ for ccomp in ccomp_arr:
         datastreams.add_log_info({'ddr_step_peak': first_pos_step})
         datastreams.add_log_info({'dut': 'model_cell'})
         datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
-        datastreams.to_h5(data_dir, datastream_out_fname.format(adg_r, ccomp), log_info)
+        datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp), log_info)
 
 # plot oscilloscope data vs. parameters 
 if OSCOPE:
