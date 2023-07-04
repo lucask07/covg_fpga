@@ -12,8 +12,6 @@ Dervied from clamp_step_response.py
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
-
-from math import ceil
 import os
 import sys
 from time import sleep
@@ -22,25 +20,13 @@ import time
 import atexit
 import numpy as np
 import matplotlib.pyplot as plt
-import pickle as pkl
-import copy
 
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
-import matlab.engine 
 
-# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-covg_fpga_path = os.getcwd()
-for i in range(15):
-    if os.path.basename(covg_fpga_path) == "covg_fpga":
-        boards_path = os.path.join(covg_fpga_path, "python")
-        break
-    else:
-        # If we aren't in covg_fpga, move up a folder and check again
-        covg_fpga_path = os.path.dirname(covg_fpga_path)
-sys.path.append(boards_path)
-
+# Defines data_dir_covg and adds the path to boards.py into the sys.path 
+from setup_paths import *
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
@@ -155,30 +141,12 @@ FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
 dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3} 
+#dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 2} 
 DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
+#DC_NUMS = [0, 1, 2]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
-
-# TODO: at data directories like this to a config file
-data_dir_base = os.path.expanduser('~')
-if sys.platform == "linux" or sys.platform == "linux2":
-    pass
-elif sys.platform == "darwin":
-    data_dir_covg = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}"
-elif sys.platform == "win32":
-    if os.path.exists('C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data'):
-        data_dir_covg = 'C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data/{}{:02d}{:02d}'
-    else:
-        data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
-
-today = datetime.datetime.today()
-data_dir = data_dir_covg.format(
-    today.year, today.month, today.day
-)
-if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
-
 
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
@@ -230,7 +198,10 @@ gpio.ads_misc("convst")  # to check sample rate of ADS
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
 clamps = [None] * 4
 for dc_num in DC_NUMS:
-    clamp = Clamp(f, dc_num=dc_num)
+    if dc_num == 3:
+        clamp = Clamp(f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
+    else:
+        clamp = Clamp(f, dc_num=dc_num, version=2)
     print(f'Clamp {dc_num} Init'.center(35, '-'))
     clamp.init_board()
     clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
@@ -265,31 +236,14 @@ ads.set_fpga_mode()
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
-# set observer data input muxes
-obsv = Observer(f)
-obsv.set_im_data_mux("ad7961_ch0")
-obsv.set_vcmd_data_mux("ad5453_ch1")
-obsv.set_vp1_data_mux("ads8686_chA")
-obsv.set_rdy_data_mux("sync_im")
-
-RF = bath_res[0]*1.0e3
-in_amp = 10
-diff_buf = 499/(120+1500) # correct, refering to signal_chain.py 
-dn_per_amp = (2**15/4.096)*(RF*in_amp*diff_buf) # correct 
-Im_scale = dn_per_amp/2  # DN/Amp 
-Im_scale = dn_per_amp  # DN/Amp 
-
-ads_full_scale = 10
-dn_per_volt = (2**16/ads_full_scale) # correct
-VP1_scale = dn_per_volt*11.0*1.7
-
+in_amp = 2
 dac_range = 5
 dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
 
 # ------ Collect Data --------------
 QUIET_DACS = False # if True use the host driven DAC to test noise
 file_name = time.strftime("%Y%m%d-%H%M%S")
-datastream_out_fname = 'clamptest6_quietdacs{}_rtia{}_ccomp{}.h5'
+datastream_out_fname = 'clamptest1_quietdacs{}_rtia{}_ccomp{}_inamp{}.h5'
 idx = 0
 
 # fast DAC channels setup
@@ -382,7 +336,7 @@ for dc_num in [dc_mapping['bath']]:
     dc_configs[dc_num] = config_dict
 
 ephys_sys = EphysSystem()
-sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
 
 def ads_plot_zoom(ax, t_range=[3250,3300]):
     try:
@@ -397,7 +351,7 @@ plt.close('all')
 first_time = True
 
 # update system connections since the daughtercard configurations have changed
-sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
 ddr.repeat_setup() # Get data
 
 def capture_data(idx=0):
@@ -411,7 +365,7 @@ def capture_data(idx=0):
     # each block multiple is 256 bytes 
 
     # update system connections since the daughtercard configurations have changed
-    sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+    sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
     # Plot using datastreams 
     datastreams, log_info = rawh5_to_datastreams(data_dir, filename, ddr.data_to_names, 
                                                  daq, sys_connections, outfile = None)
@@ -576,7 +530,7 @@ for ccomp in ccomp_arr:
         datastreams.add_log_info({'ddr_step_peak': first_pos_step})
         datastreams.add_log_info({'dut': 'model_cell'})
         datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
-        datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp), log_info)
+        datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp, in_amp), log_info)
 
 # plot oscilloscope data vs. parameters 
 if OSCOPE:

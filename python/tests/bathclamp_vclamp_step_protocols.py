@@ -24,18 +24,9 @@ import copy
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
-import matlab.engine 
 
-# The boards.py file is located in the covg_fpga folder so we need to find that folder. If it is not above the current directory, the program fails.
-covg_fpga_path = os.getcwd()
-for i in range(15):
-    if os.path.basename(covg_fpga_path) == "covg_fpga":
-        boards_path = os.path.join(covg_fpga_path, "python")
-        break
-    else:
-        # If we aren't in covg_fpga, move up a folder and check again
-        covg_fpga_path = os.path.dirname(covg_fpga_path)
-sys.path.append(boards_path)
+# Defines data_dir_covg and adds the path to boards.py into the sys.path 
+from setup_paths import *
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
@@ -159,82 +150,71 @@ DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on b
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
 
-# TODO: at data directories like this to a config file
-data_dir_base = os.path.expanduser('~')
-if sys.platform == "linux" or sys.platform == "linux2":
-    pass
-elif sys.platform == "darwin":
-    data_dir_covg = "/Users/koer2434/My Drive/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp_test/{}{:02d}{:02d}"
-elif sys.platform == "win32":
-    if os.path.exists('C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data'):
-        data_dir_covg = 'C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data/{}{:02d}{:02d}'
-    else:
-        data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
-
-today = datetime.datetime.today()
-data_dir = data_dir_covg.format(
-    today.year, today.month, today.day
-)
-if not os.path.exists(data_dir):
-    os.makedirs(data_dir)
-
-
 # -------- power supplies -----------
-dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
-if pwr_setup == "3dual":
-    atexit.register(pwr_off, [dc_pwr])
-else:
-    atexit.register(pwr_off, [dc_pwr, dc_pwr2])
-config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
+try:
+    dc_pwr.get('id')
+except:
+    dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
+    if pwr_setup == "3dual":
+        atexit.register(pwr_off, [dc_pwr])
+    else:
+        atexit.register(pwr_off, [dc_pwr, dc_pwr2])
+    config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
 
-# turn on the 7V
-dc_pwr.set("out_state", "ON", configs={"chan": 1})
+    # turn on the 7V
+    dc_pwr.set("out_state", "ON", configs={"chan": 1})
 
-if pwr_setup != "3dual":
-    # turn on the +/-16.5 V input
-    for ch in [1, 2]:
-        dc_pwr2.set("out_state", "ON", configs={"chan": ch})
-elif pwr_setup == "3dual":
-    # turn on the +/-16.5 V input
-    for ch in [2, 3]:
-        dc_pwr.set("out_state", "ON", configs={"chan": ch})
+    if pwr_setup != "3dual":
+        # turn on the +/-16.5 V input
+        for ch in [1, 2]:
+            dc_pwr2.set("out_state", "ON", configs={"chan": ch})
+    elif pwr_setup == "3dual":
+        # turn on the +/-16.5 V input
+        for ch in [2, 3]:
+            dc_pwr.set("out_state", "ON", configs={"chan": ch})
 
+try: # only initialize systeam and FPGA if needed. Allows us to repeat with %run -i tests/bathclamp_vclamp_step_response.py 
+    f.xem.IsOpen()
+except NameError:
+    # Initialize FPGA
+    f = FPGA()
+    f.init_device()
+    sleep(2)
+    f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset
 
-# Initialize FPGA
-f = FPGA()
-f.init_device()
-sleep(2)
-f.send_trig(eps["GP"]["SYSTEM_RESET"])  # system reset
+    pwr = Daq.Power(f)
+    pwr.all_off()  # disable all power enables
 
-pwr = Daq.Power(f)
-pwr.all_off()  # disable all power enables
+    daq = Daq(f)
+    ddr = daq.ddr
+    ad7961s = daq.ADC
+    ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
-daq = Daq(f)
-ddr = daq.ddr
-ad7961s = daq.ADC
-ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
+    ads = daq.ADC_gp
 
-ads = daq.ADC_gp
+    # power supply turn on via FPGA enables
+    for name in ["1V8", "5V", "3V3"]:
+        pwr.supply_on(name)
+        sleep(0.05)
 
-# power supply turn on via FPGA enables
-for name in ["1V8", "5V", "3V3"]:
-    pwr.supply_on(name)
-    sleep(0.05)
+    # configure the SPI debug MUXs
+    gpio = Daq.GPIO(f)
+    gpio.spi_debug("ads")
+    gpio.ads_misc("convst")  # to check sample rate of ADS
 
-# configure the SPI debug MUXs
-gpio = Daq.GPIO(f)
-gpio.spi_debug("ads")
-gpio.ads_misc("convst")  # to check sample rate of ADS
+    # instantiate the Clamp board providing a daughter card number (from 0 to 3)
+    clamps = [None] * 4
+    for dc_num in DC_NUMS:
+        if dc_num == dc_mapping['vsense']:
+            clamp = Clamp(f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
+        else:
+            clamp = Clamp(f, dc_num=dc_num, version=2)
+        print(f'Clamp {dc_num} Init'.center(35, '-'))
+        clamp.init_board()
+        clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
+        clamps[dc_num] = clamp
 
-# instantiate the Clamp board providing a daughter card number (from 0 to 3)
-clamps = [None] * 4
-for dc_num in DC_NUMS:
-    clamp = Clamp(f, dc_num=dc_num)
-    print(f'Clamp {dc_num} Init'.center(35, '-'))
-    clamp.init_board()
-    clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
-    clamps[dc_num] = clamp
-
+# Reconfigure ADS8686 for different sequencer setup 
 # -------- configure the ADS8686
 ads_voltage_range = 5  # need this for to_voltage later 
 ads.hw_reset(val=False)
@@ -273,13 +253,13 @@ for chan in [0, 1, 2, 3]:
     ad7961s[chan].power_up_adc()  # standard sampling
 time.sleep(0.5) # TODO - reduce sleep time
 ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
-time.sleep(2) # TODO - reduce sleep time
+time.sleep(0.2) # TODO - reduce sleep time
 ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
-time.sleep(1) # TODO - reduce sleep time
+time.sleep(0.1) # TODO - reduce sleep time
 
 # ------ Collect Data --------------
 file_name = time.strftime("%Y%m%d-%H%M%S") + '_{}'
-idx = 0
+idx = 30
 
 # set all fast-DAC DDR data to midscale
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
@@ -306,7 +286,7 @@ if 1:
     clamp_cap = 47
     for dc_num in [dc_mapping['clamp']]:
         log_info, config_dict = clamps[dc_num].configure_clamp(
-            ADC_SEL="CAL_SIG1", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
+            ADC_SEL="CAL_SIG2", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
             DAC_SEL="noDrive", # must not be drive_CAL2 
             CCOMP=clamp_cap,
             RF1=clamp_fb_res,  # feedback circuit
@@ -326,13 +306,14 @@ if 1:
         )
         dc_configs[dc_num] = config_dict
 
+    inamp_gain = 5
     cap = 47
     fb_res = 2.1
     res = 100
     # Choose resistor; setup
     for dc_num in [dc_mapping['bath']]:
         log_info, config_dict = clamps[dc_num].configure_clamp(
-            ADC_SEL="CAL_SIG1",  # required to digitize P2 
+            ADC_SEL="CAL_SIG2",  # required to digitize P2 
             DAC_SEL="noDrive",
             CCOMP=cap,
             RF1=fb_res,  # feedback circuit
@@ -342,7 +323,7 @@ if 1:
             P1_CAL_CTRL=0,
             P2_E_CTRL=0,
             P2_CAL_CTRL=1,
-            gain=1,  # instrumentation amplifier
+            gain=inamp_gain,  # instrumentation amplifier
             FDBK=1,
             mode="voltage",
             EN_ipump=0,
@@ -366,9 +347,6 @@ if 1:
 
     plt.close('all')
     first_time = True
-
-    # update system connections since the daughtercard configurations have changed
-    sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
     # TODO - switch to DDR here 
     ddr.repeat_setup() # prepare to Get data -- clear FIFOs and resets the address of the MIG interface 
 
@@ -534,4 +512,4 @@ if 1:
     datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
     datastreams.add_log_info({'dc_configs': dc_configs})
     print(datastreams.__dict__)
-    datastreams.to_h5(data_dir, 'datastreams_output.h5', log_info)
+    datastreams.to_h5(data_dir, 'datastreams_output_' + file_name.format(idx) + '.h5', log_info)

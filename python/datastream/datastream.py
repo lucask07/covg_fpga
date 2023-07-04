@@ -205,7 +205,7 @@ class Datastreams(dict):
         for n in names:
             srs.append(int(self[n].sample_rate))
         srs = np.array(srs)
-        gcd = np.gcd.reduce(srs)
+        gcd = np.gcd.reduce(srs)  # TODO this doesn't work if the sampling rate is 1e6/3 (or similar)
 
         for n in names:
             sr = self[n].sample_rate
@@ -438,7 +438,7 @@ class PhysicalConnection():
 
 # I channels 0 - 3, node, conversion, factor 
 
-def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq_v2', calibration=False):
+def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq_v2', calibration=False, inamp_gain_correct=None):
 
     # build up the connectivity to ADCs  
     
@@ -447,6 +447,7 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
     # ephys_sys class EphysSystem from electrodes.py describes the particular system 
     # system: str the type of daq board. Only supported is daq_v2
     # calibration: bool if True removes specific net names like P2 from CAL_ADC since it will change based on relay settings 
+    # inamp_gain_correct: function to correct the gain of the inamp 
 
     ads = daq_brd.ADC_gp
     connections = {}
@@ -458,6 +459,8 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
         for dc_config in dc_config_dicts:
             RF = dc_config_dicts[dc_config]['ADG_RES']*1e3 # all resistor values are in kilo-Ohms
             inamp_gain = dc_config_dicts[dc_config]['gain']
+            if inamp_gain_correct is not None: #TODO make this a list for each daughtercard?
+                inamp_gain = inamp_gain_correct(inamp_gain)
             diff_buffer_gain = 499/(1500+120) # daughter-card differential buffer (resistor values). Gain is less than x1
             conv_factor = -ad7961_fs/inamp_gain/RF/diff_buffer_gain # add negative sign so an increase in the cell voltage is positive current
 
@@ -481,7 +484,11 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
         for dc_config in dc_config_dicts:
             for amp_net in ['AMP_OUT', 'CAL_ADC']:
                 if amp_net == 'AMP_OUT':
-                    gain = 11*(1+dc_config_dicts[dc_config]['RF1']/3.01)  # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
+                    try:
+                        v_sense_gain = dc_config_dicts[dc_config]['VSENSE']
+                        gain = v_sense_gain*11
+                    except:
+                        gain = 11*(1+dc_config_dicts[dc_config]['RF1']/3.01)  # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
                 else:
                     gain = 1
                 if ads_map[dc_config][amp_net][0] == 'A':

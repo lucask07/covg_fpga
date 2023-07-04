@@ -68,7 +68,7 @@ class EphysSystem:
 
         self.electrodes = []
         self.system = system  # nickname of system configuration 
-        self.dc_mapping = {0: 'bath', 1: 'clamp'}
+        self.dc_mapping = {0: 'bath', 1: 'clamp'} # updated below for Dagan_vclamp_no_guard
         self.daughtercard_to_net = {'bath': {'AMP_OUT': 'P1', 'CAL_ADC': 'P2', 'AD7961': 'Im'},
                                     'clamp': {'AMP_OUT': 'V1', 'CAL_ADC': 'I', 'AD7961': 'Itop'}}
 
@@ -93,6 +93,36 @@ class EphysSystem:
 
             e = Electrode(name='CC', dc_num=0, dc_pin='CC',
                           nominal={'res':6.8e3, 'offset':0})
+            self.electrodes.append(e)
+        
+        if self.system == 'Dagan_vclamp_no_guard':
+            self.dc_mapping = {0: 'bath', 1: 'clamp', 3:'vclamp'}
+            self.daughtercard_to_net['vclamp'] = {'AMP_OUT': 'V1s', 'CAL_ADC': 'nc', 'AD7961': 'nc2'}
+
+            # voltage clamp board 
+            e = Electrode(name='I', dc_num=1, dc_pin='P2',
+                      nominal={'res':100e3, 'offset':0})
+            self.electrodes.append(e)
+
+            e = Electrode(name='V2', dc_num=1, dc_pin='P1',
+                      nominal={'res':200e3, 'offset':0})
+            self.electrodes.append(e)
+
+            # bath clamp board 
+            e = Electrode(name='P1', dc_num=0, dc_pin='P1',
+                      nominal={'res':5e3, 'offset':0})
+            self.electrodes.append(e)
+
+            e = Electrode(name='P2', dc_num=0, dc_pin='P2',
+                      nominal={'res':5e3, 'offset':0})
+            self.electrodes.append(e)
+
+            e = Electrode(name='CC', dc_num=0, dc_pin='CC',
+                          nominal={'res':6.8e3, 'offset':0})
+            self.electrodes.append(e)
+
+            e = Electrode(name='V1s', dc_num=3, dc_pin='P1', # V1 sense; using a custom voltage sensing board 
+                          nominal={'res':200e3, 'offset':0})
             self.electrodes.append(e)
 
         # no longer necessary if using JSON serialization with default=vars

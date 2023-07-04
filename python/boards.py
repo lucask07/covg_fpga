@@ -200,8 +200,9 @@ class Clamp:
     }
 
     def __init__(self, fpga, TCA_addr_pins_0=0b110, TCA_addr_pins_1=0b000,
-                 UID_addr_pins=0b000, DAC_addr_pins=0b000, dc_num=0):
+                 UID_addr_pins=0b000, DAC_addr_pins=0b001, dc_num=0, version=None):
         # dc_num is the daughter card channel number since there are 0-3 channels
+        # DAC_addr_pins = 0b010 since default HW config of Gnd is 0001101 
 
         self.TCA = [None, None]
         eps_i2cdc = copy.deepcopy(Endpoint.endpoints_from_defines['I2CDC'])
@@ -222,6 +223,7 @@ class Clamp:
         self.default_res = 100
         self.default_cap = 47
         self.default_gain = 1
+        self.version=version
 
         self.config_open_all_relays = {
         'ADC_SEL': "CAL_SIG1",
@@ -557,6 +559,24 @@ class Clamp:
         log, config = self.configure_clamp(
             **self.config_close_cal_relays)
         return log, config 
+    
+    def correct_inamp_gain(self, gain):
+        """ 
+        The 2nd version of the clamp board using a different part for the instrumentation amplifier
+        and the gain setting resistors on the PCB were not changed 
+        v1: AD8421
+        v2: AD8429 
+        """
+        if gain == 1:
+            return gain 
+        
+        if self.version==2:            
+            res = 9.9e3/(gain-1) # AD8421 -- original version 1 design, but was out of stock for clamp board v2 
+            gain = 1+6e3/res     # AD8429 
+
+        # do nothing for other gains
+        return gain 
+
 
 
 class Daq:
@@ -1075,3 +1095,26 @@ class TOF:
         self.fpga = fpga
         # I2C
         self.TMF = TMF8801(fpga=fpga, addr_pins=0x00, endpoints=Endpoint.I2CDAQ_QW)
+
+class Vsense:
+    """
+    voltage sense board which only has an offset DAC and no other I2C periperhals 
+
+    will either be connected to a daughter-card socket 
+    or jumpered to another daughter-card board 
+    
+    """
+    def __init__(self, fpga, dc_num = 3, DAC_addr_pins=0b001, endpoints=None):
+        # dc_num is the daughter card channel number since there are 0-3 channels
+
+        if dc_num is not None:
+            eps_i2cdc = copy.deepcopy(Endpoint.endpoints_from_defines['I2CDC'])
+            i2c_eps = Endpoint.advance_endpoints(eps_i2cdc, dc_num)
+        elif dc_num is None and endpoints is None:
+            print('error')
+            return -1
+        else:
+            i2c_eps = endpoints
+
+        self.DAC = DAC101C081(fpga=fpga, addr_pins=DAC_addr_pins,
+                            endpoints=i2c_eps)

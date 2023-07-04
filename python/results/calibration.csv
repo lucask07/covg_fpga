@@ -1,10 +1,10 @@
 ,bath,vclamp
-r1,4704.234455454822,999999.8560296622
-r2,4697.168008855627,108300.51101683042
-r3,6331.019103918681,
-total_resistance,9946.858288114483,105305.4081931344
+r1,4927.794436419541,999999.9201406674
+r2,4914.50957458083,107963.10224365795
+r3,6610.334659225348,
+total_resistance,9930.963670130248,104971.17101976987
 resistance_msg,"Both actual and predicted relative reductions in the sum of squares
   are at most 0.000000","Both actual and predicted relative reductions in the sum of squares
   are at most 0.000000"
-fit_notes,"{'success': True, 'chisqr': 3.7299145511784984e-05, 'message': 'Fit succeeded. Could not estimate error-bars.'}","{'success': True, 'chisqr': 1.3804050375765493, 'message': 'Fit succeeded.'}"
-cm,,5.99999923827236e-08
+fit_notes,"{'success': True, 'chisqr': 5.370996771674239e-05, 'message': 'Fit succeeded. Could not estimate error-bars.'}","{'success': True, 'chisqr': 1.3544039016943652, 'message': 'Fit succeeded.'}"
+cm,,5.999993172037421e-08
