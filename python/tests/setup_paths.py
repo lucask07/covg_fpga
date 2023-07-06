@@ -13,6 +13,8 @@ for i in range(15):
         covg_fpga_path = os.path.dirname(covg_fpga_path)
 sys.path.append(boards_path)
 
+sys.path.append('C:\\Users\\oocyte\\Documents\\digital_covg\\pyABF\\src\\') # need to use pyABF fork
+
 
 # TODO: at data directories like this to a config file
 data_dir_base = os.path.expanduser('~')
@@ -24,7 +26,9 @@ elif sys.platform == "win32":
     if os.path.exists('C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data'):
         data_dir_covg = 'C:/Users/ajstr/OneDrive - University of St. Thomas/Research Internship/clamp_step_response_data/{}{:02d}{:02d}'
     else:
-        data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
+        #data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/{}{:02d}{:02d}')
+        data_dir_covg = os.path.join(data_dir_base, 'Documents/digital_covg/data/clamp/{}{:02d}{:02d}')
+
 
 today = datetime.datetime.today()
 data_dir = data_dir_covg.format(

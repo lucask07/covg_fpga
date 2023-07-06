@@ -9,6 +9,9 @@ def open_rigol_supply(setup=None):
     if setup=='3dual':  # new power supply that can handle all three voltages
         dc_pwr = open_by_name(name='rigol_3dual')  # Ch1=7V, Ch2=16.5V, Ch3=-16.5V
         return dc_pwr, None
+    elif setup=='boland_lab':
+        dc_pwr = open_by_name(name='rigol_boland')  # Ch1=-15V, Ch2=16.5V, Ch3=5.3V
+        return dc_pwr, None
     else:
         dc_pwr = open_by_name(name='rigol_pwr1')  # 7V in
         dc_pwr2 = open_by_name(name='rigol_ps2')  # +/-16.5V
@@ -31,7 +34,7 @@ def log_dc_pwr(dc_pwr, dc_pwr2, data, desc='none', config=None):
     """ measure current from CH1 and  CH1,CH2 of two PWR supplies channels and
         update into dictionary with timestamp (ms)
     """
-    if config == '3dual':
+    if config == '3dual' or config == 'boland_lab':
         # first supply
         for ch in [1, 2, 3]:
             data['ch{}'.format(ch)]['val'] = np.append(data['ch{}'.format(ch)]['val'],
@@ -76,13 +79,28 @@ def config_supply(dc_pwr, dc_pwr2, setup=None, neg=16.5):
             dc_pwr.set('ovp', 16.7, configs={'chan': ch})
             dc_pwr.set('ocp', 0.70, configs={'chan': ch})
             dc_pwr.set('i', 0.60, configs={'chan': ch}) # for calibration testing. Increase due to relay current
-
-
         # Channel 1 on supply1 for Vin
         dc_pwr.set('i', 0.70, configs={'chan': 1}) # for calibration testing. Increase due to relay current
         dc_pwr.set('v', 7, configs={'chan': 1})
         dc_pwr.set('ovp', 7.2, configs={'chan': 1})
         dc_pwr.set('ocp', 0.75, configs={'chan': 1})
+
+    elif setup == 'boland_lab':  # 3 channel capable supply
+        # Channel 2, 3 setup (for +/-15V)
+        for ch in [1, 2]:
+            dc_pwr.set('i', 0.70, configs={'chan': ch})
+            if ch == 1:
+                dc_pwr.set('v', neg, configs={'chan': ch})
+            else:
+                dc_pwr.set('v', 16.5, configs={'chan': ch})
+            dc_pwr.set('ovp', 16.7, configs={'chan': ch})
+            dc_pwr.set('ocp', 0.70, configs={'chan': ch})
+            dc_pwr.set('i', 0.60, configs={'chan': ch}) # for calibration testing. Increase due to relay current
+        # Channel 1 on supply1 for Vin
+        dc_pwr.set('i', 0.55, configs={'chan': 3}) # for calibration testing. Increase due to relay current
+        dc_pwr.set('v', 5.3, configs={'chan': 3})
+        dc_pwr.set('ovp', 5.5, configs={'chan': 3})
+        dc_pwr.set('ocp', 0.60, configs={'chan': 3})
 
     else:
         # Channel 1 and 2 setup

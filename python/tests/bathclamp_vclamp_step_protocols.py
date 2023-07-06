@@ -148,34 +148,44 @@ dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3}
 DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 eps = Endpoint.endpoints_from_defines
-pwr_setup = "3dual"
 
+pwr_setup = "3dual"
+pwr_setup = "boland_lab"
 # -------- power supplies -----------
 try:
     dc_pwr.get('id')
 except:
+    # -------- power supplies -----------
     dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
-    if pwr_setup == "3dual":
+    if pwr_setup == "3dual" or pwr_setup == 'boland_lab':
         atexit.register(pwr_off, [dc_pwr])
     else:
         atexit.register(pwr_off, [dc_pwr, dc_pwr2])
     config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
 
     # turn on the 7V
-    dc_pwr.set("out_state", "ON", configs={"chan": 1})
+    if pwr_setup == '3dual':
+        dc_pwr.set("out_state", "ON", configs={"chan": 1})
+    elif pwr_setup == 'boland_lab':
+        dc_pwr.set("out_state", "ON", configs={"chan": 3})
 
-    if pwr_setup != "3dual":
-        # turn on the +/-16.5 V input
-        for ch in [1, 2]:
-            dc_pwr2.set("out_state", "ON", configs={"chan": ch})
-    elif pwr_setup == "3dual":
+    if pwr_setup == "3dual":
         # turn on the +/-16.5 V input
         for ch in [2, 3]:
             dc_pwr.set("out_state", "ON", configs={"chan": ch})
+    elif pwr_setup == "boland_lab":
+        # turn on the +/-16.5 V input
+        for ch in [1, 2]:
+            dc_pwr.set("out_state", "ON", configs={"chan": ch})        
+    else:
+        for ch in [1, 2]:
+            dc_pwr2.set("out_state", "ON", configs={"chan": ch})
 
+sleep(1)
 try: # only initialize systeam and FPGA if needed. Allows us to repeat with %run -i tests/bathclamp_vclamp_step_response.py 
     f.xem.IsOpen()
 except NameError:
+    print('Initializing the FPGA')
     # Initialize FPGA
     f = FPGA()
     f.init_device()
@@ -192,10 +202,11 @@ except NameError:
 
     ads = daq.ADC_gp
 
+    sleep(0.2)
     # power supply turn on via FPGA enables
     for name in ["1V8", "5V", "3V3"]:
         pwr.supply_on(name)
-        sleep(0.05)
+        sleep(0.2)
 
     # configure the SPI debug MUXs
     gpio = Daq.GPIO(f)

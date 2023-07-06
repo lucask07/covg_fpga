@@ -38,7 +38,6 @@ from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
 
-sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork
 from pyabf.abfWriter import writeABF1 
 from pyabf.tools.covg import interleave_np
 
@@ -147,28 +146,34 @@ DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on b
 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
-
+pwr_setup = "boland_lab"
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
-if pwr_setup == "3dual":
+if pwr_setup == "3dual" or pwr_setup == 'boland_lab':
     atexit.register(pwr_off, [dc_pwr])
 else:
     atexit.register(pwr_off, [dc_pwr, dc_pwr2])
 config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
 
 # turn on the 7V
-dc_pwr.set("out_state", "ON", configs={"chan": 1})
+if pwr_setup == '3dual':
+    dc_pwr.set("out_state", "ON", configs={"chan": 1})
+elif pwr_setup == 'boland_lab':
+    dc_pwr.set("out_state", "ON", configs={"chan": 3})
 
-if pwr_setup != "3dual":
-    # turn on the +/-16.5 V input
-    for ch in [1, 2]:
-        dc_pwr2.set("out_state", "ON", configs={"chan": ch})
-elif pwr_setup == "3dual":
+if pwr_setup == "3dual":
     # turn on the +/-16.5 V input
     for ch in [2, 3]:
         dc_pwr.set("out_state", "ON", configs={"chan": ch})
+elif pwr_setup == "boland_lab":
+    # turn on the +/-16.5 V input
+    for ch in [1, 2]:
+        dc_pwr.set("out_state", "ON", configs={"chan": ch})        
+else:
+    for ch in [1, 2]:
+        dc_pwr2.set("out_state", "ON", configs={"chan": ch})
 
-
+sleep(1)
 # Initialize FPGA
 f = FPGA()
 f.init_device()
@@ -185,6 +190,7 @@ ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
 ads = daq.ADC_gp
 
+sleep(0.2)
 # power supply turn on via FPGA enables
 for name in ["1V8", "5V", "3V3"]:
     pwr.supply_on(name)
