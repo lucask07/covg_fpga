@@ -182,27 +182,32 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
 		fit_params.add('rtotal', value=rtotal, vary=False)
 
 	# run the global fit to all the data sets
-	result = minimize(residuals_magnitude, fit_params, args=(f, tf_amp_phase[0], tf_type))
-	report_fit(result)
+	try:
+		result = minimize(residuals_magnitude, fit_params, args=(f, tf_amp_phase[0], tf_type))
+		report_fit(result)
 
-	data_split = np.split(tf_amp_phase[0], len(tf_type))
-	fig, ax = plt.subplots()
-	for tft_idx, tft in enumerate(tf_type):
-		model_eval = tf_eval(result.params, f, tft)
-		ax.semilogx(f, 20*np.log10(np.abs(model_eval[0])), label='model_eval')
-		ax.semilogx(f, 20*np.log10(data_split[tft_idx]), label='data', marker='*', linestyle='none')
+		data_split = np.split(tf_amp_phase[0], len(tf_type))
+		fig, ax = plt.subplots()
+		for tft_idx, tft in enumerate(tf_type):
+			model_eval = tf_eval(result.params, f, tft)
+			ax.semilogx(f, 20*np.log10(np.abs(model_eval[0])), label='model_eval')
+			ax.semilogx(f, 20*np.log10(data_split[tft_idx]), label='data', marker='*', linestyle='none')
 
-	ax.set_xlabel('f [Hz]')
-	fig.legend()
+		ax.set_xlabel('f [Hz]')
+		fig.legend()
 
-	# also try with amplitude and phase, don't expect to work as well
-	amp = tf_amp_phase[0]
-	phase = tf_amp_phase[1]
+		# also try with amplitude and phase, don't expect to work as well
+		amp = tf_amp_phase[0]
+		phase = tf_amp_phase[1]
 
-	result2 = minimize(residuals, fit_params, args=(f, np.vstack([amp,phase]), tf_type))
-	# report_fit(result2)
+		result2 = minimize(residuals, fit_params, args=(f, np.vstack([amp,phase]), tf_type))
+		# report_fit(result2)
 
-	return result, result2 # result ignores phase, result 2 considers phase
+		return result, result2 # result ignores phase, result 2 considers phase
+
+	except:
+		return None, None
+
 
 # use known rtotal: 1 TF is r1; the other is rtotal-r1 
 

@@ -179,13 +179,23 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
 						component_fits['drive_CAL2'][idx].params['r3'].value])
 
 	if tf_type == 'vclamp':  
-		components['r1'] = component_fits['drive_CAL1'][idx].params['r1'].value
-		components['r2'] = component_fits['drive_CAL2'][idx].params['r1'].value # TODO: is this the best way to do this?  
-		components['cm'] = np.average([component_fits['drive_CAL1'][idx].params['cm'].value, component_fits['drive_CAL2'][idx].params['cm'].value])
+		try:
+			components['r1'] = component_fits['drive_CAL1'][idx].params['r1'].value
+			components['r2'] = component_fits['drive_CAL2'][idx].params['r1'].value # TODO: is this the best way to do this?  
+			components['cm'] = np.average([component_fits['drive_CAL1'][idx].params['cm'].value, component_fits['drive_CAL2'][idx].params['cm'].value])
+		except:
+			components['r1'] = None
+			components['r2'] = None
+			components['cm'] = None
 
-	fit_notes = {'success': component_fits['drive_CAL1'][idx].success,
-			  'chisqr': component_fits['drive_CAL1'][idx].chisqr,
-			  'message': component_fits['drive_CAL1'][idx].message}
+	try:
+		fit_notes = {'success': component_fits['drive_CAL1'][idx].success,
+				'chisqr': component_fits['drive_CAL1'][idx].chisqr,
+				'message': component_fits['drive_CAL1'][idx].message}
+	except:
+		fit_notes = {'success': 'fail',
+			'chisqr': 0,
+			'message': 'fail'}
 
 	return component_fits, fit_notes, components
 

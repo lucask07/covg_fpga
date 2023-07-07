@@ -33,7 +33,7 @@ from analysis.adc_data import read_h5, separate_ads_sequence
 from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
-from boards import Daq, Clamp
+from boards import Daq, Clamp, Vsense
 from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
@@ -139,7 +139,7 @@ DAC_FS = 2.5e6
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
-dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3} 
+dc_mapping = {'bath': 0, 'clamp': 3, 'vsense': 1, 'guard': 1} 
 #dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 2} 
 DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 #DC_NUMS = [0, 1, 2]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
@@ -204,14 +204,14 @@ gpio.ads_misc("convst")  # to check sample rate of ADS
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
 clamps = [None] * 4
 for dc_num in DC_NUMS:
-    if dc_num == 3:
-        clamp = Clamp(f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
-    else:
-        clamp = Clamp(f, dc_num=dc_num, version=2)
+    clamp = Clamp(f, dc_num=dc_num, version=2)
     print(f'Clamp {dc_num} Init'.center(35, '-'))
     clamp.init_board()
     clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
     clamps[dc_num] = clamp
+
+vsense = Vsense(fpga=f, DAC_addr_pins=0b000, dc_num=1)
+vsense.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
 
 feedback_resistors = [2.1]
 capacitors = [47]
@@ -233,7 +233,10 @@ ads.setup()
 ads.set_range(ads_voltage_range) 
 ads.set_lpf(376)
 #ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
-ads_sequencer_setup = [('1', '0'), ('2', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
+# ads_sequencer_setup = [('1', '0'), ('2', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
+# ads_sequencer_setup = [('1', '0'), ('2', '2'), ('4', '0'),  ('1', '0')] # using clamp at socket 3
+ads_sequencer_setup = [('1', '0'), ('2', '2')] # using clamp at socket 3; misses I (voltage) 
+
 
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge() # 1 MSPS rate 
@@ -284,7 +287,7 @@ fc_cmd = 100e3
 #fc_cmd = None
 step_len = 16384*8
 first_pos_step = step_len/2*1/DAC_FS # in seconds 
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
+set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384*8, cc_val=None, cc_pickle_num=None)
 
 dc_configs = {}
@@ -293,11 +296,33 @@ clamp_res = 10000 # should be zero with modified board when set to 10 MOhms
 clamp_cap = 47
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG1", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
+        ADC_SEL="CAL_SIG2", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
         DAC_SEL="noDrive", # must not be drive_CAL2 
         CCOMP=clamp_cap,
         RF1=clamp_fb_res,  # feedback circuit
         ADG_RES=clamp_res,
+        PClamp_CTRL=0,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=1,
+        gain=in_amp,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
+    dc_configs[dc_num] = config_dict
+
+for dc_num in [dc_mapping['guard']]:
+    log_info, config_dict = clamps[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG2",  # required to digitize P2 
+        DAC_SEL="noDrive",
+        CCOMP=47,
+        RF1=2.1,  # feedback circuit
+        ADG_RES=100,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
@@ -321,7 +346,7 @@ res = [x for x in bath_res if type(x) == int][0]
 # Choose resistor; setup
 for dc_num in [dc_mapping['bath']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG1",  # required to digitize P2 
+        ADC_SEL="CAL_SIG2",  # required to digitize P2 
         DAC_SEL="noDrive",
         CCOMP=cap,
         RF1=fb_res,  # feedback circuit
@@ -341,7 +366,7 @@ for dc_num in [dc_mapping['bath']]:
     )
     dc_configs[dc_num] = config_dict
 
-ephys_sys = EphysSystem()
+ephys_sys = EphysSystem(system='Dagan_vclamp_guard')
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
 
 def ads_plot_zoom(ax, t_range=[3250,3300]):
@@ -400,7 +425,8 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
             ax[0,1].set_ylim([-100e-3, 100e-3])
 
         l3 = datastreams['V1'].plot(ax[1,0], {'marker':'.'})
-        l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
+        # l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
+        l4 = None
         lines1 = [l1,l2,l3,l4]
     else:
         datastreams['P1'].update_lines(lines1[0][0])
@@ -410,7 +436,7 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
         except:
             datastreams['CMD0'].update_lines(lines1[1][0])
         datastreams['V1'].update_lines(lines1[2][0])
-        datastreams['I'].update_lines(lines1[3][0])
+        # datastreams['I'].update_lines(lines1[3][0])
 
     # second plot, membrane current and CMD 
     if first_time:
@@ -489,7 +515,10 @@ adg_r_arr = [33, 100, 332, 1000]
 
 #ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
 ccomp_arr = [47]
-adg_r_arr = [33, 100, 332, 1000, 3000, 10000]
+# adg_r_arr = [33, 100, 332, 1000, 3000, 10000]
+
+adg_r_arr = [100]
+
 
 for ccomp in ccomp_arr:
     for adg_r in adg_r_arr:
@@ -575,7 +604,7 @@ if TST_DATASTREAM_RW:
         assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
 
 print('-'*100)
-for sig in ['I', 'P1', 'CMD0']:
+for sig in ['P1', 'CMD0']:
     sig_name = sig 
     if sig_name == 'I':
         sig_name = 'Vm'

@@ -97,10 +97,10 @@ def config_supply(dc_pwr, dc_pwr2, setup=None, neg=16.5):
             dc_pwr.set('ocp', 0.70, configs={'chan': ch})
             dc_pwr.set('i', 0.60, configs={'chan': ch}) # for calibration testing. Increase due to relay current
         # Channel 1 on supply1 for Vin
-        dc_pwr.set('i', 0.55, configs={'chan': 3}) # for calibration testing. Increase due to relay current
+        dc_pwr.set('i', 0.65, configs={'chan': 3}) # for calibration testing. Increase due to relay current
         dc_pwr.set('v', 5.3, configs={'chan': 3})
         dc_pwr.set('ovp', 5.5, configs={'chan': 3})
-        dc_pwr.set('ocp', 0.60, configs={'chan': 3})
+        dc_pwr.set('ocp', 0.7, configs={'chan': 3})
 
     else:
         # Channel 1 and 2 setup

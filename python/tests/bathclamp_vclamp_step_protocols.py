@@ -33,12 +33,14 @@ from analysis.adc_data import read_h5, separate_ads_sequence
 from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
-from boards import Daq, Clamp
+from boards import Daq, Clamp, Vsense
 from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
 
 from ephys.core import Sequence, Protocol
+
+dut_notes = 'cell3_without_saponin_electrode_inserted'
 
 protocol = Protocol.create_from_csv(filepath=r'ephys/protocol.csv', num_sweeps=10)
 protocol.preview()
@@ -144,7 +146,7 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
-dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3} 
+dc_mapping = {'bath': 0, 'clamp': 3, 'vsense': 1} 
 DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 eps = Endpoint.endpoints_from_defines
@@ -184,6 +186,8 @@ except:
 sleep(1)
 try: # only initialize systeam and FPGA if needed. Allows us to repeat with %run -i tests/bathclamp_vclamp_step_response.py 
     f.xem.IsOpen()
+    ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
+
 except NameError:
     print('Initializing the FPGA')
     # Initialize FPGA
@@ -216,14 +220,14 @@ except NameError:
     # instantiate the Clamp board providing a daughter card number (from 0 to 3)
     clamps = [None] * 4
     for dc_num in DC_NUMS:
-        if dc_num == dc_mapping['vsense']:
-            clamp = Clamp(f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
-        else:
-            clamp = Clamp(f, dc_num=dc_num, version=2)
+        clamp = Clamp(f, dc_num=dc_num, version=2)
         print(f'Clamp {dc_num} Init'.center(35, '-'))
         clamp.init_board()
         clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
         clamps[dc_num] = clamp
+
+vsense = Vsense(fpga=f, DAC_addr_pins=0b000, dc_num=1)
+vsense.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
 
 # Reconfigure ADS8686 for different sequencer setup 
 # -------- configure the ADS8686
@@ -234,7 +238,7 @@ ads.setup()
 ads.set_range(ads_voltage_range) 
 ads.set_lpf(376)
 #ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
-ads_sequencer_setup = [('1', '0'), ('2', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
+ads_sequencer_setup = [('1', '0'), ('2', '2')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
 
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge() # 1 MSPS rate 
@@ -344,7 +348,7 @@ if 1:
         )
         dc_configs[dc_num] = config_dict
 
-    ephys_sys = EphysSystem()
+    ephys_sys = EphysSystem(system='Dagan_vclamp_guard')
     sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
 
     def ads_plot_zoom(ax, t_range=[3250,3300]):
@@ -402,7 +406,10 @@ if 1:
                 ax[0,1].set_ylim([-100e-3, 100e-3])
 
             l3 = datastreams['V1'].plot(ax[1,0], {'marker':'.'})
-            l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
+            try:
+                l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
+            except:
+                l4 = None
             lines1 = [l1,l2,l3,l4]
         else:
             datastreams['P1'].update_lines(lines1[0][0])
@@ -412,8 +419,10 @@ if 1:
             except:
                 datastreams['CMD0'].update_lines(lines1[1][0])
             datastreams['V1'].update_lines(lines1[2][0])
-            datastreams['I'].update_lines(lines1[3][0])
-
+            try:
+                datastreams['I'].update_lines(lines1[3][0])
+            except:
+                pass
         # second plot, membrane current and CMD 
         if first_time:
             fig, axs = plt.subplots(2,1,figsize=(10,8))
@@ -480,32 +489,9 @@ if 1:
 
     TO_CLAMPFIT = True
     if TO_CLAMPFIT: # TODO 
-        datastreams.to_clampfit(data_dir, 'protocol_tests_rtia{}_ccomp{}.abf'.format(res, cap),
+        datastreams.to_clampfit(data_dir, 'protocol_tests_rtia{}_ccomp{}'.format(res, cap) + file_name.format(idx) + '.abf',
                         names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
                         dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=len(protocol.sweeps))
-
-        # sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
-        # from pyabf.abfWriter import writeABF1 
-        # from pyabf.tools.covg import interleave_np
-
-
-
-        # t = ds_equal['Im'].create_time()
-
-        # names_pclamp = ['Im', 'CMD0', 'V1', 'P1']
-        # # if the current is in Amps the 16-bit precision makes it all zero 
-        # im = np.reshape(ds_equal['Im'].data, (1,-1))
-        # cmd = np.reshape(ds_equal['CMD0'].data, (1,-1))
-        # v1 = np.reshape(ds_equal['V1'].data, (1,-1))
-        # p1 = np.reshape(ds_equal['P1'].data, (1,-1))
-
-        # x_write = interleave_np([im, cmd, v1, p1])
-        # x_write = np.reshape(x_write, (len(protocol.sweeps), -1))
-        # num_channels = len(names_pclamp)
-        # # the sample-rate is assumed to be divided among all ADC channels
-        # # so if we are sampling in parallel increase the sample rate by the number of channels
-        # writeABF1(x_write, os.path.join(data_dir, 'test_step.abf'), 1/(t[1]-t[0])*num_channels, 
-        #        units=['A', 'V', 'V', 'V'], nADCNumChannels=num_channels, FLOAT=True, names_input = names_pclamp)
 
     ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'V1', 'P1'])
     dac_sample_rate = 2.5e6
@@ -522,5 +508,7 @@ if 1:
     # add log info to datastreams -- any dictionary is ok  
     datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
     datastreams.add_log_info({'dc_configs': dc_configs})
+    datastreams.add_log_info({'dut_notes': dut_notes})
+
     print(datastreams.__dict__)
-    datastreams.to_h5(data_dir, 'datastreams_output_' + file_name.format(idx) + '.h5', log_info)
+    datastreams.to_h5(data_dir, 'datastreams_output_protocols' + file_name.format(idx) + '.h5', log_info)
