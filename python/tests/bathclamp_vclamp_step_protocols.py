@@ -40,9 +40,15 @@ from filters.filter_tools import butter_lowpass_filter
 
 from ephys.core import Sequence, Protocol
 
-dut_notes = 'cell3_without_saponin_electrode_inserted'
+GND_I = True
+PASSIVE = False
+dut_notes = f'cell6_Kv2Kv3_clearchamber_{GND_I}_passiveclamp{PASSIVE}_meas9_afterSaponin_noGuard'
 
-protocol = Protocol.create_from_csv(filepath=r'ephys/protocol.csv', num_sweeps=10)
+protocol_name = r'ephys/protocol_test2.csv'
+# protocol = Protocol.create_from_csv(filepath=r'ephys/protocol_Kv7p2.csv', num_sweeps=5) # max is 5 sweeps for this protocol
+#protocol = Protocol.create_from_csv(filepath=r'ephys/protocol.csv', num_sweeps=10)
+protocol = Protocol.create_from_csv(filepath=protocol_name, num_sweeps=8)
+
 protocol.preview()
 first_step_time_us = protocol.sweeps[0].epochs[0].first_duration*1e3 # in milliseconds *1e3 to microseconds 
 
@@ -146,7 +152,7 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
-dc_mapping = {'bath': 0, 'clamp': 3, 'vsense': 1} 
+dc_mapping = {'bath': 0, 'clamp': 3, 'guard': 1} 
 DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 eps = Endpoint.endpoints_from_defines
@@ -186,7 +192,6 @@ except:
 sleep(1)
 try: # only initialize systeam and FPGA if needed. Allows us to repeat with %run -i tests/bathclamp_vclamp_step_response.py 
     f.xem.IsOpen()
-    ad7961s[0].reset_wire(1)    # Only actually one WIRE_RESET for all AD7961s
 
 except NameError:
     print('Initializing the FPGA')
@@ -217,6 +222,36 @@ except NameError:
     gpio.spi_debug("ads")
     gpio.ads_misc("convst")  # to check sample rate of ADS
 
+    # -------- configure the ADS8686
+    ads_voltage_range = 5  # need this for to_voltage later 
+    ads.set_host_mode()
+    sleep(0.05)
+    ads.hw_reset(val=True)
+    sleep(0.1)
+    ads.hw_reset(val=False)
+    ads.setup()
+    ads.set_range(ads_voltage_range) 
+    ads.set_lpf(376)
+    #ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
+    # ads_sequencer_setup = [('1', '0'), ('2', '2')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
+    ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2'), ('4','4')] # stay consistent with covg_cal_startup
+
+    codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
+    ads.write_reg_bridge() # 1 MSPS rate 
+    ads.set_fpga_mode()
+
+    daq.TCA[0].configure_pins([0, 0])
+    daq.TCA[1].configure_pins([0, 0])
+
+    # --------  Enable fast ADCs  --------
+    for chan in [0, 1, 2, 3]:
+        ad7961s[chan].power_up_adc()  # standard sampling
+    time.sleep(0.5) # TODO - reduce sleep time
+    ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
+    time.sleep(0.2) # TODO - reduce sleep time
+    ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
+    time.sleep(0.1) # TODO - reduce sleep time
+
     # instantiate the Clamp board providing a daughter card number (from 0 to 3)
     clamps = [None] * 4
     for dc_num in DC_NUMS:
@@ -226,26 +261,8 @@ except NameError:
         clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
         clamps[dc_num] = clamp
 
-vsense = Vsense(fpga=f, DAC_addr_pins=0b000, dc_num=1)
-vsense.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
-
-# Reconfigure ADS8686 for different sequencer setup 
-# -------- configure the ADS8686
-ads_voltage_range = 5  # need this for to_voltage later 
-ads.hw_reset(val=False)
-ads.set_host_mode()
-ads.setup()
-ads.set_range(ads_voltage_range) 
-ads.set_lpf(376)
-#ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
-ads_sequencer_setup = [('1', '0'), ('2', '2')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
-
-codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
-ads.write_reg_bridge() # 1 MSPS rate 
-ads.set_fpga_mode()
-
-daq.TCA[0].configure_pins([0, 0])
-daq.TCA[1].configure_pins([0, 0])
+    vsense = Vsense(fpga=f, DAC_addr_pins=0b000, dc_num=1)
+    vsense.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
 
 dac_range = 5 # +/-5V 
 dac_offset = 0x2000  # TODO - change to the holding voltage
@@ -263,15 +280,6 @@ for i in range(6):
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, dac_range)  # 5V 
 
-# --------  Enable fast ADCs  --------
-for chan in [0, 1, 2, 3]:
-    ad7961s[chan].power_up_adc()  # standard sampling
-time.sleep(0.5) # TODO - reduce sleep time
-ad7961s[0].reset_wire(0)    # Only actually one WIRE_RESET for all AD7961s
-time.sleep(0.2) # TODO - reduce sleep time
-ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
-time.sleep(0.1) # TODO - reduce sleep time
-
 # ------ Collect Data --------------
 file_name = time.strftime("%Y%m%d-%H%M%S") + '_{}'
 idx = 30
@@ -287,7 +295,7 @@ sequence = Sequence(protocols=[protocol]*sequence_repeat)
 # pipe_return, write_speed = write_ddr(daq.ddr)
 
 fc_cmd = None
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
+set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384, cc_val=None, cc_pickle_num=None, WRITE_DDR=False)
 
 sequence.to_ddr(0, daq, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7)
@@ -299,18 +307,31 @@ if 1:
     clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
     clamp_res = 10000 # should be zero with modified board when set to 10 MOhms 
     clamp_cap = 47
+    if GND_I:
+        P2_E_CTRL = 1 # disconnect the amplifier 
+        DAC_SEL = "gnd_CAL2"
+        P2_CAL_CTRL = 1
+        P1_CAL_CTRL = 1
+        ADC_SEL="CAL_SIG1"
+    else:
+        P2_E_CTRL = 0 # connect the amplifier 
+        DAC_SEL = "noDrive"
+        P2_CAL_CTRL = 0
+        P1_CAL_CTRL = 1
+        ADC_SEL="CAL_SIG1" # digitize V1; could alternatively digitize I using CAL_SIG2 
+
     for dc_num in [dc_mapping['clamp']]:
         log_info, config_dict = clamps[dc_num].configure_clamp(
-            ADC_SEL="CAL_SIG2", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
-            DAC_SEL="noDrive", # must not be drive_CAL2 
+            ADC_SEL=ADC_SEL, # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
+            DAC_SEL=DAC_SEL, # must not be drive_CAL2 
             CCOMP=clamp_cap,
             RF1=clamp_fb_res,  # feedback circuit
             ADG_RES=clamp_res,
             PClamp_CTRL=0,
             P1_E_CTRL=0,
-            P1_CAL_CTRL=0,
-            P2_E_CTRL=0,
-            P2_CAL_CTRL=0,
+            P1_CAL_CTRL=P1_CAL_CTRL,
+            P2_E_CTRL=P2_E_CTRL,
+            P2_CAL_CTRL=P2_CAL_CTRL,
             gain=1,  # instrumentation amplifier
             FDBK=1,
             mode="voltage",
@@ -321,10 +342,15 @@ if 1:
         )
         dc_configs[dc_num] = config_dict
 
-    inamp_gain = 5
+    inamp_gain = 2
     cap = 47
     fb_res = 2.1
     res = 100
+    if PASSIVE: 
+        PClamp_CTRL = 1
+    else:
+        PClamp_CTRL = 0
+
     # Choose resistor; setup
     for dc_num in [dc_mapping['bath']]:
         log_info, config_dict = clamps[dc_num].configure_clamp(
@@ -333,12 +359,35 @@ if 1:
             CCOMP=cap,
             RF1=fb_res,  # feedback circuit
             ADG_RES=res,
-            PClamp_CTRL=0,
+            PClamp_CTRL=PClamp_CTRL,
             P1_E_CTRL=0,
             P1_CAL_CTRL=0,
             P2_E_CTRL=0,
             P2_CAL_CTRL=1,
             gain=inamp_gain,  # instrumentation amplifier
+            FDBK=1,
+            mode="voltage",
+            EN_ipump=0,
+            RF_1_Out=1,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000,
+        )
+        dc_configs[dc_num] = config_dict
+
+    # configure the guard
+    for dc_num in [dc_mapping['guard']]:
+        log_info, config_dict = clamps[dc_num].configure_clamp(
+            ADC_SEL="CAL_SIG2",  # required to digitize P2 
+            DAC_SEL="noDrive",
+            CCOMP=47,
+            RF1=2.1,  # feedback circuit
+            ADG_RES=33,
+            PClamp_CTRL=1, # always passive for the guard clamp
+            P1_E_CTRL=0,
+            P1_CAL_CTRL=0,
+            P2_E_CTRL=0,
+            P2_CAL_CTRL=0,
+            gain=1,  # instrumentation amplifier
             FDBK=1,
             mode="voltage",
             EN_ipump=0,
@@ -385,7 +434,7 @@ if 1:
     
         return datastreams, log_info
         
-    def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=100):
+    def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=100, time_offset=0):
 
         # Two plots that can be updated in realtime 
         # First plot is 2x2 
@@ -396,14 +445,14 @@ if 1:
             figs.append(fig)
             # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
             l1 = datastreams['P1'].plot(ax[0,0], {'marker':'.'})
-            ax[0,0].set_ylim([-100e-3, 100e-3])
+            ax[0,0].set_ylim([-100e-3, protocol.sweeps[0].duration()*1e-3])
             # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
             try:
                 l2 = datastreams['P2'].plot(ax[0,1], {'marker':'.'})
                 ax[1].set_title('P2')
             except:
                 l2 = datastreams['CMD0'].plot(ax[0,1], {'marker':'.'})
-                ax[0,1].set_ylim([-100e-3, 100e-3])
+                ax[0,1].set_ylim([-100e-3, protocol.sweeps[0].duration()*1e-3])
 
             l3 = datastreams['V1'].plot(ax[1,0], {'marker':'.'})
             try:
@@ -438,27 +487,32 @@ if 1:
 
                 if idx==1:
                     ax.set_ylim([-60e-6, 60e-6])
+                    ax_right.set_ylim([-0.12, 0.12])
                 else:
-                    ax.set_ylim([-60e-6, 60e-6])           
+                    ax.set_ylim([-60e-6, 60e-6])    
+                    ax_right.set_ylim([-0.12, 0.12])       
                 lns = l1+l2+l3
                 labs = [l.get_label() for l in lns]
                 ax.legend(lns, labs, loc=2)
                 lines2.append([l1,l2,l3])
 
                 if idx==1:
-                    ads_plot_zoom(ax, t_range=[first_step_time_us-100, first_step_time_us + 200])
-                    ads_plot_zoom(ax_right, t_range=[first_step_time_us-100, first_step_time_us + 200])
-                else:
-                    ads_plot_zoom(ax, t_range=[first_step_time_us-100, first_step_time_us + 4000])
-                    ads_plot_zoom(ax_right, t_range=[first_step_time_us-100, first_step_time_us + 4000])
+                    print(time_offset)
+                    ads_plot_zoom(ax, t_range=[0, 100000])
+                    ads_plot_zoom(ax_right, t_range=[0, 100000])
 
+                    # ads_plot_zoom(ax, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 2000])
+                    # ads_plot_zoom(ax_right, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 2000])
+                else:
+                    #ads_plot_zoom(ax, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 4000])
+                    #ads_plot_zoom(ax_right, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 4000])
+                    ads_plot_zoom(ax, t_range=[0, protocol.sweeps[0].duration()*1e3])
+                    ads_plot_zoom(ax_right, t_range=[0, protocol.sweeps[0].duration()*1e3])
         else:
             for l2 in lines2:
                 datastreams['CMD0'].update_lines(l2[0][0]) # TODO: why is this a list?
                 datastreams['P1'].update_lines(l2[1][0])
                 datastreams['Im'].update_lines(l2[2][0], {'decimate':[10,10], 'invert':-1})
-                #datastreams['Im'].update_lines(l2[2][0], {'fc':500e3, 'invert':-1})
-                #datastreams['Im'].update_lines(l2[2][0], {'invert':-1})
             
             im_data = datastreams['Im'].data
             t = datastreams['Im'].create_time()
@@ -478,22 +532,27 @@ if 1:
         return first_time, lines1, lines2, figs
 
     # first sweep
-    # TODO: why 40 and 100? 
-    datastreams, log_info = capture_data(idx=0, num_repeats=40, blk_multiples=100, RESTART=False)
-    first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
+    # why 40 and 100? -- captures about the same length of data as the protocol duration 
+    num_repeats = int(40*protocol.sweeps[0].duration()/100)
+    datastreams, log_info = capture_data(idx=0, num_repeats=num_repeats, blk_multiples=100, RESTART=False)
+    first_time, lines1, lines2, figs = update_plots(first_time, datastreams, time_offset=0)
+
+    time_offset = protocol.sweeps[0].duration()/1e3 - datastreams['Im'].create_time()[-1]  # from milliseconds to seconds 
 
     for i in range(len(protocol.sweeps) - 1):
-        datastreams2, log_info = capture_data(idx=i+1, num_repeats=40, blk_multiples=100, RESTART=False)
-        update_plots(first_time, datastreams2, lines1, lines2, figs, res)
+        datastreams2, log_info = capture_data(idx=i+1, num_repeats=num_repeats, blk_multiples=100, RESTART=False)
+        update_plots(first_time, datastreams2, lines1, lines2, figs, res, time_offset = time_offset*1e6) # plots are 
+        time_offset += protocol.sweeps[0].duration()/1e3 - datastreams2['Im'].create_time()[-1]  # from milliseconds to seconds 
+
         datastreams.append(datastreams2)
 
     TO_CLAMPFIT = True
     if TO_CLAMPFIT: # TODO 
         datastreams.to_clampfit(data_dir, 'protocol_tests_rtia{}_ccomp{}'.format(res, cap) + file_name.format(idx) + '.abf',
-                        names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
-                        dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=len(protocol.sweeps))
+                        names_pclamp = ['Im', 'CMD0', 'I', 'P1'],
+                        dac_len=len(protocol), dac_sample_rate=2.5e6, sweeps=len(protocol.sweeps))
 
-    ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'V1', 'P1'])
+    ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'I', 'P1'])
     dac_sample_rate = 2.5e6
     downsample_factor = int(dac_sample_rate/ds_equal['CMD0'].sample_rate)        
     ds_equal.crop(int(len(protocol)/downsample_factor))
@@ -511,4 +570,7 @@ if 1:
     datastreams.add_log_info({'dut_notes': dut_notes})
 
     print(datastreams.__dict__)
-    datastreams.to_h5(data_dir, 'datastreams_output_protocols' + file_name.format(idx) + '.h5', log_info)
+    out_filename = 'datastreams_output_protocols' + file_name.format(idx) + '.h5'
+    datastreams.to_h5(data_dir, out_filename, log_info)
+
+    ds2 = h5_to_datastreams(data_dir, out_filename)

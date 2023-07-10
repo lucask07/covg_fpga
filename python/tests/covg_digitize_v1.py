@@ -766,10 +766,56 @@ def run_tests(dc_configs, TESTS = ['holding_current'], repeats=100, pause_time=0
 
 # dc_configs, sys_connections = setup_clamps(dc_mapping=dc_mapping, passive_clamp=True, bath_meas='P1')
 
-# Adjust P2 using calibration dac and check V1 
+# verify digitization of V1 using the calibration electrode at P1 of the clamp board.
+if 0:
+    dc_num = dc_mapping['bath']
+    dc_configs[dc_num]['PClamp_CTRL'] = 0
+    dc_configs[dc_num]['P1_E_CTRL'] = 0
+    dc_configs[dc_num]['P2_E_CTRL'] = 1
+    dc_configs[dc_num]['P1_CAL_CTRL'] = 0
+    dc_configs[dc_num]['P2_CAL_CTRL'] = 1
+    dc_configs[dc_num]['ADC_SEL'] = 'CAL_SIG2'
+    dc_configs[dc_num]['DAC_SEL'] = 'drive_CAL2'
+    log_info_bath, dc_configs[dc_num] = clamps[dc_num].configure_clamp(**dc_configs[dc_num])    
+
+    dc_num = dc_mapping['clamp']
+    # configure relays 
+    dc_configs[dc_num]['P1_CAL_CTRL'] = 1
+    dc_configs[dc_num]['P2_CAL_CTRL'] = 0
+    dc_configs[dc_num]['P1_E_CTRL'] = 1
+    dc_configs[dc_num]['P2_E_CTRL'] = 0
+    dc_configs[dc_num]['PClamp_CTRL'] = 0
+
+    dc_configs[dc_num]['DAC_SEL'] = 'drive_CAL1'
+    dc_configs[dc_num]['ADC_SEL'] = 'CAL_SIG1'
+
+    log_info_bath, dc_configs[dc_num] = clamps[dc_num].configure_clamp(**dc_configs[dc_num])    
+
+    quiet_dacs(ch=[None, None])
+    res = {'V1': np.array([]), 'P1': np.array([]), 'P2': np.array([])}
+
+    mv_arr = np.linspace(-1000, 1000, 100)
+    for mv in mv_arr:
+        mv = float(mv/1000)
+        daq.DAC_gp[0].write_voltage(1.25 - mv, outputs=[0,1,2,3])
+        v, datastreams = measure_offsets(dc_configs)
+
+        res['V1'] = np.append(res['V1'], v['A'][4])
+        #res['P1'] = np.append(res['P1'], np.average(datastreams['P1'].data)) # AMP_OUT of A1 
+        res['P1'] = np.append(res['P1'], v['A'][1]) # AMP_OUT of A1 
+        res['P2'] = np.append(res['P2'], v['A'][0]) # calibration out 
+
+    fig,ax = plt.subplots(3,1)
+    for idx, n in enumerate(['V1', 'P1', 'P2']):
+        ax[idx].plot(mv_arr/1000*3, res[n], label=n)
+        ax[idx].legend()
+
+
+
+# with P2 and V1 (microelectrode in the bath) verify the microelectrode by driving P2 
 dc_num = dc_mapping['bath']
-dc_configs[dc_num]['PClamp_CTRL'] = 0
-dc_configs[dc_num]['P1_E_CTRL'] = 0
+dc_configs[dc_num]['PClamp_CTRL'] = 1
+dc_configs[dc_num]['P1_E_CTRL'] = 1
 dc_configs[dc_num]['P2_E_CTRL'] = 1
 dc_configs[dc_num]['P1_CAL_CTRL'] = 0
 dc_configs[dc_num]['P2_CAL_CTRL'] = 1
@@ -785,7 +831,7 @@ dc_configs[dc_num]['P1_E_CTRL'] = 1
 dc_configs[dc_num]['P2_E_CTRL'] = 0
 dc_configs[dc_num]['PClamp_CTRL'] = 0
 
-dc_configs[dc_num]['DAC_SEL'] = 'drive_CAL1'
+dc_configs[dc_num]['DAC_SEL'] = 'noDrive'
 dc_configs[dc_num]['ADC_SEL'] = 'CAL_SIG1'
 
 log_info_bath, dc_configs[dc_num] = clamps[dc_num].configure_clamp(**dc_configs[dc_num])    
@@ -793,10 +839,10 @@ log_info_bath, dc_configs[dc_num] = clamps[dc_num].configure_clamp(**dc_configs[
 quiet_dacs(ch=[None, None])
 res = {'V1': np.array([]), 'P1': np.array([]), 'P2': np.array([])}
 
-mv_arr = np.arange(-1000, 1000, 100)
+mv_arr = np.linspace(-200, 200, 200)
 for mv in mv_arr:
     mv = float(mv/1000)
-    daq.DAC_gp[0].write_voltage(1.25 - mv, outputs=[0,1,2,3])
+    daq.DAC_gp[0].write_voltage(1.25 - mv, outputs=[0])
     v, datastreams = measure_offsets(dc_configs)
 
     res['V1'] = np.append(res['V1'], v['A'][4])
@@ -806,5 +852,9 @@ for mv in mv_arr:
 
 fig,ax = plt.subplots(3,1)
 for idx, n in enumerate(['V1', 'P1', 'P2']):
-    ax[idx].plot(mv_arr/1000, res[n], label=n)
+    if n == 'V1':
+        g = 78.6
+    else:
+        g=1
+    ax[idx].plot(mv_arr/1000*3, res[n]/g, label=n, marker='*')
     ax[idx].legend()

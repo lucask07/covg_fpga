@@ -217,8 +217,8 @@ class Datastreams(dict):
 
                 if dec_factor > 10:
                     for num_try in [10,8,5,4,3,2]:
-                        if dec_factor / num_try % 0:
-                            factors = [num_try, dec_factor/num_try]
+                        if dec_factor % num_try == 0:
+                            factors = [num_try, int(dec_factor/num_try)]
                             break
                 else:
                     factors = [dec_factor]
