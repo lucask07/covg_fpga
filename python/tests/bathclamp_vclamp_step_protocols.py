@@ -306,7 +306,7 @@ if 1:
         )
         dc_configs[dc_num] = config_dict
 
-    inamp_gain = 5
+    inamp_gain = 2
     cap = 47
     fb_res = 2.1
     res = 100
