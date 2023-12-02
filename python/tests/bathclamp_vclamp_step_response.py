@@ -198,7 +198,7 @@ gpio.ads_misc("convst")  # to check sample rate of ADS
 # instantiate the Clamp board providing a daughter card number (from 0 to 3)
 clamps = [None] * 4
 for dc_num in DC_NUMS:
-    if dc_num == 3:
+    if dc_num == dc_mapping['vsense']:
         clamp = Clamp(f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
     else:
         clamp = Clamp(f, dc_num=dc_num, version=2)
@@ -210,6 +210,8 @@ for dc_num in DC_NUMS:
 feedback_resistors = [2.1]
 capacitors = [47]
 bath_res = [10, 100, 332, 1000] # Clamp.configs['ADG_RES_dict'].keys()
+
+bath_res = [100]
 
 # Try with different capacitors
 if feedback_resistors is None:
@@ -281,6 +283,9 @@ first_pos_step = step_len/2*1/DAC_FS # in seconds
 set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384*8, cc_val=None, cc_pickle_num=None)
 
+
+# input('waiting!')
+
 dc_configs = {}
 clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
 clamp_res = 10000 # should be zero with modified board when set to 10 MOhms 
@@ -294,10 +299,10 @@ for dc_num in [dc_mapping['clamp']]:
         ADG_RES=clamp_res,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
-        P1_CAL_CTRL=0,
+        P1_CAL_CTRL=1,
         P2_E_CTRL=0,
         P2_CAL_CTRL=0,
-        gain=in_amp,  # instrumentation amplifier
+        gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
         EN_ipump=0,
@@ -306,6 +311,9 @@ for dc_num in [dc_mapping['clamp']]:
         addr_pins_2=0b000,
     )
     dc_configs[dc_num] = config_dict
+
+# input('waiting2!')
+
 
 cap = capacitors[0]
 fb_res = feedback_resistors[0]
@@ -334,6 +342,9 @@ for dc_num in [dc_mapping['bath']]:
         addr_pins_2=0b000,
     )
     dc_configs[dc_num] = config_dict
+
+# input('waiting3!')
+
 
 ephys_sys = EphysSystem()
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
@@ -484,6 +495,8 @@ adg_r_arr = [33, 100, 332, 1000]
 #ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
 ccomp_arr = [47]
 adg_r_arr = [33, 100, 332, 1000, 3000, 10000]
+adg_r_arr = [100, 100, 100, 100, 100, 100]
+
 
 for ccomp in ccomp_arr:
     for adg_r in adg_r_arr:
