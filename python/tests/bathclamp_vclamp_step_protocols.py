@@ -40,11 +40,11 @@ from filters.filter_tools import butter_lowpass_filter
 
 from ephys.core import Sequence, Protocol
 
-GND_I = True
+GND_I = False
 PASSIVE = False
-dut_notes = f'cell6_Kv2Kv3_clearchamber_{GND_I}_passiveclamp{PASSIVE}_meas9_afterSaponin_noGuard'
+dut_notes = f'model_cell_v2'
 
-protocol_name = r'ephys/protocol_test2.csv'
+protocol_name = r'ephys/dagan_comparison.csv'
 # protocol = Protocol.create_from_csv(filepath=r'ephys/protocol_Kv7p2.csv', num_sweeps=5) # max is 5 sweeps for this protocol
 #protocol = Protocol.create_from_csv(filepath=r'ephys/protocol.csv', num_sweeps=10)
 protocol = Protocol.create_from_csv(filepath=protocol_name, num_sweeps=8)
@@ -158,7 +158,7 @@ DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on b
 eps = Endpoint.endpoints_from_defines
 
 pwr_setup = "3dual"
-pwr_setup = "boland_lab"
+# pwr_setup = "boland_lab"
 # -------- power supplies -----------
 try:
     dc_pwr.get('id')
@@ -255,7 +255,10 @@ except NameError:
     # instantiate the Clamp board providing a daughter card number (from 0 to 3)
     clamps = [None] * 4
     for dc_num in DC_NUMS:
-        clamp = Clamp(f, dc_num=dc_num, version=2)
+        if dc_num == dc_mapping['clamp']:
+            clamp = Clamp(f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
+        else:
+            clamp = Clamp(f, dc_num=dc_num, version=2)
         print(f'Clamp {dc_num} Init'.center(35, '-'))
         clamp.init_board()
         clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
