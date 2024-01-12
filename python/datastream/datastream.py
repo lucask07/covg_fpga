@@ -248,7 +248,8 @@ class Datastreams(dict):
         
     def crop(self, to_length):
         """
-            reduce the length of a datastream useful when dividing into sweeps 
+            reduce the length of a datastream to to_length
+            useful when dividing into sweeps 
 
         Parameters
         ----------
@@ -273,17 +274,29 @@ class Datastreams(dict):
 
         return sweeps        
 
-    def to_clampfit(self, data_dir, filename, 
-                    names_pclamp, dac_len, dac_sample_rate, sweeps=1):
-        """
-        names_pclamp: list (must include CMD0)
-        
-        """        
+    def equal_datastream(self, names_pclamp, dac_sample_rate, dac_len):
         ds_equal = self.equalize_sampling(names=names_pclamp)
         downsample_factor = int(dac_sample_rate/ds_equal['CMD0'].sample_rate)        
         ds_equal.crop(int(dac_len/downsample_factor))
 
+        return ds_equal 
+
+    def to_clampfit(self, data_dir, filename, 
+                    names_pclamp, dac_len, dac_sample_rate, sweeps=1):
+        """
+        names_pclamp: list (must include CMD0)
+
+        """        
+        ds_equal = self.equal_datastream(names_pclamp, dac_sample_rate, dac_len)
         t = ds_equal['CMD0'].create_time()
+
+        lens = []
+        for n in names_pclamp:
+            lens.append(len(ds_equal[n].data))
+        min_len = np.min(np.array(lens))
+        min_sweep_mult = (min_len//sweeps)*sweeps
+        print(f'cropping to {min_sweep_mult}')
+        ds_equal.crop(min_sweep_mult)
 
         data_list = []
         units = []
@@ -296,9 +309,12 @@ class Datastreams(dict):
         num_channels = len(names_pclamp)
         # the sample-rate is assumed to be divided among all ADC channels
         # so if we are sampling in parallel increase the sample rate by the number of channels
-        writeABF1(x_write, os.path.join(data_dir, filename), 1/(t[1]-t[0])*num_channels, 
-                units=units, nADCNumChannels=num_channels, FLOAT=True, names_input=names_pclamp)
-
+        try:
+            writeABF1(x_write, os.path.join(data_dir, filename), 1/(t[1]-t[0])*num_channels, 
+                    units=units, nADCNumChannels=num_channels, FLOAT=True, names_input=names_pclamp)
+        except PermissionError: # will fail if the file is open in pClamp, append _tmp.abf 
+            writeABF1(x_write, os.path.join(data_dir, filename.replace('.abf', '_tmp.abf')), 1/(t[1]-t[0])*num_channels, 
+                    units=units, nADCNumChannels=num_channels, FLOAT=True, names_input=names_pclamp)
 
 
 def h5_to_datastreams(directory, filename):
@@ -488,7 +504,10 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
                         v_sense_gain = dc_config_dicts[dc_config]['VSENSE']
                         gain = v_sense_gain*11
                     except:
-                        gain = 11*(1+dc_config_dicts[dc_config]['RF1']/3.01)  # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
+                        if dc_config_dicts[dc_config]['RF1']==60:
+                            gain = 11 # modifcation to the board to make 60 unity gain (and actually all gains unity gain)
+                        else:
+                            gain = 11*(1+dc_config_dicts[dc_config]['RF1']/3.01)  # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
                 else:
                     gain = 1
                 if ads_map[dc_config][amp_net][0] == 'A':
@@ -524,7 +543,10 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
             if gain > 99: # must by mV -- convert to volts
                 gain = gain/1000
             if 'CMD' in net:
-                gain = gain/(1 + dc_config_dicts[dc_config]['RF1']/3.01)/10 # TODO x10 is a property of the clamp board, can we have a parameter for this? 
+                if dc_config_dicts[dc_config]['RF1']==60:
+                    gain = gain/10 # modifcation to the board to make 60 unity gain (and actually all gains unity gain)
+                else:
+                    gain = gain/(1 + dc_config_dicts[dc_config]['RF1']/3.01)/10 # TODO x10 is a property of the clamp board, can we have a parameter for this? 
             con_name = f'D{ch}'
             pc = PhysicalConnection(con_name, 
                                     gain*2,  # this is more accurately the full-scale range on the positive side

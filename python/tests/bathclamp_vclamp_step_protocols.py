@@ -285,7 +285,7 @@ for i in range(6):
 
 # ------ Collect Data --------------
 file_name = time.strftime("%Y%m%d-%H%M%S") + '_{}'
-idx = 30
+idx = 10
 
 # set all fast-DAC DDR data to midscale
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
@@ -302,278 +302,323 @@ set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=0x0200, cc
         step_len=16384, cc_val=None, cc_pickle_num=None, WRITE_DDR=False)
 
 sequence.to_ddr(0, daq, inject_current=False, low_scaling_factor=0, cutoff=-10, high_scaling_factor=1/7)
+TEST_CC = False
+if TEST_CC:
+    # swap CC and CMD 
+    cmd_signal = copy.deepcopy(daq.ddr.data_arrays[1])
+    cc_signal = copy.deepcopy(daq.ddr.data_arrays[0])
+    daq.ddr.data_arrays[1] = cc_signal
+    daq.ddr.data_arrays[0] = cmd_signal
+
 # daq.ddr.data_arrays[1] = daq.ddr.data_arrays[1] + 3000
 pipe_return, write_speed = write_ddr(daq.ddr)
 
-if 1:
-    dc_configs = {}
-    clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
-    clamp_res = 10000 # should be zero with modified board when set to 10 MOhms 
-    clamp_cap = 47
-    if GND_I:
-        P2_E_CTRL = 1 # disconnect the amplifier 
-        DAC_SEL = "gnd_CAL2"
-        P2_CAL_CTRL = 1
-        P1_CAL_CTRL = 1
-        ADC_SEL="CAL_SIG1"
-    else:
-        P2_E_CTRL = 0 # connect the amplifier 
-        DAC_SEL = "noDrive"
-        P2_CAL_CTRL = 0
-        P1_CAL_CTRL = 1
-        ADC_SEL="CAL_SIG1" # digitize V1; could alternatively digitize I using CAL_SIG2 
+dc_configs = {}
+clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
+clamp_res = 10000 # should be zero with modified board when set to 10 MOhms 
+clamp_cap = 47
+if GND_I:
+    P2_E_CTRL = 1 # disconnect the amplifier 
+    DAC_SEL = "gnd_CAL2"
+    P2_CAL_CTRL = 1
+    P1_CAL_CTRL = 1
+    ADC_SEL="CAL_SIG1"
+else:
+    P2_E_CTRL = 0 # connect the amplifier 
+    DAC_SEL = "noDrive"
+    P2_CAL_CTRL = 0
+    P1_CAL_CTRL = 1
+    ADC_SEL="CAL_SIG1" # digitize V1; could alternatively digitize I using CAL_SIG2 
 
-    for dc_num in [dc_mapping['clamp']]:
-        log_info, config_dict = clamps[dc_num].configure_clamp(
-            ADC_SEL=ADC_SEL, # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
-            DAC_SEL=DAC_SEL, # must not be drive_CAL2 
-            CCOMP=clamp_cap,
-            RF1=clamp_fb_res,  # feedback circuit
-            ADG_RES=clamp_res,
-            PClamp_CTRL=0,
-            P1_E_CTRL=0,
-            P1_CAL_CTRL=P1_CAL_CTRL,
-            P2_E_CTRL=P2_E_CTRL,
-            P2_CAL_CTRL=P2_CAL_CTRL,
-            gain=1,  # instrumentation amplifier
-            FDBK=1,
-            mode="voltage",
-            EN_ipump=0,
-            RF_1_Out=1,
-            addr_pins_1=0b110,
-            addr_pins_2=0b000,
-        )
-        dc_configs[dc_num] = config_dict
+for dc_num in [dc_mapping['clamp']]:
+    log_info, config_dict = clamps[dc_num].configure_clamp(
+        ADC_SEL=ADC_SEL, # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
+        DAC_SEL=DAC_SEL, # must not be drive_CAL2 
+        CCOMP=clamp_cap,
+        RF1=clamp_fb_res,  # feedback circuit
+        ADG_RES=clamp_res,
+        PClamp_CTRL=0,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=P1_CAL_CTRL,
+        P2_E_CTRL=P2_E_CTRL,
+        P2_CAL_CTRL=P2_CAL_CTRL,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
+    dc_configs[dc_num] = config_dict
 
-    inamp_gain = 2
-    cap = 47
-    fb_res = 2.1
-    res = 100
-    if PASSIVE: 
-        PClamp_CTRL = 1
-    else:
-        PClamp_CTRL = 0
+inamp_gain = 2
+cap = 47
+fb_res = 2.1
+fb_res = 60
+res = 10
+if PASSIVE: 
+    PClamp_CTRL = 1
+else:
+    PClamp_CTRL = 0
 
-    # Choose resistor; setup
-    for dc_num in [dc_mapping['bath']]:
-        log_info, config_dict = clamps[dc_num].configure_clamp(
-            ADC_SEL="CAL_SIG2",  # required to digitize P2 
-            DAC_SEL="noDrive",
-            CCOMP=cap,
-            RF1=fb_res,  # feedback circuit
-            ADG_RES=res,
-            PClamp_CTRL=PClamp_CTRL,
-            P1_E_CTRL=0,
-            P1_CAL_CTRL=0,
-            P2_E_CTRL=0,
-            P2_CAL_CTRL=1,
-            gain=inamp_gain,  # instrumentation amplifier
-            FDBK=1,
-            mode="voltage",
-            EN_ipump=0,
-            RF_1_Out=1,
-            addr_pins_1=0b110,
-            addr_pins_2=0b000,
-        )
-        dc_configs[dc_num] = config_dict
+# Choose resistor; setup
+for dc_num in [dc_mapping['bath']]:
+    log_info, config_dict = clamps[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG2",  # required to digitize P2 
+        DAC_SEL="noDrive",
+        CCOMP=cap,
+        RF1=fb_res,  # feedback circuit
+        ADG_RES=res,
+        PClamp_CTRL=PClamp_CTRL,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=1,
+        gain=inamp_gain,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
+    dc_configs[dc_num] = config_dict
 
-    # configure the guard
-    for dc_num in [dc_mapping['guard']]:
-        log_info, config_dict = clamps[dc_num].configure_clamp(
-            ADC_SEL="CAL_SIG2",  # required to digitize P2 
-            DAC_SEL="noDrive",
-            CCOMP=47,
-            RF1=2.1,  # feedback circuit
-            ADG_RES=33,
-            PClamp_CTRL=1, # always passive for the guard clamp
-            P1_E_CTRL=0,
-            P1_CAL_CTRL=0,
-            P2_E_CTRL=0,
-            P2_CAL_CTRL=0,
-            gain=1,  # instrumentation amplifier
-            FDBK=1,
-            mode="voltage",
-            EN_ipump=0,
-            RF_1_Out=1,
-            addr_pins_1=0b110,
-            addr_pins_2=0b000,
-        )
-        dc_configs[dc_num] = config_dict
+# configure the guard
+for dc_num in [dc_mapping['guard']]:
+    log_info, config_dict = clamps[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG2",  # required to digitize P2 
+        DAC_SEL="noDrive",
+        CCOMP=47,
+        RF1=2.1,  # feedback circuit
+        ADG_RES=10000,
+        PClamp_CTRL=0, # this is the amplifier in the voltage clamp 
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=0,
+        gain=1,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
+    dc_configs[dc_num] = config_dict
 
-    ephys_sys = EphysSystem(system='Dagan_vclamp_guard')
+ephys_sys = EphysSystem(system='Dagan_vclamp_guard')
+sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+
+def ads_plot_zoom(ax, t_range=[3250,3300]):
+    try:
+        for ax_s in ax:
+            ax_s.set_xlim(t_range)
+            ax_s.grid('on')
+    except:
+        ax.set_xlim(t_range)
+        ax.grid('on')   
+
+plt.close('all')
+first_time = True
+# TODO - switch to DDR here 
+ddr.repeat_setup() # prepare to Get data -- clear FIFOs and resets the address of the MIG interface 
+
+def capture_data(idx=0, num_repeats=8, blk_multiples=40, RESTART=False):
+
+    if RESTART:
+        ddr.repeat_setup() # Get data
+
+    filename = file_name.format(idx) + '.h5'
+
+    # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
+    chan_data_one_repeat = ddr.save_data(data_dir, filename, num_repeats=num_repeats,
+                                            blk_multiples=blk_multiples)  # blk multiples must be multiple of 10 
+    # each block multiple is 256 bytes 
+
+    # update system connections since the daughtercard configurations have changed
     sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
+    # Plot using datastreams 
+    datastreams, log_info = rawh5_to_datastreams(data_dir, filename, ddr.data_to_names, 
+                                                daq, sys_connections, outfile = None)
 
-    def ads_plot_zoom(ax, t_range=[3250,3300]):
+    return datastreams, log_info
+    
+def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=100, time_offset=0):
+
+    # Two plots that can be updated in realtime 
+    # First plot is 2x2 
+    if first_time:
+        figs = []
+        fig, ax = plt.subplots(2,2, figsize=(10,8))
+        fig.canvas.manager.window.move(0,0)
+        figs.append(fig)
+        # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
+        l1 = datastreams['P1'].plot(ax[0,0], {'marker':'.'})
+        ax[0,0].set_ylim([-100e-3, protocol.sweeps[0].duration()*1e-3])
+        # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
         try:
-            for ax_s in ax:
-                ax_s.set_xlim(t_range)
-                ax_s.grid('on')
+            l2 = datastreams['P2'].plot(ax[0,1], {'marker':'.'})
+            ax[1].set_title('P2')
         except:
-            ax.set_xlim(t_range)
-            ax.grid('on')   
+            l2 = datastreams['CMD0'].plot(ax[0,1], {'marker':'.'})
+            ax[0,1].set_ylim([-100e-3, protocol.sweeps[0].duration()*1e-3])
 
-    plt.close('all')
-    first_time = True
-    # TODO - switch to DDR here 
-    ddr.repeat_setup() # prepare to Get data -- clear FIFOs and resets the address of the MIG interface 
+        l3 = datastreams['V1'].plot(ax[1,0], {'marker':'.'})
+        try:
+            l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
+        except:
+            l4 = None
+        lines1 = [l1,l2,l3,l4]
+    else:
+        datastreams['P1'].update_lines(lines1[0][0])
+        # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
+        try:
+            datastreams['P2'].update_lines(lines1[1][0])
+        except:
+            datastreams['CMD0'].update_lines(lines1[1][0])
+        datastreams['V1'].update_lines(lines1[2][0])
+        try:
+            datastreams['I'].update_lines(lines1[3][0])
+        except:
+            pass
+    # second plot, membrane current and CMD 
+    if first_time:
+        fig, axs = plt.subplots(2,1,figsize=(10,8))
+        fig.canvas.manager.window.move(600,0)
+        figs.append(fig)
+        lines2 = []
+        for idx,ax in enumerate(axs):
+            ax_right = ax.twinx()
+            l1 = datastreams['CMD0'].plot(ax_right, {'linestyle':'--', 'color':'r', 'label': 'CMD'})
+            l2 = datastreams['P1'].plot(ax_right, {'linestyle':'-', 'color': 'b', 'label': 'P1'})
+            l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'decimate':[10,10], 'invert':-1})
+            #l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'invert':-1})
 
-    def capture_data(idx=0, num_repeats=8, blk_multiples=40, RESTART=False):
+            if idx==1:
+                ax.set_ylim([-60e-6, 60e-6])
+                ax_right.set_ylim([-0.12, 0.12])
+            else:
+                ax.set_ylim([-60e-6, 60e-6])    
+                ax_right.set_ylim([-0.12, 0.12])       
+            lns = l1+l2+l3
+            labs = [l.get_label() for l in lns]
+            ax.legend(lns, labs, loc=2)
+            lines2.append([l1,l2,l3])
 
-        if RESTART:
-            ddr.repeat_setup() # Get data
+            if idx==1:
+                print(time_offset)
+                ads_plot_zoom(ax, t_range=[0, 100000])
+                ads_plot_zoom(ax_right, t_range=[0, 100000])
 
-        filename = file_name.format(idx) + '.h5'
-
-        # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-        chan_data_one_repeat = ddr.save_data(data_dir, filename, num_repeats=num_repeats,
-                                             blk_multiples=blk_multiples)  # blk multiples must be multiple of 10 
-        # each block multiple is 256 bytes 
-
-        # update system connections since the daughtercard configurations have changed
-        sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
-        # Plot using datastreams 
-        datastreams, log_info = rawh5_to_datastreams(data_dir, filename, ddr.data_to_names, 
-                                                    daq, sys_connections, outfile = None)
-    
-        return datastreams, log_info
+                # ads_plot_zoom(ax, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 2000])
+                # ads_plot_zoom(ax_right, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 2000])
+            else:
+                #ads_plot_zoom(ax, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 4000])
+                #ads_plot_zoom(ax_right, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 4000])
+                ads_plot_zoom(ax, t_range=[0, protocol.sweeps[0].duration()*1e3])
+                ads_plot_zoom(ax_right, t_range=[0, protocol.sweeps[0].duration()*1e3])
+    else:
+        for l2 in lines2:
+            datastreams['CMD0'].update_lines(l2[0][0]) # TODO: why is this a list?
+            datastreams['P1'].update_lines(l2[1][0])
+            datastreams['Im'].update_lines(l2[2][0], {'decimate':[10,10], 'invert':-1})
         
-    def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=100, time_offset=0):
+        im_data = datastreams['Im'].data
+        t = datastreams['Im'].create_time()
+        fc = 500e3 #5e3
+        im_data_filt = butter_lowpass_filter(im_data, cutoff=fc, fs=1/(t[1]-t[0]), order=5)
+        idx = (t > 4500e-6) & (t < 5500e-6)
+        im_noise_wb = np.std(im_data[idx])
+        im_noise_filt = np.std(im_data_filt[idx])
+        print(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
 
-        # Two plots that can be updated in realtime 
-        # First plot is 2x2 
-        if first_time:
-            figs = []
-            fig, ax = plt.subplots(2,2, figsize=(10,8))
-            fig.canvas.manager.window.move(0,0)
-            figs.append(fig)
-            # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
-            l1 = datastreams['P1'].plot(ax[0,0], {'marker':'.'})
-            ax[0,0].set_ylim([-100e-3, protocol.sweeps[0].duration()*1e-3])
-            # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-            try:
-                l2 = datastreams['P2'].plot(ax[0,1], {'marker':'.'})
-                ax[1].set_title('P2')
-            except:
-                l2 = datastreams['CMD0'].plot(ax[0,1], {'marker':'.'})
-                ax[0,1].set_ylim([-100e-3, protocol.sweeps[0].duration()*1e-3])
-
-            l3 = datastreams['V1'].plot(ax[1,0], {'marker':'.'})
-            try:
-                l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
-            except:
-                l4 = None
-            lines1 = [l1,l2,l3,l4]
-        else:
-            datastreams['P1'].update_lines(lines1[0][0])
-            # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
-            try:
-                datastreams['P2'].update_lines(lines1[1][0])
-            except:
-                datastreams['CMD0'].update_lines(lines1[1][0])
-            datastreams['V1'].update_lines(lines1[2][0])
-            try:
-                datastreams['I'].update_lines(lines1[3][0])
-            except:
-                pass
-        # second plot, membrane current and CMD 
-        if first_time:
-            fig, axs = plt.subplots(2,1,figsize=(10,8))
-            fig.canvas.manager.window.move(600,0)
-            figs.append(fig)
-            lines2 = []
-            for idx,ax in enumerate(axs):
-                ax_right = ax.twinx()
-                l1 = datastreams['CMD0'].plot(ax_right, {'linestyle':'--', 'color':'r', 'label': 'CMD'})
-                l2 = datastreams['P1'].plot(ax_right, {'linestyle':'-', 'color': 'b', 'label': 'P1'})
-                l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'decimate':[10,10], 'invert':-1})
-                #l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'invert':-1})
-
-                if idx==1:
-                    ax.set_ylim([-60e-6, 60e-6])
-                    ax_right.set_ylim([-0.12, 0.12])
-                else:
-                    ax.set_ylim([-60e-6, 60e-6])    
-                    ax_right.set_ylim([-0.12, 0.12])       
-                lns = l1+l2+l3
-                labs = [l.get_label() for l in lns]
-                ax.legend(lns, labs, loc=2)
-                lines2.append([l1,l2,l3])
-
-                if idx==1:
-                    print(time_offset)
-                    ads_plot_zoom(ax, t_range=[0, 100000])
-                    ads_plot_zoom(ax_right, t_range=[0, 100000])
-
-                    # ads_plot_zoom(ax, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 2000])
-                    # ads_plot_zoom(ax_right, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 2000])
-                else:
-                    #ads_plot_zoom(ax, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 4000])
-                    #ads_plot_zoom(ax_right, t_range=[time_offset + first_step_time_us-4000, time_offset + first_step_time_us + 4000])
-                    ads_plot_zoom(ax, t_range=[0, protocol.sweeps[0].duration()*1e3])
-                    ads_plot_zoom(ax_right, t_range=[0, protocol.sweeps[0].duration()*1e3])
-        else:
-            for l2 in lines2:
-                datastreams['CMD0'].update_lines(l2[0][0]) # TODO: why is this a list?
-                datastreams['P1'].update_lines(l2[1][0])
-                datastreams['Im'].update_lines(l2[2][0], {'decimate':[10,10], 'invert':-1})
-            
-            im_data = datastreams['Im'].data
-            t = datastreams['Im'].create_time()
-            fc = 500e3 #5e3
-            im_data_filt = butter_lowpass_filter(im_data, cutoff=fc, fs=1/(t[1]-t[0]), order=5)
-            idx = (t > 4500e-6) & (t < 5500e-6)
-            im_noise_wb = np.std(im_data[idx])
-            im_noise_filt = np.std(im_data_filt[idx])
-            print(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
-
-        for fig in figs:
-            fig.canvas.draw()
-            fig.canvas.flush_events()
-        
-        first_time = False
-
-        return first_time, lines1, lines2, figs
-
-    # first sweep
-    # why 40 and 100? -- captures about the same length of data as the protocol duration 
-    num_repeats = int(40*protocol.sweeps[0].duration()/100)
-    datastreams, log_info = capture_data(idx=0, num_repeats=num_repeats, blk_multiples=100, RESTART=False)
-    first_time, lines1, lines2, figs = update_plots(first_time, datastreams, time_offset=0)
-
-    time_offset = protocol.sweeps[0].duration()/1e3 - datastreams['Im'].create_time()[-1]  # from milliseconds to seconds 
-
-    for i in range(len(protocol.sweeps) - 1):
-        datastreams2, log_info = capture_data(idx=i+1, num_repeats=num_repeats, blk_multiples=100, RESTART=False)
-        update_plots(first_time, datastreams2, lines1, lines2, figs, res, time_offset = time_offset*1e6) # plots are 
-        time_offset += protocol.sweeps[0].duration()/1e3 - datastreams2['Im'].create_time()[-1]  # from milliseconds to seconds 
-
-        datastreams.append(datastreams2)
-
-    TO_CLAMPFIT = True
-    if TO_CLAMPFIT: # TODO 
-        datastreams.to_clampfit(data_dir, 'protocol_tests_rtia{}_ccomp{}'.format(res, cap) + file_name.format(idx) + '.abf',
-                        names_pclamp = ['Im', 'CMD0', 'I', 'P1'],
-                        dac_len=len(protocol), dac_sample_rate=2.5e6, sweeps=len(protocol.sweeps))
-
-    ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'I', 'P1'])
-    dac_sample_rate = 2.5e6
-    downsample_factor = int(dac_sample_rate/ds_equal['CMD0'].sample_rate)        
-    ds_equal.crop(int(len(protocol)/downsample_factor))
-    # Plot various sweeps 
-    fig,ax = plt.subplots(2,1)
-    sweeps = ds_equal.to_sweeps(len(protocol.sweeps))
+    for fig in figs:
+        fig.canvas.draw()
+        fig.canvas.flush_events()
     
-    for sw in sweeps:
-        sw['Im'].plot(ax[0])
-        sw['CMD0'].plot(ax[1])
+    first_time = False
 
-    # add log info to datastreams -- any dictionary is ok  
-    datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
-    datastreams.add_log_info({'dc_configs': dc_configs})
-    datastreams.add_log_info({'dut_notes': dut_notes})
+    return first_time, lines1, lines2, figs
 
-    print(datastreams.__dict__)
-    out_filename = 'datastreams_output_protocols' + file_name.format(idx) + '.h5'
-    datastreams.to_h5(data_dir, out_filename, log_info)
 
-    ds2 = h5_to_datastreams(data_dir, out_filename)
+# first sweep
+# why 40 and 100? -- captures about the same length of data as the protocol duration 
+num_repeats = int(40*protocol.sweeps[0].duration()/100)
+
+SWP = True
+# extensive sweep
+adg_r_arr = [10, 33, 100, 332]
+ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
+inamp_arr = [1,2,5,10]
+
+adg_r_arr = [100]
+ccomp_arr = [47]
+inamp_arr = [5]
+
+if SWP:
+    for ccomp in ccomp_arr:
+        for adg_r in adg_r_arr:
+            for inamp in inamp_arr:
+                print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
+                plt.close('all')
+
+                dc_configs[0]['ADG_RES'] = adg_r
+                dc_configs[0]['CCOMP'] = ccomp
+                dc_configs[0]['gain'] = inamp
+                clamps[0].configure_clamp(**dc_configs[0])
+                time.sleep(0.2)
+
+                datastreams, log_info = capture_data(idx=0, num_repeats=num_repeats, blk_multiples=100, RESTART=True)
+                first_time = True
+                first_time, lines1, lines2, figs = update_plots(first_time, datastreams, time_offset=0)
+
+                time_offset = protocol.sweeps[0].duration()/1e3 - datastreams['Im'].create_time()[-1]  # from milliseconds to seconds 
+
+                for i in range(len(protocol.sweeps) - 1):
+                    datastreams2, log_info = capture_data(idx=i+1, num_repeats=num_repeats, blk_multiples=100, RESTART=False)
+                    update_plots(first_time, datastreams2, lines1, lines2, figs, res, time_offset = time_offset*1e6) # plots are 
+                    time_offset += protocol.sweeps[0].duration()/1e3 - datastreams2['Im'].create_time()[-1]  # from milliseconds to seconds 
+
+                    datastreams.append(datastreams2)
+
+                # add log info to datastreams -- any dictionary is ok  
+                datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+                datastreams.add_log_info({'dc_configs': dc_configs})
+                datastreams.add_log_info({'dut_notes': dut_notes})
+
+                print(datastreams.__dict__)
+                out_filename = 'protocol_step_test' + file_name.format(idx) + '.h5'
+                datastreams.to_h5(data_dir, out_filename, log_info)
+
+                ds2 = h5_to_datastreams(data_dir, out_filename)
+
+                TO_CLAMPFIT = False
+                if TO_CLAMPFIT: # TODO 
+                    datastreams.to_clampfit(data_dir, 'protocol_tests_rtia{}_ccomp{}'.format(res, cap) + file_name.format(idx) + '.abf',
+                                    names_pclamp = ['Im', 'CMD0', 'I', 'P1'],
+                                    dac_len=len(protocol), dac_sample_rate=2.5e6, sweeps=len(protocol.sweeps))
+
+                ds_equal = datastreams.equalize_sampling(names=['Im', 'CMD0', 'I', 'P1'])
+                dac_sample_rate = 2.5e6
+                downsample_factor = int(dac_sample_rate/ds_equal['CMD0'].sample_rate)        
+                ds_equal.crop(int(len(protocol)/downsample_factor))
+                # Plot various sweeps 
+                fig,ax = plt.subplots(2,1)
+                sweeps = ds_equal.to_sweeps(len(protocol.sweeps))
+
+                for sw in sweeps:
+                    sw['Im'].plot(ax[0])
+                    sw['CMD0'].plot(ax[1])
+
+                # add log info to datastreams -- any dictionary is ok  
+                datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+                datastreams.add_log_info({'dc_configs': dc_configs})
+                datastreams.add_log_info({'dut_notes': dut_notes})
+
+                print(datastreams.__dict__)
+                out_filename = 'datastreams_output_protocols' + file_name.format(idx) + '.h5'
+                datastreams.to_h5(data_dir, out_filename, log_info)
+                ds2 = h5_to_datastreams(data_dir, out_filename)
+                idx = idx + 1

@@ -287,6 +287,7 @@ fc_cmd = 100e3
 #fc_cmd = None
 step_len = 16384*8
 first_pos_step = step_len/2*1/DAC_FS # in seconds 
+
 set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384*8, cc_val=None, cc_pickle_num=None)
 
@@ -338,11 +339,11 @@ for dc_num in [dc_mapping['guard']]:
     )
     dc_configs[dc_num] = config_dict
 
-cap = capacitors[0]
-fb_res = feedback_resistors[0]
-fb_res = 2.1
-# Try with 5 different resistors
-res = [x for x in bath_res if type(x) == int][0]
+cap = 47
+res = 100
+in_amp = 2
+fb_res = 60
+
 # Choose resistor; setup
 for dc_num in [dc_mapping['bath']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
@@ -507,115 +508,100 @@ if OSCOPE:
     osc.set('run_acq')
 
 # extensive sweep
+SWP = False
 adg_r_arr = [10, 33, 100, 332]
 ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
+inamp_arr = [1,2,5,10]
 
-ccomp_arr = [47, 247, 1000, 4700]
-adg_r_arr = [33, 100, 332, 1000]
+if SWP:
+    for ccomp in ccomp_arr:
+        for adg_r in adg_r_arr:
+            print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
 
-#ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
-ccomp_arr = [47]
-# adg_r_arr = [33, 100, 332, 1000, 3000, 10000]
+            if OSCOPE: 
+                scope_data['CC'] = np.append(scope_data['CC'], ccomp)
+                scope_data['RTIA'] = np.append(scope_data['RTIA'], adg_r)
+                scope_data['CLAMP_RF'] = np.append(scope_data['CLAMP_RF'], clamp_fb_res)
+                scope_data['CLAMP_TIA'] = np.append(scope_data['CLAMP_TIA'], clamp_res)
 
-adg_r_arr = [100]
+            dc_configs[0]['ADG_RES'] = adg_r
+            dc_configs[0]['CCOMP'] = ccomp
+            clamps[0].configure_clamp(**dc_configs[0])
+            
+            for i in range(10):
+                time.sleep(0.2)
+                datastreams, log_info = capture_data(idx=1)
+                update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
 
+            sig = 'Im' 
+            si = datastreams[sig].stepinfo_range([first_pos_step-0.02e-3, first_pos_step+170e-6])
+            print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
+            print(f'{sig} step info: {si}')
+            print('-'*100)
 
-for ccomp in ccomp_arr:
-    for adg_r in adg_r_arr:
-        print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
+            if OSCOPE:
+                osc.set('single_acq')
+                time.sleep(0.05)
+                for sm in scope_meas:
+                    scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))
+                t = osc.save_display_data(os.path.join(data_dir, 'test_scope_ccomp{}_rtia{}'.format(ccomp, adg_r)))
+                osc.set('run_acq')
 
-        if OSCOPE: 
-            scope_data['CC'] = np.append(scope_data['CC'], ccomp)
-            scope_data['RTIA'] = np.append(scope_data['RTIA'], adg_r)
-            scope_data['CLAMP_RF'] = np.append(scope_data['CLAMP_RF'], clamp_fb_res)
-            scope_data['CLAMP_TIA'] = np.append(scope_data['CLAMP_TIA'], clamp_res)
+            TO_CLAMPFIT = True
+            if TO_CLAMPFIT:
+                datastreams.to_clampfit(data_dir, 'test2_step_quietdacs_rtia{}_ccomp{}.abf'.format(adg_r, ccomp),
+                                        names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
+                                        dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
 
-        dc_configs[0]['ADG_RES'] = adg_r
-        dc_configs[0]['CCOMP'] = ccomp
-        clamps[0].configure_clamp(**dc_configs[0])
-        
-        for i in range(10):
-            time.sleep(0.2)
-            datastreams, log_info = capture_data(idx=1)
-            update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+            # add log info to datastreams -- any dictionary is ok  
+            datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+            datastreams.add_log_info({'dc_configs': dc_configs})
+            datastreams.add_log_info({'ddr_step_peak': first_pos_step})
+            datastreams.add_log_info({'dut': 'model_cell'})
+            datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
+            datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp, in_amp), log_info)
 
-        sig = 'Im' 
-        si = datastreams[sig].stepinfo_range([first_pos_step-0.02e-3, first_pos_step+170e-6])
-        print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
+    # plot oscilloscope data vs. parameters 
+    if OSCOPE:
+        for adg_r in adg_r_arr:
+            idx = scope_data['RTIA']==adg_r
+            fig,ax=plt.subplots(2,1)
+            ax[0].plot(scope_data['CC'][idx], scope_data['OVER'][idx], marker='o')
+            fig.suptitle(f'RTIA = {adg_r}')
+            ax[0].set_ylabel('Vm Overshoot [%]')
+            ax[1].plot(scope_data['CC'][idx], scope_data['RIS'][idx]*1e6, marker='o')
+            ax[1].set_xlabel('CCOMP [pF]')
+            ax[1].set_ylabel('Rise time [us]')
+            fig.suptitle(f'RTIA = {adg_r}')
+
+    PLT_IM_EST = False 
+
+    if PLT_IM_EST:
+        # estimate Im 
+        Cm = 33e-9
+        fig, ax = plt.subplots()
+        fig.suptitle('Overlay Meas. Im and Im estimate')
+        datastreams['Im'].plot(ax, {'marker':'.', 'label': 'Meas. Im'})
+        t = datastreams['P1'].create_time()
+        dt = t[1] - t[0]
+        p1_diff = np.diff(datastreams['P1'].data)/dt
+        #ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
+        ax.legend()
+
+    # test writing and reading datastream h5
+    TST_DATASTREAM_RW = False
+    if TST_DATASTREAM_RW:
+        datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
+        # this datastreams has the log info but as a dictionary, not as Python classes
+        # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
+        for n in datastreams:
+            assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
+
+    print('-'*100)
+    for sig in ['P1', 'CMD0']:
+        sig_name = sig 
+        if sig_name == 'I':
+            sig_name = 'Vm'
+        si = datastreams[sig].stepinfo_range([first_pos_step-20e-6, first_pos_step+170e-6])
         print(f'{sig} step info: {si}')
         print('-'*100)
-
-        if OSCOPE:
-            osc.set('single_acq')
-            time.sleep(0.05)
-            for sm in scope_meas:
-                scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))
-            t = osc.save_display_data(os.path.join(data_dir, 'test_scope_ccomp{}_rtia{}'.format(ccomp, adg_r)))
-            osc.set('run_acq')
-
-        TO_CLAMPFIT = True
-        if TO_CLAMPFIT:
-            datastreams.to_clampfit(data_dir, 'test2_step_quietdacs_rtia{}_ccomp{}.abf'.format(adg_r, ccomp),
-                                    names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
-                                    dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
-
-        # add log info to datastreams -- any dictionary is ok  
-        datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
-        datastreams.add_log_info({'dc_configs': dc_configs})
-        datastreams.add_log_info({'ddr_step_peak': first_pos_step})
-        datastreams.add_log_info({'dut': 'model_cell'})
-        datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
-        datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp, in_amp), log_info)
-
-# plot oscilloscope data vs. parameters 
-if OSCOPE:
-    for adg_r in adg_r_arr:
-        idx = scope_data['RTIA']==adg_r
-        fig,ax=plt.subplots(2,1)
-        ax[0].plot(scope_data['CC'][idx], scope_data['OVER'][idx], marker='o')
-        fig.suptitle(f'RTIA = {adg_r}')
-        ax[0].set_ylabel('Vm Overshoot [%]')
-        ax[1].plot(scope_data['CC'][idx], scope_data['RIS'][idx]*1e6, marker='o')
-        ax[1].set_xlabel('CCOMP [pF]')
-        ax[1].set_ylabel('Rise time [us]')
-        fig.suptitle(f'RTIA = {adg_r}')
-
-PLT_IM_EST = False 
-
-if PLT_IM_EST:
-    # estimate Im 
-    Cm = 33e-9
-    fig, ax = plt.subplots()
-    fig.suptitle('Overlay Meas. Im and Im estimate')
-    datastreams['Im'].plot(ax, {'marker':'.', 'label': 'Meas. Im'})
-    t = datastreams['P1'].create_time()
-    dt = t[1] - t[0]
-    p1_diff = np.diff(datastreams['P1'].data)/dt
-    #ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
-    ax.legend()
-
-# test writing and reading datastream h5
-TST_DATASTREAM_RW = False
-if TST_DATASTREAM_RW:
-    datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
-    # this datastreams has the log info but as a dictionary, not as Python classes
-    # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
-    for n in datastreams:
-        assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
-
-print('-'*100)
-for sig in ['P1', 'CMD0']:
-    sig_name = sig 
-    if sig_name == 'I':
-        sig_name = 'Vm'
-    si = datastreams[sig].stepinfo_range([first_pos_step-20e-6, first_pos_step+170e-6])
-    print(f'{sig} step info: {si}')
-    print('-'*100)
-
-if 0:
-    # sweep the gain of the voltage clamp 
-    for rf in Clamp.configs['RF1_dict']:
-        dc_configs[1]['RF1'] = rf
-        clamps[1].configure_clamp(**dc_configs[1])
-        print(f'RF = {rf}')
-        input('next?')
