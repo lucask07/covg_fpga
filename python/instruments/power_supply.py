@@ -6,7 +6,7 @@ def open_rigol_supply(setup=None):
     # set up DC power supply
     # name within the configuration file (config.yaml)
 
-    if setup=='3dual':  # new power supply that can handle all three voltages
+    if setup=='3dual' or setup=='3dual_16v5neg':  # new power supply that can handle all three voltages
         dc_pwr = open_by_name(name='rigol_3dual')  # Ch1=7V, Ch2=16.5V, Ch3=-16.5V
         return dc_pwr, None
     elif setup=='boland_lab':
@@ -101,6 +101,24 @@ def config_supply(dc_pwr, dc_pwr2, setup=None, neg=16.5):
         dc_pwr.set('v', 5.3, configs={'chan': 3})
         dc_pwr.set('ovp', 5.5, configs={'chan': 3})
         dc_pwr.set('ocp', 0.7, configs={'chan': 3})
+
+    elif setup == '3dual_16v5neg':  # 3 channel capable supply
+        # Channel 2, 3 setup (for +/-15V)
+        neg = 16.5
+        for ch in [2, 3]:
+            dc_pwr.set('i', 0.70, configs={'chan': ch})
+            if ch == 3:
+                dc_pwr.set('v', neg, configs={'chan': ch})
+            else:
+                dc_pwr.set('v', 16.5, configs={'chan': ch})
+            dc_pwr.set('ovp', 16.7, configs={'chan': ch})
+            dc_pwr.set('ocp', 0.70, configs={'chan': ch})
+            dc_pwr.set('i', 0.60, configs={'chan': ch}) # for calibration testing. Increase due to relay current
+        # Channel 1 on supply1 for Vin
+        dc_pwr.set('i', 0.70, configs={'chan': 1}) # for calibration testing. Increase due to relay current
+        dc_pwr.set('v', 7, configs={'chan': 1})
+        dc_pwr.set('ovp', 7.2, configs={'chan': 1})
+        dc_pwr.set('ocp', 0.75, configs={'chan': 1})
 
     else:
         # Channel 1 and 2 setup

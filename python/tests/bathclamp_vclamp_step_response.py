@@ -139,14 +139,13 @@ DAC_FS = 2.5e6
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
-dc_mapping = {'bath': 0, 'clamp': 3, 'vsense': 1, 'guard': 1} 
+dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3, 'guard': 2} 
 #dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 2} 
 DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 #DC_NUMS = [0, 1, 2]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
-pwr_setup = "boland_lab"
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
 if pwr_setup == "3dual" or pwr_setup == 'boland_lab':
@@ -210,7 +209,7 @@ for dc_num in DC_NUMS:
     clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
     clamps[dc_num] = clamp
 
-vsense = Vsense(fpga=f, DAC_addr_pins=0b000, dc_num=1)
+vsense = Vsense(fpga=f, DAC_addr_pins=0b000, dc_num=dc_mapping['vsense'])
 vsense.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
 
 feedback_resistors = [2.1]
@@ -294,19 +293,24 @@ set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=0x0200, cc
 dc_configs = {}
 clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
 clamp_res = 10000 # should be zero with modified board when set to 10 MOhms 
+#clamp_res = 3000 # on clamp board this is R7 which was removed to eliminate amplifier
 clamp_cap = 47
+clamp_cap = None
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG2", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
-        DAC_SEL="noDrive", # must not be drive_CAL2 
+        DAC_SEL="noDrive", # must not be drive_CAL2; options are DAC_SEL_dict in boards.py gnd_CAL2 
+        #DAC_SEL="gnd_CAL2", # must not be drive_CAL2; options are DAC_SEL_dict in boards.py gnd_CAL2 
         CCOMP=clamp_cap,
         RF1=clamp_fb_res,  # feedback circuit
         ADG_RES=clamp_res,
-        PClamp_CTRL=0,
+        #PClamp_CTRL=1, # amplified V1 to I -- doesn't work due to pos. feedback 
+        PClamp_CTRL=0, #  
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
         P2_E_CTRL=0,
-        P2_CAL_CTRL=1,
+        P2_CAL_CTRL=0, 
+        #P2_CAL_CTRL=1, # ground I 
         gain=in_amp,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -317,30 +321,32 @@ for dc_num in [dc_mapping['clamp']]:
     )
     dc_configs[dc_num] = config_dict
 
-for dc_num in [dc_mapping['guard']]:
-    log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG2",  # required to digitize P2 
-        DAC_SEL="noDrive",
-        CCOMP=47,
-        RF1=2.1,  # feedback circuit
-        ADG_RES=100,
-        PClamp_CTRL=0,
-        P1_E_CTRL=0,
-        P1_CAL_CTRL=0,
-        P2_E_CTRL=0,
-        P2_CAL_CTRL=0,
-        gain=in_amp,  # instrumentation amplifier
-        FDBK=1,
-        mode="voltage",
-        EN_ipump=0,
-        RF_1_Out=1,
-        addr_pins_1=0b110,
-        addr_pins_2=0b000,
-    )
-    dc_configs[dc_num] = config_dict
+if dc_mapping['guard'] in DC_NUMS:
+    for dc_num in [dc_mapping['guard']]:
+        log_info, config_dict = clamps[dc_num].configure_clamp(
+            ADC_SEL="CAL_SIG2",  # required to digitize P2 
+            DAC_SEL="noDrive",
+            CCOMP=47,
+            RF1=2.1,  # feedback circuit
+            ADG_RES=100,
+            PClamp_CTRL=0,
+            P1_E_CTRL=0,
+            P1_CAL_CTRL=0,
+            P2_E_CTRL=0,
+            P2_CAL_CTRL=0,
+            gain=in_amp,  # instrumentation amplifier
+            FDBK=1,
+            mode="voltage",
+            EN_ipump=0,
+            RF_1_Out=1,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000,
+        )
+        dc_configs[dc_num] = config_dict
 
-cap = 47
-res = 100
+cap = 4700
+# cap = None
+res = 332
 in_amp = 2
 fb_res = 60
 
@@ -356,7 +362,7 @@ for dc_num in [dc_mapping['bath']]:
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
         P2_E_CTRL=0,
-        P2_CAL_CTRL=1,
+        P2_CAL_CTRL=0,
         gain=in_amp,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -367,7 +373,7 @@ for dc_num in [dc_mapping['bath']]:
     )
     dc_configs[dc_num] = config_dict
 
-ephys_sys = EphysSystem(system='Dagan_vclamp_guard')
+ephys_sys = EphysSystem(system='Dagan_vclamp_no_guard')
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
 
 def ads_plot_zoom(ax, t_range=[3250,3300]):
@@ -496,7 +502,16 @@ datastreams, log_info = capture_data()
 datastreams, log_info = capture_data()
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 
-OSCOPE = False
+OSCOPE = True
+
+if OSCOPE:
+    osc.set('chan_label', '"V1"', configs={'chan':1})
+    osc.set('chan_label', '"VM"', configs={'chan':2})
+    osc.set('chan_label', '"VG"', configs={'chan':3})
+    osc.set('chan_label', '"P2"', configs={'chan':4})
+    osc.set('chan_label', '"VMd"', configs={'chan':'MATH1'})
+
+
 if OSCOPE:
     scope_data = {} 
     components = ['CC', 'RTIA', 'CLAMP_TIA', 'CLAMP_RF']
@@ -507,11 +522,15 @@ if OSCOPE:
         scope_data[c] = np.array([])
     osc.set('run_acq')
 
+
 # extensive sweep
-SWP = False
+SWP = True
 adg_r_arr = [10, 33, 100, 332]
+adg_r_arr = [33, 100]
 ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
-inamp_arr = [1,2,5,10]
+ccomp_arr = [47, 1247, 4700]
+inamp_arr = [2]
+# inamp_arr = [1,2,5,10]
 
 if SWP:
     for ccomp in ccomp_arr:
@@ -540,7 +559,8 @@ if SWP:
             print('-'*100)
 
             if OSCOPE:
-                osc.set('single_acq')
+                time.sleep(2) # allow for averaging 
+                osc.set('stop_acq')
                 time.sleep(0.05)
                 for sm in scope_meas:
                     scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))

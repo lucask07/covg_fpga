@@ -43,27 +43,29 @@ file_names = {}
 dagan_dirs['CC'] = r'C:\Users\koer2434\OneDrive - University of St. Thomas\UST\research\covg\other_clamp_instruments\dagan_ca1b\richmond\Richmond Data\Capacitive Compensation'
 # file_names['CC'] = ['0.1 Gain CC.abf']
 # gain = 0.1
-file_names['CC'] = [ '1 Gain CC - Attempt 1.abf',  '1 Gain CC - Attempt 2.abf', '1 Gain CC - Attempt 3 (Modest CC).abf']
-gain = 1
+file_names['CC'] = [ ('1 Gain CC - Attempt 1.abf', 'CC 1'),  ('1 Gain CC - Attempt 2.abf', 'CC 2'), ('1 Gain CC - Attempt 3 (Modest CC).abf', 'CC 3')]
+gain = 0.1
 
 dagan_dirs['Rs'] = r'C:\Users\koer2434\OneDrive - University of St. Thomas\UST\research\covg\other_clamp_instruments\dagan_ca1b\richmond\Richmond Data\Series Resistance'
-file_names['Rs'] = ['0.1 Gain - Clear Rise.abf',  '0.1 Gain - Excessive Rise.abf',  '0.1 Gain - Modest Rise.abf']
+file_names['Rs'] = [('0.1 Gain - Clear Rise.abf', 'Rs Clear'),  ('0.1 Gain - Excessive Rise.abf', 'Rs Exc.'),  ('0.1 Gain - Modest Rise.abf', 'Rs Modest')]
 
 # baseline 
 dagan_dirs['Base'] = r'C:\Users\koer2434\OneDrive - University of St. Thomas\UST\research\covg\other_clamp_instruments\dagan_ca1b\richmond\Richmond Data\Steps'
 if gain == 0.1:
-    file_names['Base'] = ['0.1 Gain 10mV Steps.abf']
+    file_names['Base'] = [('0.1 Gain 10mV Steps.abf', 'Base')]
 else:
-    file_names['Base'] = ['1 Gain 10mV Steps.abf']
+    file_names['Base'] = [('1 Gain 10mV Steps.abf', 'Base')]
 
-figd,axd=plt.subplots( 2,1 , figsize=(4,3))
+figd,axd=plt.subplots( 2,1 , figsize=(6,5))
 
 dirs_to_plot = ['CC', 'Base']
+dirs_to_plot = ['Rs', 'Base']
+
 
 for dg_dirs in dirs_to_plot:
     for fname in file_names[dg_dirs]:
 
-        dagan = pyabf.ABF(os.path.join(dagan_dirs[dg_dirs], fname))
+        dagan = pyabf.ABF(os.path.join(dagan_dirs[dg_dirs], fname[0]))
         dagan_data = {}
         if gain == 0.1:
             sweep_num = 4
@@ -86,7 +88,7 @@ for dg_dirs in dirs_to_plot:
         t = (dagan_data['time']-dagan_data['peak_time'])*1e6
         idx = (t > time_range[0]) & (t < time_range[1])
 
-        axd[0].plot(t[idx], dagan_data['im'][idx]/60, label=dg_dirs + ' ' + fname.replace('.abf', '').replace('0.1 Gain', '').replace('10mV Steps',''))
+        axd[0].plot(t[idx], dagan_data['im'][idx]/60, label=fname[1])
         axd[1].plot(t[idx], dagan_data['vm'][idx])
         # axd[1].plot(t[idx], dagan_data['CMD'][idx])
     
@@ -105,6 +107,8 @@ axd[0].legend()
 plt.tight_layout()
 if 'CC' in dirs_to_plot:
     plt.savefig(os.path.join(fig_dir, f'cc_dagan_{gain}.pdf'))
+elif 'RS' in dirs_to_plot:
+    plt.savefig(os.path.join(fig_dir, f'rs_dagan_{gain}.pdf'))
 
 # Dagan saturation at 1 mV/nA at a swing of 30 mV 
 #   peak current of 12 uA at a step of 20 mV 
