@@ -214,8 +214,11 @@ for in_amp in [in_amp_arr]:
         except:
             pass
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 69ec49facb1831ce7d8e65ac53131c3de07b6f8e
 if 0:
     # test with a sine-wave, do I get the correct RMS amplitude from integrated power spectrum?
     fig_t, ax_t = plt.subplots()

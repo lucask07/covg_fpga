@@ -2,9 +2,30 @@ import os
 import numpy as np
 import scipy.fftpack
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from scipy.signal.windows import hann
 from scipy.signal import correlate, correlation_lags
 
+# setup figure format 
+# IEEE 
+# single column width 252.0 pt 
+# full paper width 
+
+# Biophysical society
+# 1 colum is 240.6 pt; 3.342 inches 
+# 499.2 pt = full page 
+
+mpl.rcParams['legend.fontsize']=8 # using a size in points
+mpl.rcParams['lines.linewidth'] = 1.5
+mpl.rcParams['lines.linestyle'] = '-'
+mpl.rcParams['font.size'] = 8
+mpl.rcParams['axes.labelsize'] = 8
+mpl.rcParams['ytick.labelsize'] = 8
+mpl.rcParams['xtick.labelsize'] = 8
+
+col_width = 3.342
+aspect_ratio = 0.7
+fig_size = (col_width, col_width*aspect_ratio)
 
 def find_nearest(array, target):
     """ find value in an array nearest to a target value
@@ -193,18 +214,20 @@ def get_impulse(data_dir, filename, t_offset_idx, t0=6400e-6):
     return imp_resp_d
 
 
-def my_savefig(fig, figure_dir, figname):
+def my_savefig(fig, figure_dir, figname, TIGHT_LAYOUT=True):
     """ 
     save a figure given a handle and directory
     Params: 
         fig: matplotlib handle
         figure_dir: directory 
         figname: desired output name 
+        TIGHT_LAYOUT: run tight layout 
 
     Returns:
         None
     """
-    fig.tight_layout()
-    for e in ['.png', '.pdf']: # use pdf rather than eps to support transparency
+    if TIGHT_LAYOUT:
+        fig.tight_layout()
+    for e in ['.png', '.pdf', '.eps']: # use pdf rather than eps to support transparency
         fig.savefig(os.path.join(figure_dir,
                                  figname + e))

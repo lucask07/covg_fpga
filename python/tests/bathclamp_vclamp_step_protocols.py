@@ -40,7 +40,7 @@ from filters.filter_tools import butter_lowpass_filter
 
 from ephys.core import Sequence, Protocol
 
-protocol = Protocol.create_from_csv(filepath=r'ephys/protocol.csv', num_sweeps=10)
+protocol = Protocol.create_from_csv(filepath=r'ephys/dagan_comparison.csv', num_sweeps=4)
 protocol.preview()
 first_step_time_us = protocol.sweeps[0].epochs[0].first_duration*1e3 # in milliseconds *1e3 to microseconds 
 
@@ -306,7 +306,7 @@ if 1:
         )
         dc_configs[dc_num] = config_dict
 
-    inamp_gain = 5
+    inamp_gain = 2
     cap = 47
     fb_res = 2.1
     res = 100

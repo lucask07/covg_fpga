@@ -283,6 +283,9 @@ cmd_val = 0x0200
 set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384*8, cc_val=None, cc_pickle_num=None)
 
+
+# input('waiting!')
+
 dc_configs = {}
 clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
 clamp_res = 1000 # modified board: set to 10 MOhms -> 0 Ohms; 3.32 MOhms -> Open; 1 MOhms -> 50 Ohms (snubber)
@@ -297,9 +300,13 @@ for dc_num in [dc_mapping['clamp']]:
         ADG_RES=clamp_res,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
-        P1_CAL_CTRL=0,
+        P1_CAL_CTRL=1,
         P2_E_CTRL=0,
+<<<<<<< HEAD
         P2_CAL_CTRL=1,
+=======
+        P2_CAL_CTRL=0,
+>>>>>>> 69ec49facb1831ce7d8e65ac53131c3de07b6f8e
         gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -310,6 +317,11 @@ for dc_num in [dc_mapping['clamp']]:
     )
     dc_configs[dc_num] = config_dict
 
+<<<<<<< HEAD
+=======
+# input('waiting2!')
+
+>>>>>>> 69ec49facb1831ce7d8e65ac53131c3de07b6f8e
 
 cap = capacitors[0]
 fb_res = feedback_resistors[0]
@@ -338,6 +350,9 @@ for dc_num in [dc_mapping['bath']]:
         addr_pins_2=0b000,
     )
     dc_configs[dc_num] = config_dict
+
+# input('waiting3!')
+
 
 ephys_sys = EphysSystem()
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
@@ -485,8 +500,16 @@ if 1:
     adg_r_arr = [10, 33, 100, 332] # JOB: fft through all of these 
     ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
 
+<<<<<<< HEAD
     ccomp_arr = [47, 247, 1000, 4700]
     adg_r_arr = [33, 100, 332, 1000]
+=======
+#ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
+ccomp_arr = [47]
+adg_r_arr = [33, 100, 332, 1000, 3000, 10000]
+adg_r_arr = [100, 100, 100, 100, 100, 100]
+
+>>>>>>> 69ec49facb1831ce7d8e65ac53131c3de07b6f8e
 
     # ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
     ccomp_arr = [47]
