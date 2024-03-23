@@ -31,7 +31,7 @@ from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficien
 from analysis.adc_data import read_h5, separate_ads_sequence
 from filters.filter_tools import butter_lowpass_filter
 from control.matlab import stepinfo
-sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
+sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
 from pyabf.abfWriter import writeABF1 
 from pyabf.tools.covg import interleave_np
 
@@ -488,7 +488,10 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
                         v_sense_gain = dc_config_dicts[dc_config]['VSENSE']
                         gain = v_sense_gain*11
                     except:
-                        gain = 11*(1+dc_config_dicts[dc_config]['RF1']/3.01)  # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
+                        if dc_config_dicts[dc_config]['RF1'] == 60: # use RF1 = 60 as code for unity gain 
+                            gain = 11
+                        else:
+                            gain = 11*(1+dc_config_dicts[dc_config]['RF1']/3.01)  # the AMP_OUT buffer has a gain of x11, the P1 buffer has a gain of 1+RF/3.01  [both resistors are in kOhms]
                 else:
                     gain = 1
                 if ads_map[dc_config][amp_net][0] == 'A':
@@ -524,7 +527,11 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
             if gain > 99: # must by mV -- convert to volts
                 gain = gain/1000
             if 'CMD' in net:
-                gain = gain/(1 + dc_config_dicts[dc_config]['RF1']/3.01)/10 # TODO x10 is a property of the clamp board, can we have a parameter for this? 
+                if dc_config_dicts[dc_config]['RF1'] == 60: # use RF1 = 60 as code for unity gain 
+                    gain = gain/10
+                else:
+                    gain = gain/(1 + dc_config_dicts[dc_config]['RF1']/3.01)/10 # TODO x10 is a property of the clamp board, can we have a parameter for this? 
+
             con_name = f'D{ch}'
             pc = PhysicalConnection(con_name, 
                                     gain*2,  # this is more accurately the full-scale range on the positive side

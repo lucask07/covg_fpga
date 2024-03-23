@@ -5,11 +5,8 @@ The system uses two Daughtercards with:
  1) the bath clamp - has a non-zero CMD voltage measures Im 
  2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
 
-Sept 2022
-
 Dervied from clamp_step_response.py 
 
-Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 import os
@@ -38,7 +35,7 @@ from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
 
-sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork
+sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork
 from pyabf.abfWriter import writeABF1 
 from pyabf.tools.covg import interleave_np
 
@@ -204,7 +201,7 @@ for dc_num in DC_NUMS:
         clamp = Clamp(f, dc_num=dc_num, version=2)
     print(f'Clamp {dc_num} Init'.center(35, '-'))
     clamp.init_board()
-    clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
+    #clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
     clamps[dc_num] = clamp
 
 feedback_resistors = [2.1]
@@ -277,29 +274,31 @@ set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
 fc_cmd = 100e3
+#fc_cmd = None
 step_len = 16384*8
 first_pos_step = step_len/2*1/DAC_FS # in seconds 
-cmd_val = 0x0200
 set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384*8, cc_val=None, cc_pickle_num=None)
 
+
+# input('waiting!')
+
 dc_configs = {}
 clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
-clamp_res = 1000 # modified board: set to 10 MOhms -> 0 Ohms; 3.32 MOhms -> Open; 1 MOhms -> 50 Ohms (snubber)
+clamp_res = 10000 # should be zero with modified board when set to 10 MOhms 
 clamp_cap = 47
-# to digitize I1 use ADC_SEL = "CAL_SIG2"; P2_CAL_CTRL=1; DAC_SEL="noDrive"
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG2", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1
+        ADC_SEL="CAL_SIG1", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
         DAC_SEL="noDrive", # must not be drive_CAL2 
         CCOMP=clamp_cap,
         RF1=clamp_fb_res,  # feedback circuit
         ADG_RES=clamp_res,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
-        P1_CAL_CTRL=0,
+        P1_CAL_CTRL=1,
         P2_E_CTRL=0,
-        P2_CAL_CTRL=1,
+        P2_CAL_CTRL=0,
         gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -310,10 +309,12 @@ for dc_num in [dc_mapping['clamp']]:
     )
     dc_configs[dc_num] = config_dict
 
+# input('waiting2!')
+
 
 cap = capacitors[0]
 fb_res = feedback_resistors[0]
-fb_res = 60  # this is disconnected and now in unity-gain! 
+fb_res = 2.1
 # Try with 5 different resistors
 res = [x for x in bath_res if type(x) == int][0]
 # Choose resistor; setup
@@ -338,6 +339,9 @@ for dc_num in [dc_mapping['bath']]:
         addr_pins_2=0b000,
     )
     dc_configs[dc_num] = config_dict
+
+# input('waiting3!')
+
 
 ephys_sys = EphysSystem()
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
@@ -364,8 +368,8 @@ def capture_data(idx=0):
     filename = file_name.format(idx) + '.h5'
 
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-    chan_data_one_repeat = ddr.save_data(data_dir, filename, num_repeats=128,
-                                        blk_multiples=200)  # blk multiples must be multiple of 10 
+    chan_data_one_repeat = ddr.save_data(data_dir, filename, num_repeats=32,
+                                        blk_multiples=80)  # blk multiples must be multiple of 10 
     # each block multiple is 256 bytes 
 
     # update system connections since the daughtercard configurations have changed
@@ -467,135 +471,90 @@ datastreams, log_info = capture_data()
 datastreams, log_info = capture_data()
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 
-datastreams.to_h5(data_dir, "test", log_info)
+# extensive sweep
+adg_r_arr = [10, 33, 100, 332]
+ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
 
-if 1:
-    OSCOPE = False
-    if OSCOPE:
-        scope_data = {} 
-        components = ['CC', 'RTIA', 'CLAMP_TIA', 'CLAMP_RF']
-        scope_meas = ['OVER', 'RIS']
-        for sm in scope_meas:
-            scope_data[sm] = np.array([])
-        for c in components:
-            scope_data[c] = np.array([])
-        osc.set('run_acq')
+ccomp_arr = [47, 247, 1000, 4700]
+adg_r_arr = [33, 100, 332, 1000]
 
-    # extensive sweep
-    adg_r_arr = [10, 33, 100, 332] # JOB: fft through all of these 
-    ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
+#ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
+ccomp_arr = [47]
+adg_r_arr = [33, 100, 332, 1000, 3000, 10000]
+adg_r_arr = [100, 100, 100, 100, 100, 100]
 
-    ccomp_arr = [47, 247, 1000, 4700]
-    adg_r_arr = [33, 100, 332, 1000]
+'''
+for ccomp in ccomp_arr:
+    for adg_r in adg_r_arr:
+        print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
 
-    # ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
-    ccomp_arr = [47]
-    # adg_r_arr = [100]
-    # adg_r_arr = [100, 100, 100, 100, 100, 100]
+        dc_configs[0]['ADG_RES'] = adg_r
+        dc_configs[0]['CCOMP'] = ccomp
+        clamps[0].configure_clamp(**dc_configs[0])
+        
+        for i in range(10):
+            time.sleep(0.2)
+            datastreams, log_info = capture_data(idx=1)
+            update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
 
-    cmd_val_arr = [0x0040, 0x0080, 0x0100, 0x0200, 0x0300, 0x0400, 0x0500, 0x0600, 0x0800, 0x0900, 0x0A00, 0x0C00, 0x0D00]
-    cmd_val_arr = np.arange(81)*64
-    UPDATE_CMD = True
-
-    for cmd_val in cmd_val_arr:
-        for ccomp in ccomp_arr:
-            for adg_r in adg_r_arr:
-                print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
-
-                if OSCOPE: 
-                    scope_data['CC'] = np.append(scope_data['CC'], ccomp)
-                    scope_data['RTIA'] = np.append(scope_data['RTIA'], adg_r)
-                    scope_data['CLAMP_RF'] = np.append(scope_data['CLAMP_RF'], clamp_fb_res)
-                    scope_data['CLAMP_TIA'] = np.append(scope_data['CLAMP_TIA'], clamp_res)
-
-                dc_configs[0]['ADG_RES'] = adg_r
-                dc_configs[0]['CCOMP'] = ccomp
-                clamps[0].configure_clamp(**dc_configs[0])
-                if UPDATE_CMD:
-                    set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
-                        step_len=16384*8, cc_val=None, cc_pickle_num=None)
-                    time.sleep(0.2)
-                
-                datastreams, log_info = capture_data(idx=1)
-                update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
-
-                sig = 'Im' 
-                si = datastreams[sig].stepinfo_range([first_pos_step-0.02e-3, first_pos_step+170e-6])
-                print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
-                print(f'{sig} step info: {si}')
-                print('-'*100)
-
-                if OSCOPE:
-                    osc.set('single_acq')
-                    time.sleep(0.05)
-                    for sm in scope_meas:
-                        scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))
-                    t = osc.save_display_data(os.path.join(data_dir, 'test_scope_ccomp{}_rtia{}'.format(ccomp, adg_r)))
-                    osc.set('run_acq')
-
-                TO_CLAMPFIT = True
-                if TO_CLAMPFIT:
-                    datastreams.to_clampfit(data_dir, 'test2_step_quietdacs_rtia{}_ccomp{}_cmd{}.abf'.format(adg_r, ccomp, cmd_val),
-                                            names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
-                                            dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
-
-                # add log info to datastreams -- any dictionary is ok  
-                datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
-                datastreams.add_log_info({'dc_configs': dc_configs})
-                datastreams.add_log_info({'ddr_step_peak': first_pos_step})
-                datastreams.add_log_info({'dut': 'model_cell'})
-                datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
-                datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp, in_amp), log_info)
-
-    # plot oscilloscope data vs. parameters 
-    if OSCOPE:
-        for adg_r in adg_r_arr:
-            idx = scope_data['RTIA']==adg_r
-            fig,ax=plt.subplots(2,1)
-            ax[0].plot(scope_data['CC'][idx], scope_data['OVER'][idx], marker='o')
-            fig.suptitle(f'RTIA = {adg_r}')
-            ax[0].set_ylabel('Vm Overshoot [%]')
-            ax[1].plot(scope_data['CC'][idx], scope_data['RIS'][idx]*1e6, marker='o')
-            ax[1].set_xlabel('CCOMP [pF]')
-            ax[1].set_ylabel('Rise time [us]')
-            fig.suptitle(f'RTIA = {adg_r}')
-
-    PLT_IM_EST = False 
-
-    if PLT_IM_EST:
-        # estimate Im 
-        Cm = 33e-9
-        fig, ax = plt.subplots()
-        fig.suptitle('Overlay Meas. Im and Im estimate')
-        datastreams['Im'].plot(ax, {'marker':'.', 'label': 'Meas. Im'})
-        t = datastreams['P1'].create_time()
-        dt = t[1] - t[0]
-        p1_diff = np.diff(datastreams['P1'].data)/dt
-        #ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
-        ax.legend()
-
-    # test writing and reading datastream h5
-    TST_DATASTREAM_RW = False
-    if TST_DATASTREAM_RW:
-        datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
-        # this datastreams has the log info but as a dictionary, not as Python classes
-        # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
-        for n in datastreams:
-            assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
-
-    print('-'*100)
-    for sig in ['I', 'P1', 'CMD0']:
-        sig_name = sig 
-        if sig_name == 'I':
-            sig_name = 'Vm'
-        si = datastreams[sig].stepinfo_range([first_pos_step-20e-6, first_pos_step+170e-6])
+        sig = 'Im' 
+        si = datastreams[sig].stepinfo_range([first_pos_step-0.02e-3, first_pos_step+170e-6])
+        print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
         print(f'{sig} step info: {si}')
         print('-'*100)
 
-    if 0:
-        # sweep the gain of the voltage clamp 
-        for rf in Clamp.configs['RF1_dict']:
-            dc_configs[1]['RF1'] = rf
-            clamps[1].configure_clamp(**dc_configs[1])
-            print(f'RF = {rf}')
-            input('next?')
+        TO_CLAMPFIT = True
+        if TO_CLAMPFIT:
+            datastreams.to_clampfit(data_dir, 'test2_step_quietdacs_rtia{}_ccomp{}.abf'.format(adg_r, ccomp),
+                                    names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
+                                    dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
+
+        # add log info to datastreams -- any dictionary is ok  
+        datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+        datastreams.add_log_info({'dc_configs': dc_configs})
+        datastreams.add_log_info({'ddr_step_peak': first_pos_step})
+        datastreams.add_log_info({'dut': 'model_cell'})
+        datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
+        datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp, in_amp), log_info)
+'''
+
+print('-'*100)
+for sig in ['I', 'P1', 'CMD0']:
+    sig_name = sig 
+    if sig_name == 'I':
+        sig_name = 'Vm'
+    si = datastreams[sig].stepinfo_range([first_pos_step-20e-6, first_pos_step+170e-6])
+    print(f'{sig} step info: {si}')
+    print('-'*100)
+    
+TestData = datastreams['P1'].data
+initialData = 0
+initialTime = 0
+finalData = 0
+finalTime = 0
+firstPoint = True
+
+for data in TestData:
+    if(firstPoint):
+        initialData = data
+        initialTime = time.time_ns()
+        firstPoint = False
+    if((data <= (initialData + 0.0025)) & (finalData == 0)):
+       initialData = data
+       initialTime = time.time_ns();
+    if(data >= (finalData)):
+        finalData = data;
+        finalTime = time.time_ns();
+    '''
+    if((initialTime > 0) & (finalTime > 0)):
+        i = 0
+        if(i < 3):
+            continue
+        else:
+            break
+    '''
+print(initialData)
+print(finalData)
+print(initialTime)
+print(finalTime)
+print(finalTime - initialTime)
