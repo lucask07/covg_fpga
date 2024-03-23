@@ -20,6 +20,7 @@ import time
 import atexit
 import numpy as np
 import matplotlib.pyplot as plt
+import copy
 
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from pyripherals.core import FPGA, Endpoint
@@ -37,6 +38,8 @@ from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
+from analysis.cc_calibration import cc_waveform
+
 
 sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork
 from pyabf.abfWriter import writeABF1 
@@ -341,9 +344,6 @@ for dc_num in [dc_mapping['bath']]:
     )
     dc_configs[dc_num] = config_dict
 
-# input('waiting3!')
-
-
 ephys_sys = EphysSystem()
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
 
@@ -467,14 +467,81 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
 
     return first_time, lines1, lines2, figs
 
+adg_r = 33 # TODO placeholder 
 datastreams, log_info = capture_data()
 # run twice to remove initial transient 
 datastreams, log_info = capture_data()
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
+datastreams.to_h5(data_dir, "cmd_impulse.h5", log_info)
 
-datastreams.to_h5(data_dir, "test", log_info)
-
+# cc calibration 
 if 1:
+    idx = 0
+    ds = {}
+    ds['CMD0'] = h5_to_datastreams(data_dir, "cmd_impulse.h5")
+    time.sleep(0.2)
+    set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0, cc_scale=0, cc_delay=0, fc=fc_cmd,
+        step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
+    time.sleep(0.2)
+    idx = 1
+    datastreams, log_info = capture_data(idx=idx)
+    update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+    datastreams.to_h5(data_dir, "cc_impulse.h5", log_info)
+
+    ds['CC0'] = h5_to_datastreams(data_dir, "cc_impulse.h5")
+
+    filtered_cc_wave, cc_wave, impulse_c = cc_waveform(ds, l=0.0035, fc=20e3)
+
+    # now use the filtered_cc_wave to replace CC 
+    set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=None,
+    step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
+
+    cc_nofilt = copy.deepcopy(ddr.data_arrays[dc_mapping['bath']])
+
+    set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+    step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
+
+    idx = np.where(np.abs(np.diff(cc_nofilt)) > 0)
+    span_l = int(len(filtered_cc_wave)/2)
+    span_r = len(filtered_cc_wave) - span_l
+    filtered_cc_wave_scale = filtered_cc_wave*0x200/1e-6*6
+    dac_offset = 0x2000
+
+    low = filtered_cc_wave_scale[0]
+    high = filtered_cc_wave_scale[-1]
+    low_replace = np.min(cc_nofilt)
+    high_replace = np.max(cc_nofilt)
+    ddr.data_arrays[dc_mapping['bath']][cc_nofilt < dac_offset] = low + dac_offset
+    ddr.data_arrays[dc_mapping['bath']][cc_nofilt > dac_offset] = high + dac_offset
+
+    for s in idx[0]:
+        pos = (ddr.data_arrays[dc_mapping['bath']][(s-span_l)] > dac_offset)
+        if pos:
+            ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+        else:
+            ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (-filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+
+    fig,ax = plt.subplots()
+    ax.plot(ddr.data_arrays[dc_mapping['bath']])
+    ax.plot(ddr.data_arrays[dc_mapping['bath'] + 1], 'tab:orange')
+
+
+    # write channels to the DDR
+    ddr.write_setup()
+    # clear read, set write, etc. handled within write_channels
+    block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
+    ddr.reset_mig_interface()
+    ddr.write_finish()
+
+    idx = 2
+    datastreams, log_info = capture_data(idx=idx)
+    update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+    datastreams.to_h5(data_dir, "cancel.h5", log_info)
+    ds['cancel'] = h5_to_datastreams(data_dir, "cancel.h5")
+
+
+# large parameter sweep 
+if 0: 
     OSCOPE = False
     if OSCOPE:
         scope_data = {} 

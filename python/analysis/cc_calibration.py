@@ -22,7 +22,7 @@ from analysis.clamp_data import adjust_step2, adjust_step3
 from analysis.adc_data import im_conv, find_peak
 from datastream.datastream import h5_to_datastreams
 from filters.filter_tools import butter_lowpass_filter, butter_highpass_filter
-from utils import my_savefig, fig_size # also configures matplotlib defautls 
+from analysis.utils import my_savefig, fig_size # also configures matplotlib defautls 
 
 def wiener_deconvolution(signal, kernel, lambd):
     '''
@@ -66,8 +66,8 @@ def cc_waveform(ds, l=0.0035, fc=20e3):
 
     # find peaks 
     pos_pks = find_peak(ds['CMD0']['CMD0'].create_time(), 
-    np.diff(ds['CMD0']['CMD0'].data), 
-    th=1e-3, height=10e-3, distance=100)
+        np.diff(ds['CMD0']['CMD0'].data), 
+        th=0.5e-3, height=2e-3, distance=100)
 
     # get impulse response of both 
     impulse = {}
@@ -89,7 +89,7 @@ def cc_waveform(ds, l=0.0035, fc=20e3):
 
     # span just the current peak 
     tl_tr = (-10e-6, 1000e-6) # steps are separated by more the 20 ms 
-    t0 = pos_pks[0]
+    t0 = pos_pks[0][0]
     t = ds['CMD0']['Im'].create_time()
     tlow = t0 + tl_tr[0]
     thigh = t0 + tl_tr[1]
@@ -135,14 +135,14 @@ subdir = 'clamp/20240223/'
 cc_file = 'clamptest1_quietdacsFalse_rtia33_ccomp47_inamp2_cmdval0_ccval512.h5'
 cmd_file = 'clamptest1_quietdacsFalse_rtia33_ccomp47_inamp2_cmdval512_ccval0.h5'
 
-ds = {}
-ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
-ds['CC0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cc_file)
-
-filtered_cc_wave1, cc_wave1, impulse_c1 = cc_waveform(ds, l=0.0035, fc=20e3)
-
 
 if __name__ == '__main__':
+
+    ds = {}
+    ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
+    ds['CC0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cc_file)
+
+    filtered_cc_wave1, cc_wave1, impulse_c1 = cc_waveform(ds, l=0.0035, fc=20e3)
 
     # find peaks 
     fig,ax = plt.subplots(figsize=fig_size)
