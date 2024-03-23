@@ -32,6 +32,7 @@ from analysis.adc_data import read_h5, separate_ads_sequence
 from filters.filter_tools import butter_lowpass_filter
 from control.matlab import stepinfo
 sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
+sys.path.append('/Users/koer2434/Documents/covg/my_pyabf/pyABF/src/')
 from pyabf.abfWriter import writeABF1 
 from pyabf.tools.covg import interleave_np
 
@@ -98,7 +99,7 @@ class Datastream():
         line.set_ydata(data)
 
 
-    def get_impulse(self, t0=6553.6e-6, tl_tr=(-150e-6, 200e-6), fc=None):
+    def get_impulse(self, t0=6553.6e-6, tl_tr=(-150e-6, 200e-6), fc=None, order=5):
         """ get the impulse of a trace produced by a step function by calculating the derivative
         """
         t = self.create_time()
@@ -109,7 +110,7 @@ class Datastream():
         y = self.data[idx]
 
         if fc is not None:
-            y = butter_lowpass_filter(y, cutoff=fc, fs=FS, order=5)
+            y = butter_lowpass_filter(y, cutoff=fc, fs=FS, order=order)
 
         #  the Wiener deconvolution adds noise to the denominator so that the result doesn't explode.
         # imp_resp_w = wiener_deconvolution(y, step_func)[:(len(y)-len(step_func) + 1)]
