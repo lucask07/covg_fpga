@@ -302,11 +302,7 @@ for dc_num in [dc_mapping['clamp']]:
         P1_E_CTRL=0,
         P1_CAL_CTRL=1,
         P2_E_CTRL=0,
-<<<<<<< HEAD
         P2_CAL_CTRL=1,
-=======
-        P2_CAL_CTRL=0,
->>>>>>> 69ec49facb1831ce7d8e65ac53131c3de07b6f8e
         gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -316,12 +312,6 @@ for dc_num in [dc_mapping['clamp']]:
         addr_pins_2=0b000,
     )
     dc_configs[dc_num] = config_dict
-
-<<<<<<< HEAD
-=======
-# input('waiting2!')
-
->>>>>>> 69ec49facb1831ce7d8e65ac53131c3de07b6f8e
 
 cap = capacitors[0]
 fb_res = feedback_resistors[0]
@@ -500,16 +490,8 @@ if 1:
     adg_r_arr = [10, 33, 100, 332] # JOB: fft through all of these 
     ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
 
-<<<<<<< HEAD
     ccomp_arr = [47, 247, 1000, 4700]
     adg_r_arr = [33, 100, 332, 1000]
-=======
-#ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
-ccomp_arr = [47]
-adg_r_arr = [33, 100, 332, 1000, 3000, 10000]
-adg_r_arr = [100, 100, 100, 100, 100, 100]
-
->>>>>>> 69ec49facb1831ce7d8e65ac53131c3de07b6f8e
 
     # ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
     ccomp_arr = [47]
