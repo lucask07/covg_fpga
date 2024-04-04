@@ -13,7 +13,7 @@ from scipy.signal import correlate, correlation_lags
 
 # Biophysical society
 # 1 colum is 240.6 pt; 3.342 inches 
-# 499.2 pt = full page 
+# 499.2 pt = full page 6.93 inches 
 
 mpl.rcParams['legend.fontsize']=8 # using a size in points
 mpl.rcParams['lines.linewidth'] = 1.5

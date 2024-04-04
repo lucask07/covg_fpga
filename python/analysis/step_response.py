@@ -17,7 +17,7 @@ import scipy.signal as signal
 from filters.filter_tools import butter_lowpass_filter
 from datastream.datastream import h5_to_datastreams 
 from analysis.adc_data import find_peak, calc_psd
-from analysis.utils import my_savefig
+from analysis.utils import my_savefig, fig_size # also configures matplotlib defautls 
 
 # configure Matplotlib
 matplotlib.use("Qt5agg")  # or "Qt5agg" depending on you version of Qt
@@ -28,11 +28,12 @@ data_dir_base = os.path.expanduser('~')
 if sys.platform == "linux" or sys.platform == "linux2":
     print('linux directory not yet configured')
 elif sys.platform == "darwin":
-    data_dir_covg = "/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp/{}{:02d}{:02d}"
+    data_dir_covg = "/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp/"
 elif sys.platform == "win32":
-    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/{}{:02d}{:02d}')
+    data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/')
 
 figure_dir = '/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/figures/'
+figure_dir_paper = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/step/'
 fig_names = {}
 
 
@@ -55,10 +56,13 @@ def filter_fc(y, fs, fc, REMOVE_DC = True):
     return y_filt, filt_t
 
 
-# data_dir = r'C:\Users\koer2434\Documents\covg\data\clamp\20230619'
-# data_dir = r'C:\Users\koer2434\Documents\covg\data\clamp\20230630'
-# data_dir = r'C:\Users\koer2434\Documents\covg\data\clamp\20230701'
-data_dir = r'C:\Users\koer2434\Documents\covg\data\clamp\20230704'
+# data_dir_end = r'20230619'
+# data_dir_end = r'20230630'
+# data_dir_end = r'20230701'
+data_dir_end = r'20230704'
+#data_dir_end = r'20240320'
+
+data_dir = os.path.join(data_dir_covg, data_dir_end)
 
 
 #filename = 'datastreams2_output_quietdacs_rtia{}_ccomp{}.h5' # 3 uses RF1 = 30
@@ -68,19 +72,27 @@ filename = 'clamptest8_quietdacsFalse_rtia{}_ccomp{}.h5'
 filename = 'clamptest1_quietdacsFalse_rtia{}_ccomp{}_inamp{}.h5'
 
 
-time_range = [-50, 400] # [us] before and after peak; datastream plotting uses units of us
+time_range = [-50, 250] # [us] before and after peak; datastream plotting uses units of us
 
-rtia = 100
-ccomp = 47
-in_amp_arr = 2
+# clamp board configuration 
+rtia = 100 # kilo-ohms 
+ccomp = 47 # pF 
+in_amp_arr = 2 # gain of instrumentation amplifier 
 
 figs = []
 axs = []
 N = 10
 for i in range(N):
-    fig, ax=plt.subplots()
+    fig, ax=plt.subplots(figsize = fig_size)
     figs.append(fig)
     axs.append(ax)
+
+# 2x1 subplot for manuscript 
+fs = fig_size 
+# increase height to support 2x1 
+fs = (fig_size[0], fig_size[1]*1.8)
+fig_m, ax_m = plt.subplots(figsize = fs, nrows=2, ncols=1)
+
 
 for in_amp in [in_amp_arr]:
     for ccomp in [47]:
@@ -97,10 +109,12 @@ for in_amp in [in_amp_arr]:
             try:
                 t0_us = pos_pks[0][0]*1e6
             except: # if no peak is found use the logfile information in datastreams
+                print('Could not find a positive peak')
                 t0_us = datastreams.ddr_step_peak*1e6
             try:
                 t0_us_stop = neg_pks[0][0]*1e6
             except:
+                print('Could not find a negative peak')
                 t0_us_stop = datastreams.ddr_step_peak*1e6*2
 
             # plot current Im 
@@ -113,39 +127,51 @@ for in_amp in [in_amp_arr]:
             fc = 100e3
             if fc is not None:
                 y, t = filter_fc(y, fs, fc, REMOVE_DC = False)
-                t = t*1e6
+                t = t*1e6 + time_range[0]
             else:
                 t = t[idx]
 
             axs[0].plot(t, y/np.sum(y), label=f'R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
             axs[0].set_xlim(time_range)
             axs[0].set_xlabel('t [$\mu$s]')
-            axs[0].set_ylabel('I (a.u.)')
+            axs[0].set_ylabel('I [a.u.]')
             fig_names[0] = 'Istep_arbitrary_units_fc{}'.format(fc)
 
             axs[7].plot(t, y*1e6, label=f'R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
             axs[7].set_xlim(time_range)
             axs[7].set_xlabel('t [$\mu$s]')
-            axs[7].set_ylabel('I (uA)')
+            axs[7].set_ylabel('I [uA]')
             fig_names[7] = 'Istep_uA_units_fc{}'.format(fc)
 
+            # 2x1 for manuscript 
+            lns1 = ax_m[1].plot(t, y*1e6, label='$I_m$')
+            ax_m[1].set_xlim(time_range)
+            ax_m[1].set_xlabel('t [$\mu$s]')
+            ax_m[1].set_ylabel('I [$\mu$A]')
 
             axs[1].plot(t, np.cumsum(y)/np.sum(y), label=f'R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
             axs[1].set_xlim(time_range)
             axs[1].set_xlabel('t [$\mu$s]')
-            axs[1].set_ylabel('Q (a.u.)')
+            axs[1].set_ylabel('Q [a.u.]')
             fig_names[1] = 'Istep_Q_arbitrary_units_fc{}'.format(fc)
 
-
-            #dt_tmp = datastreams['Im'].create_time() # in second 
-            #dt = dt_tmp[1] - dt_tmp[0]
             dt = (t[1] - t[0])/1e6 # use filtered time in seconds 
             axs[8].plot(t, (np.cumsum(y*dt))*1e9, label=f'R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
             axs[8].set_xlim(time_range)
             axs[8].set_xlabel('t [$\mu$s]')
-            axs[8].set_ylabel('Q (nC)')
+            axs[8].set_ylabel('Q [nC]')
             fig_names[8] = 'Istep_Q_nC_units_fc{}'.format(fc)
 
+            ax_right = ax_m[1].twinx()
+            lns2 = ax_right.plot(t, (np.cumsum(y*dt))*1e9, label=f'Q', color='tab:orange')
+            ax_right.set_xlim(time_range)
+            ax_right.set_xlabel('t [$\mu$s]')
+            ax_right.set_ylabel('Q [nC]')
+
+            # added these three lines
+            lns = lns1+lns2
+            labs = [l.get_label() for l in lns]
+            ax_m[1].legend(lns, labs, loc=5)
 
             # plot P1 voltage 
             t = datastreams['P1'].create_time()*1e6 - t0_us
@@ -165,9 +191,16 @@ for in_amp in [in_amp_arr]:
             axs[9].plot(t_cmd[idx_cmd], y_cmd*1e3, label=f'CMD: R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
             axs[9].set_xlim(time_range)
             axs[9].set_xlabel('t [$\mu$s]')
-            axs[9].set_ylabel('[mV]')
+            axs[9].set_ylabel('V [mV]')
             axs[9].legend()
             fig_names[9] = 'CMDstep_mV_units'
+
+            ax_m[0].plot(t[idx], y*1e3, label=f'P1')
+            ax_m[0].plot(t_cmd[idx_cmd], y_cmd*1e3, label=f'CMD')
+            ax_m[0].set_xlim(time_range)
+            ax_m[0].set_xlabel('t [$\mu$s]')
+            ax_m[0].set_ylabel('V [mV]')
+            ax_m[0].legend(loc=5)            
 
             # noise analysis, ensure away from a peak 
             t_start = t0_us/1e6 + 1e-3 
@@ -213,6 +246,11 @@ for in_amp in [in_amp_arr]:
             my_savefig(figs[i], figure_dir, fig_names[i])
         except:
             pass
+    my_savefig(fig_m, figure_dir, 'voltage_cmd_im_q')
+    try:
+        my_savefig(fig_m, figure_dir_paper, 'voltage_cmd_im_q')
+    except:
+        print('Cannot find directory {}'.format(figure_dir_paper))
 
 if 0:
     # test with a sine-wave, do I get the correct RMS amplitude from integrated power spectrum?
