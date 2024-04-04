@@ -252,6 +252,8 @@ for in_amp in [in_amp_arr]:
     except:
         print('Cannot find directory {}'.format(figure_dir_paper))
 
+
+
 if 0:
     # test with a sine-wave, do I get the correct RMS amplitude from integrated power spectrum?
     fig_t, ax_t = plt.subplots()

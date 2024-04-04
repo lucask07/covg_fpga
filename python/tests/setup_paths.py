@@ -14,7 +14,7 @@ for i in range(15):
 sys.path.append(boards_path)
 
 
-# TODO: at data directories like this to a config file
+# TODO: add data directories like this to a config file
 data_dir_base = os.path.expanduser('~')
 if sys.platform == "linux" or sys.platform == "linux2":
     pass

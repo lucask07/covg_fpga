@@ -37,7 +37,7 @@ Endpoint.I2CDAQ_QW = Endpoint.advance_endpoints(
 class Clamp:
     """Class for the Clamp board daughtercards.
 
-    Clamp board daughtercard: https://github.com/lucask07/covg_clamp/blob/main/docs/bath_clamp_v1.pdf
+    Clamp board daughtercard: https://github.com/lucask07/covg_clamp/blob/clamp_v2/docs/bath_clamp.pdf
 
     Attributes
     ----------
@@ -1098,13 +1098,32 @@ class TOF:
 
 class Vsense:
     """
-    voltage sense board which only has an offset DAC and no other I2C periperhals 
-
+    voltage sense board which only has an offset DAC and no other I2C periperhals (v1)
+    or only an offset DAC and a single TCA9555 expander (v2)
+    
     will either be connected to a daughter-card socket 
     or jumpered to another daughter-card board 
     
+    Attributes
+    ----------
+    TCA_0 : TCA9555
+        First I/O Expander controlling Clamp board configuration.
+    DAC : DAC53401
+        Digital to Analog converter for the feedback buffer.
     """
-    def __init__(self, fpga, dc_num = 3, DAC_addr_pins=0b001, endpoints=None):
+    configs = {}
+
+    configs['RF_dict'] = {  # Selecting the resistor value for the feedback amplifier, all in kilo-ohms
+        226: 0b0001,
+        348: 0b0010,
+        470: 0b0100,
+        604: 0b1000,
+        None: 0b0000
+    }
+
+    configs['R1'] = 3.01 # kOhms 
+
+    def __init__(self, fpga, dc_num = 3, DAC_addr_pins=0b001, TCA_addr_pins_0=0b111, endpoints=None, version=1):
         # dc_num is the daughter card channel number since there are 0-3 channels
 
         if dc_num is not None:
@@ -1116,5 +1135,25 @@ class Vsense:
         else:
             i2c_eps = endpoints
 
+        self.version = version
+
         self.DAC = DAC101C081(fpga=fpga, addr_pins=DAC_addr_pins,
                             endpoints=i2c_eps)
+        
+        if self.version == 2:
+            self.TCA = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins_0,
+                                endpoints=i2c_eps)
+
+            self.gain_amp1 = None 
+            self.gain_amp2 = None
+
+            # configure default gain 
+    
+    def set_gain(self, val, amp_num):
+        pass
+
+    def get_gain(self):
+
+        return self.gain_amp1*self.gain_amp2 
+
+
