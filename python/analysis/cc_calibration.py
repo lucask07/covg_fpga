@@ -57,15 +57,21 @@ def wiener_deconvolution(signal, kernel, lambd, fs = None):
 
 class ImpulseResponse():
 
-    def __init__(self, values, ts, t0):
+    def __init__(self, values, ts, t0, tl_tr, step_amp):
         self.values = values
         self.ts = ts
         self.t0 = t0
+        self.tl = tl_tr[0]
+        self.tr = tl_tr[1]
+        self.step_amp = step_amp
 
     def create_time(self):
-        return np.linspace(-self.t0, (len(self.values) - 1)*self.ts-self.t0, len(self.values))
+        return np.linspace(self.tl + self.t0, (len(self.values) - 1)*self.ts + self.tl + self.t0, len(self.values))
 
 def cc_waveform(ds, l=0.0035, fc=20e3, vstep=None, win_len=None):
+
+    # creates a CC waveform from two datastream measurements 
+    # of the step response of both the CMD and CC terminals
 
     # ds: dictionary with keys CMD0, CC0 
     # l: noise parameter for Wiener deconvolution 
@@ -80,7 +86,6 @@ def cc_waveform(ds, l=0.0035, fc=20e3, vstep=None, win_len=None):
 
     # get impulse response of both 
     impulse = {}
-    impulse_c = {}
     t_imp = {}
     for imp_on in ['CMD0', 'CC0']:
         step_idx = pos_pks[1][0]
@@ -89,33 +94,37 @@ def cc_waveform(ds, l=0.0035, fc=20e3, vstep=None, win_len=None):
         #   default filter order was 5, but this shows considerable ringing in the CC impulse response 
         #   add 50 us to each side to avoid edge effects in the impulse response
         #   symmetric about t0 so that the convolution of a step and the impulse is centered at 0
-        tl = -250/1e6
-        tr = 250/1e6
+
+        # length of impulse is 4501 ~ 900e-6/200e-9
+        tl = -450/1e6
+        tr = 450/1e6
         # the units from get impulse are Amps/seconds = uA/us 
-        impulse[imp_on], t_imp[imp_on], t0 = ds[imp_on]['Im'].get_impulse(t0=t0, tl_tr=(tl, tr),
+        impulse_tmp, t_imp[imp_on], t0 = ds[imp_on]['Im'].get_impulse(t0=t0, tl_tr=(tl, tr),
                                                                   fc=500e3, order=1)
-        impulse_c[imp_on] = ImpulseResponse(impulse[imp_on], ts=t_imp[imp_on][1]-t_imp[imp_on][0], t0=tr)
-        print(t0)
+        impulse[imp_on] = ImpulseResponse(impulse_tmp, ts=t_imp[imp_on][1]-t_imp[imp_on][0], 
+                                          t0=t0, tl_tr=(tl,tr), 
+                                          step_amp=np.max(np.diff(ds[imp_on][imp_on].data)))
+        print('Time zero for impulse: {}'.format(t0))
 
     # span just the current peak 
     tl_tr = (-10e-6, 1000e-6) # steps are separated by more the 20 ms 
     t0 = pos_pks[0][0]
-    t = ds['CMD0']['Im'].create_time()
     tlow = t0 + tl_tr[0]
     thigh = t0 + tl_tr[1]
+    t = ds['CMD0']['Im'].create_time()
     im_idx = ((t>=tlow) & (t<=thigh))
     t = (t[im_idx] - t0)*1e6
 
     im_deconv = ds['CMD0']['Im'].data[im_idx]
     impulse_idx = ((t_imp['CMD0']>=tlow) & (t_imp['CMD0']<=thigh))
-    impulse_deconv = impulse['CMD0'][impulse_idx] 
+    impulse_deconv = impulse['CMD0'].values[impulse_idx] 
 
     # generate waveform for cc that should cancel 
-    impulse_deconv = impulse['CC0'][impulse_idx]  # 600 us at 5 MSPS
+    impulse_deconv = impulse['CC0'].values[impulse_idx]  # 600 us at 5 MSPS
     impulse_deconv = impulse_deconv - np.mean(impulse_deconv)
     cc_wave = wiener_deconvolution(-(im_deconv), impulse_deconv, lambd=l, fs=5e6)  # im_deconv is Im for deconvolution
 
-    fs = 1/impulse_c['CC0'].ts
+    fs = 1/impulse['CC0'].ts
 
     # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html
     lpf_fs = fc 
@@ -136,8 +145,7 @@ def cc_waveform(ds, l=0.0035, fc=20e3, vstep=None, win_len=None):
     step2[0:int(len(filtered_cc_wave)/2)] = vstep/2
     windowed_filtered_cc_wave  = win*filtered_cc_wave + (1-win)*step2
 
-    return windowed_filtered_cc_wave, filtered_cc_wave, cc_wave, impulse_c
-
+    return windowed_filtered_cc_wave, filtered_cc_wave, cc_wave, impulse, pos_pks
 
 """
 analyze data captured
@@ -156,24 +164,22 @@ ds = {}
 ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
 ds['CC0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cc_file)
 
-windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse_c1 = cc_waveform(ds, l=0.0035, 
+windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse_c1, pos_pks = cc_waveform(ds, l=0.0035, 
     fc=200e3, vstep=7e-5)
-# windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse_c1 = cc_waveform(ds, l=1e-6, fc=200e3)
+windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse_c1, pos_pks = cc_waveform(ds, l=1e-6, fc=200e3)
 
 fig,ax=plt.subplots()
 ax.plot(windowed_filtered_cc_wave)
 ax.plot(filtered_cc_wave1)
 ax.plot(cc_wave1)
 
-# check scaling and length 
 
-if __name__ == '__main__':
-
+def main():
     ds = {}
     ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
     ds['CC0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cc_file)
 
-    filtered_cc_wave1, cc_wave1, impulse_c1 = cc_waveform(ds, l=0.0035, fc=20e3)
+    windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse, pos_pks = cc_waveform(ds, l=0.0035, fc=20e3)
 
     # find peaks 
     fig,ax = plt.subplots(figsize=fig_size)
@@ -185,18 +191,9 @@ if __name__ == '__main__':
     # step response of CMD and CC as a sanity check 
     my_savefig(fig, fig_dir, 'step_response')
 
-    pos_pks = find_peak(ds['CMD0']['CMD0'].create_time(), 
-        np.diff(ds['CMD0']['CMD0'].data), 
-        th=1e-3, height=10e-3, distance=100)
-
-    neg_pks = find_peak(ds['CMD0']['CMD0'].create_time(), 
-        -np.diff(ds['CMD0']['CMD0'].data), 
-        th=1e-3, height=10e-3, distance=100)
-    # assume CC and CMD peaks are at the same time 
-
     # span for figures 
-    span_left = -50
-    span_right = 400
+    span_left = -50 # in us 
+    span_right = 400 # in us 
     peak_time = pos_pks[0][0]*1e6
 
     # current step response: zoom in to first positive peak 
@@ -213,42 +210,20 @@ if __name__ == '__main__':
     ax.set_xlim([span_left, span_right])
     my_savefig(fig, fig_dir, 'Im_step_response')
 
-
-    impulse = {}
-    impulse_c = {}
-    t_imp = {}
-    step_amp = {}
-    for imp_on in ['CMD0', 'CC0']:
-        step_idx = pos_pks[1][0]
-        t0 = ds[imp_on][imp_on].create_time()[step_idx]
-        # get_impulse calculates the gradient after a Butterworth filter 
-        #   default filter order was 5, but this shows considerable ringing in the CC impulse response 
-        #   add 50 us to each side to avoid edge effects in the impulse response
-        #   symmetric about t0 so that the convolution of a step and the impulse is centered at 0
-        tl_imp = -450/1e6
-        tr_imp = 450/1e6
-        impulse[imp_on], t_imp[imp_on], t0 = ds[imp_on]['Im'].get_impulse(t0=t0, tl_tr=(tl_imp, tr_imp),
-                                                                  fc=500e3, order=1)
-        # Note that this assumes that the CMD and CC are not filtered
-        step_size = np.max(np.diff(ds[imp_on][imp_on].data))*1e3 # mV 
-        print('Step size in mV: {}'.format(step_size))
-        step_amp[imp_on] = step_size
-        impulse_c[imp_on] = ImpulseResponse(impulse[imp_on]/step_size, ts=t_imp[imp_on][1]-t_imp[imp_on][0], t0=tr_imp)
-        print(t0)
-
+    # the CC impulse needs zero mean to ensure Qtot=0 with an impulse
     fig,ax = plt.subplots(figsize=fig_size)
-    ax.plot((impulse_c['CMD0'].create_time())*1e6, impulse_c['CMD0'].values)
+    ax.plot((impulse['CMD0'].create_time())*1e6, impulse['CMD0'].values)
     ax.set_xlabel('time [$\mu$s]')
     ax.set_ylabel('$h \; [\mu A/ (mV \cdot \mu s)]$') 
 
     # plot the impulse response 
     fig,ax = plt.subplots(nrows=2, ncols=1, figsize=fig_size)
-    t = t_imp['CMD0']*1e6 - peak_time
+    t = impulse['CMD0'].create_time()*1e6 - peak_time
     idx = (t > span_left) & (t < span_right)
-    ax[0].plot(t[idx], impulse['CMD0'][idx], label='CMD') # marker='+'
-    t = t_imp['CC0']*1e6 - peak_time
+    ax[0].plot(t[idx], impulse['CMD0'].values[idx], label='$h_{CMD}$') # marker='+'
+    t = impulse['CC0'].create_time()*1e6 - peak_time
     idx = (t > span_left) & (t < span_right)
-    ax[1].plot(t[idx], impulse['CC0'][idx], label='CC', color='tab:orange') #  marker='.', 
+    ax[1].plot(t[idx], impulse['CC0'].values[idx], label='$h_{CC}$', color='tab:orange') #  marker='.', 
     ax[0].legend()
     ax[1].legend()
     ax[0].set_xlabel('time [$\mu$s]')
@@ -258,10 +233,10 @@ if __name__ == '__main__':
     ax[1].set_xlim([-20, 50]) 
     my_savefig(fig, fig_dir, 'impulse_response')
 
-
     # create a step function and convolve impulse and step
     # this is a sanity check to ensure the impulse response is working as anticipated
-    t = ds[imp_on]['Im'].create_time()
+    t = ds['CMD0']['Im'].create_time()
+    t0 = impulse['CMD0'].t0
     t_idx = (t>(t0-1000e-6)) & (t<(t0+1000e-6)) # needs to have a length longer than t_imp so that 'valid' convolution works 
     step_t = t[t_idx]
     step_func = np.zeros(len(step_t))
@@ -273,14 +248,17 @@ if __name__ == '__main__':
     # same: max(N,M) 
     # valid: max(M,N) - min(M,N) + 1 -- overlap completely  
 
-    # since the sample rate is 5 MHz need to divide 
+    # TODO: since the sample rate is 5 MHz need to divide 
+    # plot the convolution of the impulse function and a step function 
     fig,ax=plt.subplots(figsize=fig_size)
-    ax.plot(step_t*1e6, np.convolve(impulse['CMD0'], step_func, 'same')/5, label='CMD') # step_t*1e6, 
-    ax.plot(step_t*1e6, np.convolve(impulse['CC0'], step_func, 'same')/5, label='CC') # step_t*1e6, 
+    print(f'Length of step_t {len(step_t)}; length of impulse {len(impulse["CMD0"].values)}')
+    ax.plot(step_t*1e6, np.convolve(impulse['CMD0'].values, step_func, 'same')*200e-9/1e-6, label='CMD') # step_t*1e6, 
+    ax.plot(step_t*1e6, np.convolve(impulse['CC0'].values, step_func, 'same')*200e-9/1e-6, label='CC') # step_t*1e6, 
     ax.legend()
     ax.set_xlabel('time [$\mu$s]')
     ax.set_ylabel('$I_m \; [\mu A]$')
     ax.set_xlim([span_left, span_right])
+    fig.suptitle('Impulse * step')
     my_savefig(fig, fig_dir, 'convolution')
 
     # Guide to using deconvolve
@@ -290,8 +268,8 @@ if __name__ == '__main__':
 
     # https://dsp.stackexchange.com/questions/78319/approximating-inverse-of-unstable-difference-of-gaussians-filter/78325#78325
 
-    im_cmd_conv = np.convolve(impulse['CMD0'], step_func) # step function has a sampling rate of 5 MHz (T = 200 ns)
-    peak_imp = np.argmax(impulse['CC0'])
+    im_cmd_conv = np.convolve(impulse['CMD0'].values, step_func) # step function has a sampling rate of 5 MHz (T = 200 ns)
+    peak_imp = np.argmax(impulse['CC0'].values)
 
     # span just the current peak 
     tl_tr = (-10e-6, 1000e-6) # steps are separated by more the 20 ms 
@@ -303,42 +281,47 @@ if __name__ == '__main__':
     t = (t[im_idx] - t0)*1e6
 
     im_deconv = ds['CMD0']['Im'].data[im_idx]
-    impulse_idx = ((t_imp['CMD0']>=tlow) & (t_imp['CMD0']<=thigh))
-    impulse_deconv = impulse['CMD0'][impulse_idx] 
+    impulse_idx = ((impulse['CMD0'].create_time()>=tlow) & (impulse['CMD0'].create_time()<=thigh))
+    impulse_deconv = impulse['CMD0'].values[impulse_idx] 
 
     # For pytorch want the impulse and data to be centered (i.e. t=0 is in the middle)
-    tlow_imp = t0 + tl_imp
-    thigh_imp = t0 + tr_imp
+    tlow_imp = t0 + impulse['CMD0'].tl
+    thigh_imp = t0 + impulse['CMD0'].tr
     t_torch_impulse = ds['CMD0']['Im'].create_time()
     im_idx_imp = ((t_torch_impulse>=tlow_imp) & (t_torch_impulse<=thigh_imp))
-    impulse_idx_torch = ((t_imp['CMD0']>=tlow_imp) & (t_imp['CMD0']<=thigh_imp))
-    impulse_cc_torch = impulse['CC0'][impulse_idx_torch] 
+    impulse_idx_torch = ((impulse['CMD0'].create_time()>=tlow_imp) & (impulse['CMD0'].create_time()<=thigh_imp))
+    impulse_cc_torch = impulse['CC0'].values[impulse_idx_torch] 
     im_torch = ds['CMD0']['Im'].data[im_idx_imp]
 
     fig,ax = plt.subplots(figsize=fig_size, nrows=4)
     ax[0].plot(im_deconv*1e6, 'b', label='Meas:Im')
-    ax[0].legend()
     ax[1].plot(impulse_deconv, 'r', label='h_{CMD}')
-    ax[1].legend()
     ax[2].plot(im_cmd_conv, 'm', label='h_{CMD}*step')
+    fig.suptitle('Sanity check of Im and $h_{CMD}$. Panel 3 shows deconv of CC')
 
+    # Use Im and the CMD impulse function to tune the wiener filter SNR parameter 
     print('Length of signal {} and length of filter/impulse response {}'.format(len(im_deconv), len(impulse_deconv)))
     colors = itertools.cycle(['b', 'g', 'm', 'r'])
-    noise_levels = [0.002, 0.0035, 0.005, 0.01, 0.02] # in units of uA
+    noise_levels = [0.001, 0.002, 0.0035, 0.005, 0.01, 0.02] # in units of uA
     cmd_waves = {}
     for l in noise_levels:
         # the deconvolution is wiener_deconvolution(signal, impulse) --> the output length matches the signal
-        cmd_waves[l] = wiener_deconvolution(im_deconv, impulse_deconv, lambd=l*1e-6)
+        cmd_waves[l] = wiener_deconvolution(im_deconv, impulse_deconv, lambd=l*1e-3)
+        print(f'In deconvolve. Noise level of {l}; Peak impulse value {np.max(impulse_deconv)}')
+        print(f'Sum of cmd_waves l: {l} {np.sum(cmd_waves[l])}')
         ax[3].plot(t, np.real(cmd_waves[l]), next(colors), label='deconv(CMD)@{}'.format(l))
-    ax[3].legend()
+    for i in range(4):
+        ax[i].legend()
 
     fig,ax = plt.subplots(figsize=fig_size)
     colors = itertools.cycle(['b', 'g', 'm', 'r'])
+    fig1, ax1=plt.subplots(figsize=fig_size) # plot the cmd_waves
     for l in noise_levels:
         conv = np.convolve(impulse_deconv, cmd_waves[l], 'same') # impulse response, input CMD waveform
         pedestal_conv = np.mean(conv[:-99:-1])
-        ax.plot(t, (conv-pedestal_conv), next(colors), label='$h_{CMD}$'+':{}'.format(l))
-
+        ax.plot(t, (conv-pedestal_conv), color=next(colors), label='$h_{CMD}$'+':{}'.format(l))
+        print(f'Sum of cmd_waves l: {l} {np.sum(cmd_waves[l])}')
+        ax1.plot(cmd_waves[l], color=next(colors), label=f'{l}')
     # the step response cannot extract dc offset. So remove on our own. 
     pedestal_im = np.mean(im_deconv[:-99:-1])
     ax.plot(t, (im_deconv - pedestal_im)*1e6, 'k', label='Im') # im_deconv is a subset of the Im measurement 
@@ -346,13 +329,17 @@ if __name__ == '__main__':
     ax.set_xlabel('time [$\mu$s]')
     ax.set_ylabel('$I_m \; [\mu A]$')
     ax.set_xlim([span_left, span_right])
+    fig.suptitle('$h_{CMD} * V_{CMD}$')
     my_savefig(fig, fig_dir, 'CMD_deconv_vs_SNR')
+
+    fig1.suptitle('$V_{CMD} vs. l$')
+    ax1.legend()
 
     # repeat but now generate waveform for cc that should cancel 
     cc_waves = {}
-    l = 0.0035 # best choice of noise for the Weiner filter 
-    impulse_deconv = impulse['CC0'][impulse_idx]  # 600 us at 5 MSPS
-    cc_waves[l] = wiener_deconvolution(-(im_deconv), impulse_deconv, lambd=l)  # im_deconv is Im for deconvolution
+    l = 0.0035*0.0035 # best choice of noise for the Weiner filter 
+    impulse_deconv = impulse['CC0'].values[impulse_idx]  # 600 us at 5 MSPS
+    cc_waves[l] = wiener_deconvolution(im_deconv, impulse_deconv, lambd=l)  # im_deconv is Im for deconvolution
 
     # plot the CC waveform 
     fig,ax = plt.subplots(figsize=fig_size)
@@ -370,17 +357,14 @@ if __name__ == '__main__':
     filtered_cc_wave = {} 
     fig,ax = plt.subplots(figsize=fig_size)
     ax.plot(cc_waves[l], label='Full BW')
-    fs = 1/impulse_c['CC0'].ts
-    for fc in [200e3]:
-    #for fc in [50e3, 100e3, 200e3, 500e3]:
-        #TODO: consider filtfilt 
+    fs = 1/impulse['CC0'].ts
+    
+    #for fc in [200e3]:
+    fig1,ax1 = plt.subplots(figsize=fig_size, nrows=3)
+    for fc in [50e3, 100e3, 200e3, 500e3]:
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html
-
-        lpf_fs = fc 
-        hpf_fs = 2000 # high pass filter cutoff 
         order = 3
-        # b,a = signal.butter(order, [hpf_fs, lpf_fs], fs=fs, btype='bandpass')
-        b,a = signal.butter(order, [lpf_fs], fs=fs, btype='lowpass')    
+        b,a = signal.butter(order, [fc], fs=fs, btype='lowpass')    
         # forward and backward filter for zero phase is preferred over a causal filter 
         filtered_cc_wave[fc] = signal.filtfilt(b,a,cc_waves[l], padlen=300)
         # window this signal so that it starts and ends at zero 
@@ -390,31 +374,60 @@ if __name__ == '__main__':
         step2[0:int(len(filtered_cc_wave[fc])/2)] = peak/2
         filtered_cc_wave[fc] = win*filtered_cc_wave[fc] + (1-win)*step2
         
-        #filtered_cc_wave[fc] = butter_lowpass_filter(cc_waves[l], fc, fs, order=1)
-        #filtered_cc_wave[fc] = butter_highpass_filter(filtered_cc_wave[fc], 500, fs, order=1)
         ax.plot(filtered_cc_wave[fc], label='{} Hz'.format(fc))
 
-        fig1,ax1 = plt.subplots(figsize=fig_size, nrows=3)
         cc_im = np.convolve(impulse_deconv, filtered_cc_wave[fc], mode='valid')
+        print('Sum and Average of CC Im: {}, {}'.format(np.sum(cc_im), np.average(cc_im)))
         stop_idx = len(cc_im)
-        t = np.linspace(0, impulse_c['CC0'].ts*(stop_idx-1),  num=stop_idx)*1e6
-        # cc_im = np.hstack( (cc_im, np.zeros( (len(im_deconv) - len(cc_im
-        ax1[0].plot(t, (cc_im)*1e6, 'tab:blue', label='$h_{CC} \ast CC_{wave}$')
-        # ax[0].plot( (cc_waves[l]), 'tab:red', label='$CC_{wave}$')
+        t = np.linspace(0, impulse['CC0'].ts*(stop_idx-1),  num=stop_idx)*1e6
+        # TODO: understand if the 
+        ax1[0].plot(t, (cc_im)*1e6, 'tab:blue', label='$h_{CC}*CC_{wave}$')
         ax1[1].plot(t, (im_deconv[:stop_idx])*1e6, label='CMD')
         # TODO: take care of pedestals 
         ax1[2].plot(t, (cc_im + im_deconv[:stop_idx])*1e6, label=f'CMD+CC@{fc} Hz')
 
-        for i in range(3):
-            ax1[i].legend()
-            ax1[i].set_ylabel('$I_m \; [\mu A]$')
-        ax1[2].set_xlabel('time [$\mu$s]')
+    for i in range(3):
+        ax1[i].legend()
+        ax1[i].set_ylabel('$I_m \; [\mu A]$')
+    ax1[2].set_xlabel('time [$\mu$s]')
+    ax.legend()
+    fig.suptitle('Filtered $V_{CC}(t)$')
 
+    def pad_ends(x, target_len):
+        if len(x)>= target_len:
+            return x
+
+        half_len = int((target_len - len(x))/2)
+        x = np.concatenate((np.ones(half_len)*x[0], x), axis=0)
+        x = np.concatenate( (x, np.ones(half_len)*x[-1]), axis=0)
+        return x 
+
+    windowed_filtered_cc_wave = pad_ends(windowed_filtered_cc_wave, 10000)
+    filtered_cc_wave1 = pad_ends(filtered_cc_wave1, 10000)
+    fig,ax = plt.subplots(figsize=fig_size)
+    ax.plot(windowed_filtered_cc_wave, label='Windowed')
+    ax.plot(filtered_cc_wave1, label='not windowed')
+
+    # compare the Im_CC with a windowed cc_wave and a non-windowed cc_wave (returns to 0)
+    cc_im1 = np.convolve(impulse_deconv, windowed_filtered_cc_wave, mode='same')
+    cc_im2 = np.convolve(impulse_deconv, filtered_cc_wave1, mode='same')
+    fig,ax = plt.subplots(figsize=fig_size)
+    ax.plot(cc_im1, label='windowed')
+    print(f'Sum of cc_im1 {np.sum(cc_im1)}')
+    ax.plot(cc_im2, label='filt_cc_wave')
+    print(f'Sum of cc_im2 {np.sum(cc_im2)}')
+    fig.suptitle('$I_{mCC} = h_{CC}*V_{CC}$')
     ax.legend()
 
-TRAIN = False
+    return impulse, cc_im, im_torch, impulse_cc_torch
 
+
+if __name__ == '__main__':
+    impulse, cc_im, im_torch, impulse_cc_torch = main()
+
+TRAIN = False
 if TRAIN:
+    # impulse, cc_im, im_torch, impulse_cc_torch = main()
     # remove pedestal from the membrane current 
     im_torch_nopedestal = im_torch - np.mean(im_torch[0:50]) #TODO: generalize 
 
@@ -435,7 +448,7 @@ if TRAIN:
 
     # normalize 
     NORMALIZE = True
-    MAX_EPOCHS = 400
+    MAX_EPOCHS = 10
     configs = {}
     configs['max_target'] = torch.max(target_signal)
     configs['max_impulse'] = np.max(impulse_train)
@@ -486,11 +499,11 @@ if TRAIN:
     with open(os.path.join(output_dir, 'config.pkl'), 'wb') as handle:
         pickle.dump(configs, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-
     # load data and analyze results vs. EPOCHS 
     from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-    epoch_list = [0, 2, 4, 40, 80, 160, 399]
+    epoch_list = np.asarray([0, 2, 4, 40, 80, 160, 399])
+    epoch_list = epoch_list[epoch_list<=MAX_EPOCHS]
     plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.viridis(np.linspace(0,1,len(epoch_list))))
     fig,ax = plt.subplots(figsize=fig_size)
     # make Loss vs. epoch a small inset 
@@ -518,6 +531,7 @@ if TRAIN:
 
     ax.legend()
     my_savefig(fig, fig_dir, 'cc_cancellation_training_results')
+
 
 ## ---------- NOTES --------------
 
