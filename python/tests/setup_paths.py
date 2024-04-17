@@ -32,3 +32,6 @@ data_dir = data_dir_covg.format(
 )
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
+
+# point to PyABF
+sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork

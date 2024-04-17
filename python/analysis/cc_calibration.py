@@ -4,6 +4,8 @@ edits Feb 2024
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 import os
+os.environ['KMP_DUPLICATE_LIB_OK']="TRUE" # this is a workaround for an issue once pytorch was installed 
+
 import sys
 from time import sleep
 import datetime
@@ -57,13 +59,13 @@ def wiener_deconvolution(signal, kernel, lambd, fs = None):
 
 class ImpulseResponse():
 
-    def __init__(self, values, ts, t0, tl_tr, step_amp):
+    def __init__(self, values, ts, t0, tl_tr, step_pkpk):
         self.values = values
         self.ts = ts
         self.t0 = t0
         self.tl = tl_tr[0]
         self.tr = tl_tr[1]
-        self.step_amp = step_amp
+        self.step_pkpk = step_pkpk
 
     def create_time(self):
         return np.linspace(self.tl + self.t0, (len(self.values) - 1)*self.ts + self.tl + self.t0, len(self.values))
@@ -103,7 +105,7 @@ def cc_waveform(ds, l=0.0035, fc=20e3, vstep=None, win_len=None):
                                                                   fc=500e3, order=1)
         impulse[imp_on] = ImpulseResponse(impulse_tmp, ts=t_imp[imp_on][1]-t_imp[imp_on][0], 
                                           t0=t0, tl_tr=(tl,tr), 
-                                          step_amp=np.max(np.diff(ds[imp_on][imp_on].data)))
+                                          step_pkpk=np.max(np.diff(ds[imp_on][imp_on].data)))
         print('Time zero for impulse: {}'.format(t0))
 
     # span just the current peak 
@@ -119,7 +121,7 @@ def cc_waveform(ds, l=0.0035, fc=20e3, vstep=None, win_len=None):
     impulse_idx = ((t_imp['CMD0']>=tlow) & (t_imp['CMD0']<=thigh))
     impulse_deconv = impulse['CMD0'].values[impulse_idx] 
 
-    # generate waveform for cc that should cancel 
+    # generate waveform for cc that should cancel using Wiener deconvolution 
     impulse_deconv = impulse['CC0'].values[impulse_idx]  # 600 us at 5 MSPS
     impulse_deconv = impulse_deconv - np.mean(impulse_deconv)
     cc_wave = wiener_deconvolution(-(im_deconv), impulse_deconv, lambd=l, fs=5e6)  # im_deconv is Im for deconvolution
@@ -155,10 +157,17 @@ if sys.platform == 'darwin':
     fig_dir = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/cc'
 elif sys.platform == 'win32':
     data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
+    fig_dir = r'C:/Users/Public/Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/cc/'
 
 subdir = 'clamp/20240223/'
 cc_file = 'clamptest1_quietdacsFalse_rtia33_ccomp47_inamp2_cmdval0_ccval512.h5'
 cmd_file = 'clamptest1_quietdacsFalse_rtia33_ccomp47_inamp2_cmdval512_ccval0.h5'
+
+subdir = 'c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240412\\'
+subdir = 'c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\'
+
+cc_file = 'cc_impulse.h5'
+cmd_file = 'cmd_impulse.h5'
 
 ds = {}
 ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
@@ -178,6 +187,12 @@ def main():
     ds = {}
     ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
     ds['CC0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cc_file)
+
+    configs = {}
+    configs['cmd_val'] = ds['CMD0'].cmd_val
+    configs['cc_val'] = ds['CC0'].cc_val
+    configs['cmd_conv_factor'] = ds['CMD0']['CMD0'].conversion_factor
+    configs['cc_conv_factor'] = ds['CC0']['CC0'].conversion_factor
 
     windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse, pos_pks = cc_waveform(ds, l=0.0035, fc=20e3)
 
@@ -220,10 +235,12 @@ def main():
     fig,ax = plt.subplots(nrows=2, ncols=1, figsize=fig_size)
     t = impulse['CMD0'].create_time()*1e6 - peak_time
     idx = (t > span_left) & (t < span_right)
-    ax[0].plot(t[idx], impulse['CMD0'].values[idx], label='$h_{CMD}$') # marker='+'
+    # .values have units of Amps
+    # .step_pkpk has units of Volts 
+    ax[0].plot(t[idx], impulse['CMD0'].values[idx]/(impulse['CMD0'].step_pkpk*1e3), label='$h_{CMD}$') # marker='+'
     t = impulse['CC0'].create_time()*1e6 - peak_time
     idx = (t > span_left) & (t < span_right)
-    ax[1].plot(t[idx], impulse['CC0'].values[idx], label='$h_{CC}$', color='tab:orange') #  marker='.', 
+    ax[1].plot(t[idx], impulse['CC0'].values[idx]/(impulse['CC0'].step_pkpk*1e3), label='$h_{CC}$', color='tab:orange') #  marker='.', 
     ax[0].legend()
     ax[1].legend()
     ax[0].set_xlabel('time [$\mu$s]')
@@ -273,7 +290,7 @@ def main():
 
     # span just the current peak 
     tl_tr = (-10e-6, 1000e-6) # steps are separated by more the 20 ms 
-    t0 = pos_pks[0]
+    t0 = pos_pks[0][0]
     t = ds['CMD0']['Im'].create_time()
     tlow = t0 + tl_tr[0]
     thigh = t0 + tl_tr[1]
@@ -290,8 +307,8 @@ def main():
     t_torch_impulse = ds['CMD0']['Im'].create_time()
     im_idx_imp = ((t_torch_impulse>=tlow_imp) & (t_torch_impulse<=thigh_imp))
     impulse_idx_torch = ((impulse['CMD0'].create_time()>=tlow_imp) & (impulse['CMD0'].create_time()<=thigh_imp))
-    impulse_cc_torch = impulse['CC0'].values[impulse_idx_torch] 
-    im_torch = ds['CMD0']['Im'].data[im_idx_imp]
+    impulse_cc_torch = impulse['CC0'].values[impulse_idx_torch]/impulse['CC0'].step_pkpk # units of A/(V*s)
+    im_torch = ds['CMD0']['Im'].data[im_idx_imp]/impulse['CMD0'].step_pkpk # A/V
 
     fig,ax = plt.subplots(figsize=fig_size, nrows=4)
     ax[0].plot(im_deconv*1e6, 'b', label='Meas:Im')
@@ -419,11 +436,12 @@ def main():
     fig.suptitle('$I_{mCC} = h_{CC}*V_{CC}$')
     ax.legend()
 
-    return impulse, cc_im, im_torch, impulse_cc_torch
+    # impulse: 
+    return impulse, cc_im, im_torch, impulse_cc_torch, configs
 
 
 if __name__ == '__main__':
-    impulse, cc_im, im_torch, impulse_cc_torch = main()
+    impulse, cc_im, im_torch, impulse_cc_torch, configs = main()
 
 TRAIN = False
 if TRAIN:

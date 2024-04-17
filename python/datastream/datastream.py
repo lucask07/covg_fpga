@@ -320,7 +320,8 @@ def h5_to_datastreams(directory, filename):
                                 units=file[dk].attrs['units'], 
                                 name=file[dk].attrs['name'], 
                                 net=file[dk].attrs['net'], 
-                                t0=file[dk].attrs['initial_time'])
+                                t0=file[dk].attrs['initial_time'],
+                                conv_factor = file[dk].attrs['conversion_factor'])
 
                     datastreams[ds.net] = ds
                 except:

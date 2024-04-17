@@ -6,6 +6,8 @@ Load a trained CC network model and pass a CMD waveform through it to determine 
 
 """
 import os
+os.environ['KMP_DUPLICATE_LIB_OK']="TRUE" # this is a workaround for an issue once pytorch was installed 
+
 import sys
 from time import sleep
 import datetime
@@ -20,8 +22,8 @@ from analysis.audiotorch_cc import Net
 from torch_cubic_spline_grids import CubicBSplineGrid1d
 
 
-def infer_ccwave_spline(run_date = '20240408', 
-                 run_time = '193723', 
+def infer_ccwave_spline(run_date = '20240413', 
+                 run_time = '151907', 
                  cmd_wave=None, DEBUG_PLOTS = False):
 
     # load a trained spline model and then create a CC wave
@@ -48,13 +50,29 @@ def infer_ccwave_spline(run_date = '20240408',
     # do not need to evaluate the convolution with the impulse response
     # after_training = F.convolve(step_wave, impulse_train, mode='same')
 
+    # normalizing the target value (max-target [A]) decreases the learned CC_wave
+    # normalizing the CC impulse function (max impulse) increases the learned CC wave 
+    # after these the result is CC-volts / CMD-volts 
+
+
+    # missing correction for convolution operation: *200e-9 (*dt)
+    scale_factor = (1/configs['max_impulse']/configs['max_target'])*configs['cmd_val']*configs['cc_conv_factor'] # 
+
+    scale_factor = (configs['max_target']/configs['max_impulse'])*configs['cmd_conv_factor']/configs['cc_conv_factor'] # 
+
+
+    scale_factor = scale_factor.detach().numpy()
+    print(f'Scale factor {scale_factor}')
+
     if DEBUG_PLOTS:
         fig,ax=plt.subplots()
-        ax.plot(cc_wave.cpu().detach().numpy())
+        ax.plot( (cc_wave).cpu().detach().numpy()*scale_factor)
+
+    cc_wave = cc_wave.cpu().detach().numpy()*scale_factor
 
     return cc_wave, configs, results
 
-def cat_cc_wave(edge_pts, cc_wave, amplitude=None, midpt=0x0200): 
+def cat_cc_wave(cmd_wave, cc_wave, amplitude=None, midpt=0x0200): 
     """
     at edge pts splice in cc waves 
 
@@ -67,6 +85,15 @@ def cat_cc_wave(edge_pts, cc_wave, amplitude=None, midpt=0x0200):
     Returns: 
 
     """
+    # get edge_pts from cmd_wave (requires no filtering on CMD)
+    cmd_wave = cmd_wave.astype(np.double)
+    diff_wave = np.concatenate([np.diff(cmd_wave), np.zeros(1)]) # add a single zero at the end
+    r_edge = diff_wave > 0
+    f_edge = diff_wave < 0
+    edge_pts = np.zeros(len(cmd_wave))
+    edge_pts[r_edge] = 1
+    edge_pts[f_edge] = -1
+
     if (amplitude % 2) == 1:
         amplitude = amplitude + 1
     half_amp = int(amplitude/2)

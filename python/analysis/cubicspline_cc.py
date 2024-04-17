@@ -19,6 +19,9 @@ Notes:
    then will be downsampled  
 
 '''
+import os
+os.environ['KMP_DUPLICATE_LIB_OK']="TRUE" # this is a workaround for an issue once pytorch was installed 
+import sys
 import torch
 import torchaudio.functional as F
 import matplotlib.pyplot as plt
@@ -29,10 +32,16 @@ from datetime import datetime
 import numpy as np
 import copy
 import pickle
-import os
 
 from torch_cubic_spline_grids import CubicBSplineGrid1d
 from analysis.cc_calibration import main as main_cc_cal
+
+if sys.platform == 'darwin':
+    data_dir = '/Users/koer2434/Library/CloudStorage/OneDrive-UniversityofSt.Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
+    fig_dir = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/cc'
+elif sys.platform == 'win32':
+    data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
+    fig_dir = r'C:/Users/Public/Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/cc/'
 
 plt.ion()
 
@@ -42,7 +51,12 @@ N_CONTROL_POINTS = 50 # sets the resolution of the cubic splines
 fig, ax = plt.subplots()
 fig1,ax1 = plt.subplots()
 
-impulse, cc_im, im_torch, impulse_cc_torch = main_cc_cal()
+# impulse is an Impulse object with .values (units of A/s = uA/us; values does not account for the DAC value used to measure)
+#  and with .step_pkpk (units of V)
+
+#    impulse_cc_torch = impulse['CC0'].values[impulse_idx_torch]/impulse['CC0'].step_pkpk # units of A/(V*s)
+#    im_torch = ds['CMD0']['Im'].data[im_idx_imp]/impulse['CMD0'].step_pkpk # A/V
+impulse, cc_im, im_torch, impulse_cc_torch, configs_main = main_cc_cal()
 
 # determine lengths 
 if len(im_torch)%2 == 1:
@@ -54,7 +68,7 @@ x = torch.cat((torch.zeros(int((l1-l2)/2)), x, torch.ones(int((l1-l2)/2))), 0).f
 
 # normalize the target and the impulse to 1 
 NORMALIZE = True
-MAX_EPOCHS = 80
+MAX_EPOCHS = 20
 configs = {}
 
 # remove Im current pedestal 
@@ -70,6 +84,9 @@ configs['l1'] = l1
 configs['N_CONTROL_POINTS'] = N_CONTROL_POINTS
 configs['MAX_EPOCHS'] = MAX_EPOCHS
 configs['x'] = x 
+
+for c in ['cmd_val', 'cc_val', 'cc_conv_factor', 'cmd_conv_factor']:
+    configs[c] = configs_main[c] # conversion factor is in V / DAC
 
 if NORMALIZE:
     target = target/torch.max(target)
@@ -136,11 +153,12 @@ def train_net(x, target, imp, EPOCHS = 200):
 
     training_loss = []
     for epoch_number in range(EPOCHS):
-        print('EPOCH {}:'.format(epoch_number + 1))
+        print('EPOCH (cubic spline) {}:'.format(epoch_number + 1))
         avg_loss = train_one_epoch(epoch_number, writer, imp=imp)
         print('Average loss: {}'.format(avg_loss))
         training_loss.append(avg_loss)
-        if avg_loss < 1e-5:
+        if avg_loss < 9.8e-6:
+            print(f'Breaking at EPOCH = {epoch_number} at loss of {avg_loss}')
             break
         # plot
         if epoch_number % 10 == 0:
@@ -178,6 +196,12 @@ if __name__ == '__main__':
     prediction = F.convolve(step_wave, impulse_train, mode='same')
     ax.plot(prediction.detach().numpy())
 
+    # normalizing the target value (max-target [A]) decreases the learned CC_wave
+    # normalizing the impulse response [A/(V*s)] increases the learned CC_wave  -- need the DAC/mV conversion factor 
+    scale_factor = (1/configs['max_impulse']/configs['max_target'])*configs['cmd_val']*configs['cc_conv_factor'] # *(configs['cmd_val']/configs['cc_val'])
+    scale_factor = scale_factor.detach().numpy()
+    print(f'Scale factor {scale_factor}')
+
     fig,ax=plt.subplots()
-    ax.plot(step_wave.detach().numpy())
+    ax.plot(step_wave.detach().numpy()*scale_factor)
     fig.suptitle('Step wave')
