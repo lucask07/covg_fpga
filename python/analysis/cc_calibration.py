@@ -74,6 +74,7 @@ def cc_waveform(ds, l=0.0035, fc=20e3, vstep=None, win_len=None):
 
     # creates a CC waveform from two datastream measurements 
     # of the step response of both the CMD and CC terminals
+    # Using a Wiener deconvolution
 
     # ds: dictionary with keys CMD0, CC0 
     # l: noise parameter for Wiener deconvolution 
@@ -159,31 +160,21 @@ elif sys.platform == 'win32':
     data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
     fig_dir = r'C:/Users/Public/Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/cc/'
 
-subdir = 'clamp/20240223/'
-cc_file = 'clamptest1_quietdacsFalse_rtia33_ccomp47_inamp2_cmdval0_ccval512.h5'
-cmd_file = 'clamptest1_quietdacsFalse_rtia33_ccomp47_inamp2_cmdval512_ccval0.h5'
 
-subdir = 'c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240412\\'
-subdir = 'c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\'
+def load_datastreams(subdir = 'c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\',
+                     cmd_file='cmd_impulse.h5', 
+                     cc_file='cc_impulse.h5'):
+    # strange issues (returns a tuple)
 
-cc_file = 'cc_impulse.h5'
-cmd_file = 'cmd_impulse.h5'
+    output_ds = {}
+    output_ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
+    output_ds['CC0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cc_file)
 
-ds = {}
-ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
-ds['CC0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cc_file)
+    return output_ds 
 
-windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse_c1, pos_pks = cc_waveform(ds, l=0.0035, 
-    fc=200e3, vstep=7e-5)
-windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse_c1, pos_pks = cc_waveform(ds, l=1e-6, fc=200e3)
-
-fig,ax=plt.subplots()
-ax.plot(windowed_filtered_cc_wave)
-ax.plot(filtered_cc_wave1)
-ax.plot(cc_wave1)
-
-
-def main():
+def main(subdir='c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\', 
+         cmd_file='cmd_impulse.h5', cc_file='cc_impulse.h5', MAKE_PLTS=False):
+    
     ds = {}
     ds['CMD0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cmd_file)
     ds['CC0'] = h5_to_datastreams(os.path.join(data_dir, subdir), cc_file)
@@ -194,17 +185,18 @@ def main():
     configs['cmd_conv_factor'] = ds['CMD0']['CMD0'].conversion_factor
     configs['cc_conv_factor'] = ds['CC0']['CC0'].conversion_factor
 
+    # Need to run cc_waveform to get the impulse response and peak locations 
     windowed_filtered_cc_wave, filtered_cc_wave1, cc_wave1, impulse, pos_pks = cc_waveform(ds, l=0.0035, fc=20e3)
 
-    # find peaks 
-    fig,ax = plt.subplots(figsize=fig_size)
-    ds['CMD0']['CMD0'].plot(ax, {'label':'CMD'})
-    ds['CC0']['CC0'].plot(ax, {'label':'CC'})
-    ax.legend()
-    ax.set_xlabel('time [$\mu$s]')
-    ax.set_ylabel('$V$')
-    # step response of CMD and CC as a sanity check 
-    my_savefig(fig, fig_dir, 'step_response')
+    if MAKE_PLTS:
+        fig,ax = plt.subplots(figsize=fig_size)
+        ds['CMD0']['CMD0'].plot(ax, {'label':'CMD'})
+        ds['CC0']['CC0'].plot(ax, {'label':'CC'})
+        ax.legend()
+        ax.set_xlabel('time [$\mu$s]')
+        ax.set_ylabel('$V$')
+        # step response of CMD and CC as a sanity check 
+        my_savefig(fig, fig_dir, 'step_response')
 
     # span for figures 
     span_left = -50 # in us 
@@ -212,43 +204,45 @@ def main():
     peak_time = pos_pks[0][0]*1e6
 
     # current step response: zoom in to first positive peak 
-    fig,ax = plt.subplots(figsize=fig_size)
-    t = ds['CMD0']['Im'].create_time()*1e6-peak_time
-    idx = (t > span_left) & (t < span_right)
-    ax.plot(t[idx], ds['CMD0']['Im'].data[idx]*1e6, label='CMD')
-    t = ds['CC0']['Im'].create_time()*1e6-peak_time
-    idx = (t > span_left) & (t < span_right)
-    ax.plot(t[idx], ds['CC0']['Im'].data[idx]*1e6, label='CC')
-    ax.legend()
-    ax.set_xlabel('time [$\mu$s]')
-    ax.set_ylabel('$I_m \; [\mu A]$')
-    ax.set_xlim([span_left, span_right])
-    my_savefig(fig, fig_dir, 'Im_step_response')
+    if MAKE_PLTS:
+        fig,ax = plt.subplots(figsize=fig_size)
+        t = ds['CMD0']['Im'].create_time()*1e6-peak_time
+        idx = (t > span_left) & (t < span_right)
+        ax.plot(t[idx], ds['CMD0']['Im'].data[idx]*1e6, label='CMD')
+        t = ds['CC0']['Im'].create_time()*1e6-peak_time
+        idx = (t > span_left) & (t < span_right)
+        ax.plot(t[idx], ds['CC0']['Im'].data[idx]*1e6, label='CC')
+        ax.legend()
+        ax.set_xlabel('time [$\mu$s]')
+        ax.set_ylabel('$I_m \; [\mu A]$')
+        ax.set_xlim([span_left, span_right])
+        my_savefig(fig, fig_dir, 'Im_step_response')
 
-    # the CC impulse needs zero mean to ensure Qtot=0 with an impulse
-    fig,ax = plt.subplots(figsize=fig_size)
-    ax.plot((impulse['CMD0'].create_time())*1e6, impulse['CMD0'].values)
-    ax.set_xlabel('time [$\mu$s]')
-    ax.set_ylabel('$h \; [\mu A/ (mV \cdot \mu s)]$') 
+        # the CC impulse needs zero mean to ensure Qtot=0 with an impulse
+        fig,ax = plt.subplots(figsize=fig_size)
+        ax.plot((impulse['CMD0'].create_time())*1e6, impulse['CMD0'].values)
+        ax.set_xlabel('time [$\mu$s]')
+        ax.set_ylabel('$h \; [\mu A/ (mV \cdot \mu s)]$') 
 
-    # plot the impulse response 
-    fig,ax = plt.subplots(nrows=2, ncols=1, figsize=fig_size)
-    t = impulse['CMD0'].create_time()*1e6 - peak_time
-    idx = (t > span_left) & (t < span_right)
-    # .values have units of Amps
-    # .step_pkpk has units of Volts 
-    ax[0].plot(t[idx], impulse['CMD0'].values[idx]/(impulse['CMD0'].step_pkpk*1e3), label='$h_{CMD}$') # marker='+'
-    t = impulse['CC0'].create_time()*1e6 - peak_time
-    idx = (t > span_left) & (t < span_right)
-    ax[1].plot(t[idx], impulse['CC0'].values[idx]/(impulse['CC0'].step_pkpk*1e3), label='$h_{CC}$', color='tab:orange') #  marker='.', 
-    ax[0].legend()
-    ax[1].legend()
-    ax[0].set_xlabel('time [$\mu$s]')
-    ax[1].set_xlabel('time [$\mu$s]')
-    ax[0].set_ylabel('$h \; [\mu A/(mV \cdot \mu s)]$') 
-    ax[1].set_ylabel('$h \; [\mu A/(mV \cdot \mu s)]$') 
-    ax[1].set_xlim([-20, 50]) 
-    my_savefig(fig, fig_dir, 'impulse_response')
+    if MAKE_PLTS:
+        # plot the impulse response 
+        fig,ax = plt.subplots(nrows=2, ncols=1, figsize=fig_size)
+        t = impulse['CMD0'].create_time()*1e6 - peak_time
+        idx = (t > span_left) & (t < span_right)
+        # .values have units of Amps
+        # .step_pkpk has units of Volts 
+        ax[0].plot(t[idx], impulse['CMD0'].values[idx]/(impulse['CMD0'].step_pkpk*1e3), label='$h_{CMD}$') # marker='+'
+        t = impulse['CC0'].create_time()*1e6 - peak_time
+        idx = (t > span_left) & (t < span_right)
+        ax[1].plot(t[idx], impulse['CC0'].values[idx]/(impulse['CC0'].step_pkpk*1e3), label='$h_{CC}$', color='tab:orange') #  marker='.', 
+        ax[0].legend()
+        ax[1].legend()
+        ax[0].set_xlabel('time [$\mu$s]')
+        ax[1].set_xlabel('time [$\mu$s]')
+        ax[0].set_ylabel('$h \; [\mu A/(mV \cdot \mu s)]$') 
+        ax[1].set_ylabel('$h \; [\mu A/(mV \cdot \mu s)]$') 
+        ax[1].set_xlim([-20, 50]) 
+        my_savefig(fig, fig_dir, 'impulse_response')
 
     # create a step function and convolve impulse and step
     # this is a sanity check to ensure the impulse response is working as anticipated
@@ -260,23 +254,19 @@ def main():
     step_func[step_t>t0] = 1
     step_t = step_t - t0
 
-    # get time from the input signal 
-    # full: N+M-1  - everywhere 
-    # same: max(N,M) 
-    # valid: max(M,N) - min(M,N) + 1 -- overlap completely  
-
-    # TODO: since the sample rate is 5 MHz need to divide 
+    # since the sample rate is 5 MHz need to divide the convolution result by this
     # plot the convolution of the impulse function and a step function 
-    fig,ax=plt.subplots(figsize=fig_size)
-    print(f'Length of step_t {len(step_t)}; length of impulse {len(impulse["CMD0"].values)}')
-    ax.plot(step_t*1e6, np.convolve(impulse['CMD0'].values, step_func, 'same')*200e-9/1e-6, label='CMD') # step_t*1e6, 
-    ax.plot(step_t*1e6, np.convolve(impulse['CC0'].values, step_func, 'same')*200e-9/1e-6, label='CC') # step_t*1e6, 
-    ax.legend()
-    ax.set_xlabel('time [$\mu$s]')
-    ax.set_ylabel('$I_m \; [\mu A]$')
-    ax.set_xlim([span_left, span_right])
-    fig.suptitle('Impulse * step')
-    my_savefig(fig, fig_dir, 'convolution')
+    if MAKE_PLTS:
+        fig,ax=plt.subplots(figsize=fig_size)
+        print(f'Length of step_t {len(step_t)}; length of impulse {len(impulse["CMD0"].values)}')
+        ax.plot(step_t*1e6, np.convolve(impulse['CMD0'].values, step_func, 'same')*200e-9*1e-6, label='CMD') # step_t*1e6, 
+        ax.plot(step_t*1e6, np.convolve(impulse['CC0'].values, step_func, 'same')*200e-9*1e-6, label='CC') # step_t*1e6, 
+        ax.legend()
+        ax.set_xlabel('time [$\mu$s]')
+        ax.set_ylabel('$I_m \; [\mu A]$')
+        ax.set_xlim([span_left, span_right])
+        fig.suptitle('Impulse * step')
+        my_savefig(fig, fig_dir, 'convolution')
 
     # Guide to using deconvolve
     # https://stackoverflow.com/questions/40615034/understanding-scipy-deconvolve
@@ -310,11 +300,12 @@ def main():
     impulse_cc_torch = impulse['CC0'].values[impulse_idx_torch]/impulse['CC0'].step_pkpk # units of A/(V*s)
     im_torch = ds['CMD0']['Im'].data[im_idx_imp]/impulse['CMD0'].step_pkpk # A/V
 
-    fig,ax = plt.subplots(figsize=fig_size, nrows=4)
-    ax[0].plot(im_deconv*1e6, 'b', label='Meas:Im')
-    ax[1].plot(impulse_deconv, 'r', label='h_{CMD}')
-    ax[2].plot(im_cmd_conv, 'm', label='h_{CMD}*step')
-    fig.suptitle('Sanity check of Im and $h_{CMD}$. Panel 3 shows deconv of CC')
+    if MAKE_PLTS:
+        fig,ax = plt.subplots(figsize=fig_size, nrows=4)
+        ax[0].plot(im_deconv*1e6, 'b', label='Meas:Im')
+        ax[1].plot(impulse_deconv, 'r', label='h_{CMD}')
+        ax[2].plot(im_cmd_conv, 'm', label='h_{CMD}*step')
+        fig.suptitle('Sanity check of Im and $h_{CMD}$. Panel 3 shows deconv of CC')
 
     # Use Im and the CMD impulse function to tune the wiener filter SNR parameter 
     print('Length of signal {} and length of filter/impulse response {}'.format(len(im_deconv), len(impulse_deconv)))
@@ -326,31 +317,32 @@ def main():
         cmd_waves[l] = wiener_deconvolution(im_deconv, impulse_deconv, lambd=l*1e-3)
         print(f'In deconvolve. Noise level of {l}; Peak impulse value {np.max(impulse_deconv)}')
         print(f'Sum of cmd_waves l: {l} {np.sum(cmd_waves[l])}')
-        ax[3].plot(t, np.real(cmd_waves[l]), next(colors), label='deconv(CMD)@{}'.format(l))
-    for i in range(4):
-        ax[i].legend()
+        if MAKE_PLTS:
+            ax[3].plot(t, np.real(cmd_waves[l]), next(colors), label='deconv(CMD)@{}'.format(l))
+            for i in range(4):
+                ax[i].legend()
 
-    fig,ax = plt.subplots(figsize=fig_size)
-    colors = itertools.cycle(['b', 'g', 'm', 'r'])
-    fig1, ax1=plt.subplots(figsize=fig_size) # plot the cmd_waves
-    for l in noise_levels:
-        conv = np.convolve(impulse_deconv, cmd_waves[l], 'same') # impulse response, input CMD waveform
-        pedestal_conv = np.mean(conv[:-99:-1])
-        ax.plot(t, (conv-pedestal_conv), color=next(colors), label='$h_{CMD}$'+':{}'.format(l))
-        print(f'Sum of cmd_waves l: {l} {np.sum(cmd_waves[l])}')
-        ax1.plot(cmd_waves[l], color=next(colors), label=f'{l}')
-    # the step response cannot extract dc offset. So remove on our own. 
-    pedestal_im = np.mean(im_deconv[:-99:-1])
-    ax.plot(t, (im_deconv - pedestal_im)*1e6, 'k', label='Im') # im_deconv is a subset of the Im measurement 
-    ax.legend()
-    ax.set_xlabel('time [$\mu$s]')
-    ax.set_ylabel('$I_m \; [\mu A]$')
-    ax.set_xlim([span_left, span_right])
-    fig.suptitle('$h_{CMD} * V_{CMD}$')
-    my_savefig(fig, fig_dir, 'CMD_deconv_vs_SNR')
-
-    fig1.suptitle('$V_{CMD} vs. l$')
-    ax1.legend()
+    if MAKE_PLTS:
+        fig,ax = plt.subplots(figsize=fig_size)
+        colors = itertools.cycle(['b', 'g', 'm', 'r'])
+        fig1, ax1=plt.subplots(figsize=fig_size) # plot the cmd_waves
+        for l in noise_levels:
+            conv = np.convolve(impulse_deconv, cmd_waves[l], 'same') # impulse response, input CMD waveform
+            pedestal_conv = np.mean(conv[:-99:-1])
+            ax.plot(t, (conv-pedestal_conv), color=next(colors), label='$h_{CMD}$'+':{}'.format(l))
+            print(f'Sum of cmd_waves l: {l} {np.sum(cmd_waves[l])}')
+            ax1.plot(cmd_waves[l], color=next(colors), label=f'{l}')
+        # the step response cannot extract dc offset. So remove on our own. 
+        pedestal_im = np.mean(im_deconv[:-99:-1])
+        ax.plot(t, (im_deconv - pedestal_im)*1e6, 'k', label='Im') # im_deconv is a subset of the Im measurement 
+        ax.legend()
+        ax.set_xlabel('time [$\mu$s]')
+        ax.set_ylabel('$I_m \; [\mu A]$')
+        ax.set_xlim([span_left, span_right])
+        fig.suptitle('$h_{CMD} * V_{CMD}$')
+        my_savefig(fig, fig_dir, 'CMD_deconv_vs_SNR')
+        fig1.suptitle('$V_{CMD} vs. l$')
+        ax1.legend()
 
     # repeat but now generate waveform for cc that should cancel 
     cc_waves = {}
@@ -358,26 +350,23 @@ def main():
     impulse_deconv = impulse['CC0'].values[impulse_idx]  # 600 us at 5 MSPS
     cc_waves[l] = wiener_deconvolution(im_deconv, impulse_deconv, lambd=l)  # im_deconv is Im for deconvolution
 
-    # plot the CC waveform 
-    fig,ax = plt.subplots(figsize=fig_size)
-    ax.plot(cc_waves[l]) # TODO: how to time align 
-    ax.set_xlabel('time [$\mu$s]')
-    ax.set_ylabel('$V$')
-    # ax.set_xlim([span_left, span_right])
-    my_savefig(fig, fig_dir, 'CC_waveform_cancelation')
-
-    # TODO: 
-    # 1) bandpass filter the CC waveform -- done. 
-    # 2) time alignment of CMD and CC 
-    # 3) loss metric 
+    if MAKE_PLTS:
+        # plot the CC waveform 
+        fig,ax = plt.subplots(figsize=fig_size)
+        ax.plot(cc_waves[l]) # TODO: how to time align 
+        ax.set_xlabel('time [$\mu$s]')
+        ax.set_ylabel('$V$')
+        # ax.set_xlim([span_left, span_right])
+        my_savefig(fig, fig_dir, 'CC_waveform_cancelation')
 
     filtered_cc_wave = {} 
-    fig,ax = plt.subplots(figsize=fig_size)
-    ax.plot(cc_waves[l], label='Full BW')
     fs = 1/impulse['CC0'].ts
-    
-    #for fc in [200e3]:
-    fig1,ax1 = plt.subplots(figsize=fig_size, nrows=3)
+
+    if MAKE_PLTS:
+        fig,ax = plt.subplots(figsize=fig_size)
+        ax.plot(cc_waves[l], label='Full BW') 
+        fig1,ax1 = plt.subplots(figsize=fig_size, nrows=3)
+
     for fc in [50e3, 100e3, 200e3, 500e3]:
         # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.filtfilt.html
         order = 3
@@ -390,25 +379,25 @@ def main():
         step2 = -np.ones(len(filtered_cc_wave[fc]))*peak/2
         step2[0:int(len(filtered_cc_wave[fc])/2)] = peak/2
         filtered_cc_wave[fc] = win*filtered_cc_wave[fc] + (1-win)*step2
-        
-        ax.plot(filtered_cc_wave[fc], label='{} Hz'.format(fc))
 
         cc_im = np.convolve(impulse_deconv, filtered_cc_wave[fc], mode='valid')
         print('Sum and Average of CC Im: {}, {}'.format(np.sum(cc_im), np.average(cc_im)))
         stop_idx = len(cc_im)
         t = np.linspace(0, impulse['CC0'].ts*(stop_idx-1),  num=stop_idx)*1e6
-        # TODO: understand if the 
-        ax1[0].plot(t, (cc_im)*1e6, 'tab:blue', label='$h_{CC}*CC_{wave}$')
-        ax1[1].plot(t, (im_deconv[:stop_idx])*1e6, label='CMD')
-        # TODO: take care of pedestals 
-        ax1[2].plot(t, (cc_im + im_deconv[:stop_idx])*1e6, label=f'CMD+CC@{fc} Hz')
+        if MAKE_PLTS:
+            ax.plot(filtered_cc_wave[fc], label='{} Hz'.format(fc))
+            ax1[0].plot(t, (cc_im)*1e6, 'tab:blue', label='$h_{CC}*CC_{wave}$')
+            ax1[1].plot(t, (im_deconv[:stop_idx])*1e6, label='CMD')
+            # TODO: take care of pedestals 
+            ax1[2].plot(t, (cc_im + im_deconv[:stop_idx])*1e6, label=f'CMD+CC@{fc} Hz')
 
-    for i in range(3):
-        ax1[i].legend()
-        ax1[i].set_ylabel('$I_m \; [\mu A]$')
-    ax1[2].set_xlabel('time [$\mu$s]')
-    ax.legend()
-    fig.suptitle('Filtered $V_{CC}(t)$')
+    if MAKE_PLTS:
+        for i in range(3):
+            ax1[i].legend()
+            ax1[i].set_ylabel('$I_m \; [\mu A]$')
+        ax1[2].set_xlabel('time [$\mu$s]')
+        ax.legend()
+        fig.suptitle('Filtered $V_{CC}(t)$')
 
     def pad_ends(x, target_len):
         if len(x)>= target_len:
@@ -421,20 +410,24 @@ def main():
 
     windowed_filtered_cc_wave = pad_ends(windowed_filtered_cc_wave, 10000)
     filtered_cc_wave1 = pad_ends(filtered_cc_wave1, 10000)
-    fig,ax = plt.subplots(figsize=fig_size)
-    ax.plot(windowed_filtered_cc_wave, label='Windowed')
-    ax.plot(filtered_cc_wave1, label='not windowed')
+
+    if MAKE_PLTS:
+        fig,ax = plt.subplots(figsize=fig_size)
+        ax.plot(windowed_filtered_cc_wave, label='Windowed')
+        ax.plot(filtered_cc_wave1, label='not windowed')
 
     # compare the Im_CC with a windowed cc_wave and a non-windowed cc_wave (returns to 0)
     cc_im1 = np.convolve(impulse_deconv, windowed_filtered_cc_wave, mode='same')
     cc_im2 = np.convolve(impulse_deconv, filtered_cc_wave1, mode='same')
-    fig,ax = plt.subplots(figsize=fig_size)
-    ax.plot(cc_im1, label='windowed')
-    print(f'Sum of cc_im1 {np.sum(cc_im1)}')
-    ax.plot(cc_im2, label='filt_cc_wave')
-    print(f'Sum of cc_im2 {np.sum(cc_im2)}')
-    fig.suptitle('$I_{mCC} = h_{CC}*V_{CC}$')
-    ax.legend()
+
+    if MAKE_PLTS:
+        fig,ax = plt.subplots(figsize=fig_size)
+        ax.plot(cc_im1, label='windowed')
+        print(f'Sum of cc_im1 {np.sum(cc_im1)}')
+        ax.plot(cc_im2, label='filt_cc_wave')
+        print(f'Sum of cc_im2 {np.sum(cc_im2)}')
+        fig.suptitle('$I_{mCC} = h_{CC}*V_{CC}$')
+        ax.legend()
 
     # impulse: 
     return impulse, cc_im, im_torch, impulse_cc_torch, configs

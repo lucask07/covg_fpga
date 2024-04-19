@@ -316,19 +316,18 @@ for dc_num in [dc_mapping['clamp']]:
     )
     dc_configs[dc_num] = config_dict
 
-cap = capacitors[0]
-fb_res = feedback_resistors[0]
 fb_res = 60  # this is disconnected and now in unity-gain! 
 # Try with 5 different resistors
-res = [x for x in bath_res if type(x) == int][0]
+adg_r = 100
+ccomp = 4700
 # Choose resistor; setup
 for dc_num in [dc_mapping['bath']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG1",  # required to digitize P2 
         DAC_SEL="noDrive",
-        CCOMP=cap,
+        CCOMP=ccomp,
         RF1=fb_res,  # feedback circuit
-        ADG_RES=res,
+        ADG_RES=adg_r,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
@@ -480,8 +479,6 @@ def ds_add_log(datastreams):
     datastreams.add_log_info({'fc_cmd': fc_cmd})
     return datastreams
 
-
-adg_r = 33 # TODO placeholder 
 datastreams, log_info = capture_data(idx=0)
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 
@@ -490,146 +487,163 @@ idx = 1
 
 # measure CMD and CC impulse 
 CC_IMPULSE = True 
-cmd_val_set = 0x0200
-cc_val_set = 0x0100
 
-if CC_IMPULSE:
-    for test in ['CMD', 'CC']:
-        if test=='CMD':
-            cmd_val = cmd_val_set
-            cc_val = 0
-        elif test=='CC':
-            cmd_val = 0
-            cc_val = cc_val_set
-        set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
-            step_len=step_len, cc_val=cc_val, cc_pickle_num=None)        
-        time.sleep(0.2)
-        
-        datastreams, log_info = capture_data(idx=idx)
-        update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
-        datastreams = ds_add_log(datastreams)
+for adg_r, ccomp in ([(10, 47), (33,47), (100, 47), (33,4700), (100,4700), (332,47), (332,4700)]):
 
-        if test == 'CMD':
-            datastreams.to_h5(data_dir, "cmd_impulse.h5", log_info)
-            # copy to include the filename so we don't overwrite 
-            shutil.copy2(os.path.join(data_dir, "cmd_impulse.h5"), os.path.join(data_dir, f"cmd_impulse_{file_name}.h5"))
+    if CC_IMPULSE:
+        if adg_r > 100:
+            cmd_val_set = 0x0080
+            cc_val_set = 0x0040            
         else:
-            datastreams.to_h5(data_dir, "cc_impulse.h5", log_info)
-            shutil.copy2(os.path.join(data_dir, "cmd_impulse.h5"), os.path.join(data_dir, f"cc_impulse_{file_name}.h5"))
+            cmd_val_set = 0x0200
+            cc_val_set = 0x0100
+        filename_imp = '{}_rtia{}_ccomp{}'.format(file_name, adg_r, ccomp)
+        dc_configs[0]['ADG_RES'] = adg_r
+        dc_configs[0]['CCOMP'] = ccomp
+        clamps[0].configure_clamp(**dc_configs[0])
 
-# measure cc cancellation 
-CC_CANCEL = True
-method = 'spline'
+        for test in ['CMD', 'CC']:
+            if test=='CMD':
+                cmd_val = cmd_val_set
+                cc_val = 0
+            elif test=='CC':
+                cmd_val = 0
+                cc_val = cc_val_set
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+                step_len=step_len, cc_val=cc_val, cc_pickle_num=None)        
+            time.sleep(0.2)
+            
+            datastreams, log_info = capture_data(idx=idx)
+            update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+            datastreams = ds_add_log(datastreams)
 
-if CC_CANCEL:
-
-    # read impulse files into datastreams
-    ds = {}
-    ds['CMD0'] = h5_to_datastreams(data_dir, "cmd_impulse.h5")
-    ds['CC0'] = h5_to_datastreams(data_dir, "cc_impulse.h5")
-
-    if 'wiener' in method: 
-        pass
-        """
-        windowed_filtered_cc_wave, filtered_cc_wave, cc_wave, impulse_c = cc_waveform(ds, l=0.0035, fc=20e3)
-
-        # now use the filtered_cc_wave to replace CC 
-        set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=None,
-        step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
-
-        cc_nofilt = copy.deepcopy(ddr.data_arrays[dc_mapping['bath']])
-
-        set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
-        step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
-
-        idx = np.where(np.abs(np.diff(cc_nofilt)) > 0)
-        span_l = int(len(filtered_cc_wave)/2)
-        span_r = len(filtered_cc_wave) - span_l
-        filtered_cc_wave_scale = filtered_cc_wave*0x200/1e-6*6
-        dac_offset = 0x2000
-
-        low = filtered_cc_wave_scale[0]
-        high = filtered_cc_wave_scale[-1]
-        low_replace = np.min(cc_nofilt)
-        high_replace = np.max(cc_nofilt)
-        ddr.data_arrays[dc_mapping['bath']][cc_nofilt < dac_offset] = low + dac_offset
-        ddr.data_arrays[dc_mapping['bath']][cc_nofilt > dac_offset] = high + dac_offset
-
-        for s in idx[0]:
-            pos = (ddr.data_arrays[dc_mapping['bath']][(s-span_l)] > dac_offset)
-            if pos:
-                ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+            if test == 'CMD':
+                datastreams.to_h5(data_dir, "cmd_impulse.h5", log_info)
+                # copy to include the filename so we don't overwrite 
+                shutil.copy2(os.path.join(data_dir, "cmd_impulse.h5"), os.path.join(data_dir, f"cmd_impulse_{filename_imp}.h5"))
             else:
-                ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (-filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+                datastreams.to_h5(data_dir, "cc_impulse.h5", log_info)
+                shutil.copy2(os.path.join(data_dir, "cc_impulse.h5"), os.path.join(data_dir, f"cc_impulse_{filename_imp}.h5"))
 
-        """
-    if 'guess' in method: 
-        # now use the filtered_cc_wave to replace CC 
-        cc_val = int(-0.9*cmd_val_set)
-        cmd_val = cmd_val_set
-        set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
-                   step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
-    
-    if 'spline' in method:
-        cmd_val = cmd_val_set
-        set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
-                   step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
-        cc_wave, configs, results = infer_ccwave_spline(DEBUG_PLOTS=True, run_date = '20240413', 
-                        run_time = '151907')
-        cc_wave = decimate(cc_wave, q=2)
-        norm_factor = cc_wave[-1] # so that we can concatenate rising and falling edges we need the the left most value to equal 0 and the right most to equal 1
-        cc_wave = cc_wave/norm_factor
-        cmd_wave = ddr.data_arrays[dc_mapping['bath']+1]
-        # restore the amplitude below. Multiply by x2 due to difference in amplitude and pk-pk. FS due to discrete convolution "missing" the time step.  
-        cc_wave_full = cat_cc_wave(cmd_wave, cc_wave, amplitude=-(cmd_val*2)*norm_factor*FS, midpt=8192)
-        ddr.data_arrays[dc_mapping['bath']] = cc_wave_full.astype(np.uint16)
+    # measure cc cancellation 
+    CC_CANCEL = True
+    method = 'spline'
 
-    # show the waveforms used 
-    fig,ax = plt.subplots()
-    ax.plot(ddr.data_arrays[dc_mapping['bath']][0:2**19], label='CC')
-    ax.plot(ddr.data_arrays[dc_mapping['bath'] + 1][0:2**19], 'tab:orange', label='CMD')
-    fig.suptitle('Cancelation waveforms')
-    ax.legend()
+    if CC_CANCEL:
+        # read impulse files into datastreams
+        ds = {}
+        ds['CMD0'] = h5_to_datastreams(data_dir, "cmd_impulse.h5")
+        ds['CC0'] = h5_to_datastreams(data_dir, "cc_impulse.h5")
 
-    # write channels to the DDR
-    write_ddr()
+        if adg_r > 100:
+            cmd_val_set = 0x0080
+            cc_val_set = 0x0040            
+        else:
+            cmd_val_set = 0x0200
+            cc_val_set = 0x0100
 
-    idx = 2
-    datastreams, log_info = capture_data(idx=2)
-    update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
-    datastreams = ds_add_log(datastreams)
-    datastreams.to_h5(data_dir, f"cancelation_{method}_{file_name}.h5", log_info)
-    ds['cancel'] = h5_to_datastreams(data_dir, f"cancelation_{method}_{file_name}.h5")
+        if 'wiener' in method: 
+            pass
+            """
+            windowed_filtered_cc_wave, filtered_cc_wave, cc_wave, impulse_c = cc_waveform(ds, l=0.0035, fc=20e3)
 
-    fig,ax = plt.subplots()
-    clr = itertools.cycle(['k','b','r'])
-    for meas in ['CMD0', 'CC0', 'cancel']:
-        ds[meas]['Im'].plot(ax, {'marker':'.', 'color': next(clr), 'label': f'Im:{meas}', 'decimate':[5,5], 'invert':-1})
-    fig.suptitle('Cancelation measurements')
-    ax.legend()
+            # now use the filtered_cc_wave to replace CC 
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=None,
+            step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
 
-    CAPTURE_CC_ALONE = True
-    if CAPTURE_CC_ALONE:
-        ddr.data_arrays[dc_mapping['bath'] + 1] = 8192 # zero CMD 
+            cc_nofilt = copy.deepcopy(ddr.data_arrays[dc_mapping['bath']])
+
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+            step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
+
+            idx = np.where(np.abs(np.diff(cc_nofilt)) > 0)
+            span_l = int(len(filtered_cc_wave)/2)
+            span_r = len(filtered_cc_wave) - span_l
+            filtered_cc_wave_scale = filtered_cc_wave*0x200/1e-6*6
+            dac_offset = 0x2000
+
+            low = filtered_cc_wave_scale[0]
+            high = filtered_cc_wave_scale[-1]
+            low_replace = np.min(cc_nofilt)
+            high_replace = np.max(cc_nofilt)
+            ddr.data_arrays[dc_mapping['bath']][cc_nofilt < dac_offset] = low + dac_offset
+            ddr.data_arrays[dc_mapping['bath']][cc_nofilt > dac_offset] = high + dac_offset
+
+            for s in idx[0]:
+                pos = (ddr.data_arrays[dc_mapping['bath']][(s-span_l)] > dac_offset)
+                if pos:
+                    ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+                else:
+                    ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (-filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+
+            """
+        if 'guess' in method: 
+            # now use the filtered_cc_wave to replace CC 
+            cc_val = int(-0.9*cmd_val_set)
+            cmd_val = cmd_val_set
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
+                    step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
+        
+        if 'spline' in method:
+            cmd_val = cmd_val_set
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
+                    step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
+            cc_wave, configs, results = infer_ccwave_spline(DEBUG_PLOTS=True, run_date = '20240417', 
+                            run_time = '163357', rtia=adg_r, ccomp=ccomp)
+            cc_wave = decimate(cc_wave, q=2)
+            norm_factor = cc_wave[-1] # so that we can concatenate rising and falling edges we need the the left most value to equal 0 and the right most to equal 1
+            cc_wave = cc_wave/norm_factor
+            cmd_wave = ddr.data_arrays[dc_mapping['bath']+1]
+            # restore the amplitude below. Multiply by x2 due to difference in amplitude and pk-pk. FS due to discrete convolution "missing" the time step.  
+            cc_wave_full = cat_cc_wave(cmd_wave, cc_wave, amplitude=-(cmd_val*2)*norm_factor*FS, midpt=8192)
+            ddr.data_arrays[dc_mapping['bath']] = cc_wave_full.astype(np.uint16)
+
+        # show the waveforms used 
+        fig,ax = plt.subplots()
+        ax.plot(ddr.data_arrays[dc_mapping['bath']][0:2**19], label='CC')
+        ax.plot(ddr.data_arrays[dc_mapping['bath'] + 1][0:2**19], 'tab:orange', label='CMD')
+        fig.suptitle('Cancelation waveforms')
+        ax.legend()
+
         # write channels to the DDR
         write_ddr()
-        time.sleep(0.1)
+
         idx = 2
         datastreams, log_info = capture_data(idx=2)
         update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
         datastreams = ds_add_log(datastreams)
-        datastreams.to_h5(data_dir, f"canceling_cc_{method}_{file_name}.h5", log_info)
-        ds['canceling_cc'] = h5_to_datastreams(data_dir, f"canceling_cc_{method}_{file_name}.h5")
+        datastreams.to_h5(data_dir, f"cancelation_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5", log_info)
+        ds['cancel'] = h5_to_datastreams(data_dir, f"cancelation_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5")
 
-    fig,ax = plt.subplots()
-    clr = itertools.cycle(['k','b','r', 'g'])
-    for meas in ['CMD0', 'CC0', 'cancel', 'canceling_cc']:
-        try:
+        fig,ax = plt.subplots()
+        clr = itertools.cycle(['k','b','r'])
+        for meas in ['CMD0', 'CC0', 'cancel']:
             ds[meas]['Im'].plot(ax, {'marker':'.', 'color': next(clr), 'label': f'Im:{meas}', 'decimate':[5,5], 'invert':-1})
-        except:
-            pass
-    fig.suptitle('Cancelation measurements')
-    ax.legend()
+        fig.suptitle('Cancelation measurements')
+        ax.legend()
+
+        CAPTURE_CC_ALONE = True
+        if CAPTURE_CC_ALONE:
+            ddr.data_arrays[dc_mapping['bath'] + 1] = 8192 # zero CMD 
+            # write channels to the DDR
+            write_ddr()
+            time.sleep(0.1)
+            idx = 2
+            datastreams, log_info = capture_data(idx=2)
+            update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+            datastreams = ds_add_log(datastreams)
+            datastreams.to_h5(data_dir, f"canceling_cc_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5", log_info)
+            ds['canceling_cc'] = h5_to_datastreams(data_dir, f"canceling_cc_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5")
+
+        fig,ax = plt.subplots()
+        clr = itertools.cycle(['k','b','r', 'g'])
+        for meas in ['CMD0', 'CC0', 'cancel', 'canceling_cc']:
+            try:
+                ds[meas]['Im'].plot(ax, {'marker':'.', 'color': next(clr), 'label': f'Im:{meas}', 'decimate':[5,5], 'invert':-1})
+            except:
+                pass
+        fig.suptitle('Cancelation measurements')
+        ax.legend()
 
 # large parameter sweep 
 if 0: 

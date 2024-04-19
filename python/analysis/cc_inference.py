@@ -24,11 +24,18 @@ from torch_cubic_spline_grids import CubicBSplineGrid1d
 
 def infer_ccwave_spline(run_date = '20240413', 
                  run_time = '151907', 
-                 cmd_wave=None, DEBUG_PLOTS = False):
+                 cmd_wave=None, DEBUG_PLOTS = False,
+                 base_dir = "C:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\",
+                 rtia=None, 
+                 ccomp=None):
 
     # load a trained spline model and then create a CC wave
+    # 20240417\runs\cubic_spline_tuner_20240417-163357_rtia10_ccomp47\
+    if rtia is not None:
+        torch_dir = os.path.join(base_dir, run_date, 'runs/cubic_spline_tuner_{}-{}_rtia{}_ccomp{}'.format(run_date, run_time, rtia, ccomp))
+    else:
+        torch_dir = os.path.join(base_dir, run_date, 'runs/cubic_spline_tuner_{}_{}'.format(run_date, run_time))
 
-    torch_dir = 'runs/cubic_spline_tuner_{}_{}'.format(run_date, run_time)
     model_name = 'model.pt' 
 
     net = Net().to(device='cpu', dtype=torch.float64)
@@ -59,7 +66,6 @@ def infer_ccwave_spline(run_date = '20240413',
     scale_factor = (1/configs['max_impulse']/configs['max_target'])*configs['cmd_val']*configs['cc_conv_factor'] # 
 
     scale_factor = (configs['max_target']/configs['max_impulse'])*configs['cmd_conv_factor']/configs['cc_conv_factor'] # 
-
 
     scale_factor = scale_factor.detach().numpy()
     print(f'Scale factor {scale_factor}')
