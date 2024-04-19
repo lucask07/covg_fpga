@@ -372,6 +372,8 @@ for imp_on in ['CMD', 'CC']:
     datastreams.add_log_info({'dc_configs': dc_configs})
     print(sys.argv[0]) # get name of python file
     datastreams.add_log_info({'experiment_name': sys.argv[0]})
+    datastreams.add_log_info({'cmd_val': cmd_val})
+    datastreams.add_log_info({'cc_val': cc_val})
 
     # write data to datastream h5
     datastreams.to_h5(data_dir, f'{imp_on}_impulse.h5', log_info)

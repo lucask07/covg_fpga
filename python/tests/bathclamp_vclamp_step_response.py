@@ -13,6 +13,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 import os
+os.environ['KMP_DUPLICATE_LIB_OK']="TRUE" # this is a workaround for an issue once pytorch was installed 
 import sys
 from time import sleep
 import datetime
@@ -21,6 +22,9 @@ import atexit
 import numpy as np
 import matplotlib.pyplot as plt
 import copy
+import shutil
+import itertools
+from scipy.signal import decimate
 
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from pyripherals.core import FPGA, Endpoint
@@ -38,7 +42,9 @@ from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
-from analysis.cc_calibration import cc_waveform
+
+# from analysis.cc_calibration import cc_waveform
+from analysis.cc_inference import cat_cc_wave, infer_ccwave_spline
 
 
 sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork
@@ -131,7 +137,9 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
         cmd_ch = dc_num * 2 + 1 # TODO: replace with daq.parameters['fast_dac_map']
         cc_ch = dc_num * 2
         ddr.data_arrays[cmd_ch], ddr.data_arrays[cc_ch] = make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
-    
+    write_ddr()
+
+def write_ddr():    
     # write channels to the DDR
     ddr.write_setup()
     # clear read, set write, etc. handled within write_channels
@@ -213,16 +221,8 @@ for dc_num in DC_NUMS:
 feedback_resistors = [2.1]
 capacitors = [47]
 bath_res = [10, 100, 332, 1000] # Clamp.configs['ADG_RES_dict'].keys()
-
 bath_res = [100]
 
-# Try with different capacitors
-if feedback_resistors is None:
-    feedback_resistors = [x for x in Clamp.configs['RF1_dict'].keys() if type(x) == int or type(x) == float] # RF1 Resistor values in kilo-ohms for Offset Adjust amplifier
-    feedback_resistors.sort()
-if capacitors is None:
-    capacitors = [x for x in Clamp.configs['CCOMP_dict'] if type(x) == int or type(x) == np.int32]  # CCOMP Capacitor values in pF
-    capacitors.sort()
 
 # -------- configure the ADS8686
 ads_voltage_range = 5  # need this for to_voltage later 
@@ -279,13 +279,13 @@ time.sleep(0.1)
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
-fc_cmd = 100e3
-step_len = 16384*8
+fc_cmd = None
+# fc_cmd = 100e3
+step_len = 16384*8 # 2^17
 first_pos_step = step_len/2*1/DAC_FS # in seconds 
 cmd_val = 0x0200
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
+set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=16384*8, cc_val=None, cc_pickle_num=None)
-
 
 # input('waiting!')
 
@@ -316,19 +316,18 @@ for dc_num in [dc_mapping['clamp']]:
     )
     dc_configs[dc_num] = config_dict
 
-cap = capacitors[0]
-fb_res = feedback_resistors[0]
 fb_res = 60  # this is disconnected and now in unity-gain! 
 # Try with 5 different resistors
-res = [x for x in bath_res if type(x) == int][0]
+adg_r = 100
+ccomp = 4700
 # Choose resistor; setup
 for dc_num in [dc_mapping['bath']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG1",  # required to digitize P2 
         DAC_SEL="noDrive",
-        CCOMP=cap,
+        CCOMP=ccomp,
         RF1=fb_res,  # feedback circuit
-        ADG_RES=res,
+        ADG_RES=adg_r,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
@@ -363,10 +362,11 @@ first_time = True
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
 ddr.repeat_setup() # Get data
 
-def capture_data(idx=0):
+def capture_data(idx=0, filename=None):
     ddr.repeat_setup() # Get data
 
-    filename = file_name.format(idx) + '.h5'
+    if filename is None:
+        filename = file_name.format(idx) + '.h5'
 
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
     chan_data_one_repeat = ddr.save_data(data_dir, filename, num_repeats=128,
@@ -467,78 +467,183 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
 
     return first_time, lines1, lines2, figs
 
-adg_r = 33 # TODO placeholder 
-datastreams, log_info = capture_data()
-# run twice to remove initial transient 
-datastreams, log_info = capture_data()
+def ds_add_log(datastreams):
+    datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+    datastreams.add_log_info({'dc_configs': dc_configs})
+    datastreams.add_log_info({'ddr_step_peak': first_pos_step})
+    datastreams.add_log_info({'dut': 'model_cell'})
+    datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
+    datastreams.add_log_info({'cmd_val': cmd_val})
+    datastreams.add_log_info({'cc_val': cc_val})
+    datastreams.add_log_info({'step_len': step_len})
+    datastreams.add_log_info({'fc_cmd': fc_cmd})
+    return datastreams
+
+datastreams, log_info = capture_data(idx=0)
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
-datastreams.to_h5(data_dir, "cmd_impulse.h5", log_info)
 
-# cc calibration 
-if 1:
-    idx = 0
-    ds = {}
-    ds['CMD0'] = h5_to_datastreams(data_dir, "cmd_impulse.h5")
-    time.sleep(0.2)
-    set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=0, cc_scale=0, cc_delay=0, fc=fc_cmd,
-        step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
-    time.sleep(0.2)
-    idx = 1
-    datastreams, log_info = capture_data(idx=idx)
-    update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
-    datastreams.to_h5(data_dir, "cc_impulse.h5", log_info)
+# run twice to remove initial transient 
+idx = 1
 
-    ds['CC0'] = h5_to_datastreams(data_dir, "cc_impulse.h5")
+# measure CMD and CC impulse 
+CC_IMPULSE = True 
 
-    filtered_cc_wave, cc_wave, impulse_c = cc_waveform(ds, l=0.0035, fc=20e3)
+for adg_r, ccomp in ([(10, 47), (33,47), (100, 47), (33,4700), (100,4700), (332,47), (332,4700)]):
 
-    # now use the filtered_cc_wave to replace CC 
-    set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=None,
-    step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
-
-    cc_nofilt = copy.deepcopy(ddr.data_arrays[dc_mapping['bath']])
-
-    set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
-    step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
-
-    idx = np.where(np.abs(np.diff(cc_nofilt)) > 0)
-    span_l = int(len(filtered_cc_wave)/2)
-    span_r = len(filtered_cc_wave) - span_l
-    filtered_cc_wave_scale = filtered_cc_wave*0x200/1e-6*6
-    dac_offset = 0x2000
-
-    low = filtered_cc_wave_scale[0]
-    high = filtered_cc_wave_scale[-1]
-    low_replace = np.min(cc_nofilt)
-    high_replace = np.max(cc_nofilt)
-    ddr.data_arrays[dc_mapping['bath']][cc_nofilt < dac_offset] = low + dac_offset
-    ddr.data_arrays[dc_mapping['bath']][cc_nofilt > dac_offset] = high + dac_offset
-
-    for s in idx[0]:
-        pos = (ddr.data_arrays[dc_mapping['bath']][(s-span_l)] > dac_offset)
-        if pos:
-            ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+    if CC_IMPULSE:
+        if adg_r > 100:
+            cmd_val_set = 0x0080
+            cc_val_set = 0x0040            
         else:
-            ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (-filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+            cmd_val_set = 0x0200
+            cc_val_set = 0x0100
+        filename_imp = '{}_rtia{}_ccomp{}'.format(file_name, adg_r, ccomp)
+        dc_configs[0]['ADG_RES'] = adg_r
+        dc_configs[0]['CCOMP'] = ccomp
+        clamps[0].configure_clamp(**dc_configs[0])
 
-    fig,ax = plt.subplots()
-    ax.plot(ddr.data_arrays[dc_mapping['bath']])
-    ax.plot(ddr.data_arrays[dc_mapping['bath'] + 1], 'tab:orange')
+        for test in ['CMD', 'CC']:
+            if test=='CMD':
+                cmd_val = cmd_val_set
+                cc_val = 0
+            elif test=='CC':
+                cmd_val = 0
+                cc_val = cc_val_set
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+                step_len=step_len, cc_val=cc_val, cc_pickle_num=None)        
+            time.sleep(0.2)
+            
+            datastreams, log_info = capture_data(idx=idx)
+            update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+            datastreams = ds_add_log(datastreams)
 
+            if test == 'CMD':
+                datastreams.to_h5(data_dir, "cmd_impulse.h5", log_info)
+                # copy to include the filename so we don't overwrite 
+                shutil.copy2(os.path.join(data_dir, "cmd_impulse.h5"), os.path.join(data_dir, f"cmd_impulse_{filename_imp}.h5"))
+            else:
+                datastreams.to_h5(data_dir, "cc_impulse.h5", log_info)
+                shutil.copy2(os.path.join(data_dir, "cc_impulse.h5"), os.path.join(data_dir, f"cc_impulse_{filename_imp}.h5"))
 
-    # write channels to the DDR
-    ddr.write_setup()
-    # clear read, set write, etc. handled within write_channels
-    block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
-    ddr.reset_mig_interface()
-    ddr.write_finish()
+    # measure cc cancellation 
+    CC_CANCEL = True
+    method = 'spline'
 
-    idx = 2
-    datastreams, log_info = capture_data(idx=idx)
-    update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
-    datastreams.to_h5(data_dir, "cancel.h5", log_info)
-    ds['cancel'] = h5_to_datastreams(data_dir, "cancel.h5")
+    if CC_CANCEL:
+        # read impulse files into datastreams
+        ds = {}
+        ds['CMD0'] = h5_to_datastreams(data_dir, "cmd_impulse.h5")
+        ds['CC0'] = h5_to_datastreams(data_dir, "cc_impulse.h5")
 
+        if adg_r > 100:
+            cmd_val_set = 0x0080
+            cc_val_set = 0x0040            
+        else:
+            cmd_val_set = 0x0200
+            cc_val_set = 0x0100
+
+        if 'wiener' in method: 
+            pass
+            """
+            windowed_filtered_cc_wave, filtered_cc_wave, cc_wave, impulse_c = cc_waveform(ds, l=0.0035, fc=20e3)
+
+            # now use the filtered_cc_wave to replace CC 
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=None,
+            step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
+
+            cc_nofilt = copy.deepcopy(ddr.data_arrays[dc_mapping['bath']])
+
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+            step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
+
+            idx = np.where(np.abs(np.diff(cc_nofilt)) > 0)
+            span_l = int(len(filtered_cc_wave)/2)
+            span_r = len(filtered_cc_wave) - span_l
+            filtered_cc_wave_scale = filtered_cc_wave*0x200/1e-6*6
+            dac_offset = 0x2000
+
+            low = filtered_cc_wave_scale[0]
+            high = filtered_cc_wave_scale[-1]
+            low_replace = np.min(cc_nofilt)
+            high_replace = np.max(cc_nofilt)
+            ddr.data_arrays[dc_mapping['bath']][cc_nofilt < dac_offset] = low + dac_offset
+            ddr.data_arrays[dc_mapping['bath']][cc_nofilt > dac_offset] = high + dac_offset
+
+            for s in idx[0]:
+                pos = (ddr.data_arrays[dc_mapping['bath']][(s-span_l)] > dac_offset)
+                if pos:
+                    ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+                else:
+                    ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (-filtered_cc_wave_scale + dac_offset).astype(np.uint16)
+
+            """
+        if 'guess' in method: 
+            # now use the filtered_cc_wave to replace CC 
+            cc_val = int(-0.9*cmd_val_set)
+            cmd_val = cmd_val_set
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
+                    step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
+        
+        if 'spline' in method:
+            cmd_val = cmd_val_set
+            set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
+                    step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
+            cc_wave, configs, results = infer_ccwave_spline(DEBUG_PLOTS=True, run_date = '20240417', 
+                            run_time = '163357', rtia=adg_r, ccomp=ccomp)
+            cc_wave = decimate(cc_wave, q=2)
+            norm_factor = cc_wave[-1] # so that we can concatenate rising and falling edges we need the the left most value to equal 0 and the right most to equal 1
+            cc_wave = cc_wave/norm_factor
+            cmd_wave = ddr.data_arrays[dc_mapping['bath']+1]
+            # restore the amplitude below. Multiply by x2 due to difference in amplitude and pk-pk. FS due to discrete convolution "missing" the time step.  
+            cc_wave_full = cat_cc_wave(cmd_wave, cc_wave, amplitude=-(cmd_val*2)*norm_factor*FS, midpt=8192)
+            ddr.data_arrays[dc_mapping['bath']] = cc_wave_full.astype(np.uint16)
+
+        # show the waveforms used 
+        fig,ax = plt.subplots()
+        ax.plot(ddr.data_arrays[dc_mapping['bath']][0:2**19], label='CC')
+        ax.plot(ddr.data_arrays[dc_mapping['bath'] + 1][0:2**19], 'tab:orange', label='CMD')
+        fig.suptitle('Cancelation waveforms')
+        ax.legend()
+
+        # write channels to the DDR
+        write_ddr()
+
+        idx = 2
+        datastreams, log_info = capture_data(idx=2)
+        update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+        datastreams = ds_add_log(datastreams)
+        datastreams.to_h5(data_dir, f"cancelation_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5", log_info)
+        ds['cancel'] = h5_to_datastreams(data_dir, f"cancelation_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5")
+
+        fig,ax = plt.subplots()
+        clr = itertools.cycle(['k','b','r'])
+        for meas in ['CMD0', 'CC0', 'cancel']:
+            ds[meas]['Im'].plot(ax, {'marker':'.', 'color': next(clr), 'label': f'Im:{meas}', 'decimate':[5,5], 'invert':-1})
+        fig.suptitle('Cancelation measurements')
+        ax.legend()
+
+        CAPTURE_CC_ALONE = True
+        if CAPTURE_CC_ALONE:
+            ddr.data_arrays[dc_mapping['bath'] + 1] = 8192 # zero CMD 
+            # write channels to the DDR
+            write_ddr()
+            time.sleep(0.1)
+            idx = 2
+            datastreams, log_info = capture_data(idx=2)
+            update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
+            datastreams = ds_add_log(datastreams)
+            datastreams.to_h5(data_dir, f"canceling_cc_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5", log_info)
+            ds['canceling_cc'] = h5_to_datastreams(data_dir, f"canceling_cc_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5")
+
+        fig,ax = plt.subplots()
+        clr = itertools.cycle(['k','b','r', 'g'])
+        for meas in ['CMD0', 'CC0', 'cancel', 'canceling_cc']:
+            try:
+                ds[meas]['Im'].plot(ax, {'marker':'.', 'color': next(clr), 'label': f'Im:{meas}', 'decimate':[5,5], 'invert':-1})
+            except:
+                pass
+        fig.suptitle('Cancelation measurements')
+        ax.legend()
 
 # large parameter sweep 
 if 0: 
@@ -561,11 +666,11 @@ if 0:
     adg_r_arr = [33, 100, 332, 1000]
 
     # ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
-    ccomp_arr = [47]
+    ccomp_arr = [4700]
     # adg_r_arr = [100]
     # adg_r_arr = [100, 100, 100, 100, 100, 100]
 
-    cmd_val_arr = [0x0040, 0x0080, 0x0100, 0x0200, 0x0300, 0x0400, 0x0500, 0x0600, 0x0800, 0x0900, 0x0A00, 0x0C00, 0x0D00]
+    cmd_val_arr = [0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0300, 0x0400, 0x0500, 0x0600, 0x0800, 0x0900, 0x0A00, 0x0C00, 0x0D00]
     cmd_val_arr = np.arange(81)*64
     UPDATE_CMD = True
 
@@ -588,7 +693,8 @@ if 0:
                         step_len=16384*8, cc_val=None, cc_pickle_num=None)
                     time.sleep(0.2)
                 
-                datastreams, log_info = capture_data(idx=1)
+                filename = 'step_rtia{}_ccomp{}_cmd{}.h5'.format(adg_r, ccomp, cmd_val)
+                datastreams, log_info = capture_data(idx=1, filename=filename)
                 update_plots(first_time, datastreams, lines1, lines2, figs, adg_r)
 
                 sig = 'Im' 
@@ -602,12 +708,12 @@ if 0:
                     time.sleep(0.05)
                     for sm in scope_meas:
                         scope_data[sm] = np.append(scope_data[sm], float(osc._ask(f'MEAS:{sm}? MATH1')))
-                    t = osc.save_display_data(os.path.join(data_dir, 'test_scope_ccomp{}_rtia{}'.format(ccomp, adg_r)))
+                    t = osc.save_display_data(os.path.join(data_dir, 'scope__rtia{}_ccomp{}_cmd{}.abf'.format(adg_r, ccomp, cmd_val)))
                     osc.set('run_acq')
 
                 TO_CLAMPFIT = True
                 if TO_CLAMPFIT:
-                    datastreams.to_clampfit(data_dir, 'test2_step_quietdacs_rtia{}_ccomp{}_cmd{}.abf'.format(adg_r, ccomp, cmd_val),
+                    datastreams.to_clampfit(data_dir, 'step_rtia{}_ccomp{}_cmd{}.abf'.format(adg_r, ccomp, cmd_val),
                                             names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
                                             dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
 
@@ -633,7 +739,6 @@ if 0:
             fig.suptitle(f'RTIA = {adg_r}')
 
     PLT_IM_EST = False 
-
     if PLT_IM_EST:
         # estimate Im 
         Cm = 33e-9
