@@ -2,7 +2,15 @@
 Apr 2024 
 Lucas Koerner, koerner.lucas@stthomas.edu
 
-Load a trained CC network model and pass a CMD waveform through it to determine CC waveform 
+Load a trained CC network model 
+and pass a CMD waveform through it to determine CC waveform 
+
+Functions for both trained biquad filters and for cubic splines 
+
+TODO: 
+1) plan the normalization
+2) determine if CC needs a sign flip with respect to CMD 
+3) test if there is time offset 
 
 """
 import os
