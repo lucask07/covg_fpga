@@ -135,19 +135,42 @@ class Datastream():
 
         return d_out
     
-    def stepinfo_range(self, time_range):
+    def stepinfo_range(self, time_range, fc=None):
         """
         get step info using the control systems toolbox stepinfo function
-        specify a time range [in seconds] 
+        
+        Parameters 
+        time_range : list [2 elements] specify a time range [in seconds] 
+        fc : cutoff frequency of 5th order Butterworth filter. Default is None which skipps the filter 
         """
-        t = self.create_time()
-        idx = (t>=time_range[0]) & (t<=time_range[1])
-        if sum(idx) == 0:
-            print('Error time range of {time_range} is not part of datastream')
-            return None
+        def filter_fc(y, fs, fc, REMOVE_DC = True):
 
-        y = self.data[idx]
-        t = t[idx]
+            if REMOVE_DC:
+                y = y - np.mean(y)
+            while(fs/fc > 20):
+                y = signal.decimate(y, 10)
+                fs = fs/10
+            else: 
+                y = y
+                fs = fs
+
+            y_filt = butter_lowpass_filter(y, cutoff=fc, fs=fs, order=5)
+            filt_t = np.linspace(0, len(y_filt)-1,len(y_filt))*1/fs
+
+            return y_filt, filt_t
+
+        if fc is not None:
+            y, t = filter_fc(self.data, self.sample_rate, fc, REMOVE_DC = False)
+            idx = (t>=time_range[0]) & (t<=time_range[1])
+            y = y[idx]
+            t = t[idx]
+        else:
+            t = self.create_time()
+            idx = (t>=time_range[0]) & (t<=time_range[1])
+            y = self.data[idx]
+            t = t[idx]
+
+        # get step info 
         try:
             si = stepinfo(y, t)
         except:
@@ -429,13 +452,15 @@ class PhysicalConnection():
     These connections are agnostic to the connections to the DUT (and electrodes)
     """
 
-    def __init__(self, name, conv_factor, converter, bits, units, net=None):
+    def __init__(self, name, conv_factor, converter, bits, units, net=None, offset=0):
         self.name = name 
         self.conv_factor = conv_factor # DN to physical units 
         self.converter = converter # name of the converter (eg AD7961)
         self.bits = bits 
         self.units = units 
         self.net = net
+        self.offset = offset # calibrated offset beyond DAC at half-scale = 0 V; not implemented since other offsets may dominate.
+
 
 # Need physical system connectivity dictionary 
 
@@ -483,6 +508,7 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
 
 
         # 2) ADS8686
+        # SEE NB#2 pg 117, R19 = 19.960 kOhm; R21 = 2.0014 kOhm
         ads_map = daq_brd.parameters["ads_map"]
         for dc_config in dc_config_dicts:
             for amp_net in ['AMP_OUT', 'CAL_ADC']:
@@ -527,13 +553,26 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
         for ch in range(4):
             net = daq_brd.parameters['fast_dac_map'][ch] 
             gain = daq_brd.current_dac_gain[ch] # +/-
+            try:
+                offset = daq_brd.parameters['dac_offset_correction'][gain]
+            except:
+                offset = 0 
+            try:
+                gain = daq_brd.parameters['dac_gain_correction'][gain]
+            except:
+                pass
+
+
             if gain > 99: # must by mV -- convert to volts
                 gain = gain/1000
+            r63 = 29.964e3
+            r64 = 3.0039e3
+            clamp_board_vdiv = r64/(r63 + r64)
             if 'CMD' in net:
                 if dc_config_dicts[dc_config]['RF1'] == 60: # use RF1 = 60 as code for unity gain 
-                    gain = gain/10
+                    gain = gain*clamp_board_vdiv
                 else:
-                    gain = gain/(1 + dc_config_dicts[dc_config]['RF1']/3.01)/10 # TODO x10 is a property of the clamp board, can we have a parameter for this? 
+                    gain = gain/(1 + dc_config_dicts[dc_config]['RF1']/3.01)*clamp_board_vdiv # TODO x10 is a property of the clamp board, can we have a parameter for this? 
 
             con_name = f'D{ch}'
             pc = PhysicalConnection(con_name, 
@@ -541,7 +580,8 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
                                     converter='AD5453',
                                     bits=14, 
                                     units='V',
-                                    net=net)
+                                    net=net,
+                                    offset=offset)
             connections[con_name] = pc
         
         return connections

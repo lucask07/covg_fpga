@@ -633,7 +633,7 @@ class Daq:
         self.ADC = AD7961.create_chips(fpga=fpga, number_of_chips=4)
 
         self.current_dac_gain = {}
-        default_gain = 200 #TODO - what is the default gain
+        default_gain = 200 #TODO - what is the default gain?
         for i in range(6):
             self.current_dac_gain[i] = default_gain
 
@@ -647,6 +647,26 @@ class Daq:
             0.5: 0xB, # in volts full-scale adding to deprecate mV scaling
             0.2: 0x7
         }  
+        self.parameters["dac_gain_correction"] = { #C:\Users\koer2434\Documents\covg\data\calibration\20240502\
+            15: 15.34705296,
+            5: 5.097567412,
+            2: 2.047334136,  # in volts full-scale
+            500: 0.509529179, # in milli-volts full-scale
+            200: 0.208804001,
+            0.5: 0.509529179, # in volts full-scale adding to deprecate mV scaling
+            0.2: 0.208804001
+        }  
+        
+        # the offset at dac center value of 0x2000 
+        #self.parameters["dac_offset_correction"] = { #C:\Users\koer2434\Documents\covg\data\calibration\20240502\
+        #    15: 0.027989372064119254,
+        #    5: -0.006647762,
+        #    2: -0.017419758,  
+        #    500: -0.022931996, 
+        #    200: -0.024026366,
+        #    0.5: -0.022931996, # in volts full-scale adding to deprecate mV scaling
+        #    0.2: -0.024026366
+        #}  
 
         # exapander number, nibble_number
         self.parameters["dac_expander_nibble"] = {
