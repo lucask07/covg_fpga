@@ -389,7 +389,8 @@ def data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections,
 
         else:
             continue # don't add to datastream dictionary 
-        ds = Datastream(data, sample_rate, units=pc.units, name=pc_name, net=pc.net, t0=0, conv_factor=pc.conv_factor/2**pc.bits)
+        ds = Datastream(data, sample_rate, units=pc.units, name=pc_name, 
+                        net=pc.net, t0=0, conv_factor=pc.conv_factor/2**pc.bits)
 
         if pc.net is not None:
             datastreams[pc.net] = ds         

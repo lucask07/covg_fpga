@@ -23,7 +23,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK']="TRUE" # this is a workaround for an issue once pytorch was installed 
 import sys
 import torch
-import torchaudio.functional as F
+import torchaudio.functional as F # using for differentiable convolve 
 import matplotlib.pyplot as plt
 from torchsummary import summary
 # PyTorch TensorBoard support
