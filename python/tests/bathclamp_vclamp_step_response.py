@@ -54,6 +54,30 @@ from pyabf.tools.covg import interleave_np
 from instrbuilder.instrument_opening import open_by_name 
 osc = open_by_name('msox_scope')
 
+def cmd_mv2dac(mv, sys_connections, dac_chan='D1'):
+    """
+    Convert a mV amplitude target of the CMD value to a DAC value 
+    to upload to the DDR 
+    Parameters
+    ----------
+    mv : target amplitude in milli-volts 
+    sys_connections : Class of datastream.PhysicalConnections. Contains the conversion factor 
+    dac_chan : The fast DAC that generates the CMD signal. Almost always default value of D1 
+
+    Returns
+    -------
+    uint16: the DAC value in the range of 0 <-> 2^14 
+    float:  the actual value in mV (since not exact due to rounding)
+    """
+    # convert to float because if numpy type assumption is array and then from_voltage returns a 0d array
+    dac_amplitude = from_voltage(float(mv/1000), num_bits=sys_connections[dac_chan].bits, 
+                                 voltage_range=sys_connections[dac_chan].conv_factor)
+
+    cmd_voltage = to_voltage(dac_amplitude, num_bits=sys_connections[dac_chan].bits, 
+                             voltage_range=sys_connections[dac_chan].conv_factor)
+
+    return dac_amplitude, cmd_voltage
+
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
     """Return the CMD and CC signals determined by the parameters.
@@ -126,7 +150,6 @@ def set_cmd_cc(dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, st
     -------
     None
     """
-
     # TODO: move to Clamp board class in boards.py
     if (type(dc_nums) == int):
         dc_nums = [dc_nums]
@@ -146,6 +169,30 @@ def write_ddr():
     block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False)
     ddr.reset_mig_interface()
     ddr.write_finish()
+
+model_cell = {}
+model_cell['number'] = 2
+# jumper configurable
+model_cell['Rs'] = 1e3
+model_cell['Rp1'] = 5e3
+model_cell['Rv1'] = 200e3
+# coupling cap back onto V1 might be DNI
+model_cell['coupling_cap_c20'] = 0
+model_cell['Rleak'] = 4.7e5 # to change
+
+def ds_add_log(datastreams):
+    datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
+    datastreams.add_log_info({'dc_configs': dc_configs})
+    datastreams.add_log_info({'ddr_step_peak': first_pos_step})
+    datastreams.add_log_info({'dut': 'model_cell'})
+    datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
+    datastreams.add_log_info({'cmd_val': cmd_val})
+    datastreams.add_log_info({'cc_val': cc_val})
+    datastreams.add_log_info({'step_len': step_len})
+    datastreams.add_log_info({'fc_cmd': fc_cmd})
+    datastreams.add_log_info({'model_cell': model_cell})
+    datastreams.add_log_info({'sys_connections': sys_connections})
+    return datastreams
 
 DAC_FS = 2.5e6
 FS = 5e6
@@ -231,8 +278,21 @@ ads.set_host_mode()
 ads.setup()
 ads.set_range(ads_voltage_range) 
 ads.set_lpf(376)
-#ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
-ads_sequencer_setup = [('1', '0'), ('2', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
+
+'''
+sys_connections['A2'].name  -> 'V1_1'
+
+In [7]: sys_connections['A0'].name
+Out[7]: 'P2_0'
+
+In [8]: sys_connections['B0'].name
+Out[8]: 'I_1'
+
+In [9]: sys_connections['A1'].name
+Out[9]: 'P1_0'
+'''
+ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
+#ads_sequencer_setup = [('1', '0'), ('2', '0')] 
 
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
 ads.write_reg_bridge() # 1 MSPS rate 
@@ -241,9 +301,8 @@ ads.set_fpga_mode()
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
-in_amp = 2
-dac_range = 5
-dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
+in_amp = 1 # 05/02 step response was 2; 05/04 in_amp = 1
+dac_range = 5  # 5V full-scale range of the fast DACs 
 
 # ------ Collect Data --------------
 QUIET_DACS = False # if True use the host driven DAC to test noise
@@ -280,14 +339,10 @@ set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 # Set CMD and CC signals - only for the bath clamp
 fc_cmd = None
-# fc_cmd = 100e3
 step_len = 16384*8 # 2^17
 first_pos_step = step_len/2*1/DAC_FS # in seconds 
-cmd_val = 0x0200
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
-        step_len=16384*8, cc_val=None, cc_pickle_num=None)
-
-# input('waiting!')
+cmd_val = 0x0200 # will be overriden by setting in mV below 
+cc_val = 0
 
 dc_configs = {}
 clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
@@ -296,7 +351,7 @@ clamp_cap = 47
 # to digitize I1 use ADC_SEL = "CAL_SIG2"; P2_CAL_CTRL=1; DAC_SEL="noDrive"
 for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG2", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1
+        ADC_SEL="CAL_SIG2", 
         DAC_SEL="noDrive", # must not be drive_CAL2 
         CCOMP=clamp_cap,
         RF1=clamp_fb_res,  # feedback circuit
@@ -319,11 +374,11 @@ for dc_num in [dc_mapping['clamp']]:
 fb_res = 60  # this is disconnected and now in unity-gain! 
 # Try with 5 different resistors
 adg_r = 100
-ccomp = 4700
+ccomp = 47
 # Choose resistor; setup
 for dc_num in [dc_mapping['bath']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
-        ADC_SEL="CAL_SIG1",  # required to digitize P2 
+        ADC_SEL="CAL_SIG2",  # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1
         DAC_SEL="noDrive",
         CCOMP=ccomp,
         RF1=fb_res,  # feedback circuit
@@ -357,9 +412,11 @@ def ads_plot_zoom(ax, t_range=[3250,3300]):
 
 plt.close('all')
 first_time = True
+cmd_mv = 50
+cmd_val, actual_v = cmd_mv2dac(cmd_mv, sys_connections, dac_chan='D1')
+set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+        step_len=step_len, cc_val=cc_val, cc_pickle_num=None)
 
-# update system connections since the daughtercard configurations have changed
-sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
 ddr.repeat_setup() # Get data
 
 def capture_data(idx=0, filename=None):
@@ -383,8 +440,7 @@ def capture_data(idx=0, filename=None):
     
 def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=100):
 
-    # Two plots that can be updated in realtime 
-
+    # Two plots that are updated in realtime 
     # First plot is 2x2 
     if first_time:
         figs = []
@@ -467,28 +523,19 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
 
     return first_time, lines1, lines2, figs
 
-def ds_add_log(datastreams):
-    datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
-    datastreams.add_log_info({'dc_configs': dc_configs})
-    datastreams.add_log_info({'ddr_step_peak': first_pos_step})
-    datastreams.add_log_info({'dut': 'model_cell'})
-    datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
-    datastreams.add_log_info({'cmd_val': cmd_val})
-    datastreams.add_log_info({'cc_val': cc_val})
-    datastreams.add_log_info({'step_len': step_len})
-    datastreams.add_log_info({'fc_cmd': fc_cmd})
-    return datastreams
 
 datastreams, log_info = capture_data(idx=0)
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
-
 # run twice to remove initial transient 
 idx = 1
+datastreams = ds_add_log(datastreams)
+datastreams.to_h5(data_dir, f"intial_startup_{adg_r}rf_{ccomp}ccomp.h5", log_info)
 
 # measure CMD and CC impulse 
-CC_IMPULSE = True 
+CC_IMPULSE = False 
 
-for adg_r, ccomp in ([(10, 47), (33,47), (100, 47), (33,4700), (100,4700), (332,47), (332,4700)]):
+for adg_r, ccomp in ([(100, 47)]):
+# for adg_r, ccomp in ([(10, 47), (33,47), (100, 47), (33,4700), (100,4700), (332,47), (332,4700)]):
 
     if CC_IMPULSE:
         if adg_r > 100:
@@ -526,7 +573,7 @@ for adg_r, ccomp in ([(10, 47), (33,47), (100, 47), (33,4700), (100,4700), (332,
                 shutil.copy2(os.path.join(data_dir, "cc_impulse.h5"), os.path.join(data_dir, f"cc_impulse_{filename_imp}.h5"))
 
     # measure cc cancellation 
-    CC_CANCEL = True
+    CC_CANCEL = False
     method = 'spline'
 
     if CC_CANCEL:
@@ -646,7 +693,7 @@ for adg_r, ccomp in ([(10, 47), (33,47), (100, 47), (33,4700), (100,4700), (332,
         ax.legend()
 
 # large parameter sweep 
-if 0: 
+if 1: 
     OSCOPE = False
     if OSCOPE:
         scope_data = {} 
@@ -663,18 +710,22 @@ if 0:
     ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
 
     ccomp_arr = [47, 247, 1000, 4700]
+    ccomp_arr = [47, 4700]
     adg_r_arr = [33, 100, 332, 1000]
 
     # ccomp_arr = [None, 47, 247, 1000, 1247, 4700]
-    ccomp_arr = [4700]
+    # ccomp_arr = [4700]
     # adg_r_arr = [100]
     # adg_r_arr = [100, 100, 100, 100, 100, 100]
 
-    cmd_val_arr = [0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0300, 0x0400, 0x0500, 0x0600, 0x0800, 0x0900, 0x0A00, 0x0C00, 0x0D00]
+    # cmd_val_arr = [0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0300, 0x0400, 0x0500, 0x0600, 0x0800, 0x0900, 0x0A00, 0x0C00, 0x0D00]
     cmd_val_arr = np.arange(81)*64
+    # at a DAC gain of x5 limit will be about 500 mV due to the x1/11 at the clamp board 
+    mv_val_arr = np.concatenate( ([0,5,10,15,20,25,30,35,40], [50,60,70,80,90,100], [120, 140, 160, 180], [200, 240, 280, 320, 360, 400]) )
     UPDATE_CMD = True
 
-    for cmd_val in cmd_val_arr:
+    for cmd_mv in mv_val_arr:
+        cmd_val, actual_v = cmd_mv2dac(float(cmd_mv), sys_connections, dac_chan='D1') # if the input to from_voltage is numpy then assumption is array and it returns a 0d array
         for ccomp in ccomp_arr:
             for adg_r in adg_r_arr:
                 print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
@@ -690,7 +741,7 @@ if 0:
                 clamps[0].configure_clamp(**dc_configs[0])
                 if UPDATE_CMD:
                     set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
-                        step_len=16384*8, cc_val=None, cc_pickle_num=None)
+                        step_len=step_len, cc_val=None, cc_pickle_num=None)
                     time.sleep(0.2)
                 
                 filename = 'step_rtia{}_ccomp{}_cmd{}.h5'.format(adg_r, ccomp, cmd_val)
@@ -711,19 +762,23 @@ if 0:
                     t = osc.save_display_data(os.path.join(data_dir, 'scope__rtia{}_ccomp{}_cmd{}.abf'.format(adg_r, ccomp, cmd_val)))
                     osc.set('run_acq')
 
-                TO_CLAMPFIT = True
+                TO_CLAMPFIT = False # doesn't work with 3 sequences in the ADS8686 
                 if TO_CLAMPFIT:
                     datastreams.to_clampfit(data_dir, 'step_rtia{}_ccomp{}_cmd{}.abf'.format(adg_r, ccomp, cmd_val),
                                             names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
                                             dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
 
                 # add log info to datastreams -- any dictionary is ok  
-                datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
-                datastreams.add_log_info({'dc_configs': dc_configs})
-                datastreams.add_log_info({'ddr_step_peak': first_pos_step})
-                datastreams.add_log_info({'dut': 'model_cell'})
-                datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
-                datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp, in_amp), log_info)
+                datastreams = ds_add_log(datastreams)
+
+                #try:
+                #    datastreams.pop('OBSV')
+                #    datastreams.pop('OBSV_CH1')
+                #    datastreams.pop('PI_ERR')
+                #except:
+                #    pass
+
+                datastreams.to_h5(data_dir, filename, log_info)
 
     # plot oscilloscope data vs. parameters 
     if OSCOPE:

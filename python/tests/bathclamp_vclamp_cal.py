@@ -9,7 +9,7 @@ The system uses two Daughtercards with:
 Demonstrate calibrations to determine electrode impedances
 Step 1) measure CAL_SIG2 when injecting sinusoid at CAL_SIG1. Disconnect active feedback loop 
 
-Sept 2022/June 2023 
+Sept 2022/June 2023/May 2024
 
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
@@ -23,7 +23,6 @@ bath : freq_arr = np.logspace(np.log10(40), np.log10(2000), 8)
 
 """
 import os
-import sys
 from time import sleep
 import time
 import atexit
@@ -48,7 +47,8 @@ from calibration.electrodes import EphysSystem
 
 ephys_sys = EphysSystem(system='Dagan_vclamp_no_guard')
 
-results_dir = os.path.join(boards_path, 'results')
+results_dir = os.path.join(boards_path, 'results') # within the Git repo there is a results directory; 
+                                                   # this allows the calibration results to be viewed on GitHub
 UPDATE_RESULTS = True
 
 FS = 5e6
@@ -56,6 +56,12 @@ SAMPLE_PERIOD = 1 / FS
 FS_ADS = 1e6
 dac80508_offset = 0x8000
 DC_NUMS = [0, 1, 3]
+
+# bath: has P1, P2, and CC electrodes. Connects to 5 kOhm-ish electrodes. 
+# clamp: drives the I electrode. The V1 electrode is amplified by the vclamp board (on micromanipulator) and is an input to this board 
+#        just past the buffer amplifier (which is removed)
+# vclamp: (other name is vsense) amplifies V1 but no drive circuitry 
+
 dc_mapping = {'bath': 0, 'clamp': 1, 'vclamp': 3}  # TODO get from System class in electrodes.py
 
 eps = Endpoint.endpoints_from_defines
@@ -141,7 +147,7 @@ except NameError:
         {0: {'CAL_ADC': ('A', 0), 'AMP_OUT': ('A', 1)},
         1: {'CAL_ADC': ('B', 0), 'AMP_OUT': ('A', 2)},
         2: {'CAL_ADC': ('B', 1), 'AMP_OUT': ('A', 3)},
-        3: {'CAL_ADC': ('A', 4), 'AMP_OUT': ('B', 2)}}
+        3: {'CAL_ADC': ('A', 4), 'AMP_OUT': ('B', 2)}}  # amp out will always be connected for vsense 
     if using daughter cards: 0,1,2 need A0,A1,A2,A3; B0,B1 
     '''
     dc_under_test = 0
@@ -407,6 +413,14 @@ res = 100  # kOhm
 cap = 47
 
 def setup_clamps(dc_under_test, dc_disconnect):
+    """
+    setup clamp boards including the relay connections 
+
+    dc_under_test : (int) the index of the daughter card that is being tested 
+    dc_disconnect : (int) the index of the daughter card this is not being tested. Both electrode relays are disconnected. 
+    
+    """
+
     dc_configs = {}
     log_info_test, dc_configs[dc_under_test] = clamps[dc_under_test].configure_clamp(
         ADC_SEL="CAL_SIG2",
@@ -414,11 +428,11 @@ def setup_clamps(dc_under_test, dc_disconnect):
         CCOMP=cap,
         RF1=fb_res,  # feedback circuit
         ADG_RES=res,
-        PClamp_CTRL=0,  # keep open for calibration
-        P1_E_CTRL=1,
-        P1_CAL_CTRL=1,
-        P2_E_CTRL=1,
-        P2_CAL_CTRL=1,
+        PClamp_CTRL=0, # keep open for calibration (default)
+        P1_E_CTRL=1, # open relay
+        P1_CAL_CTRL=1, # close relay 
+        P2_E_CTRL=1,  # open relay
+        P2_CAL_CTRL=1,  # close relay 
         gain=1,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -428,8 +442,8 @@ def setup_clamps(dc_under_test, dc_disconnect):
         addr_pins_2=0b000,
     )
 
-    log_info_disconnect, dc_configs[dc_disconnect] = clamps[dc_disconnect].configure_clamp(
-        ADC_SEL="CAL_SIG1",
+    log_info_disconnect,  dc_configs[dc_disconnect] = clamps[dc_disconnect].configure_clamp(
+        ADC_SEL="CAL_SIG1", # since the electrodes are disconnect there will be no calibration signal  
         DAC_SEL="gnd_both",
         CCOMP=cap,
         RF1=fb_res,  # feedback circuit
@@ -447,7 +461,7 @@ def setup_clamps(dc_under_test, dc_disconnect):
         addr_pins_1=0b110,
         addr_pins_2=0b000,
     )
-    # with the VCLAMP board none of these configurations will change anything
+     # with the VCLAMP board these configurations are not impactful 
     log_info_vclamp, dc_configs[dc_mapping['vclamp']] = clamps[dc_mapping['vclamp']].configure_clamp(
         ADC_SEL="CAL_SIG1",
         DAC_SEL="gnd_both",
@@ -467,36 +481,48 @@ def setup_clamps(dc_under_test, dc_disconnect):
         addr_pins_1=0b110,
         addr_pins_2=0b000,
     )
-    dc_configs[dc_mapping['vclamp']]['VSENSE'] = 78  # extra information for the system_connections
+    dc_configs[dc_mapping['vclamp']]['VSENSE'] = 20.15 # extra information for the system_connections. Gain of the voltage clamp amplifier 
 
     sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
 
     return dc_configs, sys_connections
 
-
-def measure_resistance(config_dict_test, dc_under_test, testing='bath', step=1,
-                       plt_data=True, plt_fit=False, write_ddr=True):
-    # Measure a current For Re1 + Re2 
-    if testing == 'bath':
+def measure_resistance(config_dict_test, dc_under_test, testing='bath', step=1, 
+                        plt_data=True, plt_fit=False,
+                        write_ddr=True):
+    """
+     Source a current to measure Re1 + Re2 
+    
+    Parameters 
+    config_dict_test : dictionary of the configuration of the daughtercard under test
+    dc_under_test : 
+    testing : (str) configures the stimulus waveform based on 'bath' or 'clamp'
+    step : (int)
+    data : (dict) describes the measured voltage vs. time and the stimulus waveform configuration (amplitude, frequency, source) but does not store data 
+    """
+    # configure the waveforms based on the electrodes under test 
+    if testing=='bath':
         freq = 200
-        num_repeats = 10
-        blk_multiples = 40
+        num_repeats=10 
+        blk_multiples=40
         current_amp = 0.8
-    if testing == 'vclamp':
+    if testing=='vclamp':
         freq = 40
-        num_repeats = 50
-        blk_multiples = 40
-        current_amp = 0.01  # 10 nA TODO: ensure that current is source only for a short amount of time so that we don't blow up the cell
+        num_repeats=50 
+        blk_multiples=40
+        current_amp = 0.01 # 10 nA TODO: ensure that current is sourced only for a short amount of time so that we don't blow up the cell
 
-    daq.set_isel(port=1, channels=[dc_under_test])  # current based on DC#
-    config_dict_test['ADC_SEL'] = 'CAL_SIG2'  # this is the force terminal
+    daq.set_isel(port=1, channels=[dc_under_test]) # current based on DC#  
+    config_dict_test['ADC_SEL'] = 'CAL_SIG2' # this is the force terminal; drive and measure on the same channel 
 
+    # TODO: How is the disconnected clamp board configured? 
     if testing == 'bath':
         config_dict_test['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'
     elif testing == 'vlcamp':
         config_dict_test['DAC_SEL'] = 'drive_CAL2'
         config_dict_test['P1_E_CTRL'] = 0  # open relay
     log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
+
     # inject current square wave, expect around 8 mV amplitude from 0.8 uA*10e3, 16 mV pk-pk         
     if write_ddr:
         dac_wave, freq, _ = dac_waveform(0, amp=current_amp, freq=freq, shape='SQ',
@@ -505,20 +531,19 @@ def measure_resistance(config_dict_test, dc_under_test, testing='bath', step=1,
         ddr.reset_mig_interface()
         ddr.write_finish()
 
-    volt, t, ads_separate_data, ax = collect_data(ddr, PLT=plt_data,
-                                                  ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
-                                                  num_repeats=num_repeats, blk_multiples=blk_multiples)
-
+    volt, t, ads_separate_data, ax = collect_data(ddr, PLT=plt_data, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
+                                                    num_repeats=num_repeats, blk_multiples=blk_multiples)
+    
     if testing == 'vclamp':
         v_vclamp = ads_separate_data[adc_v1[0]][adc_v1[1]]  # TODO: generalize if boards swap DAQ sockets
         idx = np.min([len(t), len(v_vclamp)])
-        ax.plot(t[:idx] * 1e6, v_vclamp[:idx] / 78.07, label='V1 [V]')
+        ax.plot(t[:idx]*1e6, v_vclamp[:idx]/20.15, label='V1 [V]')    
         ax.legend()
 
         idx = np.min([len(t), len(v_vclamp), len(volt)])
         fig, ax = plt.subplots()
-        ax.plot(t[:idx] * 1e6, v_vclamp[:idx] / 78.07 - volt[:idx], label='V1 - V(I) [V]')
-        volt = v_vclamp[:idx] / 78.07 - volt[:idx]  # fit this difference of voltages
+        ax.plot(t[:idx]*1e6, v_vclamp[:idx]/20.15 - volt[:idx], label='V1 - V(I) [V]')
+        volt = v_vclamp[:idx]/20.15 - volt[:idx] # fit this difference of voltages. #TODO: parameterize this specific gain of the voltage clamp 
         ax.legend()
 
     rdata = {}
@@ -544,25 +569,41 @@ def measure_resistance(config_dict_test, dc_under_test, testing='bath', step=1,
 
 
 def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step_chirp):
-    for drive_elec in [1, 2]:
-        if drive_elec == 1:  # upload the chirp signal to DDR 
-            periods = np.ones(len(freq_arr)) * 30
-            dac_wave, freq_chirp, indices = dac_waveform(dc_under_test, amp=voltage_amp,
-                                                         freq=freq_arr, shape='CHIRP', source='v',
-                                                         periods=periods)
-            total_chirp_time = np.sum(1 / freq_arr * periods)
+    """
+    Measure a transfer function versus frequency using a chirp signal.
+    For each drive electrode measure at driving point (as a calibration) and at the other electrode
+
+    Parameters: 
+        testing : (str)
+        data_chirp : (list of dicts) input so this can be appended 
+        dc_configs : configuration of daughter cards 
+        dc_under_test : (int)
+        voltage_amp : (float) voltage amplitude of chirp stimulus 
+        step_chirp : (int) the step index for the list of dicts that store the final results 
+    """
+
+    for drive_elec in [1,2]:
+        if drive_elec == 1:  # upload the chirp signal to DDR only for drive 1 since we repeat for drive electrode 2 
+            periods = np.ones(len(freq_arr))*30
+            dac_wave, freq_chirp, indices = dac_waveform(dc_under_test, amp=voltage_amp, 
+                                                    freq=freq_arr, shape='CHIRP', source='v', 
+                                                    periods=periods)
+            total_chirp_time = np.sum(1/freq_arr*periods)
             print(f'Total chirp time = {total_chirp_time}')
             # find the last index to 'download' using the starting index of the last frequency
             end_index = indices[-1][0] + periods[-1] * ((1 / DDR3.UPDATE_PERIOD) / freq_arr[-1])
 
-        # measure at same point as drive 
+        # measure at same point as drive, this acts as an amplitude calibration (for a transfer function of Vout/Vin this measures Vin)
         if drive_elec == 1:
             dc_configs[dc_under_test]['ADC_SEL'] = 'CAL_SIG1'
             dc_configs[dc_under_test][
                 'DAC_SEL'] = 'drive_CAL1'  # do not ground CAL2; won't work for isolated Vsense board
         elif drive_elec == 2:
             dc_configs[dc_under_test]['ADC_SEL'] = 'CAL_SIG2'
-            dc_configs[dc_under_test]['DAC_SEL'] = 'drive_CAL2'  # do not ground CAL1
+            dc_configs[dc_under_test]['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
+
+        dc_configs[dc_under_test]['P1_CAL_CTRL'] = 1
+        dc_configs[dc_under_test]['P2_CAL_CTRL'] = 1
 
         log_info_bath, dc_configs[dc_under_test] = clamps[dc_under_test].configure_clamp(**dc_configs[dc_under_test])
 
@@ -596,6 +637,8 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
             step_chirp += 1
 
         # swap roles ADC_SEL electrode; keep drive electrode the same  
+        # for the clamp board cannot drive CAL_SIG1 since that is the buffered output of the vsense board 
+        # consider disconnecting the membrane capacitance and use that as a calibration measurement
         if drive_elec == 1:
             dc_configs[dc_under_test]['ADC_SEL'] = 'CAL_SIG2'
             dc_configs[dc_under_test]['DAC_SEL'] = 'drive_CAL1'  # do not ground CAL2
@@ -628,12 +671,11 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
                                       'voltage_clamp': copy.deepcopy(dc_configs[dc_disconnect])}
             step_chirp += 1
 
-    # save data 
+    # save Chirp data 
     filename_chirp = 'imp_all_steps_chirp_{}'
-    np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data_chirp)
+    np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data_chirp) # saved to a Numpy npz file 
 
     return data_chirp, filename_chirp, step_chirp
-
 
 # for testing in ['bath']:
 for testing in ['bath', 'vclamp']:
@@ -680,10 +722,15 @@ for testing in ['bath', 'vclamp']:
             write_ddr=False)
     data[step] = rdata[step]
 
+    # the resistance data does not need to be saved because it is prepended onto the data_chirp dictionary  
+    filename_chirp = 'dc_resistance_{}'
+    np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data) # saved to a Numpy npz file 
+
+    # ------------- Prepare the daughtercards for chirp testing -----------------
     if testing == 'bath':
-        dc_configs[dc_disconnect]['P1_CAL_CTRL'] = 0
+        dc_configs[dc_disconnect]['P1_CAL_CTRL'] = 0 # disconnect the vclamp board and use CC as the load capacitance 
         dc_configs[dc_disconnect]['P2_CAL_CTRL'] = 0
-        dc_configs[dc_disconnect]['DAC_SEL'] = 'drive_CAL2'
+        dc_configs[dc_disconnect]['DAC_SEL'] = 'drive_CAL2'  # irrelevant since disconnected 
         freq_arr = np.logspace(np.log10(400), np.log10(50000), 8)
     elif testing == 'vclamp':  # ground the bath clamp electrodes since 5k is small compared to the 200kOhm of the voltage clamp
         dc_configs[dc_disconnect]['P1_CAL_CTRL'] = 1
@@ -694,11 +741,10 @@ for testing in ['bath', 'vclamp']:
     log_info_bath, dc_configs[dc_disconnect] = clamps[dc_disconnect].configure_clamp(**dc_configs[dc_disconnect])
 
     # disable the current source 
-    daq.set_isel(port=1, channels=None)  # channel select works correctly -- this turns off the signal
-
+    daq.set_isel(port=1, channels=None) # channel select works correctly -- this turns off the signal 
     # ---- CHIRP testing ------------
     data_chirp = {}
-    data_chirp[1] = data[1]
+    data_chirp[1] = data[1] # add resistance data 
     step_chirp = 2
 
     if testing == 'bath' or testing == 'vclamp':
@@ -712,13 +758,9 @@ for testing in ['bath', 'vclamp']:
         tf_type = 'elec_r_cc'
         r_total_guess = 8e3
 
-    # calculates both the total resistance (measured via current injection)
-    # and the isolated resistance infered by transfer functions 
-    predicted_res, res_fit_mesg, component_fits, fit_notes, components = total_res_iso_res(data_dir,
-                                                                                           filename_chirp.format(
-                                                                                               testing) + '.npz',
-                                                                                           r_total_guess, tf_type,
-                                                                                           PLT=True)
+    # calculates both the total resistance (measured via current injection) and the isolated resistance infered by transfer functions 
+    predicted_res, res_fit_mesg, component_fits, fit_notes, components = total_res_iso_res(data_dir, filename_chirp.format(testing) + '.npz',  
+                                                                                           r_total_guess, tf_type, PLT=True)
     print(components)
     # components is calculated from component_fits so its ok to not capture component_fits
     component_results = {}
