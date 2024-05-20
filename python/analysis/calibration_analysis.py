@@ -69,14 +69,19 @@ def r_from_square(r_total_guess, data, PLT=False):
 				sq_wave_amp_guess = r_total_guess * current_amp
 			log.debug(f'Square wave amp guess: {sq_wave_amp_guess}. DAC wave = {dac_wave}')
 		
-			yfit, pcov, infodict, mesg, ier = curve_fit(soft_sq_wave, t,y , p0=(freq, sq_wave_amp_guess, 0, 0, 0), full_output=True) # freq, amp, offset, phase, smoothing factor 
-							#bounds = ([0,0,-15,0,0], [10e6, np.inf, 15, 2*np.pi, np.inf]))  # bounds cause problems. Not sure why
-			predicted_res = yfit[1]/current_amp
+			try:
+				yfit, pcov, infodict, mesg, ier = curve_fit(soft_sq_wave, t,y , p0=(freq, sq_wave_amp_guess, 0, 0, 0), full_output=True) # freq, amp, offset, phase, smoothing factor 
+								#bounds = ([0,0,-15,0,0], [10e6, np.inf, 15, 2*np.pi, np.inf]))  # bounds cause problems. Not sure why
+				predicted_res = yfit[1]/current_amp
+			except:
+				yfit, pcov, infodict, mesg, ier = [None]*5
+				predicted_res = 0
 			log.info(f'Predicted resistance {predicted_res}')
 			if PLT:
 				ax = plt.gca() # gets an axes if none exists
 				ax.plot(t*1e6, y, marker='.')
-				ax.plot(t*1e6, soft_sq_wave(t, *yfit))
+				if yfit is not None:
+					ax.plot(t*1e6, soft_sq_wave(t, *yfit))
 				
 	return predicted_res, pcov, mesg
 
