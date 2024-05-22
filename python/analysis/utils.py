@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import scipy.fftpack
 import matplotlib.pyplot as plt
@@ -23,9 +24,22 @@ mpl.rcParams['axes.labelsize'] = 8
 mpl.rcParams['ytick.labelsize'] = 8
 mpl.rcParams['xtick.labelsize'] = 8
 
+CB_color_cycle = ['#377eb8', '#ff7f00', '#4daf4a',
+                  '#f781bf', '#a65628', '#984ea3',
+                  '#999999', '#e41a1c', '#dede00']
+mpl.rcParams['axes.prop_cycle'] = mpl.cycler(color=CB_color_cycle) 
+
 col_width = 3.342
 aspect_ratio = 0.7
 fig_size = (col_width, col_width*aspect_ratio)
+
+if sys.platform == 'darwin':
+    data_dir = '/Users/koer2434/Library/CloudStorage/OneDrive-UniversityofSt.Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
+    fig_dir = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/'
+elif sys.platform == 'win32':
+    data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
+    fig_dir = r'C:/Users/Public/Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/'
+
 
 def find_nearest(array, target):
     """ find value in an array nearest to a target value

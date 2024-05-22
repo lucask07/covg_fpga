@@ -6,7 +6,7 @@ Lucas Koerner
 
 requires the nightly build of torchaudio:
 pip install --pre torchaudio -f https://download.pytorch.org/whl/nightly/torch_nightly.html 
-
+which can be installed with:
 pip install git+https://github.com/alisterburt/torch-cubic-spline-grids
 
 TODO: 
@@ -16,14 +16,14 @@ TODO:
 
 Notes: 
 1) the learned waveform will be at the same frequency as the Im measurement (5 MSPS) and 
-   then will be downsampled  
+   then will need to be downsampled 
 
 '''
 import os
 os.environ['KMP_DUPLICATE_LIB_OK']="TRUE" # this is a workaround for an issue once pytorch was installed 
 import sys
 import torch
-import torchaudio.functional as F
+import torchaudio.functional as F # using for differentiable convolve 
 import matplotlib.pyplot as plt
 from torchsummary import summary
 # PyTorch TensorBoard support

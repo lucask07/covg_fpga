@@ -2,7 +2,15 @@
 Apr 2024 
 Lucas Koerner, koerner.lucas@stthomas.edu
 
-Load a trained CC network model and pass a CMD waveform through it to determine CC waveform 
+Load a trained CC network model 
+and pass a CMD waveform through it to determine CC waveform 
+
+Functions for both trained biquad filters and for cubic splines 
+
+TODO: 
+1) plan the normalization
+2) determine if CC needs a sign flip with respect to CMD 
+3) test if there is time offset 
 
 """
 import os
@@ -19,8 +27,10 @@ import matplotlib.pyplot as plt
 import torch
 
 from analysis.audiotorch_cc import Net
+from analysis.utils import my_savefig, fig_size, fig_dir # also configures matplotlib defautls 
 from torch_cubic_spline_grids import CubicBSplineGrid1d
 
+fig_dir = os.path.join(fig_dir, 'cc')
 
 def infer_ccwave_spline(run_date = '20240413', 
                  run_time = '151907', 
@@ -63,8 +73,6 @@ def infer_ccwave_spline(run_date = '20240413',
 
 
     # missing correction for convolution operation: *200e-9 (*dt)
-    scale_factor = (1/configs['max_impulse']/configs['max_target'])*configs['cmd_val']*configs['cc_conv_factor'] # 
-
     scale_factor = (configs['max_target']/configs['max_impulse'])*configs['cmd_conv_factor']/configs['cc_conv_factor'] # 
 
     scale_factor = scale_factor.detach().numpy()
@@ -73,6 +81,7 @@ def infer_ccwave_spline(run_date = '20240413',
     if DEBUG_PLOTS:
         fig,ax=plt.subplots()
         ax.plot( (cc_wave).cpu().detach().numpy()*scale_factor)
+        my_savefig(fig, fig_dir, 'infer_cc_spline')
 
     cc_wave = cc_wave.cpu().detach().numpy()*scale_factor
 

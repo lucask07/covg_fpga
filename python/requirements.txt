@@ -12,3 +12,13 @@ jupyter
 pytest
 PyQt5
 pyyaml
+pytorch
+control
+torch-cubic-spline-grids
+pyripherals @ git+https://github.com/ajstros/pyripherals@ddr_read
+# not sure that the nighly build is really required
+# pip install --pre torchaudio -f https://download.pytorch.org/whl/nightly/torch_nightly.html
+torchaudio
+torchsummary
+tensorboard  # TODO: check to see if actually used
+lmfit
