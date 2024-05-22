@@ -56,7 +56,6 @@ def read_cal_data(data_dir, filename):
 def r_from_square(r_total_guess, data, PLT=False):
     # analyze square wave signal for the predicted resistance 
 
-<<<<<<< HEAD
     for data_key in data:
         d = data[data_key]
         
@@ -96,35 +95,6 @@ def r_from_square(r_total_guess, data, PLT=False):
                 my_savefig(fig, fig_dir, f'resistance_cal_square_wave')
                 
     return predicted_res, pcov, mesg
-=======
-		if d['shape'] == 'SQ':
-			t = d['t'][chop_idx:]
-			y = d['volt'][chop_idx:] # if I chop at an arbitrary point there will be a phase shift that varies with frequency
-			freq = d['freq']
-			if dac_wave:
-				current_amp = (full_scale_current/2**dac_resolution*amp_dac*2)
-				sq_wave_amp_guess = r_total_guess * current_amp
-			else:
-				current_amp = (amp_dac*1e-6)
-				sq_wave_amp_guess = r_total_guess * current_amp
-			log.debug(f'Square wave amp guess: {sq_wave_amp_guess}. DAC wave = {dac_wave}')
-		
-			try:
-				yfit, pcov, infodict, mesg, ier = curve_fit(soft_sq_wave, t,y , p0=(freq, sq_wave_amp_guess, 0, 0, 0), full_output=True) # freq, amp, offset, phase, smoothing factor 
-								#bounds = ([0,0,-15,0,0], [10e6, np.inf, 15, 2*np.pi, np.inf]))  # bounds cause problems. Not sure why
-				predicted_res = yfit[1]/current_amp
-			except:
-				yfit, pcov, infodict, mesg, ier = [None]*5
-				predicted_res = 0
-			log.info(f'Predicted resistance {predicted_res}')
-			if PLT:
-				ax = plt.gca() # gets an axes if none exists
-				ax.plot(t*1e6, y, marker='.')
-				if yfit is not None:
-					ax.plot(t*1e6, soft_sq_wave(t, *yfit))
-				
-	return predicted_res, pcov, mesg
->>>>>>> 34f2b1e344e1b824ac84a65c6e9dddf95735ad0e
 
 
 def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=False):
