@@ -2,22 +2,18 @@
 The system uses two Daughtercards with:
  1) the bath clamp - has a non-zero CMD voltage measures Im 
  2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
-
  and 
  3) a voltage sense board that cannot be disconnected via relays (combines with the voltage clamp board to create feedback loop)
 
 Demonstrate calibrations to determine voltage clamp electrode impedances
-by measuring the time constant (expecting ~2 us) of a step applied to I electrode and measured by the V1 terminal 
+by measuring the time constant of a step applied to I electrode and measured by the V1 terminal 
 
 Setup:
 CAL_DAC voltage source connected to I terminal 
 I drive relay opened to disconnect amplifier 
 ADS8686 sequencer configured for just one sequence (Amp out) of the voltage clamp board and CAL ADC of the voltage clamp board to maximize sampling rate. 
-
-
-Options: 
-disconnect the bath clamp side 
-connect the bath clamp side and ground both the P1 and P2 terminals 
+must disconnect CC otherwise the Cm load is too significant 
+must disconnect with relays P1 and P2 otherwise the Cm load is too significant 
 
 Sept 2022/June 2023/May 2024
 
@@ -291,36 +287,24 @@ def collect_data(ddr, PLT=True, ads_chan=('A', 0), num_repeats=10, blk_multiples
     chan_data_one_repeat = ddr.save_data(data_dir, file_name.format(idx) + '.h5', 
                                          num_repeats=num_repeats, blk_multiples=blk_multiples)  # blk multiples multiple of 10
 
-    # to get the deswizzled data of all repeats need to read the file
-    filename_composite=file_name.format(idx) + '.h5'
-    _, chan_data = read_h5(data_dir, file_name=filename_composite, chan_list=np.arange(8))
+    # update system connections since the daughtercard configurations have changed
+    sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
+    # Plot using datastreams 
+    datastreams, log_info = rawh5_to_datastreams(data_dir, file_name.format(idx) + '.h5', ddr.data_to_names, 
+                                                 daq, sys_connections, outfile = None)
+ 
 
-    adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
-    print(f'Timestamp spans {5e-9*(timestamp[-1] - timestamp[0])*1000} [ms]')
-
-    ############### extract the ADS data ############
-    ads_data_v = {}
-    for letter in ['A', 'B']:
-        ads_data_v[letter] = np.array(to_voltage(
-            ads_data_tmp[letter], num_bits=16, voltage_range=ads_voltage_range*2, use_twos_comp=False))
-
-    total_seq_cnt = np.zeros(len(ads_seq_cnt[0]) + len(ads_seq_cnt[1])) # get the right length
-    total_seq_cnt[::2] = ads_seq_cnt[0]
-    total_seq_cnt[1::2] = ads_seq_cnt[1]
-    ads_separate_data = separate_ads_sequence(ads_sequencer_setup, ads_data_v, total_seq_cnt, slider_value=4)
-
-    # ADS8686 data and plot 
-    volt = ads_separate_data[ads_chan[0]][ads_chan[1]]
-    t_ads = np.arange(0,len(volt))*(1/FS_ADS)*len(ads_sequencer_setup)
     if PLT:
         fig, ax = plt.subplots()
-        ax.plot(t_ads*1e6, volt, marker = '+', label = f'ADS: {chan}')
-        ax.legend()
-        ax.set_xlabel('s [us]')
-        ax.set_title('ADS8686 data')
+        datastreams['V1'].plot(ax)
+        datastreams['I'].plot(ax)
+
     else:
         ax=None
-    return volt, t_ads, ads_separate_data, ax, filename_composite
+
+
+    return datastreams, log_info
+
 
 # ------ Collect Data --------------
 file_name = time.strftime("%Y%m%d-%H%M%S")
@@ -469,16 +453,6 @@ def measure_step(config_dict_test, dc_under_test, testing='vclamp', step=1,
     # DO NOT enable the current source 
     # daq.set_isel(port=1, channels=[dc_under_test]) # current based on DC#  
 
-    # config_dict_test['ADC_SEL'] = 'CAL_SIG2' # this is the force terminal; drive and measure on the same channel 
-
-    # # TODO: How is the disconnected clamp board configured? 
-    # if testing == 'bath':
-    #     config_dict_test['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'
-    # elif testing == 'vlcamp':
-    #     config_dict_test['DAC_SEL'] = 'drive_CAL2'
-    #     config_dict_test['P1_E_CTRL'] = 0 # open relay
-    # log_info_bath, config_dict_test = clamps[dc_under_test].configure_clamp(**config_dict_test)
-
     if write_ddr: 
         dac_wave, freq, _ = dac_waveform(dc_under_test=dc_mapping['clamp'], amp=voltage_amp, 
                                          freq=freq, shape='SQ', source='v') # howland pump is always driven by BP_OUT0
@@ -486,24 +460,12 @@ def measure_step(config_dict_test, dc_under_test, testing='vclamp', step=1,
         ddr.reset_mig_interface()
         ddr.write_finish()
 
-    volt, t, ads_separate_data, ax, filename_composite = collect_data(ddr, PLT=plt_data, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
+    datastreams, log_info = collect_data(ddr, PLT=plt_data, ads_chan=daq.parameters['ads_map'][dc_under_test]['CAL_ADC'],
                                                     num_repeats=num_repeats, blk_multiples=blk_multiples)
     
-    if testing == 'vclamp':
-        adc_v1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT']
-        v_vclamp = ads_separate_data[adc_v1[0]][adc_v1[1]] # TODO: generalize if boards swap DAQ sockets 
-        idx = np.min([len(t), len(v_vclamp)])
-        ax.plot(t[:idx]*1e6, v_vclamp[:idx]/20.15, label='V1 [V]')    
-        ax.legend()
-
-        idx = np.min([len(t), len(v_vclamp), len(volt)])
-        fig, ax = plt.subplots()
-        ax.plot(t[:idx]*1e6, v_vclamp[:idx]/20.15 - volt[:idx], label='V1 - V(I) [V]')
-        volt = v_vclamp[:idx]/20.15 - volt[:idx] # fit this difference of voltages. #TODO: parameterize this specific gain of the voltage clamp 
-        ax.legend()
 
 
-    return t, volt, v_vclamp, ads_separate_data, filename_composite
+    return datastreams, log_info
 
 # Testing the vclamp side 
 dc_under_test = dc_mapping['clamp'] 
@@ -516,29 +478,28 @@ block_pipe_return, speed_MBs = ddr.write_channels(set_ddr_read=False) # TODO: is
 ddr.reset_mig_interface()
 ddr.write_finish()
 
-freq = 40
-num_repeats=50 
-blk_multiples=40
-r_total_guess = 300e3 
-voltage_amp = 0.05 
-
 # measure resistance 
-t, volt, v_vclamp, ads_separate_data, filename_composite = measure_step(dc_configs[dc_under_test], dc_under_test=dc_under_test, testing='vclamp', 
-                                                                        step=1, plt_data=True, plt_fit=True,
-                                                                        write_ddr=True)
 
+for re in [100, 200, 475, 1000]:
 
+    input(f'Configure V1 electrode R to {re}')
 
-# update system connections since the daughtercard configurations have changed
-sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
+    datastreams, log_info = measure_step(dc_configs[dc_under_test], dc_under_test=dc_under_test, testing='vclamp', 
+                                                                            step=1, plt_data=True, plt_fit=True,
+                                                                            write_ddr=True)
 
-re = 1000 # kOhms -- set at model cell
-datastreams, log_info  = rawh5_to_datastreams(data_dir, filename_composite, ddr.data_to_names, daq, sys_connections, outfile = None, out_log_info={})
-datastreams.to_h5(data_dir, filename_composite.replace('.h5', f'Re1_{re}k.h5'), log_info=log_info)
+    filename = file_name + f'Re1_{re}k'
+    datastreams.to_h5(data_dir, filename + '.h5', log_info=log_info)
 
-# find edges and measure rise-time 
-# save this data as 
+    # find edges and measure rise-time 
+    step_info = datastreams['V1'].stepinfo_range([12000e-6, 13000e-6])
 
-# the resistance data does not need to be saved because it is prepended onto the data_chirp dictionary  
-# filename_chirp = 'dc_resistance_{}'
-# np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data) # saved to a Numpy npz file 
+    # save this data as 
+
+    # predicted capacitance 
+    par_cap = step_info['RiseTime']/np.log(9)/(100e3 + re*1e3)
+    step_info['capacitance'] = par_cap
+
+    print(f'Rise-time {step_info["RiseTime"]}, capacitance {par_cap}')
+    np.savez(os.path.join(data_dir, filename + 'stepinfo'), step_info) # saved to a Numpy npz file 
+
