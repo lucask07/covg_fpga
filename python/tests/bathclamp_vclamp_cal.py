@@ -494,8 +494,12 @@ def measure_resistance(config_dict_test, dc_under_test, testing='bath', step=1,
                         plt_data=True, plt_fit=False,
                         write_ddr=True):
     """
-     Source a current to measure Re1 + Re2 
+    Source a current to measure Re1 + Re2 
     
+    works for bath electrode using DC response 
+    needs to use RC response 300 kOhm * 2 pF 
+    connect a relay to the vsense electrode 
+
     Parameters 
     config_dict_test : dictionary of the configuration of the daughtercard under test
     dc_under_test : 
