@@ -76,25 +76,6 @@ vsense_att = amplitude['V1s']/amplitude['V1']
 print(f'Vsense gain {vsense_gain}')
 print(f'Attenuation {20*np.log10(vsense_att)} dB')
 
-capture_date = '20240531' # these measurements have issues on one of the electrodes of the bath clamp, resistance via current injection looks good. 
-capture_date = '20240603' # calibration for voltage clamp gain 
-
-if sys.platform == 'darwin':
-    data_dir = '/Users/koer2434/Library/CloudStorage/OneDrive-UniversityofSt.Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/calibrations/{}/'.format(capture_date)
-elif sys.platform == 'win32':
-    data_dir = 'C:/Users/koer2434/Documents/covg/data/clamp/{}/'.format(capture_date)
-
-tf_type = 'elec_r_cc'
-file_extra = '_bath'
-r_total_guess = 5e3 + 3.32e3
-
-filename = f'imp_all_steps_chirp{file_extra}.npz'
-
-data = read_cal_data(data_dir=data_dir, filename=filename)
-
-predicted_res, pcov, res_fit_mesg = r_from_square(r_total_guess, data, PLT=PLT)  # get resistance from a square wave 
-component_fits, fit_notes, components = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=True)
-
 ## Now the voltage clamp 
 capture_date = '20240605' # TF for voltage 
 if sys.platform == 'darwin':
@@ -106,32 +87,23 @@ file_extra = '_vclamp'
 r_total_guess = 300e3 # TODO: replace with the electrode configuration 
 filename = f'imp_all_steps_chirp{file_extra}.npz'
 
-#  date = '20240604-135851'
-
-date = '20240605-060437'
-date = '20240605-073818'
-date = '20240605-100306'
-date = '20240605-101333'
+# Example filename: 'imp_all_steps_chirp_floatdut_20240605-060437_vclamp'
 date = '20240605-101911'
-# filename = 'imp_all_steps_chirp_floatdut_20240605-060437_vclamp'
 filename = f'imp_all_steps_chirp_floatdut_{date}{file_extra}.npz'
 
 print('--'*40)
 
 data = read_cal_data(data_dir=data_dir, filename=filename)
-# TODO: there is only one measurement so can only solve for one unknown. Specify the RI value (equivalent to Ri) and solve for Cm
-# TODO: use low frequency measurement to calibrate the gain of the sense. At f=10Hz TF should be 0 dB 
+
 for k in data:
     try:
-        data[k]['v1'] = data[k]['v1']/60.24*1.15
+        data[k]['v1'] = data[k]['v1']/vsense_gain # calibration is  
     except:
         print(f'{k} gain adjust failed')
         pass
 
 # data is divided into 2 sections need only the second half
 ks = list(data.keys())
-
-
 # with the DUT grounded using the bath clamp 
 freqs = np.array([])
 y1s = []

@@ -104,25 +104,40 @@ def calc_fft(data, FS, plot=True, WINDOW='hann'):
     return freq, yf, max_freq, fig, ax
 
 def phase_by_xcorr(freq, t, data, dac_wave=None, debug_plots=False):
-    # determine the phase of a sinusoid at a given frequency
+    # determine the phase of a sinusoid at a given frequency with respect to a reference wave
+    # also return the amplitude ratio 
+    # if dac_wave is None the phase is compared against a 0 phase reference 
+    #     and the amplitude of data is returned as amp_ratio
     VERBOSE = False 
     # remove mean of data 
     fs = 1/(t[1]-t[0])
+    # print(f'Fs: {fs}')
     data = data - np.mean(data)
-    amp = np.sqrt(2)*np.std(data)
+
+    # determine the length for 1 period 
+    n_period = int(np.ceil(fs/freq)) # index for 1 period 
+    n_period_float = fs/freq
+    # limit the data to 20 periods so that small frequency errors don't cause problems 
+    data_range = n_period*20
+
+    # calculate amplitude using standard deviation 
+    n_whole_periods = int(np.floor(len(data)/(fs/freq)))
+    idx_whole_periods = int(n_whole_periods*fs/freq)
+    # print(f'Index of whole periods: {idx_whole_periods}')
+    amp = np.sqrt(2)*np.std(data[:idx_whole_periods])
+    # print(f'Amp: {amp}')
 
     if dac_wave is None:
         ideal_sine = amp*np.sin(2*np.pi*freq*t)
+        dac_amp = None
         amp_ratio = amp
     else:
         dac_wave = dac_wave - np.mean(dac_wave)
-        amp_ratio = np.sqrt(2)*np.std(dac_wave)/amp
+        dac_amp = np.sqrt(2)*np.std(dac_wave[:idx_whole_periods])
+        amp_ratio = amp/dac_amp
+        # print(f'!Amp ratio: {amp_ratio}')
         ideal_sine = amp*dac_wave/np.max(dac_wave)
     
-    n_period = int(np.ceil(fs/freq))
-    n_period_float = fs/freq
-    # TODO: limit to 20 periods so that small frequency errors don't cause problems 
-    data_range = n_period*20
     xc = correlate(ideal_sine[:n_period], data[:data_range], mode='same')
     lags = correlation_lags(len(ideal_sine[:n_period]), 
                             len(data[:data_range]), mode='same')
@@ -170,7 +185,7 @@ def phase_by_xcorr(freq, t, data, dac_wave=None, debug_plots=False):
         plt.title('after phase shift by xcorr')
         plt.legend()
 
-    return maxangle, lag, n_period_float, amp_ratio
+    return maxangle, lag, n_period_float, amp_ratio, amp, dac_amp
 
 
 def fft_maxs(data, FS, method='quad_interpolate', 

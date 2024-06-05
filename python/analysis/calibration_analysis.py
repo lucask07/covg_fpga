@@ -33,7 +33,8 @@ fig_dir = os.path.join(fig_dir, 'calibration')
 
 PLT = True
 
-chop_idx = 6
+chop_idx = 200 # remove elements before this to allow voltage to settle after changing frequency 
+
 full_scale_current = 0.8e-6 # full-scale current is 0.8 uA 
 dac_resolution = 16 # in bits 
 freq_limit_forfit = 1.5e3
@@ -78,6 +79,11 @@ def r_from_square(r_total_guess, data, PLT=False):
                 sq_wave_amp_guess = r_total_guess * current_amp
             log.debug(f'Square wave amp guess: {sq_wave_amp_guess}. DAC wave = {dac_wave}')
         
+            # use tanh to allow for dull edges 
+            # soft_sq_wave: h + a * np.tanh(s * np.cos(2 * np.pi * f * t + phi))
+            # fit with scipy.optimize.curve_fit, no bounds so uses the method lm: Levenberg-Marquardt as implemented in MINPACK
+            # minimizes sum of squared residuals
+            # pcov: estimated approx covariance of popt -> 1 standard deviation errors = np.sqrt(np.diag(pcov))
             yfit, pcov, infodict, mesg, ier = curve_fit(soft_sq_wave, t,y , p0=(freq, sq_wave_amp_guess, 0, 0, 0), full_output=True) # freq, amp, offset, phase, smoothing factor 
                             #bounds = ([0,0,-15,0,0], [10e6, np.inf, 15, 2*np.pi, np.inf]))  # bounds cause problems. Not sure why
             predicted_res = yfit[1]/current_amp
@@ -86,7 +92,6 @@ def r_from_square(r_total_guess, data, PLT=False):
 
             if PLT:
                 fig, ax = plt.subplots(figsize=fig_size)
-                ax = plt.gca() # gets an axes if none exists
                 ax.plot(t*1e3, y, marker='.')
                 ax.plot(t*1e3, soft_sq_wave(t, *yfit))
                 ax.set_ylabel('[V]')
@@ -97,26 +102,63 @@ def r_from_square(r_total_guess, data, PLT=False):
     return predicted_res, pcov, mesg
 
 
-def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=False):
+def meas_transfer_func(freqs, ts, data, dac_wave):
+    # freqs: array of frequency. one y1 array and one y2 array for each frequency 
+    # t: the time array from the y data 
+    # y1s : array of arrays 
+    # y2s : array of arrays 
+
+    # summary arrays that are the output of this function
+    freq_m = np.array([])
+    gain = np.array([])
+    phase_arr = np.array([])
+
+    amp_arr = np.array([])
+    dac_amp_arr = np.array([])
+
+    for idx, freq in enumerate(freqs):
+
+        t = ts[idx][chop_idx:]
+        t = t - t[0] # configure the time to start at 0 for compatibility with chirp measurements
+        y1 = data[idx][chop_idx:] # if chopped at an arbitrary point there will be a phase shift that varies with frequency if compared to an ideal sine
+        y2 = dac_wave[idx][chop_idx:] 
+
+        max_freq, amp, phase = fit_sine_fft(t, y1, method='quad_interpolate') # cnly used for finding the frequency 
+        xcorr_phase, sample_lag, n_period_float, amp_ratio, amp, dac_amp = phase_by_xcorr(freq, t, y1, 
+                                                                            dac_wave=y2, debug_plots=False)
+        log.info(f'Amp. of sine from fft: {amp:.2f}. Phase: {np.degrees(phase):.2f}, {np.degrees(xcorr_phase):.2f}  at freq of {max_freq} [Hz]') 
+        log.info(f'Sample lag of {sample_lag}. With {n_period_float} samples in a period')
+
+        freq_m = np.append(freq_m, max_freq)
+        gain = np.append(gain, amp_ratio)
+        phase_arr = np.append(phase_arr, xcorr_phase)
+
+        amp_arr = np.append(amp_arr, amp)
+        dac_amp_arr = np.append(dac_amp_arr, dac_amp)
+
+    return freq_m, gain, phase_arr, amp_arr, dac_amp_arr
+
+def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=False, knowns={}):
     '''
     Analyze sine-wave data that alternates between driving electrode 1 and then driving electrode 2
     DUT (cell capacitance is expected to be connected)
+    This compares amplitudes of the two different swap configurations -- in both cases uses the 'volt' measurement not the 'v1'
+
+        Only works for the bath clamp; the vclamp needs to use the v1 measurements since only one electrode can be driven
     '''
-    
     fit_results = {}
     component_fits = {}
 
     # analyze two different electrode configurations at each frequency 
     # 1 is a reference and calculate 
     freq_arr_fixed = np.unique([data[data_key]['freq'] for data_key in data])
-    chop_idx = 200 # remove elements before this to allow voltage to settle after changing frequency 
-
     # Plot measured transfer functions and fits  
     fig_tf, ax_tf = plt.subplots(figsize=fig_size)
     electrodes = itertools.cycle(['P1', 'P2'])
     markers = itertools.cycle(['*', 'o'])
     linesty = itertools.cycle(['-', '--'])
 
+    # loop through two different configurations 
     for (drive_elec, meas_adc) in [('drive_CAL1', 'CAL_SIG1'), ('drive_CAL2', 'CAL_SIG2')]:
         fit_results[drive_elec] = {}
         for k in ['freq', 'gain', 'phase', 'e_config']:
@@ -138,12 +180,12 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
                 y_pair = data[key_pair]['volt'][chop_idx:]
 
                 log.debug(f'---- Freq = {freq}')
-        #            for method in ['quad_interpolate', 'single_bin']:
+        #            for method in ['quad_interpolate', 'single_bin']: # methods to find the maximum fourier amplitude and frequency 
                 for method in ['quad_interpolate']:
-                    max_freq, amp, phase = fit_sine_fft(t, y, method=method)
-                    xcorr_phase, sample_lag, n_period_float, amp_ratio = phase_by_xcorr(freq, t, y, 
-                                                        dac_wave=y_pair, debug_plots=False)
-                    log.info(f'Amp. of sine from fft: {amp:.2f}. Phase: {np.degrees(phase):.2f}, {np.degrees(xcorr_phase):.2f}  at freq of {max_freq} [Hz] vclamp of {d["vclamp"]}') 
+                    max_freq, amp, phase = fit_sine_fft(t, y, method=method) # cnly used for finding the frequency 
+                    xcorr_phase, sample_lag, n_period_float, amp_ratio, amp, dac_amp = phase_by_xcorr(freq, t, y_pair, 
+                                                                                        dac_wave=y, debug_plots=False)
+                    log.info(f'Amp. of sine from fft: {amp:.2f}. Phase: {np.degrees(phase):.2f}, {np.degrees(xcorr_phase):.2f}  at freq of {max_freq} [Hz]') 
                     log.info(f'Sample lag of {sample_lag}. With {n_period_float} samples in a period')
 
                 fit_results[drive_elec]['freq'] = np.append(fit_results[drive_elec]['freq'], max_freq)
@@ -169,7 +211,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
 
         component_fits[drive_elec], f, model_eval, meas_data = elec_r_cc(fit_results[drive_elec]['freq'][f_idx], 
                                                (fit_results[drive_elec]['gain'][f_idx], fit_results[drive_elec]['phase'][f_idx]),
-                                               tf_type = tf_type)
+                                               tf_type = tf_type, knowns=knowns)
         elec = next(electrodes)        
         ax_tf.semilogx(f, 20 * np.log10(np.abs(model_eval)), label=f'{elec} (fit)', 
                     linestyle=next(linesty))
@@ -196,25 +238,38 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
 
     # fitting to determine the component values 
     if tf_type == 'vclamp':
-        component_fits[drive_elec], f, model_eval, meas_data = elec_r_cc(f_fit_short, (g_fit, p_fit), 
-                                               tf_type = ['vclamp', 'vclamp_bound'], rtotal=rtotal)
+        #knowns = {'r1': , 'r2': , 'c3': , 'r3': }
+        #r3=knowns['r1'], r4=knowns['r2'], cc=knowns['c3'], rcc=knowns['r3']
 
+        # component_fits[drive_elec], f, model_eval, meas_data = elec_r_cc(f_fit_short, (g_fit, p_fit), 
+        #                                        tf_type = ['vclamp', 'vclamp_bound'], rtotal=rtotal, knowns=knowns)
+        f_fit = np.hstack((fit_results['drive_CAL2']['freq'][f_idx]))
+        g_fit = np.hstack((fit_results['drive_CAL2']['gain'][f_idx]))
+        # normalize the gain to be 1 at lowest frequencies 
+        # g_fit = g_fit/g_fit[0]
+        p_fit = np.hstack((fit_results['drive_CAL2']['phase'][f_idx]))
+
+        component_fits[drive_elec], f, model_eval, meas_data = elec_r_cc(f_fit_short, (g_fit, p_fit), 
+                                               tf_type = ['vclamp'], rtotal=rtotal, knowns=knowns)
     # TODO: use frequency data to estimate Rs individual
 
-    idx = 0 # this is the fit to just magnitude 
+    idx = 0 # this selects the fit to just magnitude which shows better results 
     # idx = 1 # fit to magnitude and phase 
 
     components = {}
     if tf_type == 'elec_r_cc':  # this is the bath clamp and can extract the resistance of the CC electrode as well as P1/P2 
         components['r1'] = component_fits['drive_CAL1'][idx].params['r1'].value
         components['r2'] = component_fits['drive_CAL2'][idx].params['r1'].value
+        # CC resistance is the average of the two fits 
         components['r3'] = np.average([component_fits['drive_CAL1'][idx].params['r3'].value, 
                         component_fits['drive_CAL2'][idx].params['r3'].value])
 
     if tf_type == 'vclamp':  
-        components['r1'] = component_fits['drive_CAL1'][idx].params['r1'].value
-        components['r2'] = component_fits['drive_CAL2'][idx].params['r1'].value # TODO: is this the best way to do this?  
+        # TODO: can only drive on one configuration (CAL2). Don't use both and don't average Cm 
+        components['r1'] = component_fits['drive_CAL1'][idx].params['r1'].value # ignore this value 
+        components['r2'] = component_fits['drive_CAL2'][idx].params['r1'].value # TODO: use this value; should be RI   
         components['cm'] = np.average([component_fits['drive_CAL1'][idx].params['cm'].value, component_fits['drive_CAL2'][idx].params['cm'].value])
+        components['cm'] = np.average([component_fits['drive_CAL2'][idx].params['cm'].value])
 
     fit_notes = {'success': component_fits['drive_CAL1'][idx].success,
               'chisqr': component_fits['drive_CAL1'][idx].chisqr,

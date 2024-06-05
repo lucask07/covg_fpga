@@ -30,6 +30,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 import pandas as pd
+import json
 from pyripherals.utils import to_voltage, from_voltage
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
@@ -63,7 +64,6 @@ DC_NUMS = [0, 1, 3]
 # vclamp: (other name is vsense) amplifies V1 but no drive circuitry 
 
 dc_mapping = {'bath': 0, 'clamp': 1, 'vclamp': 3}  # TODO get from System class in electrodes.py
-
 eps = Endpoint.endpoints_from_defines
 
 pwr_setup = "3dual"
@@ -366,10 +366,13 @@ def collect_data(ddr, PLT=True, ads_chan=('A', 0), num_repeats=10, blk_multiples
         ax = None
     return volt, t_ads, ads_separate_data, ax
 
-
 # ------ Collect Data --------------
 file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
+
+setup_info = {'dut': 'model_cell', 'hookup': 'cc_off', 'board': 2, 'rej1': 200e3, 'rpcj1':3.32e3, 'srj1': 1e3, 'dc_mapping': dc_mapping}
+with open(os.path.join(data_dir, 'setup_info' + file_name + '.json'), 'w') as fp:
+    json.dump(setup_info, fp, sort_keys=True, indent=4)
 
 for i in range(6):
     # set all fast-DAC DDR data to midscale
@@ -481,8 +484,8 @@ def setup_clamps(dc_under_test, dc_disconnect):
         addr_pins_1=0b110,
         addr_pins_2=0b000,
     )
-    dc_configs[dc_mapping['vclamp']]['VSENSE'] = 20.15 # extra information for the system_connections. Gain of the voltage clamp amplifier 
-
+    dc_configs[dc_mapping['vclamp']]['VSENSE'] = 60.24 # extra information for the system_connections. Gain of the voltage clamp amplifier 
+    # dc_configs[dc_mapping['clamp']]['VSENSE'] = 60.24*10**(-11.7868/20) 
     sys_connections = create_sys_connections(dc_configs, daq, ephys_sys)
 
     return dc_configs, sys_connections
@@ -507,7 +510,7 @@ def measure_resistance(config_dict_test, dc_under_test, testing='bath', step=1,
         blk_multiples=40
         current_amp = 0.8
     if testing=='vclamp':
-        freq = 40
+        freq = 40 # chirp frequencies were confirmed on the oscilloscope. First three frequencies: 40, 69, 120 which is consistent with hte analysis. 
         num_repeats=50 
         blk_multiples=40
         current_amp = 0.01 # 10 nA TODO: ensure that current is sourced only for a short amount of time so that we don't blow up the cell
@@ -559,7 +562,8 @@ def measure_resistance(config_dict_test, dc_under_test, testing='bath', step=1,
                    'amp': current_amp,
                    'vclamp': 'disconnect',
                    'bath_clamp': copy.deepcopy(config_dict_test),
-                   'voltage_clamp': copy.deepcopy(dc_configs[dc_disconnect])}
+                   'voltage_clamp': copy.deepcopy(dc_configs[dc_disconnect]),
+                   'vsense': copy.deepcopy(dc_configs[dc_mapping['vclamp']])}
     try:
         fit_resistance, pcov, mesg = r_from_square(r_total_guess, rdata, PLT=plt_fit)
     except:
@@ -596,8 +600,7 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
         # measure at same point as drive, this acts as an amplitude calibration (for a transfer function of Vout/Vin this measures Vin)
         if drive_elec == 1:
             dc_configs[dc_under_test]['ADC_SEL'] = 'CAL_SIG1'
-            dc_configs[dc_under_test][
-                'DAC_SEL'] = 'drive_CAL1'  # do not ground CAL2; won't work for isolated Vsense board
+            dc_configs[dc_under_test]['DAC_SEL'] = 'drive_CAL1'  # do not ground CAL2; won't work for isolated Vsense board
         elif drive_elec == 2:
             dc_configs[dc_under_test]['ADC_SEL'] = 'CAL_SIG2'
             dc_configs[dc_under_test]['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
@@ -624,16 +627,22 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
             chirp_idx.append(int(idx[0] / len(ads_sequencer_setup) / (2.5)))
             chirp_idx.append(int(idx[1] / len(ads_sequencer_setup) / (2.5)))
 
-            data_chirp[step_chirp] = {'volt': volt_chirp[chirp_idx[0]:chirp_idx[1]],  # measured data
+            if dc_under_test==dc_mapping['bath']:
+                v1_gain = 1
+            else:
+                v1_gain = 60.24*10**(-11.7868/20)
+            data_chirp[step_chirp] = {'volt': volt_chirp[chirp_idx[0]:chirp_idx[1]],  # measured stimulus data
                                       't': t_chirp[chirp_idx[0]:chirp_idx[1]],
                                       'v1': ads_separate_data_chirp[adc_v1[0]][adc_v1[1]][chirp_idx[0]:chirp_idx[1]],
+                                      'v1_gain': v1_gain, 
                                       'src': 'v',
                                       'shape': 'SINE',
                                       'freq': freq,  # stimulus frequency
                                       'amp': voltage_amp,
-                                      'vclamp': 'disconnect',
-                                      'bath_clamp': copy.deepcopy(dc_configs[dc_under_test]),
-                                      'voltage_clamp': copy.deepcopy(dc_configs[dc_disconnect])}
+                                      'dc_under_test': dc_under_test,
+                                      'bath_clamp': copy.deepcopy(dc_configs[dc_mapping['bath']]),
+                                      'voltage_clamp': copy.deepcopy(dc_configs[dc_mapping['clamp']]),
+                                      'vsense': copy.deepcopy(dc_configs[dc_mapping['vclamp']])}
             step_chirp += 1
 
         # swap roles ADC_SEL electrode; keep drive electrode the same  
@@ -662,20 +671,153 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
             data_chirp[step_chirp] = {'volt': volt_chirp[chirp_idx[0]:chirp_idx[1]],  # measured data
                                       't': t_chirp[chirp_idx[0]:chirp_idx[1]],
                                       'v1': ads_separate_data_chirp[adc_v1[0]][adc_v1[1]][chirp_idx[0]:chirp_idx[1]],
+                                      'v1_gain': v1_gain, 
                                       'src': 'v',
                                       'shape': 'SINE',
                                       'freq': freq,  # stimulus frequency
                                       'amp': voltage_amp,
+                                      'dc_under_test': dc_under_test,
                                       'vclamp': 'disconnect',
-                                      'bath_clamp': copy.deepcopy(dc_configs[dc_under_test]),
-                                      'voltage_clamp': copy.deepcopy(dc_configs[dc_disconnect])}
+                                      'bath_clamp': copy.deepcopy(dc_configs[dc_mapping['bath']]),
+                                      'voltage_clamp': copy.deepcopy(dc_configs[dc_mapping['clamp']]),                                
+                                      'vsense': copy.deepcopy(dc_configs[dc_mapping['vclamp']])}
             step_chirp += 1
 
     # save Chirp data 
-    filename_chirp = 'imp_all_steps_chirp_{}'
+    filename_chirp = f'imp_all_steps_chirp_{file_name}' + '_{}'
     np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data_chirp) # saved to a Numpy npz file 
 
     return data_chirp, filename_chirp, step_chirp
+
+def chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step_chirp):
+    """
+    Measure a transfer function versus frequency using a chirp signal.
+    Optimized for the voltage clamp 
+
+    For each drive electrode measure at driving point (as a calibration) and at the other electrode
+
+    Parameters: 
+        testing : (str)
+        data_chirp : (list of dicts) input so this can be appended 
+        dc_configs : configuration of daughter cards 
+        dc_under_test : (int)
+        voltage_amp : (float) voltage amplitude of chirp stimulus 
+        step_chirp : (int) the step index for the list of dicts that store the final results 
+    """
+
+    for float_dut in [True, False]:
+        if float_dut:  # upload the chirp signal to DDR only for drive 1 since we repeat for the next measurement
+            periods = np.ones(len(freq_arr))*30
+            dac_wave, freq_chirp, indices = dac_waveform(dc_under_test, amp=voltage_amp, 
+                                                    freq=freq_arr, shape='CHIRP', source='v', 
+                                                    periods=periods)
+            total_chirp_time = np.sum(1/freq_arr*periods)
+            print(f'Total chirp time = {total_chirp_time}')
+            # find the last index to 'download' using the starting index of the last frequency
+            end_index = indices[-1][0] + periods[-1] * ((1 / DDR3.UPDATE_PERIOD) / freq_arr[-1])
+
+        # measure at same point as drive, this acts as an amplitude calibration (for a transfer function of Vout/Vin this measures Vin)
+        if float_dut:
+            dc_configs[dc_mapping['bath']]['P1_E_CTRL'] = 1 # open
+            dc_configs[dc_mapping['bath']]['P2_E_CTRL'] = 1 # open
+            dc_configs[dc_mapping['bath']]['P1_CAL_CTRL'] = 0 # open
+            dc_configs[dc_mapping['bath']]['P2_CAL_CTRL'] = 0 # open 
+        else:
+            dc_configs[dc_mapping['bath']]['P1_E_CTRL'] = 1 # open
+            dc_configs[dc_mapping['bath']]['P2_E_CTRL'] = 1 # open
+            dc_configs[dc_mapping['bath']]['P1_CAL_CTRL'] = 1 # open
+            dc_configs[dc_mapping['bath']]['P2_CAL_CTRL'] = 1 # open 
+        dc_configs[dc_mapping['bath']]['DAC_SEL'] = 'gnd_both' 
+
+        # setup the voltage clamp board 
+        dc_configs[dc_under_test]['ADC_SEL'] = 'CAL_SIG2'
+        dc_configs[dc_under_test]['DAC_SEL'] = 'drive_CAL2' # do not ground CAL1 
+
+        dc_configs[dc_under_test]['P1_CAL_CTRL'] = 1
+        dc_configs[dc_under_test]['P2_CAL_CTRL'] = 1
+
+        log_info_dut, dc_configs[dc_under_test] = clamps[dc_under_test].configure_clamp(**dc_configs[dc_under_test])
+        log_info_load, dc_configs[dc_mapping['bath']] = clamps[dc_mapping['bath']].configure_clamp(**dc_configs[dc_mapping['bath']])
+
+        # download ADC data so that np.max(t_chirp) = total_chirp_time 
+        # This can also be checked by the indices (2.5 MSPS)
+        #   versus the length of volt_chirp (@ 1 MSPS / len(ads_sequencer_setup))
+        blk_mult = 120
+        num_repeats_chirp = int(np.ceil(end_index * 2 / (2048 / 16) / blk_mult))
+        volt_chirp, t_chirp, ads_separate_data_chirp, ax = collect_data(ddr, PLT=False,
+                                                                        ads_chan=
+                                                                        daq.parameters['ads_map'][dc_under_test][
+                                                                            'CAL_ADC'],
+                                                                        num_repeats=num_repeats_chirp,
+                                                                        blk_multiples=blk_mult)
+
+        for freq, idx in zip(freq_arr, indices):
+            chirp_idx = []
+            chirp_idx.append(int(idx[0] / len(ads_sequencer_setup) / (2.5)))
+            chirp_idx.append(int(idx[1] / len(ads_sequencer_setup) / (2.5)))
+
+            if dc_under_test==dc_mapping['bath']:
+                v1_gain = 1
+            else:
+                v1_gain = 60.24*10**(-11.7868/20)
+            data_chirp[step_chirp] = {'volt': volt_chirp[chirp_idx[0]:chirp_idx[1]],  # measured stimulus data
+                                      't': t_chirp[chirp_idx[0]:chirp_idx[1]],
+                                      'v1': ads_separate_data_chirp[adc_v1[0]][adc_v1[1]][chirp_idx[0]:chirp_idx[1]],
+                                      'v1_gain': v1_gain, 
+                                      'src': 'v',
+                                      'shape': 'SINE',
+                                      'freq': freq,  # stimulus frequency
+                                      'amp': voltage_amp,
+                                      'dc_under_test': dc_under_test,
+                                      'bath_clamp': copy.deepcopy(dc_configs[dc_mapping['bath']]),
+                                      'voltage_clamp': copy.deepcopy(dc_configs[dc_mapping['clamp']]),
+                                      'vsense': copy.deepcopy(dc_configs[dc_mapping['vclamp']])}
+            step_chirp += 1
+
+        # Doesn't help to swap roles of ADC_SEL electrode; keep drive electrode the same  
+        # for the clamp board cannot drive CAL_SIG1 since that is the buffered output of the vsense board 
+        # consider disconnecting the membrane capacitance and use that as a calibration measurement
+        # if drive_elec == 1:
+        #     dc_configs[dc_under_test]['ADC_SEL'] = 'CAL_SIG2'
+        #     dc_configs[dc_under_test]['DAC_SEL'] = 'drive_CAL1'  # do not ground CAL2
+        # elif drive_elec == 2:
+        #     dc_configs[dc_under_test]['ADC_SEL'] = 'CAL_SIG1'
+        #     dc_configs[dc_under_test]['DAC_SEL'] = 'drive_CAL2'  # do not ground CAL1
+        # log_info_bath, dc_configs[dc_under_test] = clamps[dc_under_test].configure_clamp(**dc_configs[dc_under_test])
+
+        # volt_chirp, t_chirp, ads_separate_data_chirp, ax = collect_data(ddr, PLT=False,
+        #                                                                 ads_chan=
+        #                                                                 daq.parameters['ads_map'][dc_under_test][
+        #                                                                     'CAL_ADC'],
+        #                                                                 num_repeats=num_repeats_chirp,
+        #                                                                 blk_multiples=blk_mult)
+
+        # for freq, idx in zip(freq_arr, indices):
+        #     chirp_idx = []
+        #     chirp_idx.append(int(idx[0] / len(ads_sequencer_setup) / (2.5)))
+        #     chirp_idx.append(int(idx[1] / len(ads_sequencer_setup) / (2.5)))
+
+        #     data_chirp[step_chirp] = {'volt': volt_chirp[chirp_idx[0]:chirp_idx[1]],  # measured data
+        #                               't': t_chirp[chirp_idx[0]:chirp_idx[1]],
+        #                               'v1': ads_separate_data_chirp[adc_v1[0]][adc_v1[1]][chirp_idx[0]:chirp_idx[1]],
+        #                               'v1_gain': v1_gain, 
+        #                               'src': 'v',
+        #                               'shape': 'SINE',
+        #                               'freq': freq,  # stimulus frequency
+        #                               'amp': voltage_amp,
+        #                               'dc_under_test': dc_under_test,
+        #                               'vclamp': 'disconnect',
+        #                               'bath_clamp': copy.deepcopy(dc_configs[dc_mapping['bath']]),
+        #                               'voltage_clamp': copy.deepcopy(dc_configs[dc_mapping['clamp']]),                                
+        #                               'vsense': copy.deepcopy(dc_configs[dc_mapping['vclamp']])}
+        #     step_chirp += 1
+
+    # save Chirp data 
+    filename_chirp = f'imp_all_steps_chirp_floatdut_{file_name}' + '_{}'
+    np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data_chirp) # saved to a Numpy npz file 
+
+    return data_chirp, filename_chirp, step_chirp
+
 
 # for testing in ['bath']:
 for testing in ['bath', 'vclamp']:
@@ -701,11 +843,11 @@ for testing in ['bath', 'vclamp']:
         r_total_guess = 8e3
         voltage_amp = 0.2
     if testing == 'vclamp':
-        freq = 40
+        freq = 40 # from LTSpice sims the 3db is at 50 Hz ... so ideally would go to a slightly lower frequency 
         num_repeats = 50
         blk_multiples = 40
         r_total_guess = 300e3
-        voltage_amp = 0.05
+        voltage_amp = 0.05 # must be small otherwise voltage sense amplifier (high gain) will saturate
     step = 1
     data = {}
 
@@ -736,7 +878,8 @@ for testing in ['bath', 'vclamp']:
         dc_configs[dc_disconnect]['P1_CAL_CTRL'] = 1
         dc_configs[dc_disconnect]['P2_CAL_CTRL'] = 1
         dc_configs[dc_disconnect]['DAC_SEL'] = 'gnd_both'
-        freq_arr = np.logspace(np.log10(40), np.log10(2000), 8)
+        # freq_arr = np.logspace(np.log10(40), np.log10(2000), 8)
+        freq_arr = np.logspace(np.log10(10), np.log10(2000), 8)
 
     log_info_bath, dc_configs[dc_disconnect] = clamps[dc_disconnect].configure_clamp(**dc_configs[dc_disconnect])
 
@@ -747,8 +890,12 @@ for testing in ['bath', 'vclamp']:
     data_chirp[1] = data[1] # add resistance data 
     step_chirp = 2
 
-    if testing == 'bath' or testing == 'vclamp':
+#    if testing == 'bath' or testing == 'vclamp':
+    if testing == 'bath':
         data_chirp, filename_chirp, step_chirp = chirp_test(testing, data_chirp, dc_configs, dc_under_test, 
+                                                            voltage_amp, step_chirp)
+    elif testing=='vclamp':
+        data_chirp, filename_chirp, step_chirp = chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, 
                                                             voltage_amp, step_chirp)
     # process data
     if testing == 'vclamp':
@@ -759,6 +906,7 @@ for testing in ['bath', 'vclamp']:
         r_total_guess = 8e3
 
     # calculates both the total resistance (measured via current injection) and the isolated resistance infered by transfer functions 
+    # fails with tf_type = 'vclamp'
     predicted_res, res_fit_mesg, component_fits, fit_notes, components = total_res_iso_res(data_dir, filename_chirp.format(testing) + '.npz',  
                                                                                            r_total_guess, tf_type, PLT=True)
     print(components)
@@ -774,7 +922,6 @@ print(component_results)
 
 # save final results to a JSON and to a CSV
 # directory for CSV is different than directory for JSON 
-import json
 
 with open(os.path.join(data_dir, 'cal_data_' + file_name + '.json'), 'w') as fp:
     json.dump(component_results, fp, sort_keys=True, indent=4)
@@ -937,7 +1084,7 @@ if 0:
             dc_configs[dc_mapping['clamp']],
             dc_under_test=dc_mapping['clamp'],
             testing='vclamp', step=1, plt_data=True,
-            plt_fit=True, write_ddr=False);
+            plt_fit=True, write_ddr=False)
         print(fit_resistance)
         plt.pause(1)  # plt.pause instead of time.sleep ensures that the plot is updated
         plt.close('all')
@@ -987,5 +1134,4 @@ if 0:
                                          v_range=[-0.04, 0.04], target_v=0)
 
 # TODO - measure holding current 
-
 # TODO - square wave to check response
