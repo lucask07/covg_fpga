@@ -40,7 +40,6 @@ elif sys.platform == 'win32':
     data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
     fig_dir = r'C:/Users/Public/Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/'
 
-
 def find_nearest(array, target):
     """ find value in an array nearest to a target value
 

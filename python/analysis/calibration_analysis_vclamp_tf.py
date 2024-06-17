@@ -1,8 +1,8 @@
 """
-Oct 2022
+June 2024
 
 Lucas Koerner, koerner.lucas@stthomas.edu
-Analyze impedance analyzer spectrum to determine resistances and capacitances 
+Analyze measured transfer functions to determine resistances and capacitances 
 
 A square-wave with a current amplitude is used for static resistance
 A sinusoid at varying frequencies is measured to fit to a transfer function and derive an RC circuit 
@@ -27,6 +27,8 @@ from datastream.datastream import h5_to_datastreams
 # fit square wave 
 from calibration.cal_fits import soft_sq_wave
 from scipy.optimize import curve_fit
+# for publication figures 
+from analysis.utils import my_savefig, fig_size, fig_dir # also configures matplotlib defautls 
 
 PLT = True
 capture_date = '20240529' # calibration for voltage clamp gain 
@@ -41,7 +43,7 @@ datastreams = h5_to_datastreams (data_dir, filename)
 filename = f'20240529-155148Re1_100katt_{att}dBstepinfo.npz'
 data_sq = read_cal_data(data_dir=data_dir, filename=filename)
 
-fig, ax = plt.subplots()
+fig, ax = plt.subplots(figsize=fig_size)
 gain = 60
 for n in ['V1', 'I', 'V1s']:
     if n == 'V1':
@@ -50,7 +52,6 @@ for n in ['V1', 'I', 'V1s']:
         scale = gain
     else:
         scale = 1
-    #data = datastreams[n].data/datastreams[n].conversion_factor/scale # convert to ADS8686 codes since we are trying to determine various gains!
     data = datastreams[n].data/datastreams[n].conversion_factor # convert to ADS8686 codes since we are trying to determine various gains!
     t =  datastreams[n].create_time()
     ax.plot(t, data, label=n)
@@ -77,18 +78,19 @@ print(f'Vsense gain {vsense_gain}')
 print(f'Attenuation {20*np.log10(vsense_att)} dB')
 
 ## Now the voltage clamp 
-capture_date = '20240605' # TF for voltage 
+capture_date = '20240606' # TF for voltage 
+# Example filename: 'imp_all_steps_chirp_floatdut_20240605-060437_vclamp'
+date = '20240605-101911'
+# date = '20240606-104506'
+date = '20240606-105854'
+
 if sys.platform == 'darwin':
     data_dir = '/Users/koer2434/Library/CloudStorage/OneDrive-UniversityofSt.Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/calibrations/{}/'.format(capture_date)
 elif sys.platform == 'win32':
     data_dir = 'C:/Users/koer2434/Documents/covg/data/clamp/{}/'.format(capture_date)
+
 tf_type = 'vclamp'
 file_extra = '_vclamp'
-r_total_guess = 300e3 # TODO: replace with the electrode configuration 
-filename = f'imp_all_steps_chirp{file_extra}.npz'
-
-# Example filename: 'imp_all_steps_chirp_floatdut_20240605-060437_vclamp'
-date = '20240605-101911'
 filename = f'imp_all_steps_chirp_floatdut_{date}{file_extra}.npz'
 
 print('--'*40)
@@ -138,8 +140,8 @@ freq_m_ref, gain_ref, phase_ref, amp_ref, dac_amp_ref = meas_transfer_func(freqs
 # normalize the DUT grounded gain 
 gain = gain/gain_ref
 
-fig,ax = plt.subplots()
-ax.loglog(freq_m, gain, marker='o', label='data')
+fig,ax = plt.subplots(figsize=fig_size)
+ax.loglog(freq_m, gain, marker='o', linestyle='none', label='data')
 
 # two_elec_vs_freq processes the transfer function measurements in a way that is specific to the bath clamp 
 # component_fits_vclamp, fit_notes_vclamp, components_vclamp = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=True, knowns=knowns)
@@ -162,7 +164,9 @@ component_fits, f, model_eval, meas_data = elec_r_cc(freq_m[f_idx],
                                         (gain[f_idx], phase[f_idx]),
                                         tf_type = tf_type, knowns=knowns)
 
-ax.loglog(f, model_eval, marker='*', label='fit')
+ax.loglog(f, model_eval, linestyle='--', label='fit')
+ax.set_xlabel('f [Hz]')
+ax.set_ylabel('$|H_v|\,[dB]$')
 
 # evaluate the Transfer function with known values for comparison
 amp_2 = []
@@ -170,5 +174,15 @@ for fi in freq_m:
     a, p = vclamp_tf(fi, cm=33e-9, r5=100e3, **(knowns))
     amp_2.append(a)
 
+cm = component_fits[0].params['cm'].value*1e9
+cm_err = component_fits[0].params['cm'].stderr*1e9
+
+ri = component_fits[0].params['r1'].value/1e3
+ri_err = component_fits[0].params['r1'].stderr/1e3
+
 # ax.loglog(freq_m, amp_2, marker='.', label='my-eval')
 # ax.legend()
+ax.text(0.05, 0.4, f'$C_m = {cm:3.1f} \pm {cm_err:3.1f}\: nF$', transform=ax.transAxes)
+ax.text(0.05, 0.3, f'$R_I = {ri:3.1f} \pm {ri_err:3.1f}\: k \Omega$', transform=ax.transAxes)
+ax.legend()
+my_savefig(fig, os.path.join(fig_dir, 'calibration'), 'calibration_vclamp_tf')

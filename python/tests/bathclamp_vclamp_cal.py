@@ -370,7 +370,7 @@ def collect_data(ddr, PLT=True, ads_chan=('A', 0), num_repeats=10, blk_multiples
 file_name = time.strftime("%Y%m%d-%H%M%S")
 idx = 0
 
-setup_info = {'dut': 'model_cell', 'hookup': 'cc_off', 'board': 2, 'rej1': 200e3, 'rpcj1':3.32e3, 'srj1': 1e3, 'dc_mapping': dc_mapping}
+setup_info = {'dut': 'model_cell', 'hookup': 'all_connected', 'board': 2, 'rej1': 200e3, 'rpcj1':10e3, 'srj1': 1e3, 'dc_mapping': dc_mapping, 'guard': 'removed_rsb1_rl2'}
 with open(os.path.join(data_dir, 'setup_info' + file_name + '.json'), 'w') as fp:
     json.dump(setup_info, fp, sort_keys=True, indent=4)
 

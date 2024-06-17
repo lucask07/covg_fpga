@@ -20,6 +20,8 @@ import matplotlib.pyplot as plt
 import pickle as pkl
 import logging
 import itertools
+import json 
+import pandas as pd
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
@@ -54,8 +56,10 @@ def read_cal_data(data_dir, filename):
 
     return data
 
-def r_from_square(r_total_guess, data, PLT=False):
+def r_from_square(r_total_guess, data, PLT=False, name='', ANNOTATE=False):
     # analyze square wave signal for the predicted resistance 
+
+    # name: names the figure that is saved 
 
     for data_key in data:
         d = data[data_key]
@@ -92,12 +96,14 @@ def r_from_square(r_total_guess, data, PLT=False):
 
             if PLT:
                 fig, ax = plt.subplots(figsize=fig_size)
-                ax.plot(t*1e3, y, marker='.')
-                ax.plot(t*1e3, soft_sq_wave(t, *yfit))
-                ax.set_ylabel('[V]')
+                ax.plot(t*1e3, y*1e3, marker='.', label='meas.', linestyle='none')
+                ax.plot(t*1e3, soft_sq_wave(t, *yfit)*1e3, label='fit')
+                ax.set_ylabel('[mV]')
                 ax.set_xlabel('time [ms]')
-
-                my_savefig(fig, fig_dir, f'resistance_cal_square_wave')
+                if ANNOTATE:
+                    ax.text(0.3, 0.4, f'$R_{{p1}} + R_{{p2}} = {predicted_res/1e3:2.2f}\, k\Omega$', bbox=dict(facecolor='white', pad=3), transform=ax.transAxes)
+                # ax.legend()
+                my_savefig(fig, fig_dir, f'resistance_cal_square_wave{name}')
                 
     return predicted_res, pcov, mesg
 
@@ -138,13 +144,15 @@ def meas_transfer_func(freqs, ts, data, dac_wave):
 
     return freq_m, gain, phase_arr, amp_arr, dac_amp_arr
 
-def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=False, knowns={}):
+def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=False, knowns={}, name='', ANNOTATE=False):
     '''
     Analyze sine-wave data that alternates between driving electrode 1 and then driving electrode 2
     DUT (cell capacitance is expected to be connected)
     This compares amplitudes of the two different swap configurations -- in both cases uses the 'volt' measurement not the 'v1'
 
         Only works for the bath clamp; the vclamp needs to use the v1 measurements since only one electrode can be driven
+    
+        name : names the figures that are saved 
     '''
     fit_results = {}
     component_fits = {}
@@ -212,16 +220,18 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
         component_fits[drive_elec], f, model_eval, meas_data = elec_r_cc(fit_results[drive_elec]['freq'][f_idx], 
                                                (fit_results[drive_elec]['gain'][f_idx], fit_results[drive_elec]['phase'][f_idx]),
                                                tf_type = tf_type, knowns=knowns)
-        elec = next(electrodes)        
-        ax_tf.semilogx(f, 20 * np.log10(np.abs(model_eval)), label=f'{elec} (fit)', 
+        elec = next(electrodes) 
+        labels = {'P1': '$R_{p1}$', 'P2': '$R_{p2}$'} 
+       
+        ax_tf.semilogx(f, 20 * np.log10(meas_data), label=f'{labels[elec]} meas.', 
+            marker=next(markers), linestyle='none')
+        ax_tf.semilogx(f, 20 * np.log10(np.abs(model_eval)), label=f'{labels[elec]} fit', 
                     linestyle=next(linesty))
-        ax_tf.semilogx(f, 20 * np.log10(meas_data), label=f'{elec} (meas.)', 
-                    marker=next(markers), linestyle='none')
 
     ax_tf.set_ylabel('$|H_c| \; [dB]$')
     ax_tf.set_xlabel('f [Hz]')
-    ax_tf.legend()
-    my_savefig(fig_tf, fig_dir, f'transfer_function_fit_{tf_type}')
+    ax_tf.legend(loc='lower left') # to avoid conflict with the annotations
+    # save later once we have the fit results annotated
 
     f_fit_short = fit_results['drive_CAL1']['freq'][f_idx]
     f_fit = np.hstack((fit_results['drive_CAL1']['freq'][f_idx], fit_results['drive_CAL2']['freq'][f_idx]))
@@ -271,6 +281,13 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
         components['cm'] = np.average([component_fits['drive_CAL1'][idx].params['cm'].value, component_fits['drive_CAL2'][idx].params['cm'].value])
         components['cm'] = np.average([component_fits['drive_CAL2'][idx].params['cm'].value])
 
+    if ANNOTATE:
+        ax_tf.text(0.65, 0.9, f'$R_{{p1}} = {components["r1"]/1e3:2.2f} \, k\Omega$', bbox=dict(facecolor='white', edgecolor='white', pad=3), transform=ax_tf.transAxes)
+        ax_tf.text(0.65, 0.8, f'$R_{{p2}} = {components["r2"]/1e3:2.2f} \, k\Omega$', bbox=dict(facecolor='white', edgecolor='white', pad=3), transform=ax_tf.transAxes)
+        ax_tf.text(0.65, 0.7, f'$R_{{cc}} = {components["r3"]/1e3:2.2f} \, k\Omega$', bbox=dict(facecolor='white', edgecolor='white', pad=3), transform=ax_tf.transAxes)
+
+    my_savefig(fig_tf, fig_dir, f'transfer_function_fit_{tf_type}{name}')
+
     fit_notes = {'success': component_fits['drive_CAL1'][idx].success,
               'chisqr': component_fits['drive_CAL1'][idx].chisqr,
               'message': component_fits['drive_CAL1'][idx].message}
@@ -296,37 +313,50 @@ def total_res_iso_res(data_dir, filename, r_total_guess, tf_type, PLT=False):
 
 def main():
     """
-    analyze data already captured
+    analyze data already captured. Only supports the bath clamp. Use calibration_analysis_vclamp_tf.py 
     """
-
-    #tf_type = 'vclamp'
     tf_type = 'elec_r_cc'  # bath clamp using the CC capacitor as a load 
 
     if tf_type == 'elec_r_cc':
         if sys.platform == 'darwin':
-            data_dir = '/Users/koer2434/Library/CloudStorage/OneDrive-UniversityofSt.Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/calibrations/20221102/'
+            data_dir = '/Users/koer2434/Library/CloudStorage/OneDrive-UniversityofSt.Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp/20240606/'
         elif sys.platform == 'win32':
-            data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/calibrations/20221102/'
+            data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/clamp/20240606/'
         file_extra = ''
-    elif tf_type == 'vclamp':
-        if sys.platform == 'darwin':
-            data_dir = '/Users/koer2434/Library/CloudStorage/OneDrive-UniversityofSt.Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/calibrations/20221102/'
-        elif sys.platform == 'win32':
-            data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/calibrations/20221102/'
-        file_extra = '_vclamp'
-    filename = f'imp_all_steps{file_extra}.npy.npz'
 
+    board_1_rp1 = [3310.9, 4974.9,  7309, 10008] # in Excel file model_cell_groundtruth.xlsx 
+    board_2_rp1 = [3312.1, 4986.5,  7310.8, 10004.9] # in Excel file model_cell_groundtruth.xlsx 
+    names = ['3p3k', '5k', '7p3k', '10k']
+    board_1_rp2 = 4999.2
+    board_2_rp2 = 4986.7
+    res = {'set': [], 'rp1_fit': [], 'rp2_fit': [], 'multimeter_rp2': [board_2_rp2]*4, 
+           'multimeter_rp1': board_1_rp1, 'perc_err_rp1':[],
+           'total_res': [], 'total_res_gt': [], 'total_res_perc_err': []}
 
-    if file_extra == '_vclamp': 
-        r_total_guess = 300e3 # TODO: replace with the electrode configuration 
-    else:
-        r_total_guess = 5e3 + 3.32e3
+    for date in ['20240606-110644', '20240606-111113', '20240606-111317', '20240606-111439']:
+        # the JSON file is incorrect for 20240606-111113 -- should be 5k 
+        json_file = f'setup_info{date}.json'
+        filename = f'imp_all_steps_chirp_{date}_bath.npz'
+        with open(os.path.join(data_dir, json_file)) as f:
+            d_meta = json.load(f)
+        print(d_meta.keys())
         
-    data = read_cal_data(data_dir=data_dir, filename=filename)
-    predicted_res, pcov, res_fit_mesg = r_from_square(r_total_guess, data, PLT=PLT)  # get resistance from a square wave 
-    component_fits, fit_notes, components = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=False)
-    
-    return predicted_res, res_fit_mesg, component_fits, fit_notes, components, data
+        res['set'].append(d_meta['rpcj1'])
+        r_total_guess = 5e3 + 5e3
+            
+        data = read_cal_data(data_dir=data_dir, filename=filename)
+        predicted_res, pcov, res_fit_mesg = r_from_square(r_total_guess, data, PLT=PLT, name=names[len(res['rp1_fit'])], ANNOTATE=True)  # get resistance from a square wave 
+        component_fits, fit_notes, components = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=False, name=names[len(res['rp1_fit'])], ANNOTATE=True)
+        res['rp1_fit'].append(component_fits['drive_CAL1'][0].params['r1'].value)
+        res['rp2_fit'].append(component_fits['drive_CAL2'][0].params['r1'].value)
+        res['perc_err_rp1'].append( (res['rp1_fit'][-1] - res['multimeter_rp1'][len(res['rp1_fit'])-1])/res['multimeter_rp1'][len(res['rp1_fit'])-1]*100)
+        res['total_res'].append(predicted_res)
+        res['total_res_gt'].append(res['multimeter_rp1'][len(res['rp1_fit'])-1] + res['multimeter_rp2'][len(res['rp1_fit'])-1])
+        res['total_res_perc_err'].append( (res['total_res'][-1] - res['total_res_gt'][-1])/res['total_res_gt'][-1]*100)
+
+    df = pd.DataFrame(res)
+    df.to_csv(os.path.join(fig_dir, 'bath_cal_summary_stats.csv'))
+    return predicted_res, res_fit_mesg, component_fits, fit_notes, components, data, res
 
 if __name__ == "__main__":
-    predicted_res, res_fit_mesg, component_fits, fit_notes, components, data = main()
+    predicted_res, res_fit_mesg, component_fits, fit_notes, components, data, res = main()

@@ -15,6 +15,9 @@ import matplotlib.pyplot as plt
 import matplotlib
 import pandas as pd
 import scipy.signal as signal 
+from scipy.integrate import cumulative_trapezoid
+import itertools 
+
 from filters.filter_tools import butter_lowpass_filter
 from datastream.datastream import h5_to_datastreams 
 from analysis.adc_data import find_peak, calc_psd
@@ -34,7 +37,12 @@ elif sys.platform == "win32":
     data_dir_covg = os.path.join(data_dir_base, 'Documents/covg/data/clamp/')
 
 figure_dir = '/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/figures/step/'
-figure_dir_paper = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/step/'
+
+if sys.platform == "darwin":
+    figure_dir_paper = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/step/'
+elif sys.platform == "win32":
+    figure_dir_paper = r'C:/Users/Public/Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/step/'
+
 fig_names = {}
 
 
@@ -90,11 +98,52 @@ for i in range(N):
     figs.append(fig)
     axs.append(ax)
 
+def noise_analysis(datastreams, rtia, ccomp, in_amp, t0_us, t0_us_stop, res):
+    # noise analysis, ensure away from a peak 
+    # results for noise analysis, plot noise spectrum, integrated noise, RMS noise vs. fc (return a results dictionary), total length of measurement 
+    # inputs: datastreams, rtia, inamp,  
+
+    t_start = t0_us/1e6 + 2e-3  # 2 ms 
+    t_stop = t0_us_stop/1e6 - 2e-3 # 2 ms 
+    print(f'Noise analysis from {t_start} to {t_stop} for a total length of {t_stop-t_start}')
+
+    t = datastreams['Im'].create_time()
+    idx = (t > t_start) & (t < t_stop)
+    y = datastreams['Im'].data[idx]
+    fs = datastreams['Im'].sample_rate
+
+    f, im_pd = calc_psd(y, fs, nperseg=1024*8, scaling='spectrum')
+    fig, ax = plt.subplots(figsize=fig_size)
+    ax.loglog(f, np.sqrt(im_pd)*1e9, marker='o', color='k')
+    ax.set_ylabel('I/$\sqrt{Hz}$ [nA]')
+    ax.set_xlabel('f [Hz]')
+    my_savefig(fig, figure_dir_paper, f'noise_psd_rtia{rtia}_CComp{ccomp}_inamp{in_amp}')
+
+    fig, ax = plt.subplots(figsize=fig_size)
+    ax.loglog(f, np.cumsum(im_pd*1e9**2), marker='o', color='k')
+    ax.set_ylabel('Int. noise [nA$^2$]')
+    ax.set_xlabel('f [Hz]')
+    my_savefig(fig, figure_dir_paper, f'integrated_noise_psd_rtia{rtia}_CComp{ccomp}_inamp{in_amp}')
+
+    print(f'RTIA = {rtia}; CComp = {ccomp}')
+    for fc in [1e6, 500e3, 200e3, 100e3, 50e3, 30e3, 10e3, 3e3]:
+        fs = datastreams['Im'].sample_rate
+        y = datastreams['Im'].data[idx]
+        y_filt, filt_t = filter_fc(y, fs, fc, REMOVE_DC = True)
+
+        # append results 
+        res['rtia'].append(rtia)
+        res['ccomp'].append(ccomp)
+        res['in_amp'].append(in_amp)
+        res['fc'].append(fc)
+        res['im_std'].append(np.std(y_filt))
+
+    return res 
 
 # 2x1 subplot for manuscript 
 fs = fig_size 
 # increase height to support 2x1 
-fs = (fig_size[0], fig_size[1]*1.8)
+fs = (fig_size[0], fig_size[1]*1.2) # was 1.8
 fig_m, ax_m = plt.subplots(figsize = fs, nrows=2, ncols=1)
 
 def i_step_and_q(rtia, ccomp, cmd, fc=100e3):
@@ -122,7 +171,7 @@ def i_step_and_q(rtia, ccomp, cmd, fc=100e3):
     # 2x1 subplot for manuscript 
     fs = fig_size 
     # increase height to support 2x1 
-    fs = (fig_size[0], fig_size[1]*1.8)
+    fs = (fig_size[0], fig_size[1]*1.2) # was 1.8
     fig_m, ax_m = plt.subplots(figsize = fs, nrows=2, ncols=1)
 
     # 2x1 for manuscript 
@@ -134,7 +183,11 @@ def i_step_and_q(rtia, ccomp, cmd, fc=100e3):
     dt = (t[1] - t[0])/1e6 # use filtered time in seconds 
 
     ax_right = ax_m[1].twinx()
-    lns2 = ax_right.plot(t, (np.cumsum(y*dt))*1e9, label=f'Q', color='tab:orange')
+    #lns2 = ax_right.plot(t, (np.cumsum(y*dt))*1e9, label=f'Q', color='tab:orange')
+    q = (cumulative_trapezoid(y*dt))*1e9
+    q = np.append(q, q[-1]) # trapezoid result is one shorter than np.cumsum
+
+    lns2 = ax_right.plot(t, q, label=f'Q', color='tab:orange')
     ax_right.set_xlim(time_range)
     ax_right.set_xlabel('t [$\mu$s]')
     ax_right.set_ylabel('Q [nC]')
@@ -172,7 +225,7 @@ def i_step_and_q(rtia, ccomp, cmd, fc=100e3):
     ax_m[0].set_ylabel('V [mV]')
     ax_m[0].legend(loc=5)
 
-    my_savefig(fig_m, figure_dir, f'voltage_cmd_im_q_rtia{rtia}_ccomp{ccomp}_cmd{cmd}')
+    my_savefig(fig_m, figure_dir_paper, f'voltage_cmd_im_q_rtia{rtia}_ccomp{ccomp}_cmd{cmd}')
     try:
         my_savefig(fig_m, figure_dir_paper, f'voltage_cmd_im_q_rtia{rtia}_ccomp{ccomp}_cmd{cmd}')
     except:
@@ -238,21 +291,29 @@ for in_amp in [in_amp_arr]:
             ax_m[1].set_xlabel('t [$\mu$s]')
             ax_m[1].set_ylabel('I [$\mu$A]')
 
-            axs[1].plot(t, np.cumsum(y)/np.sum(y), label=f'R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
+            q = (cumulative_trapezoid(y))
+            q = np.append(q, q[-1]) # trapezoid result is one shorter than np.cumsum
+
+            axs[1].plot(t, q/np.sum(y), label=f'R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
             axs[1].set_xlim(time_range)
             axs[1].set_xlabel('t [$\mu$s]')
             axs[1].set_ylabel('Q [a.u.]')
             fig_names[1] = 'Istep_Q_arbitrary_units_fc{}'.format(fc)
 
             dt = (t[1] - t[0])/1e6 # use filtered time in seconds 
-            axs[8].plot(t, (np.cumsum(y*dt))*1e9, label=f'R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
+            q = (cumulative_trapezoid(y*dt))
+            q = np.append(q, q[-1]) # trapezoid result is one shorter than np.cumsum
+            axs[8].plot(t, q*1e9, label=f'R={rtia} k$\Omega$, C={ccomp} pF, InAmp=x{in_amp}')
             axs[8].set_xlim(time_range)
             axs[8].set_xlabel('t [$\mu$s]')
             axs[8].set_ylabel('Q [nC]')
             fig_names[8] = 'Istep_Q_nC_units_fc{}'.format(fc)
 
             ax_right = ax_m[1].twinx()
-            lns2 = ax_right.plot(t, (np.cumsum(y*dt))*1e9, label=f'Q', color='tab:orange')
+
+            q = (cumulative_trapezoid(y*dt))*1e9
+            q = np.append(q, q[-1]) # trapezoid result is one shorter than np.cumsum
+            lns2 = ax_right.plot(t, q, label=f'Q', color='tab:orange')
             ax_right.set_xlim(time_range)
             ax_right.set_xlabel('t [$\mu$s]')
             ax_right.set_ylabel('Q [nC]')
@@ -304,8 +365,11 @@ for in_amp in [in_amp_arr]:
             ax_m[0].legend(loc=5)            
 
             # noise analysis, ensure away from a peak 
-            t_start = t0_us/1e6 + 1e-3 
-            t_stop = t0_us_stop/1e6 - 1e-3 
+            # results for noise analysis, plot noise spectrum, integrated noise, RMS noise vs. fc (return a results dictionary), total length of measurement 
+            # inputs: datastreams, rtia, inamp,  
+            t_start = t0_us/1e6 + 2e-3  # 2 ms 
+            t_stop = t0_us_stop/1e6 - 2e-3 # 2 ms 
+            print(f'Noise analysis from {t_start} to {t_stop} for a total length of {t_stop-t_start}')
 
             t = datastreams['Im'].create_time()
             idx = (t > t_start) & (t < t_stop)
@@ -342,10 +406,10 @@ for in_amp in [in_amp_arr]:
 
     for i in range(N):
         try:
-            my_savefig(figs[i], figure_dir, fig_names[i])
+            my_savefig(figs[i], figure_dir_paper, fig_names[i])
         except:
             pass
-    my_savefig(fig_m, figure_dir, 'voltage_cmd_im_q')
+    my_savefig(fig_m, figure_dir_paper, 'voltage_cmd_im_q')
     try:
         my_savefig(fig_m, figure_dir_paper, 'voltage_cmd_im_q')
     except:
@@ -381,6 +445,7 @@ neg_pks = find_peak(datastreams['CMD0'].create_time(), -np.diff(datastreams['CMD
 print(pos_pks)
 print(neg_pks)
 
+# Need to find the peaks with a large command value and then reuse
 try:
     t0_us = pos_pks[0][0]*1e6
 except: # if no peak is found use the logfile information in datastreams
@@ -392,6 +457,8 @@ except:
     print('Could not find a negative peak')
     t0_us_stop = datastreams.ddr_step_peak*1e6*2
 
+noise_res = {'rtia':[], 'ccomp':[], 'in_amp':[], 'fc':[], 'im_std':[]}
+
 for in_amp in [in_amp_arr]:
     for ccomp in [47, 4700]:
         for rtia in [33, 100, 332, 1000]:
@@ -402,16 +469,25 @@ for in_amp in [in_amp_arr]:
                 else:
                     datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, in_amp))
 
+                if cmd==0:
+                    # run noise analysis -- since cmd == 0 can use the whole trace 
+                    t = datastreams['Im'].create_time()*1e6
+                    noise_res = noise_analysis(datastreams, rtia, ccomp, in_amp, t0_us, np.max(t), noise_res)
+
                 res['cmd'].append(cmd)
                 res['ccomp'].append(ccomp)
                 res['rtia'].append(rtia)
-                
+
+                if rtia == 1000:
+                    time_range = [-50, 600]
+                else:
+                    time_range = [-50, 400]
                 # Analyze current Im 
                 t = datastreams['Im'].create_time()*1e6 - t0_us
                 fs = datastreams['Im'].sample_rate
                 idx = (t > time_range[0]) & (t < time_range[1])
                 y = datastreams['Im'].data[idx]
-                y = y - np.average(y[-100:]) # remove steady-state current 
+                y = y - np.average(y[-100:]) # remove steady-state current (average for 20 us)
 
                 fc = 100e3
                 if fc is not None:
@@ -422,7 +498,9 @@ for in_amp in [in_amp_arr]:
 
                 res['Ipk'].append(np.max(y))
                 dt = (t[1] - t[0])/1e6 # use filtered time in seconds 
-                q = (np.cumsum(y*dt))*1e9
+                q = (cumulative_trapezoid(y*dt))*1e9
+                q = np.append(q, q[-1]) # trapezoid result is one shorter than np.cumsum
+
                 res['Qt'].append(q[-1])
 
                 t = datastreams['CMD0'].create_time()*1e6 - t0_us
@@ -435,7 +513,7 @@ for in_amp in [in_amp_arr]:
                 else:
                     fc = 100e3
 
-                # need to extend to step response processing to 550 us for the 332 and 1000 rtia.
+                # need to extend step response processing to 550 us for the 332 and 1000 rtia.
                 si1 = datastreams['P1'].stepinfo_range([ (time_range[0] + t0_us)*1e-6, (time_range[1] + 300 + t0_us)*1e-6], fc=fc)
                 res['tr_p1'].append(si1['RiseTime'])
                 res['settle_p1'].append(si1['SettlingTime'] - t0_us/1.0e6) # finds absolute settling time in us
@@ -449,26 +527,57 @@ for in_amp in [in_amp_arr]:
                 res['peak_time_im'].append(si2['PeakTime'] - t0_us*1e-6)
 
 df = pd.DataFrame(res)
-df.to_csv(os.path.join(figure_dir, f'step_response_summary_{data_dir_end}_inamp{in_amp}.csv'), index=False)
-# TODO: just one ccomp based on stability 
-# TODO: convert to CMD value
+df.to_csv(os.path.join(figure_dir_paper, f'step_response_summary_{data_dir_end}_inamp{in_amp}.csv'), index=False)
+
+# pandas dataframe to summarize results
+df_noise = pd.DataFrame(noise_res)
+df_noise.to_csv(os.path.join(figure_dir_paper, f'noise_summary_{data_dir_end}_inamp{in_amp}.csv'), index=False)
+# print noise results 
+print('--'*40)
+print('Noise summary')
+ccomp = 47
+for rtia in [33, 100, 332, 1000]:
+    for fc in np.unique(df_noise['fc']):
+        condition = (df_noise.rtia==rtia) & (df_noise.ccomp==ccomp) & (df_noise.fc == fc)
+        print(f'rtia={rtia}, fc={fc}: {df_noise[condition]["im_std"]*1e9}')
+
+ccomp = 47
+condition = (df_noise.ccomp==ccomp) & ((df_noise.fc == 3000) | (df_noise.fc == 10000) | (df_noise.fc == 100000))
+print(df_noise[condition])
+print('--'*100)
+ccomp = 4700
+condition = (df_noise.ccomp==ccomp) & ((df_noise.fc == 3000) | (df_noise.fc == 10000) | (df_noise.fc == 100000))
+print(df_noise[condition])
+
+
+time_range = [-50, 250] # for plotting 
+step_range = [0, 250] # 0 to 250 mV; after discussion with Linda only include range that is biologically relevant 
+# use distinct markers 
+# use colorblind appropriate colormap 
+
 for ccomp in [47, 4700]:
     fig, ax=plt.subplots(figsize = fig_size)
+    markers = itertools.cycle(['o', 'x', '+', '<'])
+
     for rtia in [33, 100, 332, 1000]:
-        condition = (df.rtia==rtia) & (df.ccomp==ccomp)
-        ax.plot(df[condition]['cmd_v']*1000, df[condition]['Qt'], marker='o', linestyle='none', label=f'{rtia} k$\Omega$')
+        condition = (df.rtia==rtia) & (df.ccomp==ccomp) & (df.cmd_v <= step_range[1]/1000)
+        ax.plot(df[condition]['cmd_v']*1000, df[condition]['Qt'], marker=next(markers), linestyle='none', label=f'{rtia} k$\Omega$')
 
     ax.set_xlabel('$\Delta V_m$ [mV]')
     ax.set_ylabel('Q [nC]')
+    ax.set_xlim(step_range)
     ax.legend()
-    my_savefig(fig, figure_dir, f'charge_linearity_ccomp{ccomp}')
+
+    my_savefig(fig, figure_dir_paper, f'charge_linearity_ccomp{ccomp}')
 
 res2 = {'ccomp': [], 'rtia': [], 'peak_i': [], 'max_v_wo_sat': []} 
 for ccomp in [47, 4700]:
     fig, ax=plt.subplots(figsize = fig_size)
+    markers = itertools.cycle(['o', 'x', '+', '<'])
+
     for rtia in [33, 100, 332, 1000]:
-        condition = (df.rtia==rtia) & (df.ccomp==ccomp)
-        ax.plot(df[condition]['cmd_v']*1000, df[condition]['Ipk']*1e6, marker='o', linestyle='none', label=f'{rtia} k$\Omega$')
+        condition = (df.rtia==rtia) & (df.ccomp==ccomp) & (df.cmd_v <= step_range[1]/1000)
+        ax.plot(df[condition]['cmd_v']*1000, df[condition]['Ipk']*1e6, marker=next(markers), linestyle='none', label=f'{rtia} k$\Omega$')
 
         peak_i = np.max(df[condition]['Ipk'])
         # idx = df[condition]['Ipk'] < 0.90*peak_i # doesn't work because ipk turns over at very high Vcmd 
@@ -482,10 +591,11 @@ for ccomp in [47, 4700]:
     ax.set_xlabel('$\Delta V_m$ [mV]')
     ax.set_ylabel('$I_{pk}$ [$\mu$A]')
     ax.legend()
-    my_savefig(fig, figure_dir, f'peak_current_ccomp{ccomp}')
+    ax.set_xlim(step_range)
+    my_savefig(fig, figure_dir_paper, f'peak_current_ccomp{ccomp}')
 
 df_sum = pd.DataFrame(res2)
-df_sum.to_csv(os.path.join(figure_dir, f'step_response_total_summary_{data_dir_end}_inamp{in_amp}.csv'), index=False)
+df_sum.to_csv(os.path.join(figure_dir_paper, f'step_response_total_summary_{data_dir_end}_inamp{in_amp}.csv'), index=False)
 
 # given these 2 dataframes export to Latex table 
 
@@ -547,10 +657,11 @@ formatters = {col: formatter.get(col, default_formatter) for col in dfs.columns}
 latex_table = dfs.to_latex(index=False, formatters=formatters)
 print(latex_table)
 
-print(---)
-
+print('---')
 print(df_sum) # print the second table to get the saturation voltages 
 
+
+# Test the power spectrum methods 
 if 0:
     # test with a sine-wave, do I get the correct RMS amplitude from integrated power spectrum?
     fig_t, ax_t = plt.subplots()
