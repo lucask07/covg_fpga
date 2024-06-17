@@ -32,14 +32,14 @@ cc_wave, configs, results = infer_ccwave_spline(run_date='20240417',
                                                 ccomp=ccomp)
 
 decay = 0.8
-fig, ax = plt.subplots(figsize=fig_size)
+fig, ax = plt.subplots(figsize=(fig_size[0], fig_size[1]*0.8))
 # get a time vector 
 for res in results['step_wave']:
     decay *= 0.99
     ax.plot(res.cpu().detach().numpy(), alpha=1 - decay, color='blue')
 my_savefig(fig, fig_dir, f'Im_and_trained_response_rtia{adg_r}_ccomp{ccomp}')
 
-fig, ax = plt.subplots(figsize=fig_size)
+fig, ax = plt.subplots(figsize=(fig_size[0], fig_size[1]*0.8))
 # get a time vector 
 tl = 450e-6
 scale_factor = (configs['max_target'] / configs['max_impulse']) * configs['cmd_conv_factor'] / configs[
@@ -57,7 +57,7 @@ ax.plot((t - tl) * 1e6, (results['output'][-1] * configs['max_target'] * target_
 ax.set_xlabel('time [$\mu$s]')
 ax.set_ylabel('$I \; [\mu A]$')
 ax.set_xlim([-50, 250])
-ax.legend(loc=9, handlelength=1)
+ax.legend(loc=9, handlelength=2) # ensure that the dashed line is clear
 
 # and inset for the training
 axins2 = inset_axes(ax, width="100%", height="100%",
@@ -136,7 +136,10 @@ for adg_r, ccomp in ([(10, 47), (33, 47), (100, 47), (33, 4700), (100, 4700), (3
         t = ds[meas]['Im'].create_time() - pos_pks[0][0]
         data = butter_lowpass_filter(data, cutoff=fc, fs=FS, order=1)
         if meas != 'CC0':
-            ax.plot(t[t_idx] * 1e6, data[t_idx] * 1e6, color=next(clr), label=lbls[meas])
+            if meas == 'cancel':
+                ax.plot(t[t_idx] * 1e6, data[t_idx] * 1e6, color=next(clr), label=lbls[meas], linestyle='--')
+            else:
+                ax.plot(t[t_idx] * 1e6, data[t_idx] * 1e6, color=next(clr), label=lbls[meas])
         sf = step_info(data[t_idx], t[t_idx])  # the current isn't a step so this doesn't work well
         res['undershoot'].append(sf['Undershoot'])
         res['risetime'].append(sf['RiseTime'])
@@ -148,6 +151,7 @@ for adg_r, ccomp in ([(10, 47), (33, 47), (100, 47), (33, 4700), (100, 4700), (3
     ax.set_xlabel('time [$\mu$s]')
     ax.set_ylabel('$I \; [\mu A]$')
     ax.legend()
+    ax.set_xlim([-50, 250])
     my_savefig(fig, fig_dir, f'cc_cancelation_measured_rtia{adg_r}_ccomp{ccomp}')
 
     plt.close('all')

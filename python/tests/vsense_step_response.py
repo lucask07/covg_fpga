@@ -154,7 +154,7 @@ except NameError:
     adc_chan1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT'] # ('A', 1)
     adc_v1 = daq.parameters['ads_map'][dc_mapping['vclamp']]['AMP_OUT'] # ('A', 1)
     ads_sequencer_setup = [('2', '0')] # connect CAL_ADC and AMP_OUT of DC 1 which is the clamp board 
-    # ads_sequencer_setup = [('2', '0'), ('2','2')] # connect CAL_ADC and AMP_OUT of DC 1 which is the clamp board. Add in the vsense AMP_OUT 
+    ads_sequencer_setup = [('2', '0'), ('2','2')] # connect CAL_ADC and AMP_OUT of DC 1 which is the clamp board. Add in the vsense AMP_OUT 
 
     codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
     ads.write_reg_bridge(clk_div=200) # 1 MSPS rate with clk_div=200 (do not use default value which is 200 ksps)
@@ -293,15 +293,33 @@ def collect_data(ddr, PLT=True, ads_chan=('A', 0), num_repeats=10, blk_multiples
     datastreams, log_info = rawh5_to_datastreams(data_dir, file_name.format(idx) + '.h5', ddr.data_to_names, 
                                                  daq, sys_connections, outfile = None)
  
-
     if PLT:
         fig, ax = plt.subplots()
-        datastreams['V1'].plot(ax)
-        datastreams['I'].plot(ax)
+        for n in ['V1', 'I', 'V1s']:
+            datastreams[n].plot(ax, {'label': n})
+        ax.legend()
+
+        # TODO: measure with model cell disconnected to remove slow decays, 
+        #       fit to determine amplitude 
+        #       measure with 2 different attenuators 
+        #       check datastreams code to figure out V1 vs V1s -- Vls is from the voltage sense board, V1 is AMP_OUT on the clamp board. Difference is only the attenuation.
+        #       confirm that AMP_OUT on the clamp board has x1 gain -- must be since correction for the attenuation is all that's needed to align
+        fig, ax = plt.subplots()
+        gain = 60
+        for n in ['V1', 'I', 'V1s']:
+            if n == 'V1':
+                scale = 10**(-13/20)*gain
+            elif n == 'V1s':
+                scale = gain
+            else:
+                scale = 1
+            data = datastreams[n].data/datastreams[n].conversion_factor/scale # convert to ADS8686 codes since we are trying to determine various gains!
+            t =  datastreams[n].create_time()
+            ax.plot(t, data, label=n)
+        ax.legend()
 
     else:
         ax=None
-
 
     return datastreams, log_info
 
@@ -439,11 +457,6 @@ def measure_step(config_dict_test, dc_under_test, testing='vclamp', step=1,
     data : (dict) describes the measured voltage vs. time and the stimulus waveform configuration (amplitude, frequency, source) but does not store data 
     """
     # configure the waveforms based on the electrodes under test 
-    if testing=='bath':
-        freq = 200
-        num_repeats=10 
-        blk_multiples=40
-        current_amp = 0.8
     if testing=='vclamp':
         freq = 40
         num_repeats=50 
@@ -480,26 +493,28 @@ ddr.write_finish()
 
 # measure resistance 
 
-for re in [100, 200, 475, 1000]:
+#for re in [100, 200, 475, 1000]:
+for re in [100]:
+    for att in [13, 10]:
 
-    input(f'Configure V1 electrode R to {re}')
+        input(f'Configure V1 electrode R to {re}')
 
-    datastreams, log_info = measure_step(dc_configs[dc_under_test], dc_under_test=dc_under_test, testing='vclamp', 
-                                                                            step=1, plt_data=True, plt_fit=True,
-                                                                            write_ddr=True)
+        datastreams, log_info = measure_step(dc_configs[dc_under_test], dc_under_test=dc_under_test, testing='vclamp', 
+                                                                                step=1, plt_data=True, plt_fit=True,
+                                                                                write_ddr=True)
 
-    filename = file_name + f'Re1_{re}k'
-    datastreams.to_h5(data_dir, filename + '.h5', log_info=log_info)
+        filename = file_name + f'Re1_{re}k' + f'att_{att}dB'
+        datastreams.to_h5(data_dir, filename + '.h5', log_info=log_info)
 
-    # find edges and measure rise-time 
-    step_info = datastreams['V1'].stepinfo_range([12000e-6, 13000e-6])
+        # find edges and measure rise-time 
+        step_info = datastreams['V1'].stepinfo_range([12000e-6, 13000e-6])
 
-    # save this data as 
+        # save this data as 
 
-    # predicted capacitance 
-    par_cap = step_info['RiseTime']/np.log(9)/(100e3 + re*1e3)
-    step_info['capacitance'] = par_cap
+        # predicted capacitance 
+        par_cap = step_info['RiseTime']/np.log(9)/(100e3 + re*1e3)
+        step_info['capacitance'] = par_cap
 
-    print(f'Rise-time {step_info["RiseTime"]}, capacitance {par_cap}')
-    np.savez(os.path.join(data_dir, filename + 'stepinfo'), step_info) # saved to a Numpy npz file 
+        print(f'Rise-time {step_info["RiseTime"]}, capacitance {par_cap}')
+        np.savez(os.path.join(data_dir, filename + 'stepinfo'), step_info) # saved to a Numpy npz file 
 

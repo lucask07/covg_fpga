@@ -73,27 +73,28 @@ def tf(name):
         pass
 
 
-def vclamp_tf(f, r5, cm):
+def vclamp_tf(f, cm, r5, rleak, r3, r4, cc, rcc):
     #  this is for voltage clamp calibration measurements
-    # TODO: how do I input different values for r3 and r4 and rcc?
-    r3 = 3.32e3
-    r4 = 5e3
+    # TODO: will need to solve for rleak 
+    # Confirmed with the LTSpice result: clamp_electrodes.raw 
 
-    cc = cc_cap  # 4.7e-9
-    rcc = 6.8e3  # 6.8e3
+    # r5=100e3, r3=3.32e3, r4=5e3, cc=cc_cap, rcc=6.8e3
+    # r5 is equivalent to COVG ri 
+    # r3, r4, rcc can be inputs 
+
     rbot = par(r3, r4)
-
-    rs = 1e3
+    rs = 1e3 # TODO: potentially solve for this in the future
 
     w = f * 2 * np.pi
     cc_rc = -1j * (1 / (w * cc)) + rcc
-    num = -1j * (1 / (w * cm)) + rs + par(rbot, cc_rc)
+    num = par(-1j * (1 / (w * cm)), rleak) + rs + par(rbot, cc_rc)
     a = num / (num + r5)
 
     return np.abs(a), np.angle(a)
 
 
 def lpf_tf(f, r5, cm):
+    # Test lowpass filter transfer function 
     #  verify transfer function calculation match LTSpice
     w = f * 2 * np.pi
     num = -1j * (1 / (w * cm))
@@ -103,10 +104,15 @@ def lpf_tf(f, r5, cm):
 
 
 def calc_tf(f, r1, r2, r3, c1, rs, c2, r5, r6):
+    # General transfer function for the bath clamp with CC held at small signal ground 
+    # 
     #  variables match reference designators in schematic LTSpice bath_electrodes.asc 
-    #  TODO: expand transfer to include rs, c2. 
-    #   
-    #  TODO: for more precision add Rbot for the bottom plate resistance, would need to drive the bottom plate of Cm
+    #  f: frequency
+    #  r1: drive on (i.e., force)
+    #  r2: sensing resistor so does not contribute to transfer function
+    #  r3: CC electrode resistance 
+    #  c1: CC capacitance 
+    #  TODO: Implement transfer dependence of rs, c2, r5, r6. Assumption is that they are not connected 
     w = f * 2 * np.pi
     num = r3 - 1j * (1 / (w * c1))
     a = num / (num + r1)
@@ -116,7 +122,7 @@ def calc_tf(f, r1, r2, r3, c1, rs, c2, r5, r6):
     return np.abs(a), np.angle(a)
 
 
-def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
+def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None, knowns={}):
     '''
     f : freqeuencies tested: np.array 
     tf_amp_phase : tuple of measured gain (array) and phase (array) 
@@ -127,14 +133,16 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
                 'vclamp_bound': find I resistance and the membrane capacitance with injection on the I terminal 
                                 r is found as rtotal - r1 -- TODO: not sure if this is implemented
     '''
-    def tf_eval(params, f, tf_type):
+    def tf_eval(params, f, tf_type, knowns):
 
         if tf_type == 'elec_r_cc':
             tf_nodut = tf('no_dut')
-            c1 = cc_cap  # CC coupling capacitor on the daughter-card
             tf_test = functools.partial(tf_nodut, c1=c1)
         elif (tf_type == 'vclamp') or (tf_type == 'vclamp_bound'):
-            tf_test = vclamp_tf
+            print('vclamp knowns')
+            print(knowns)
+            tf_test = functools.partial(vclamp_tf, **(knowns)) 
+            # tf_test = vclamp_tf
 
         if tf_type == 'elec_r_cc':
             r1 = params['r1'].value
@@ -143,12 +151,18 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
 
             return tf_test(f, r1, r2, r3)
 
-        elif tf_type == 'vclamp':
-            r1 = params['r1'].value
-            cm = params['cm'].value
+        elif tf_type == 'vclamp':            
+            try:
+                knowns['r5'] > 0
+                cm = params['cm'].value
+                return tf_test(f, cm)            
+            except:
+                r1 = params['r1'].value # r1 is a typo here, actually solving for r5
+                cm = params['cm'].value 
+                print('Solving Vclamp for CM and r1')
+                return tf_test(f, cm, r1)
 
-            return tf_test(f, r1, cm)
-
+        # TODO: not implemented once functools reduction of vclamp_tf was done 
         elif tf_type == 'vclamp_bound':  # since we measure rtotal using a current source: solve for r2 as rtotal-r1
             r1 = params['r1'].value
             cm = params['cm'].value
@@ -159,12 +173,12 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
 
             return tf_test(f, rtotal - r1, cm)
 
-    def residuals(params, f_arr, data, tf_type):
+    def residuals(params, f_arr, data, tf_type, knowns):
         # calculate the difference between the data (gain, phase) and the
         #  evaluated impedance
         ap_tot = np.array([])
         for tft in tf_type:
-            amp, phase = tf_eval(params, f_arr, tft)
+            amp, phase = tf_eval(params, f_arr, tft, knowns)
             ap = np.vstack([amp, phase])
             ap_tot = np.append(ap_tot, ap)
 
@@ -173,13 +187,13 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
         # so that gain and phase both contribute to the fit
         return diff.flatten()
 
-    def residuals_magnitude(params, f_arr, data, tf_type):
+    def residuals_magnitude(params, f_arr, data, tf_type, knowns):
         # calculate the difference between the data (magnitude) and the
         #  evaluated impedance
 
         ap_tot = np.array([])
         for tft in tf_type:
-            amp, phase = tf_eval(params, f_arr, tft)
+            amp, phase = tf_eval(params, f_arr, tft, knowns) # evaluate a transfer function of type tft 
             ap_tot = np.append(ap_tot, amp)
         # pdb.set_trace()
 
@@ -203,14 +217,15 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
         fit_params.add('rtotal', value=rtotal, vary=False)
 
     # run the global fit to all the data sets
-    result = minimize(residuals_magnitude, fit_params, args=(f, tf_amp_phase[0], tf_type))
+    # lmfit: minimize
+    result = minimize(residuals_magnitude, fit_params, args=(f, tf_amp_phase[0], tf_type, knowns))
     report_fit(result)
 
     data_split = np.split(tf_amp_phase[0], len(tf_type))
 
     # Plot measured transfer functions and fits -- plotting data is returned to the calling function
     for tft_idx, tft in enumerate(tf_type):
-        model_eval = tf_eval(result.params, f, tft)
+        model_eval = tf_eval(result.params, f, tft, knowns)
         #ax.semilogx(f, 20 * np.log10(np.abs(model_eval[0])), label=f'Drive {elec} (fit)', linestyle=next(linesty))
         #ax.semilogx(f, 20 * np.log10(data_split[tft_idx]), label=f'Drive {elec} (meas.)', 
         #    marker=next(markers), linestyle='none')
@@ -218,7 +233,7 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
     # also try with amplitude and phase, don't expect to work as well
     amp = tf_amp_phase[0]
     phase = tf_amp_phase[1]
-    result2 = minimize(residuals, fit_params, args=(f, np.vstack([amp, phase]), tf_type))
+    result2 = minimize(residuals, fit_params, args=(f, np.vstack([amp, phase]), tf_type, knowns))
     # report_fit(result2)
 
     return (result, result2), f, model_eval[0], data_split[tft_idx]  # result ignores phase, result 2 considers phase
@@ -300,3 +315,12 @@ if __name__ == '__main__':
     af, pf = ap_eval(result.params, f_arr)
     ax.semilogx(f_arr, 20 * np.log10(af), linestyle='--')
     ax.semilogx(f_arr, np.degrees(pf), linestyle='--')
+
+    f_arr = np.logspace(1, 5, 40)
+    # def vclamp_tf(f, cm, r5=100e3, r3=3.32e3, r4=5e3, cc=cc_cap, rcc=6.8e3)
+    tf = np.vectorize(vclamp_tf)
+    a, p = tf(f_arr, 33e-9, 100e3, 3.3e3, 5e3, cc_cap, 6.8e3)
+
+    fig, ax = plt.subplots()
+    ax.semilogx(f_arr, 20 * np.log10(a))
+    # ax.semilogx(f_arr, np.degrees(p))

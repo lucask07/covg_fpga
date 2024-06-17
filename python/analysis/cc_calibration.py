@@ -241,7 +241,9 @@ def main(subdir='c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\',
         ax[1].set_xlabel('time [$\mu$s]')
         ax[0].set_ylabel('$h \; [\mu A/(mV \cdot \mu s)]$') 
         ax[1].set_ylabel('$h \; [\mu A/(mV \cdot \mu s)]$') 
-        ax[1].set_xlim([-20, 50]) 
+        ax[0].set_xlim([-20, 220]) 
+        ax[1].set_xlim([-20, 220]) # new scaling so that Im and Icc have equal range and t0 aligns 
+        #ax[1].set_xlim([-20, 50]) # -- original x-axis scaling for the CC impulse
         my_savefig(fig, fig_dir, 'impulse_response')
 
     # create a step function and convolve impulse and step
@@ -434,7 +436,7 @@ def main(subdir='c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\',
 
 
 if __name__ == '__main__':
-    impulse, cc_im, im_torch, impulse_cc_torch, configs = main()
+    impulse, cc_im, im_torch, impulse_cc_torch, configs = main(MAKE_PLTS=True)
 
 TRAIN = False
 if TRAIN:
