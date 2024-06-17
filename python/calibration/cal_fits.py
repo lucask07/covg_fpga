@@ -21,6 +21,7 @@ fig_dir = os.path.join(fig_dir, 'calibration')
 
 plt.ion()
 
+cc_cap = 4.491e-9 # measured with LCR 
 
 def soft_sq_wave(t, f, a, h, phi, s=1):
     # a square-wave that does not have infinitely fast edges. 
@@ -74,10 +75,11 @@ def tf(name):
 
 def vclamp_tf(f, r5, cm):
     #  this is for voltage clamp calibration measurements
+    # TODO: how do I input different values for r3 and r4 and rcc?
     r3 = 3.32e3
     r4 = 5e3
 
-    cc = 4.7e-9  # 4.7e-9
+    cc = cc_cap  # 4.7e-9
     rcc = 6.8e3  # 6.8e3
     rbot = par(r3, r4)
 
@@ -129,7 +131,7 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None):
 
         if tf_type == 'elec_r_cc':
             tf_nodut = tf('no_dut')
-            c1 = 4.7e-9  # CC coupling capacitor on the daughter-card
+            c1 = cc_cap  # CC coupling capacitor on the daughter-card
             tf_test = functools.partial(tf_nodut, c1=c1)
         elif (tf_type == 'vclamp') or (tf_type == 'vclamp_bound'):
             tf_test = vclamp_tf
@@ -251,7 +253,7 @@ if __name__ == '__main__':
     tf_nodut = tf('no_dut')
     f_arr = np.logspace(3, 5, 40)
     tf_nodut_v = np.vectorize(tf_nodut)
-    a, p = tf_nodut_v(f_arr, 3.3e3, 5e3, 6.8e3, 4.7e-9)
+    a, p = tf_nodut_v(f_arr, 3.3e3, 5e3, 6.8e3, cc_cap)
 
     fig, ax = plt.subplots()
     ax.semilogx(f_arr, 20 * np.log10(a))
@@ -260,13 +262,13 @@ if __name__ == '__main__':
 
     # to curve fit: gain, phase at f1, gain,phase at f2, gain,phase at f3.
     #  Solve for r1, r4, cc
-    #  however cc is a known-constant (bound?)
+    #  however cc capacitance is a known-constant (bound?)
 
     def ap_eval(params, f_arr):
         r1 = params['r1'].value
         r2 = params['r2'].value
         r3 = params['r3'].value
-        cc = 4.7e-9
+        cc = cc_cap
 
         a, p = tf_nodut_v(f_arr, r1, r2, r3, cc)
         return a, p
