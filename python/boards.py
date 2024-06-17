@@ -1118,3 +1118,144 @@ class Vsense:
 
         self.DAC = DAC101C081(fpga=fpga, addr_pins=DAC_addr_pins,
                             endpoints=i2c_eps)
+        
+class Vsense2:
+    """
+    voltage sense board which has:
+        DAC101C081 to adjust amplification offset voltage
+        TCA9555 GPIO expander to set voltage gains 
+        24AA02UID chip for board serial number
+
+    will either be connected to a daughter-card socket 
+    or jumpered to another daughter-card board 
+    
+    """
+    gain_dict = {  #available gains for main amplifier stages
+        #R4 R3 R2 R1 active-low
+        31: 0b0000, 
+        36: 0b1000,
+        38: 0b0100,
+        41: 0b0010,
+        46: 0b1100,
+        51: 0b0001,
+        52: 0b1010,
+        56: 0b0110,
+        67: 0b1001,
+        74: 0b0101,
+        76: 0b1110,
+        88: 0b0011,
+        116: 0b1101,
+        157: 0b1011,
+        201: 0b0111,
+        None: 0
+    }
+    
+    def __init__(self, fpga, dc_num = 3, DAC_addr_pins=0b001, TCA_addr_pins=0b111, UID_addr_pins=0b000, endpoints=None):
+        # dc_num is the daughter card channel number since there are 0-3 channels
+
+        if dc_num is not None:
+            eps_i2cdc = copy.deepcopy(Endpoint.endpoints_from_defines['I2CDC'])
+            i2c_eps = Endpoint.advance_endpoints(eps_i2cdc, dc_num)
+        elif dc_num is None and endpoints is None:
+            print('error')
+            return -1
+        else: # allows for passing endpoints into the init function 
+            i2c_eps = endpoints
+
+        self.DAC = DAC101C081(fpga=fpga, addr_pins=DAC_addr_pins,
+                            endpoints=i2c_eps)
+
+        self.TCA = TCA9555(fpga=fpga, addr_pins=TCA_addr_pins,
+                              endpoints=i2c_eps)
+        
+        self.UID = UID_24AA025UID(fpga=fpga, addr_pins=UID_addr_pins,
+                                  endpoints=i2c_eps)
+
+        self.serial_number = None  # Will get serial code from UID chip in setup()
+        #self.default_gain1 = self.gain_dict[31] 
+        #self.default_gain2 = self.gain_dict[31]
+        self.gain1 = self.gain_dict[36]
+        self.gain2 = self.gain_dict[36]
+        self.version = 1
+    
+    def setOffsetVoltage(self, desired_voltage):
+        """ 
+        Final voltage is within 5 mV of voltage programmed to DAC due to rounding and part tolerance.
+        Final voltage is within 0.4 mV of desired_voltage, which is significantly better.
+        """
+        #message = 0x200 #should give DAC output of 2V which would give 0V offset adjustment
+        num_bits = 2**10
+        
+        if (desired_voltage > 0.200 or desired_voltage < -0.200):
+            raise ValueError("The input voltage to setOffsetVoltage() is not within -200mV and 200mV")
+        
+        #conversion factor for dac voltage from final voltage
+        vdac = 10*desired_voltage + 2.048; 
+        #convert to bits scaling (10 bits)
+        write_voltage_bits = int((vdac/4.096)*num_bits)
+        
+        #get actual value written to DAC due to rounding
+        voltage_from_bits = (write_voltage_bits/num_bits)*4.096
+        actual_voltage = 0.10*(voltage_from_bits-2)
+        print(f"\nDAC bits: {write_voltage_bits}, dac voltage: {vdac}, desired voltage: {desired_voltage}, actual voltage: {actual_voltage}\n")
+        
+        #write to DAC
+        self.DAC.write(write_voltage_bits)
+        return actual_voltage
+    
+    def UID_read_test(self):
+        print("\n-----UID READ TEST-----")
+        read = self.UID.get_manufacturer_code()
+        default = self.UID.registers['MANUFACTURER_CODE'].default
+        if read != default:
+            print(f'UID MANUFACTURER_CODE FAILED\n    '
+                  f'(read) {read} != (default) {default}')
+            #return False
+        else:
+            print("UID Manf Code Mismatch")
+
+        read2 = self.UID.get_device_code()  
+        default = self.UID.registers['DEVICE_CODE'].default
+        if read2 != default:
+            print(f'UID DEVICE_CODE FAILED\n    '
+                  f'(read) {read2} != (default) {default}')
+            #return False
+        else:
+            print("UID Dev Code Match")
+        
+        read3 = self.UID.get_serial_number() 
+        print(f"Serial number is 0x{hex(read3)}")
+        print(f"serial number address: {hex(UID_24AA025UID.registers['SERIAL_NUMBER'].address)}")
+        print(f"UID dev address {bin(UID_24AA025UID.ADDRESS_HEADER | (0b000 << 1) | 0b1)}")
+        print(f"serial list: {self.UID.read(word_address=UID_24AA025UID.registers['SERIAL_NUMBER'].address, words_read=4)}")
+    
+    def set_gain(self, gain1, gain2): #gain1 is first stage
+        #write test setup to DAC
+        #Vsense2.setOffsetVoltage(self, 0)
+        #fetch register data for I/O Expander
+        self.config_data = Register.get_chip_registers('TCA9555')
+        
+        #set up message
+        #upper_byte = ((self.gain1 << 4) | self.gain2)
+        upper_byte = ((gain2 << 4) | gain1)
+        lower_byte = 0x0000 #not using lower byte of expander
+        message = (upper_byte << 8) | lower_byte
+        
+        #set up pins to be outputs
+        self.TCA.configure_pins([0x00, 0x00])
+        
+        #write the message
+        self.TCA.write(message)
+        print("-----GAIN TESTS-----")
+        print(f"boards.py TCA upper_byte: {upper_byte}")
+        print(f"boards.py TCA lower_byte: {lower_byte}")
+        print(f"boards.py gain writing: {message}")
+        
+        #read it because why not
+        re = self.TCA.read(register_name='OUTPUT')
+        print(f"boards.py gain reading: {re}")
+    
+    def set_gain2(self):
+        pass
+
+
