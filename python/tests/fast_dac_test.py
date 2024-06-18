@@ -42,7 +42,6 @@ from pyabf.abfWriter import writeABF1
 from pyabf.tools.covg import interleave_np
 
 from instrbuilder.instrument_opening import open_by_name 
-osc = open_by_name('msox_scope')
 
 def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
@@ -140,7 +139,8 @@ SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
 
 eps = Endpoint.endpoints_from_defines
-pwr_setup = "3dual"
+pwr_setup = "two_supplies" # at the system without the Faraday cage and two DP832s
+
 # -------- power supplies -----------
 dc_pwr, dc_pwr2 = open_rigol_supply(setup=pwr_setup)
 if pwr_setup == "3dual" or pwr_setup == 'boland_lab' or pwr_setup=="3dual_16v5neg":
@@ -154,6 +154,8 @@ if pwr_setup == "3dual" or pwr_setup=="3dual_16v5neg":
     dc_pwr.set("out_state", "ON", configs={"chan": 1})
 elif pwr_setup == 'boland_lab':
     dc_pwr.set("out_state", "ON", configs={"chan": 3})
+else:
+	dc_pwr.set("out_state", "ON", configs={"chan": 1})	
 
 if pwr_setup == "3dual" or pwr_setup=="3dual_16v5neg":
     # turn on the +/-16.5 V input
@@ -211,7 +213,7 @@ ads.set_fpga_mode()
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
-dac_range = 5
+dac_range = 5 # 15, 5, 2, 500, 200
 dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
 
 # fast DAC channels setup
@@ -220,7 +222,7 @@ for i in range(6):
     daq.DAC[i].set_spi_sclk_divide()
     daq.DAC[i].filter_select(operation="clear")
     daq.DAC[i].write(int(0x2000))
-    daq.DAC[i].set_data_mux("DDR")
+    daq.DAC[i].set_data_mux("DDR") #THIS LINE tells the FPGA to either loop through DRR, but "host" turns off the SPI clocks
     daq.DAC[i].set_data_mux("DDR", filter_data=True) # this selects the Observer data into the filter data input. TODO: update name
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
@@ -235,9 +237,10 @@ time.sleep(0.1)
 ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
 time.sleep(0.1)
 
+# full range of DAC is 0 - 2^14-1 
 step_len = 16384*8
 dac_offset = 0x2000
-dac_val = 0x0200 
+dac_val = 0x0400 
 dac_signal = ddr.make_step(low=dac_offset - int(dac_val),
                                         high=dac_offset + int(dac_val),
                                         length=step_len) 
