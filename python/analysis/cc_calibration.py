@@ -161,7 +161,7 @@ elif sys.platform == 'win32':
     fig_dir = r'C:/Users/Public/Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/cc/'
 
 
-def load_datastreams(subdir = 'c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\',
+def load_datastreams(subdir = r'clamp/20240413/',
                      cmd_file='cmd_impulse.h5', 
                      cc_file='cc_impulse.h5'):
     # strange issues (returns a tuple)
@@ -172,7 +172,7 @@ def load_datastreams(subdir = 'c:\\Users\\koer2434\\Documents\\covg\\data\\clamp
 
     return output_ds 
 
-def main(subdir='c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\', 
+def main(subdir=r'clamp/20240413/', 
          cmd_file='cmd_impulse.h5', cc_file='cc_impulse.h5', MAKE_PLTS=False):
     
     ds = {}
@@ -300,8 +300,9 @@ def main(subdir='c:\\Users\\koer2434\\Documents\\covg\\data\\clamp\\20240413\\',
     im_idx_imp = ((t_torch_impulse>=tlow_imp) & (t_torch_impulse<=thigh_imp))
     impulse_idx_torch = ((impulse['CMD0'].create_time()>=tlow_imp) & (impulse['CMD0'].create_time()<=thigh_imp))
     impulse_cc_torch = impulse['CC0'].values[impulse_idx_torch]/impulse['CC0'].step_pkpk # units of A/(V*s)
-    im_torch = ds['CMD0']['Im'].data[im_idx_imp]/impulse['CMD0'].step_pkpk # A/V
-
+    #im_torch = ds['CMD0']['Im'].data[im_idx_imp]/impulse['CMD0'].step_pkpk # A/V
+    im_torch = ds['CMD0']['Im'].data[im_idx_imp]
+    
     if MAKE_PLTS:
         fig,ax = plt.subplots(figsize=fig_size, nrows=4)
         ax[0].plot(im_deconv*1e6, 'b', label='Meas:Im')
@@ -461,7 +462,7 @@ if TRAIN:
 
     # normalize 
     NORMALIZE = True
-    MAX_EPOCHS = 10
+    MAX_EPOCHS = 21
     configs = {}
     configs['max_target'] = torch.max(target_signal)
     configs['max_impulse'] = np.max(impulse_train)
@@ -498,7 +499,7 @@ if TRAIN:
     ax.plot(results['output'][-1].cpu().detach().numpy(), 'g', label='trained')
     ax.legend()
 
-    fig,ax = plt.subplots(figsize=fig_size)
+    fig,ax = plt.subplots(figsize=(fig_size[0], fig_size[1]*0.8))
     for e in results['epoch']:
         ax.plot(results['output'][e].cpu().detach().numpy(), label=''.format(e))
     ax.legend()
@@ -515,8 +516,8 @@ if TRAIN:
     # load data and analyze results vs. EPOCHS 
     from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-    epoch_list = np.asarray([0, 2, 4, 40, 80, 160, 399])
-    epoch_list = epoch_list[epoch_list<=MAX_EPOCHS]
+    epoch_list = np.asarray([0, 2, 20, 40, 80, 160, 399]) # 20 was 4 
+    epoch_list = epoch_list[epoch_list<MAX_EPOCHS]
     plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.viridis(np.linspace(0,1,len(epoch_list))))
     fig,ax = plt.subplots(figsize=fig_size)
     # make Loss vs. epoch a small inset 
@@ -528,12 +529,12 @@ if TRAIN:
     for ep in epoch_list:
         ax.plot(network_time*1e6, 
             (results['output'][ep].cpu().detach().numpy())*(configs['max_target'].cpu().detach().numpy()*1e6), label='{}'.format(ep))
-    ax.set_xlim([-20, 400])
+    ax.set_xlim([-20, 350])
     ax.set_ylabel('$I_m \; [\mu A]$')
     ax.set_xlabel('time [$\mu$s]')
 
     axins2 = inset_axes(ax, width="100%", height="100%", 
-                        bbox_to_anchor=(.45, .6, .3, .3),
+                        bbox_to_anchor=(.40, .6, .3, .3),
                         bbox_transform=ax.transAxes)
 
     axins2.loglog(np.asarray(results['epoch'])+1, results['loss'], marker='.', color='b')

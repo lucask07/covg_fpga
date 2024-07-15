@@ -51,13 +51,14 @@ scale_factor = (configs['max_target'] / configs['max_impulse']) * configs['cmd_c
 target_scale = configs['cmd_val'] * configs['cmd_conv_factor'] * 2.0
 t = np.linspace(start=0, stop=1 / FS * len(results['output'][-1]), num=len(results['output'][-1]))
 
-ax.plot((t - tl) * 1e6, (configs['target'] * target_scale).cpu().detach().numpy() * 1e6, label='$I_{CMD}$')
+ax.plot((t - tl) * 1e6, (configs['target'] * target_scale).cpu().detach().numpy() * 1e6, label='CMD')
 ax.plot((t - tl) * 1e6, (results['output'][-1] * configs['max_target'] * target_scale).cpu().detach().numpy() * 1e6,
-        label='$I_{CC}$', linestyle='--')
+        label='CC', linestyle='--')
 ax.set_xlabel('time [$\mu$s]')
 ax.set_ylabel('$I \; [\mu A]$')
 ax.set_xlim([-50, 250])
-ax.legend(loc=9, handlelength=2) # ensure that the dashed line is clear
+ax.yaxis.set_label_coords(-0.1,0.5) # so that the ylabels on the two stacked charts align
+ax.legend(loc=9, handlelength=1.8) # ensure that the dashed line is clear
 
 # and inset for the training
 axins2 = inset_axes(ax, width="100%", height="100%",
@@ -115,12 +116,12 @@ for adg_r, ccomp in ([(10, 47), (33, 47), (100, 47), (33, 4700), (100, 4700), (3
     ds['canceling_cc'] = h5_to_datastreams(os.path.join(base_dir, yrdate),
                                            f"canceling_cc_{method}_{yrdate}-{file_name}_rtia{adg_r}_ccomp{ccomp}.h5")
 
-    fig, ax = plt.subplots(figsize=fig_size)
+    fig, ax = plt.subplots(figsize=(fig_size[0],fig_size[1]*0.8))
     print('---------')
-    lbls = {'CMD0': '$I_{CMD}$',
-            'canceling_cc': '$I_{CC}$',
+    lbls = {'CMD0': 'CMD',
+            'canceling_cc': 'CC',
             'CC0': 'CC0',
-            'cancel': '$I_{CMD}+I_{CC}$'}
+            'cancel': 'CMD + CC'}
     for meas in ['CMD0', 'canceling_cc', 'CC0', 'cancel']:
         res['meas_config'].append(meas)
         data = ds[meas]['Im'].data
@@ -138,6 +139,8 @@ for adg_r, ccomp in ([(10, 47), (33, 47), (100, 47), (33, 4700), (100, 4700), (3
         if meas != 'CC0':
             if meas == 'cancel':
                 ax.plot(t[t_idx] * 1e6, data[t_idx] * 1e6, color=next(clr), label=lbls[meas], linestyle='--')
+            elif meas == 'canceling_cc':
+                ax.plot(t[t_idx] * 1e6, data[t_idx] * 1e6, color=next(clr), label=lbls[meas], linestyle='-.')
             else:
                 ax.plot(t[t_idx] * 1e6, data[t_idx] * 1e6, color=next(clr), label=lbls[meas])
         sf = step_info(data[t_idx], t[t_idx])  # the current isn't a step so this doesn't work well
@@ -150,7 +153,8 @@ for adg_r, ccomp in ([(10, 47), (33, 47), (100, 47), (33, 4700), (100, 4700), (3
     print('---------')
     ax.set_xlabel('time [$\mu$s]')
     ax.set_ylabel('$I \; [\mu A]$')
-    ax.legend()
+    ax.yaxis.set_label_coords(-0.1,0.5)
+    ax.legend(handlelength=3)
     ax.set_xlim([-50, 250])
     my_savefig(fig, fig_dir, f'cc_cancelation_measured_rtia{adg_r}_ccomp{ccomp}')
 
