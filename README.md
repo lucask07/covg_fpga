@@ -5,10 +5,10 @@ Verilog and Python for a general purpose data acquisition system using an OpalKe
 
 1. Clone the covg_fpga repository with github. This provides the required FPGA bitfile and test code. 
 
-2. Install pyripherals with pip
+2. Install pyripherals with pip 
 
 ```
-pip install pyripherals
+pip install git+https://github.com/lucask07/pyripherals
 ```
 
 To use an FPGA and pyripherals:
@@ -16,7 +16,7 @@ To use an FPGA and pyripherals:
 
 3. Download [FrontPanel](https://pins.opalkelly.com/downloads) from OpalKelly
 
-4. Download [Registers.xlsx](https://github.com/lucask07/covg_fpga/blob/daq_v2/python/Registers.xlsx) from the GitHub
+4. Download [Registers.xlsx](https://github.com/lucask07/pyripherals/blob/main/python/Registers.xlsx) from the GitHub
 
 5. Create config.yaml with create_yaml and edit fields as needed
 
