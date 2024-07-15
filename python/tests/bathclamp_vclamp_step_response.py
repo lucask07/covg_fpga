@@ -38,7 +38,7 @@ from analysis.adc_data import read_h5, separate_ads_sequence
 from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
-from boards import Daq, Clamp
+from boards import Daq, Clamp, Vsense2
 from calibration.electrodes import EphysSystem
 from observer import Observer
 from filters.filter_tools import butter_lowpass_filter
@@ -192,6 +192,9 @@ def ds_add_log(datastreams):
     datastreams.add_log_info({'fc_cmd': fc_cmd})
     datastreams.add_log_info({'model_cell': model_cell})
     datastreams.add_log_info({'sys_connections': sys_connections})
+    if VSENSE2:
+        datastreams.add_log_info({'notes': 'vsense2_board'})
+
     return datastreams
 
 DAC_FS = 2.5e6
@@ -253,8 +256,15 @@ gpio = Daq.GPIO(f)
 gpio.spi_debug("ads")
 gpio.ads_misc("convst")  # to check sample rate of ADS
 
-# instantiate the Clamp board providing a daughter card number (from 0 to 3)
-clamps = [None] * 4
+# instantiate the Clamp boards providing a daughter card number (from 0 to 3)
+VSENSE2 = True 
+if VSENSE2 is False:
+    DC_NUMS = [0,1,3] # DC_NUMS are the indices of the clamp boards. 
+else:
+    DC_NUMS = [0,1] # the VSENSE2 board cannot be a Clamp board 
+
+clamps = [None]*4
+
 for dc_num in DC_NUMS:
     if dc_num == dc_mapping['vsense']:
         clamp = Clamp(f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
@@ -373,7 +383,7 @@ for dc_num in [dc_mapping['clamp']]:
 
 fb_res = 60  # this is disconnected and now in unity-gain! 
 # Try with 5 different resistors
-adg_r = 100
+adg_r = 33
 ccomp = 47
 # Choose resistor; setup
 for dc_num in [dc_mapping['bath']]:
@@ -397,6 +407,35 @@ for dc_num in [dc_mapping['bath']]:
         addr_pins_2=0b000,
     )
     dc_configs[dc_num] = config_dict
+
+if VSENSE2:
+    # declare the Vsense2 class as the operating vsense board
+    vsense = Vsense2(fpga=f, DAC_addr_pins=0b001, dc_num=dc_mapping['vsense'], TCA_addr_pins=0b111) # I don't know why this needs to be 0b001 for DAC
+    #vsense.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
+
+    #read/write testing for DAC and I/O expander
+    message = 0xBF
+    vsense.DAC.write(message)
+    r = vsense.DAC.read()
+    print('-----READ/WRITE TESTS-----')
+    print(f'DAC - write: {message}, DAC read: {r}')
+
+    message = 0xAAAA #I/O expander writes 2 bytes
+    vsense.TCA.write(message)
+    r2 = vsense.TCA.read(register_name='OUTPUT') #need to specify here that I am reading from output
+    print(f'TCA OUTPUT - write: {message}, TCA read: {r2}')
+
+    message = 0x6666
+    vsense.TCA.write(message, register_name='INPUT') #defaults to writing to OUTPUT, so specify otherwise
+    r3 = vsense.TCA.read(register_name='INPUT') #defaults to reading input
+    print(f'TCA INPUT - write: {message}, TCA read: {r3}')
+
+    #calling gain setting method
+    #vsense.set_gains(0b0000, 0b0000)
+    gain1 = vsense.gain_dict[31]
+    gain2 = vsense.gain_dict[31]
+    vsense.setOffsetVoltage(0)
+    vsense.set_gain(0b1011, 0b1011) #requires DAC offset voltage set before running function. Could be combined easily.
 
 ephys_sys = EphysSystem()
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
@@ -529,7 +568,7 @@ first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 # run twice to remove initial transient 
 idx = 1
 datastreams = ds_add_log(datastreams)
-datastreams.to_h5(data_dir, f"intial_startup_{adg_r}rf_{ccomp}ccomp.h5", log_info)
+datastreams.to_h5(data_dir, f"initial_startup_{adg_r}rf_{ccomp}ccomp.h5", log_info)
 
 # measure CMD and CC impulse 
 CC_IMPULSE = False 
@@ -718,10 +757,11 @@ if 1:
     # adg_r_arr = [100]
     # adg_r_arr = [100, 100, 100, 100, 100, 100]
 
-    # cmd_val_arr = [0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0300, 0x0400, 0x0500, 0x0600, 0x0800, 0x0900, 0x0A00, 0x0C00, 0x0D00]
-    cmd_val_arr = np.arange(81)*64
     # at a DAC gain of x5 limit will be about 500 mV due to the x1/11 at the clamp board 
     mv_val_arr = np.concatenate( ([0,5,10,15,20,25,30,35,40], [50,60,70,80,90,100], [120, 140, 160, 180], [200, 240, 280, 320, 360, 400]) )
+    # short cmd step 
+    # mv_val_arr = np.concatenate( ([0],[80]) )
+
     UPDATE_CMD = True
 
     for cmd_mv in mv_val_arr:
