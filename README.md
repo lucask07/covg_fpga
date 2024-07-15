@@ -37,7 +37,6 @@ I. Delgadillo Bonequi, A. Stroschein, and L. J. Koerner, “A field-programmable
 
 A. Stroschein, I. D. Bonequi, and L. J. Koerner, “Pyripherals: A Python Package for Communicating with Peripheral Electronic Devices,” Journal of Open Source Software, vol. 7, no. 79, p. 4762, Nov. 2022, [doi: 10.21105/joss.04762](http://doi.org/10.21105/joss.04762).
 
-
 This work is partially supported by National Institutes of Health (NIH) R15 grant R15NS116907 to PI L. J. Koerner.
 
 ### The FPGA code is dervied from many open-source contributions. 
@@ -60,13 +59,17 @@ This work is partially supported by National Institutes of Health (NIH) R15 gran
 
 
 ## OpalKelly Module Compatibility. 
-We have targeted and tested with the [XEM7310-A75 module](https://opalkelly.com/products/xem7310/) (Xilinx Artix-7). We have not tested but anticipate reasonable portability to other USB 3 OpalKelly modules:
+We have targeted and tested with the [XEM7310-A75 module](https://opalkelly.com/products/xem7310/) (Xilinx Artix-7). We have not tested but anticipate reasonable portability to other USB 3 OpalKelly modules including:
 
 * XEM7310MT
 * XEM7320
 * XEM7305
 * XEM7360
 
-## (Approximate) FPGA Block Diagram 
+## FPGA Block Diagram (Approximate)
 <p align="center">
 <img src="docs/block_diagram/99_fig2.png" width="700">
+
+## Acknowledgments
+
+Research reported in this repository was supported by the National Institute Of Neurological Disorders And Stroke of the National Institutes of Health under Award Number R15NS116907. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
