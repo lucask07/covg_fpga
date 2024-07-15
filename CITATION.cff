@@ -8,8 +8,7 @@ message: >-
   metadata from this file.
 type: software
 authors:
-  - given-names: Lucas
-    name-particle: J.
+  - given-names: Lucas J.
     family-names: Koerner
     email: koerner.lucas@stthomas.edu
     orcid: 'https://orcid.org/0000-0002-7236-7202'
