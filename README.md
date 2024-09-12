@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/307838119.svg)](https://zenodo.org/doi/10.5281/zenodo.12745954)
+
 Verilog and Python for a general purpose data acquisition system using an OpalKelly FPGA as the main controller. The Python is designed to be a general purpose approach to interface with multiple peripheral components that contain register maps. 
 
 

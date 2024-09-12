@@ -1,0 +1,23 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: COVG FPGA and Python control code
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Lucas J.
+    family-names: Koerner
+    email: koerner.lucas@stthomas.edu
+    orcid: 'https://orcid.org/0000-0002-7236-7202'
+    affiliation: University of St. Thomas
+  - given-names: Abraham
+    family-names: Stroschein
+    email: ajstroschein@stthomas.edu
+    affiliation: University of St. Thomas
+  - given-names: Ian
+    family-names: Delgadillo Bonequi
+    email: ian.delbon@outlook.com
+    affiliation: University of St. Thomas
