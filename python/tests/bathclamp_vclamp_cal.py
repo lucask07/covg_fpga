@@ -1,11 +1,13 @@
 """
-The system uses two Daughtercards with:
+The system uses up to four Daughtercards with:
  1) the bath clamp - has a non-zero CMD voltage measures Im 
  2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
-
  and 
  3) a voltage sense board that cannot be disconnected via relays (combines with the voltage clamp board to create feedback loop)
 
+ and 
+ 4) (optionally) a guard clamp 
+ 
 Demonstrate calibrations to determine electrode impedances
 Step 1) measure CAL_SIG2 when injecting sinusoid at CAL_SIG1. Disconnect active feedback loop 
 
@@ -15,11 +17,7 @@ Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 
 TODO:
-separate bath and vclamp 
 Ensure no transient voltages -- check with oscilloscope; create function to put all DACs to host driven and midscale 
-create a chirp upload to the DDR to capture multiple frequencies at once -- DONE and works 
-clamp: freq_arr = np.logspace(np.log10(400), np.log10(50000), 8)
-bath : freq_arr = np.logspace(np.log10(40), np.log10(2000), 8)
 
 """
 import os
@@ -512,7 +510,7 @@ def measure_resistance(config_dict_test, dc_under_test, testing='bath', step=1,
         freq = 200
         num_repeats=10 
         blk_multiples=40
-        current_amp = 0.8
+        current_amp = 0.8 # amplitude not peak-to-peak 
     if testing=='vclamp':
         freq = 40 # chirp frequencies were confirmed on the oscilloscope. First three frequencies: 40, 69, 120 which is consistent with hte analysis. 
         num_repeats=50 

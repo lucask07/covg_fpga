@@ -1,12 +1,6 @@
-"""This script attempts to replicate Figure 4 on the biophysical poster. This
-consists of measuring the membrane current (Im) with the AD7961 after
-supplying a step voltage of 0-50mV by the AD5453.
-The system uses two Daughtercards with:
- 1) the bath clamp - has a non-zero CMD voltage measures Im 
- 2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
+"""
 
-Sept 2022
-
+Summer 2024 
 Dervied from clamp_step_response.py 
 
 Abe Stroschein, ajstroschein@stthomas.edu
@@ -36,16 +30,14 @@ from setup_paths import *
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
 from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
-from filters.filter_tools import butter_lowpass_filter, delayseq_interp
+from filters.filter_tools import bessel_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp, Vsense2
 from calibration.electrodes import EphysSystem
 from observer import Observer
-from filters.filter_tools import butter_lowpass_filter
 
 # from analysis.cc_calibration import cc_waveform
 from analysis.cc_inference import cat_cc_wave, infer_ccwave_spline
-
 
 sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork
 from pyabf.abfWriter import writeABF1 
@@ -90,14 +82,13 @@ def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8
     -------
     np.ndarray, np.ndarray : the CMD signal data, the CC signal data.
     """
-
     dac_offset = 0x2000
 
     cmd_signal = ddr.make_step(
         low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len)  # 1.6 ms between edges
 
     if fc is not None:
-        cmd_signal = butter_lowpass_filter(cmd_signal, cutoff=fc, fs=2.5e6, order=1)
+        cmd_signal = bessel_lowpass_filter(cmd_signal, cutoff=fc, fs=2.5e6, order=1)
 
     # create the cc using multiple methods
     if cc_pickle_num is not None:
@@ -114,7 +105,7 @@ def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8
 
     elif cc_val is None:  # get the cc signal from scaling the cmd signal
         if fc is not None:
-            cc_signal = butter_lowpass_filter(
+            cc_signal = bessel_lowpass_filter(
                 cmd_signal - dac_offset, cutoff=fc, fs=2.5e6, order=1)*cc_scale + dac_offset
         else:
             cc_signal = (
@@ -128,7 +119,7 @@ def make_cmd_cc(cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8
                                                high=dac_offset + int(cc_val),
                                                length=step_len) 
         if fc is not None:
-            cc_signal = butter_lowpass_filter(
+            cc_signal = bessel_lowpass_filter(
                 cc_signal, cutoff=fc, fs=2.5e6, order=1)
         if cc_delay != 0:
             cc_signal = delayseq_interp(
@@ -171,14 +162,14 @@ def write_ddr():
     ddr.write_finish()
 
 model_cell = {}
-model_cell['number'] = 2
+model_cell['number'] = 3 # guard
 # jumper configurable
 model_cell['Rs'] = 1e3
 model_cell['Rp1'] = 5e3
 model_cell['Rv1'] = 200e3
 # coupling cap back onto V1 might be DNI
 model_cell['coupling_cap_c20'] = 0
-model_cell['Rleak'] = 4.7e5 # to change
+model_cell['Rleak'] = 47e5 # this was misinterpreted. Its always been 4.7 Meg. 
 
 def ds_add_log(datastreams):
     datastreams.add_log_info(ephys_sys.__dict__)  # all properties of ephys_sys 
@@ -193,7 +184,7 @@ def ds_add_log(datastreams):
     datastreams.add_log_info({'model_cell': model_cell})
     datastreams.add_log_info({'sys_connections': sys_connections})
     if VSENSE2:
-        datastreams.add_log_info({'notes': 'vsense2_board'})
+        datastreams.add_log_info({'notes': 'vsense2_board, guard, connect CC'})
 
     return datastreams
 
@@ -201,10 +192,9 @@ DAC_FS = 2.5e6
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
-dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3} 
-#dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 2} 
-DC_NUMS = [0, 1, 3]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
-#DC_NUMS = [0, 1, 2]  # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
+
+dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 2, 'vsense': 3}  # LJK, 8/30/2024 move clamp to 2 to prepare for adding guard -- this will mess up some of the ADS8686 numbers
+# dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3, 'guard': 2} # Guard is not actually used and not connected  
 
 eps = Endpoint.endpoints_from_defines
 pwr_setup = "3dual"
@@ -215,6 +205,7 @@ if pwr_setup == "3dual":
     atexit.register(pwr_off, [dc_pwr])
 else:
     atexit.register(pwr_off, [dc_pwr, dc_pwr2])
+# change to 16.5 if the negative regulator is still populated
 config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
 
 # turn on the 7V
@@ -257,16 +248,17 @@ gpio.spi_debug("ads")
 gpio.ads_misc("convst")  # to check sample rate of ADS
 
 # instantiate the Clamp boards providing a daughter card number (from 0 to 3)
+# list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
 VSENSE2 = True 
 if VSENSE2 is False:
     DC_NUMS = [0,1,3] # DC_NUMS are the indices of the clamp boards. 
 else:
-    DC_NUMS = [0,1] # the VSENSE2 board cannot be a Clamp board 
+    DC_NUMS = [0,1,2] # the VSENSE2 board cannot be a Clamp board -- initialize all three to include the guard 
 
 clamps = [None]*4
 
 for dc_num in DC_NUMS:
-    if dc_num == dc_mapping['vsense']:
+    if dc_num == dc_mapping['vsense']: # skip this with VSENSE2 
         clamp = Clamp(f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
     else:
         clamp = Clamp(f, dc_num=dc_num, version=2)
@@ -301,7 +293,18 @@ Out[8]: 'I_1'
 In [9]: sys_connections['A1'].name
 Out[9]: 'P1_0'
 '''
+'''
+        self.parameters["ads_map"] = { # first key is daughter-card number, 2nd key is HDMI signal, tuple is ADS converter channel (letter) and number 
+            0: {"CAL_ADC": ('A',0), "AMP_OUT": ('A',1)},
+            1: {"CAL_ADC": ('B',0), "AMP_OUT": ('A',2)},
+            2: {"CAL_ADC": ('B',1), "AMP_OUT": ('A',3)},
+            3: {"CAL_ADC": ('A',4), "AMP_OUT": ('B',2)},
+        }
+'''
+
 ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
+ads_sequencer_setup = [('0', '0'), ('1', '1'), ('3', '2')] # with the guard added, want AMP_OUT on socket 2 which is at A3; CAL_ADC of the Guard is digitized 
+
 #ads_sequencer_setup = [('1', '0'), ('2', '0')] 
 
 codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
@@ -311,11 +314,12 @@ ads.set_fpga_mode()
 daq.TCA[0].configure_pins([0, 0])
 daq.TCA[1].configure_pins([0, 0])
 
-in_amp = 1 # 05/02 step response was 2; 05/04 in_amp = 1
+# in_amp = 1 # 05/02 step response was 2; 05/04 in_amp = 1
+in_amp = 2 # 05/02 step response was 2; 05/04 in_amp = 1
 dac_range = 5  # 5V full-scale range of the fast DACs 
 
 # ------ Collect Data --------------
-QUIET_DACS = False # if True use the host driven DAC to test noise
+QUIET_DACS = False # if True use the host driven DAC mode to quiet all DACs to test noise
 file_name = time.strftime("%Y%m%d-%H%M%S")
 datastream_out_fname = 'clamptest1_quietdacs{}_rtia{}_ccomp{}_inamp{}.h5'
 idx = 0
@@ -327,6 +331,7 @@ for i in range(6):
     daq.DAC[i].filter_select(operation="clear")
     if QUIET_DACS:
         daq.DAC[i].write(int(0x2000)) # midscale 
+        daq.DAC[i].set_data_mux("host")
     else:
         daq.DAC[i].write(int(0x2000))
         daq.DAC[i].set_data_mux("DDR")
@@ -334,6 +339,11 @@ for i in range(6):
     daq.DAC[i].change_filter_coeff(target="passthru")
     daq.DAC[i].write_filter_coeffs()
     daq.set_dac_gain(i, dac_range)  # 5V 
+
+# Quiet unused DACs (add 2024/09/12)
+for i in [2,4,5]:
+    daq.DAC[i].write(int(0x2000)) # midscale 
+    daq.DAC[i].set_data_mux("host")
 
 # --------  Enable fast ADCs  --------
 for chan in [0, 1, 2, 3]:
@@ -368,7 +378,7 @@ for dc_num in [dc_mapping['clamp']]:
         ADG_RES=clamp_res,
         PClamp_CTRL=0,
         P1_E_CTRL=0,
-        P1_CAL_CTRL=1,
+        P1_CAL_CTRL=0,
         P2_E_CTRL=0,
         P2_CAL_CTRL=1,
         gain=1,  # instrumentation amplifier
@@ -381,7 +391,7 @@ for dc_num in [dc_mapping['clamp']]:
     )
     dc_configs[dc_num] = config_dict
 
-fb_res = 60  # this is disconnected and now in unity-gain! 
+fb_res = 60  # this is disconnected and now in unity-gain! 60 is what configures the calibration to be at x1 
 # Try with 5 different resistors
 adg_r = 33
 ccomp = 47
@@ -397,7 +407,33 @@ for dc_num in [dc_mapping['bath']]:
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
         P2_E_CTRL=0,
-        P2_CAL_CTRL=1,
+        P2_CAL_CTRL=0,
+        gain=in_amp,  # instrumentation amplifier
+        FDBK=1,
+        mode="voltage",
+        EN_ipump=0,
+        RF_1_Out=1,
+        addr_pins_1=0b110,
+        addr_pins_2=0b000,
+    )
+    dc_configs[dc_num] = config_dict
+
+fb_res = 60  # this is disconnected and now in unity-gain! 
+# Try with 5 different resistors
+adg_r = 332
+ccomp = 4700
+for dc_num in [dc_mapping['guard']]:
+    log_info, config_dict = clamps[dc_num].configure_clamp(
+        ADC_SEL="CAL_SIG2",  # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1; must also close the corresponding relay. Note that CAL_SIG1 and P1_CAL_CTRL=1 caused oscillations.
+        DAC_SEL="noDrive",
+        CCOMP=ccomp,
+        RF1=fb_res,  # feedback circuit
+        ADG_RES=adg_r,
+        PClamp_CTRL=1,
+        P1_E_CTRL=0,
+        P1_CAL_CTRL=0,
+        P2_E_CTRL=0,
+        P2_CAL_CTRL=0,
         gain=in_amp,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -437,7 +473,7 @@ if VSENSE2:
     vsense.setOffsetVoltage(0)
     vsense.set_gain(0b1011, 0b1011) #requires DAC offset voltage set before running function. Could be combined easily.
 
-ephys_sys = EphysSystem()
+ephys_sys = EphysSystem(system='Dagan_guard')
 sys_connections = create_sys_connections(dc_configs, daq, ephys_sys, inamp_gain_correct=clamps[dc_mapping['bath']].correct_inamp_gain)
 
 def ads_plot_zoom(ax, t_range=[3250,3300]):
@@ -453,7 +489,7 @@ plt.close('all')
 first_time = True
 cmd_mv = 50
 cmd_val, actual_v = cmd_mv2dac(cmd_mv, sys_connections, dac_chan='D1')
-set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=step_len, cc_val=cc_val, cc_pickle_num=None)
 
 ddr.repeat_setup() # Get data
@@ -548,7 +584,7 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
         im_data = datastreams['Im'].data
         t = datastreams['Im'].create_time()
         fc = 500e3 #5e3
-        im_data_filt = butter_lowpass_filter(im_data, cutoff=fc, fs=1/(t[1]-t[0]), order=5)
+        im_data_filt = bessel_lowpass_filter(im_data, cutoff=fc, fs=1/(t[1]-t[0]), order=5)
         idx = (t > first_pos_step + 2e-3) & (t < first_pos_step + 5e-3)
         im_noise_wb = np.std(im_data[idx])
         im_noise_filt = np.std(im_data_filt[idx])
@@ -759,8 +795,8 @@ if 1:
 
     # at a DAC gain of x5 limit will be about 500 mV due to the x1/11 at the clamp board 
     mv_val_arr = np.concatenate( ([0,5,10,15,20,25,30,35,40], [50,60,70,80,90,100], [120, 140, 160, 180], [200, 240, 280, 320, 360, 400]) )
-    # short cmd step 
-    # mv_val_arr = np.concatenate( ([0],[80]) )
+    # short cmd step -- for noise investigations
+    # mv_val_arr = np.concatenate( ([0],[40]) )
 
     UPDATE_CMD = True
 
@@ -779,10 +815,10 @@ if 1:
                 dc_configs[0]['ADG_RES'] = adg_r
                 dc_configs[0]['CCOMP'] = ccomp
                 clamps[0].configure_clamp(**dc_configs[0])
-                if UPDATE_CMD:
-                    set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+                if UPDATE_CMD: # 9/6/2024, add the guard to the cmd update. 
+                    set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
                         step_len=step_len, cc_val=None, cc_pickle_num=None)
-                    time.sleep(0.2)
+                    time.sleep(0.2) # extend for noise analysis
                 
                 filename = 'step_rtia{}_ccomp{}_cmd{}.h5'.format(adg_r, ccomp, cmd_val)
                 datastreams, log_info = capture_data(idx=1, filename=filename)
@@ -810,13 +846,6 @@ if 1:
 
                 # add log info to datastreams -- any dictionary is ok  
                 datastreams = ds_add_log(datastreams)
-
-                #try:
-                #    datastreams.pop('OBSV')
-                #    datastreams.pop('OBSV_CH1')
-                #    datastreams.pop('PI_ERR')
-                #except:
-                #    pass
 
                 datastreams.to_h5(data_dir, filename, log_info)
 
@@ -860,14 +889,22 @@ if 1:
         sig_name = sig 
         if sig_name == 'I':
             sig_name = 'Vm'
-        si = datastreams[sig].stepinfo_range([first_pos_step-20e-6, first_pos_step+170e-6])
-        print(f'{sig} step info: {si}')
-        print('-'*100)
+        try:
+            si = datastreams[sig].stepinfo_range([first_pos_step-20e-6, first_pos_step+170e-6])
+            print(f'{sig} step info: {si}')
+            print('-'*100)
+        except:
+            print(f'Step info failed for signal: {sig}')
 
     if 0:
-        # sweep the gain of the voltage clamp 
+        # sweep the gain of the voltage clamp; to check on the oscilloscope 
         for rf in Clamp.configs['RF1_dict']:
             dc_configs[1]['RF1'] = rf
             clamps[1].configure_clamp(**dc_configs[1])
             print(f'RF = {rf}')
             input('next?')
+
+    dc_configs[0]['ADG_RES'] = 100
+    dc_configs[0]['CCOMP'] = 47
+    clamps[0].configure_clamp(**dc_configs[0])
+    print(f'Configure at known good config to measure on oscope')

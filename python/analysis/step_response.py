@@ -8,6 +8,10 @@ Plot:
 
 Lucas Koerner: koerner.lucas@stthomas.edu
 
+TODO: 
+check the cmd 2 mV 
+verify that the InAmp is at a gain of x2 
+
 """
 import os, sys
 import numpy as np
@@ -18,7 +22,7 @@ import scipy.signal as signal
 from scipy.integrate import cumulative_trapezoid
 import itertools 
 
-from filters.filter_tools import butter_lowpass_filter
+from filters.filter_tools import bessel_lowpass_filter
 from datastream.datastream import h5_to_datastreams 
 from analysis.adc_data import find_peak, calc_psd
 from analysis.utils import my_savefig, fig_size # also configures matplotlib defautls 
@@ -57,7 +61,7 @@ def filter_fc(y, fs, fc, REMOVE_DC = True):
         y = y
         fs = fs
 
-    y_filt = butter_lowpass_filter(y, cutoff=fc, fs=fs, order=5)
+    y_filt = bessel_lowpass_filter(y, cutoff=fc, fs=fs, order=5)
     filt_t = np.linspace(0, len(y_filt)-1,len(y_filt))*1/fs
 
     return y_filt, filt_t
@@ -69,15 +73,11 @@ def filter_fc(y, fs, fc, REMOVE_DC = True):
 data_dir_end = r'20230704'
 #data_dir_end = r'20240320'
 data_dir_end = r'20240502'
+data_dir_end = r'20240906'
+data_dir_end = r'20240910'
+
 
 data_dir = os.path.join(data_dir_covg, data_dir_end)
-
-
-#filename = 'datastreams2_output_quietdacs_rtia{}_ccomp{}.h5' # 3 uses RF1 = 30
-filename = 'noisetest9_quietdacs_rtia{}_ccomp{}.h5'
-filename = 'clamptest1_rtia{}_ccomp{}.h5'
-filename = 'clamptest8_quietdacsFalse_rtia{}_ccomp{}.h5'
-filename = 'clamptest1_quietdacsFalse_rtia{}_ccomp{}_inamp{}.h5'
 
 # for 05/02
 filename = 'step_rtia{}_ccomp{}_cmd{}.h5'
@@ -88,7 +88,7 @@ time_range = [-50, 250] # [us] before and after peak; datastream plotting uses u
 rtia = 100 # kilo-ohms 
 ccomp = 47 # pF 
 in_amp_arr = 2 # gain of instrumentation amplifier 
-cmd = 705
+cmd = 719 # change for 0906 data 
 
 figs = []
 axs = []
@@ -149,7 +149,7 @@ fig_m, ax_m = plt.subplots(figsize = fs, nrows=2, ncols=1)
 def i_step_and_q(rtia, ccomp, cmd, fc=100e3):
 
     in_amp = 2
-    if data_dir_end == '20240502':
+    if (data_dir_end == '20240502') or (data_dir_end == '20240906')  or (data_dir_end == '20240910'):
         datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, cmd))
     else:
         datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, in_amp))
@@ -238,7 +238,7 @@ for in_amp in [in_amp_arr]:
 #        for rtia in [33, 100, 332, 1000, 3000, 10000]:
         #for rtia in [100]:
         for rtia in [100]:
-            if data_dir_end == '20240502':
+            if (data_dir_end == '20240502') or (data_dir_end == '20240906') or (data_dir_end == '20240910'):
                 datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, cmd))
             else:
                 datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, in_amp))
@@ -433,8 +433,9 @@ cmd_vals = np.unique(np.asarray(cmd_vals))
 # find the peak once so that this doesn't break with CMD = 0 
 rtia = 33
 ccomp = 47 
-cmd = 705
-if data_dir_end == '20240502':
+cmd = 719
+
+if (data_dir_end == '20240502') or (data_dir_end == '20240906') or (data_dir_end == '20240910'):
     datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, cmd))
 else:
     datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, in_amp))
@@ -464,7 +465,7 @@ for in_amp in [in_amp_arr]:
         for rtia in [33, 100, 332, 1000]:
 #        for rtia in [33]:
             for cmd in cmd_vals:
-                if data_dir_end == '20240502':
+                if (data_dir_end == '20240502') or (data_dir_end == '20240906') or (data_dir_end == '20240910'):
                     datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, cmd))
                 else:
                     datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, in_amp))
@@ -473,58 +474,58 @@ for in_amp in [in_amp_arr]:
                     # run noise analysis -- since cmd == 0 can use the whole trace 
                     t = datastreams['Im'].create_time()*1e6
                     noise_res = noise_analysis(datastreams, rtia, ccomp, in_amp, t0_us, np.max(t), noise_res)
+                else: # skip step info with cmd=0 since it sometimes fails and is meaningless.
+                    res['cmd'].append(cmd)
+                    res['ccomp'].append(ccomp)
+                    res['rtia'].append(rtia)
 
-                res['cmd'].append(cmd)
-                res['ccomp'].append(ccomp)
-                res['rtia'].append(rtia)
+                    if rtia == 1000:
+                        time_range = [-50, 600]
+                    else:
+                        time_range = [-50, 400]
+                    # Analyze current Im 
+                    t = datastreams['Im'].create_time()*1e6 - t0_us
+                    fs = datastreams['Im'].sample_rate
+                    idx = (t > time_range[0]) & (t < time_range[1])
+                    y = datastreams['Im'].data[idx]
+                    y = y - np.average(y[-100:]) # remove steady-state current (average for 20 us)
 
-                if rtia == 1000:
-                    time_range = [-50, 600]
-                else:
-                    time_range = [-50, 400]
-                # Analyze current Im 
-                t = datastreams['Im'].create_time()*1e6 - t0_us
-                fs = datastreams['Im'].sample_rate
-                idx = (t > time_range[0]) & (t < time_range[1])
-                y = datastreams['Im'].data[idx]
-                y = y - np.average(y[-100:]) # remove steady-state current (average for 20 us)
-
-                fc = 100e3
-                if fc is not None:
-                    y, t = filter_fc(y, fs, fc, REMOVE_DC = False)
-                    t = t*1e6 + time_range[0]
-                else:
-                    t = t[idx]
-
-                res['Ipk'].append(np.max(y))
-                dt = (t[1] - t[0])/1e6 # use filtered time in seconds 
-                q = (cumulative_trapezoid(y*dt))*1e9
-                q = np.append(q, q[-1]) # trapezoid result is one shorter than np.cumsum
-
-                res['Qt'].append(q[-1])
-
-                t = datastreams['CMD0'].create_time()*1e6 - t0_us
-                idx = (t > time_range[0]) & (t < time_range[1])
-                y = datastreams['CMD0'].data[idx]
-                res['cmd_v'].append(y[-1] - y[0])
-
-                if rtia >= 332:
-                    fc = 10e3 # filter for stepinfo processing so that setting time (within 2%) is accurate
-                else:
                     fc = 100e3
+                    if fc is not None:
+                        y, t = filter_fc(y, fs, fc, REMOVE_DC = False)
+                        t = t*1e6 + time_range[0]
+                    else:
+                        t = t[idx]
 
-                # need to extend step response processing to 550 us for the 332 and 1000 rtia.
-                si1 = datastreams['P1'].stepinfo_range([ (time_range[0] + t0_us)*1e-6, (time_range[1] + 300 + t0_us)*1e-6], fc=fc)
-                res['tr_p1'].append(si1['RiseTime'])
-                res['settle_p1'].append(si1['SettlingTime'] - t0_us/1.0e6) # finds absolute settling time in us
-                res['os_p1'].append(si1['Overshoot'])
-                res['peak_p1'].append(si1['Peak'])
-                res['ss_p1'].append(si1['SteadyStateValue'])
+                    res['Ipk'].append(np.max(y))
+                    dt = (t[1] - t[0])/1e6 # use filtered time in seconds 
+                    q = (cumulative_trapezoid(y*dt))*1e9
+                    q = np.append(q, q[-1]) # trapezoid result is one shorter than np.cumsum
 
-                si2 = datastreams['Im'].stepinfo_range([(time_range[0] + t0_us)*1e-6, (time_range[1] + 300 + t0_us)*1e-6], fc=fc)
-                res['tr_im'].append(si2['RiseTime'])
-                res['us_im'].append(si2['Undershoot'])
-                res['peak_time_im'].append(si2['PeakTime'] - t0_us*1e-6)
+                    res['Qt'].append(q[-1])
+
+                    t = datastreams['CMD0'].create_time()*1e6 - t0_us
+                    idx = (t > time_range[0]) & (t < time_range[1])
+                    y = datastreams['CMD0'].data[idx]
+                    res['cmd_v'].append(y[-1] - y[0])
+
+                    if rtia >= 332:
+                        fc = 10e3 # filter for stepinfo processing so that setting time (within 2%) is accurate
+                    else:
+                        fc = 100e3
+
+                    # need to extend step response processing to 550 us for the 332 and 1000 rtia.
+                    si1 = datastreams['P1'].stepinfo_range([ (time_range[0] + t0_us)*1e-6, (time_range[1] + 300 + t0_us)*1e-6], fc=fc)
+                    res['tr_p1'].append(si1['RiseTime'])
+                    res['settle_p1'].append(si1['SettlingTime'] - t0_us/1.0e6) # finds absolute settling time in us
+                    res['os_p1'].append(si1['Overshoot'])
+                    res['peak_p1'].append(si1['Peak'])
+                    res['ss_p1'].append(si1['SteadyStateValue'])
+
+                    si2 = datastreams['Im'].stepinfo_range([(time_range[0] + t0_us)*1e-6, (time_range[1] + 300 + t0_us)*1e-6], fc=fc)
+                    res['tr_im'].append(si2['RiseTime'])
+                    res['us_im'].append(si2['Undershoot'])
+                    res['peak_time_im'].append(si2['PeakTime'] - t0_us*1e-6)
 
 df = pd.DataFrame(res)
 df.to_csv(os.path.join(figure_dir_paper, f'step_response_summary_{data_dir_end}_inamp{in_amp}.csv'), index=False)
@@ -599,9 +600,9 @@ df_sum.to_csv(os.path.join(figure_dir_paper, f'step_response_total_summary_{data
 
 # given these 2 dataframes export to Latex table 
 
-# cmd_val of 705 is 80 mV; 88 is 10 mV -- using 10 mV to avoid saturation 
+# cmd_val of 719 is 80 mV; 88 is 10 mV -- using 10 mV to avoid saturation 
 # Condition to select rows
-condition = ((df['cmd'] == 705) & ((df['rtia'] == 33) | (df['rtia'] == 100))) | ((df['cmd'] == 88) & ((df['rtia'] == 332) | (df['rtia'] == 1000)))               
+condition = ((df['cmd'] == 719) & ((df['rtia'] == 33) | (df['rtia'] == 100))) | ((df['cmd'] == 89) & ((df['rtia'] == 332) | (df['rtia'] == 1000)))               
 dfs = df[condition]
 # plot the step response for each of the selections 
 # Higher rtia will look noisier because of considerably smaller CMD step (and subsequent scaling)

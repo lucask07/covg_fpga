@@ -12,7 +12,7 @@ import scipy.signal as signal
 from scipy.integrate import cumulative_trapezoid
 import itertools 
 
-from filters.filter_tools import butter_lowpass_filter
+from filters.filter_tools import bessel_lowpass_filter, butter_lowpass_filter
 from datastream.datastream import h5_to_datastreams 
 from analysis.adc_data import find_peak, calc_psd
 from analysis.utils import my_savefig, fig_size # also configures matplotlib defautls 
@@ -51,13 +51,20 @@ def filter_fc(y, fs, fc, REMOVE_DC = True):
         y = y
         fs = fs
 
-    y_filt = butter_lowpass_filter(y, cutoff=fc, fs=fs, order=5)
+    y_filt = bessel_lowpass_filter(y, cutoff=fc, fs=fs, order=5)
     filt_t = np.linspace(0, len(y_filt)-1,len(y_filt))*1/fs
 
     return y_filt, filt_t
 
 
 data_dir_end = r'20240621a'
+#data_dir_end = r'20240906'
+#data_dir_end = r'20240910a'
+data_dir_end = r'20240910'
+data_dir_end = r'20240911'
+data_dir_end = r'20240912'
+
+
 data_dir = os.path.join(data_dir_covg, data_dir_end)
 
 filename = 'initial_startup_{}rf_{}ccomp.h5'
@@ -69,7 +76,7 @@ time_range = [-50, 250] # [us] before and after peak; datastream plotting uses u
 rtia = 33 # kilo-ohms 
 ccomp = 47 # pF 
 in_amp_arr = 2 # gain of instrumentation amplifier 
-cmd = 1438
+cmd = 719
 
 def noise_analysis(datastreams, rtia, ccomp, in_amp, t0_us, t0_us_stop, res, PLT=True):
     # noise analysis, ensure away from a peak 
@@ -105,6 +112,10 @@ def noise_analysis(datastreams, rtia, ccomp, in_amp, t0_us, t0_us_stop, res, PLT
         y_filt, filt_t = filter_fc(y, fs, fc, REMOVE_DC = True)
 
         # append results 
+        dc_num = next(key for key, value in datastreams.dc_mapping.items() if value == 'bath')
+        in_amp = datastreams.dc_configs[dc_num]['gain']
+        rtia = datastreams.dc_configs[dc_num]['ADG_RES']
+        ccomp = datastreams.dc_configs[dc_num]['CCOMP']
         res['rtia'].append(rtia)
         res['ccomp'].append(ccomp)
         res['in_amp'].append(in_amp)
@@ -119,95 +130,6 @@ fs = fig_size
 fs = (fig_size[0], fig_size[1]*1.2) # was 1.8
 fig_m, ax_m = plt.subplots(figsize = fs, nrows=2, ncols=1)
 
-def i_step_and_q(rtia, ccomp, cmd, fc=100e3):
-
-    in_amp = 2
-    if data_dir_end == '20240502':
-        datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, cmd))
-    else:
-        datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, in_amp))
-
-    # plot current Im 
-    t = datastreams['Im'].create_time()*1e6 - t0_us
-    fs = datastreams['Im'].sample_rate
-    idx = (t > time_range[0]) & (t < time_range[1]) # time range is in us around the step
-    y = datastreams['Im'].data[idx]
-    idx_pedestal = t[idx] < -10
-    y = y - np.average(y[idx_pedestal]) # remove steady-state current 
-
-    if fc is not None:
-        y, t = filter_fc(y, fs, fc, REMOVE_DC = False)
-        t = t*1e6 + time_range[0]
-    else:
-        t = t[idx]
-
-    # 2x1 subplot for manuscript 
-    fs = fig_size 
-    # increase height to support 2x1 
-    fs = (fig_size[0], fig_size[1]*1.2) # was 1.8
-    fig_m, ax_m = plt.subplots(figsize = fs, nrows=2, ncols=1)
-
-    # 2x1 for manuscript 
-    lns1 = ax_m[1].plot(t, y*1e6, label='$I_m$')
-    ax_m[1].set_xlim(time_range)
-    ax_m[1].set_xlabel('t [$\mu$s]')
-    ax_m[1].set_ylabel('I [$\mu$A]')
-
-    dt = (t[1] - t[0])/1e6 # use filtered time in seconds 
-
-    ax_right = ax_m[1].twinx()
-    #lns2 = ax_right.plot(t, (np.cumsum(y*dt))*1e9, label=f'Q', color='tab:orange')
-    q = (cumulative_trapezoid(y*dt))*1e9
-    q = np.append(q, q[-1]) # trapezoid result is one shorter than np.cumsum
-
-    lns2 = ax_right.plot(t, q, label=f'Q', color='tab:orange')
-    ax_right.set_xlim(time_range)
-    ax_right.set_xlabel('t [$\mu$s]')
-    ax_right.set_ylabel('Q [nC]')
-
-    # added these three lines
-    lns = lns1+lns2
-    labs = [l.get_label() for l in lns]
-    ax_m[1].legend(lns, labs, loc=5)
-
-    # plot P1 voltage 
-    t = datastreams['P1'].create_time()*1e6 - t0_us
-    idx = (t > time_range[0]) & (t < time_range[1])
-    y = datastreams['P1'].data[idx]
-    PLOT_P2 = False # in 05/02 data included P2 datastream; generally distracting so will omit  
-    if PLOT_P2: 
-        try:
-            t2 = datastreams['P2'].create_time()*1e6 - t0_us
-            idx2 = (t2 > time_range[0]) & (t2 < time_range[1])
-            y2 = datastreams['P2'].data[idx2]
-        except:
-            PLOT_P2 = False
-
-    y_ss = np.average(y[-100:])
-    t_cmd = datastreams['CMD0'].create_time()*1e6 - t0_us
-    idx_cmd = (t_cmd > time_range[0]) & (t_cmd < time_range[1])
-    y_cmd = datastreams['CMD0'].data[idx_cmd]
-
-    ax_m[0].plot(t[idx], y*1e3, label=f'P1')
-    ax_m[0].plot(t_cmd[idx_cmd], y_cmd*1e3, label=f'CMD')
-    if PLOT_P2:
-        ax_m[0].plot(t[idx], y2*1e3, label=f'P2')
-
-    ax_m[0].set_xlim(time_range)
-    ax_m[0].set_xlabel('t [$\mu$s]')
-    ax_m[0].set_ylabel('V [mV]')
-    ax_m[0].legend(loc=5)
-
-    if SAVE_FIG:
-        my_savefig(fig_m, figure_dir_paper, f'voltage_cmd_im_q_rtia{rtia}_ccomp{ccomp}_cmd{cmd}')
-        try:
-            my_savefig(fig_m, figure_dir_paper, f'voltage_cmd_im_q_rtia{rtia}_ccomp{ccomp}_cmd{cmd}')
-        except:
-            print('Cannot find directory {}'.format(figure_dir_paper))
-
-    return datastreams 
-
-
 # find all cmd_vals by inspecting the directory 
 import glob 
 fs = glob.glob(data_dir + "/step*.h5")
@@ -220,8 +142,13 @@ cmd_vals = np.unique(np.asarray(cmd_vals))
 # find the peak once so that this doesn't break with CMD = 0 
 rtia = 33
 ccomp = 47 
-cmd = 1438
+cmd = 719
 datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, cmd))
+# append results 
+dc_num = next(key for key, value in datastreams.dc_mapping.items() if value == 'bath')
+in_amp = datastreams.dc_configs[dc_num]['gain']
+rtia = datastreams.dc_configs[dc_num]['ADG_RES']
+ccomp = datastreams.dc_configs[dc_num]['CCOMP']
 
 pos_pks = find_peak(datastreams['CMD0'].create_time(), np.diff(datastreams['CMD0'].data), th=0.2e-3, height=1e-3, distance=100)
 neg_pks = find_peak(datastreams['CMD0'].create_time(), -np.diff(datastreams['CMD0'].data), th=0.2e-3, height=1e-3, distance=100)
@@ -251,46 +178,65 @@ noise_res = {'rtia':[], 'ccomp':[], 'in_amp':[], 'fc':[], 'im_std':[]}
 
 fig1,ax1=plt.subplots(figsize=(fig_size[0], fig_size[1]*0.8))
 fig2,ax2=plt.subplots(figsize=(fig_size[0], fig_size[1]*0.8))
+fig3,ax3=plt.subplots(figsize=(fig_size[0], fig_size[1]*0.8))
 
-for in_amp in [in_amp_arr]:
+PLT_SPECTRA = False
+for in_amp in [in_amp_arr]: # not used in most experiments
     for ccomp in [47, 4700]:
         speed = 'fast' if ccomp==47 else 'slow' 
         for rtia in [33, 100, 332, 1000]:
 #        for rtia in [33]:
-            for cmd in [0,1438]:
+            for cmd in [0, 719]:
                 datastreams = h5_to_datastreams(data_dir, filename.format(rtia, ccomp, cmd))
-
                 if cmd==0:
+                    # confirm daughter card configuration 
+                    # find socket of bath clamp 
+                    dc_num = next(key for key, value in datastreams.dc_mapping.items() if value == 'bath')
+                    inamp_gain = datastreams.dc_configs[dc_num]['gain']
+                    rf = datastreams.dc_configs[dc_num]['ADG_RES']
+                    ccomp = datastreams.dc_configs[dc_num]['CCOMP']
+                    # Im conversion factor 
+                    im_cf = datastreams['Im'].conversion_factor 
+                    print(f'bath daughter card. InAmp = {inamp_gain}; Rf = {rf}; ccomp = {ccomp}; Im conversion factor = {im_cf}')
+
                     # run noise analysis -- since cmd == 0 can use the whole trace 
                     t = datastreams['Im'].create_time()*1e6
+                    print(f'Noise analysis loop: t0 {t0_us}, max time {np.max(t)}')
                     noise_res = noise_analysis(datastreams, rtia, ccomp, in_amp, t0_us, np.max(t), noise_res, PLT=False)
 
-                    t = datastreams['Im'].create_time()
-                    idx = (t > t0_us/1e6) & (t < np.max(t)) # start at the first detected peak just so that the signal has time to settle.
-                    y = datastreams['Im'].data[idx]
-                    fs = datastreams['Im'].sample_rate
+                    if PLT_SPECTRA:
+                        t = datastreams['Im'].create_time()
+                        idx = (t > t0_us/1e6) & (t < np.max(t)) # start at the first detected peak just so that the signal has time to settle.
+                        y = datastreams['Im'].data[idx]
+                        fs = datastreams['Im'].sample_rate
+                        ax3.plot(t[idx], y) 
 
-                    f, im_pdensity = calc_psd(y, fs, nperseg=1024*8, scaling='density') # was spectrum, density is the default has units of V^2/Hz
-                    f, im_spectrum = calc_psd(y, fs, nperseg=1024*8, scaling='spectrum') # was spectrum, density is the default has units of V^2/Hz
+                        f, im_pdensity = calc_psd(y, fs, nperseg=1024*8, scaling='density') # was spectrum, density is the default has units of V^2/Hz
+                        f, im_spectrum = calc_psd(y, fs, nperseg=1024*8, scaling='spectrum') # was spectrum, density is the default has units of V^2/Hz
 
-                    if ( ((rtia==33) & (ccomp==47)) | ((rtia==100) & (ccomp==47)) | ((rtia==332) & (ccomp==4700)) | ((rtia==1000) & (ccomp==4700))):
-                        ax1.loglog(f, np.sqrt(im_pdensity)*1e9, marker='.', label=f'{rtia} k$\Omega$, {speed}')
-                        # note only **2 for the nA conversion factor 
-                        # https://docs.scipy.org/doc/scipy/tutorial/signal.html#tutorial-spectralanalysis
-                        ax2.loglog(f, np.sqrt(np.cumsum(im_spectrum*1e9**2)), marker='.', label=f'{rtia} k$\Omega$, {speed}')
+                        if ( ((rtia==33) & (ccomp==47)) | ((rtia==100) & (ccomp==47)) | ((rtia==332) & (ccomp==4700)) | ((rtia==1000) & (ccomp==4700))):
+                            ax1.loglog(f, np.sqrt(im_pdensity)*1e9, marker='.', label=f'{rtia} k$\Omega$, {speed}')
+                            # note only **2 for the nA conversion factor 
+                            # https://docs.scipy.org/doc/scipy/tutorial/signal.html#tutorial-spectralanalysis
+                            ax2.loglog(f, np.sqrt(np.cumsum(im_spectrum*1e9**2)), marker='.', label=f'{rtia} k$\Omega$, {speed}')
+if PLT_SPECTRA:
+    ax1.set_ylabel('I/$\sqrt{Hz}$ [nA]')
+    ax1.set_xlabel('f [Hz]')
+    ax1.set_xlim([400, 2.5e6])
+    ax1.legend()
+    my_savefig(fig1, figure_dir_paper, f'noise_psd')
 
-ax1.set_ylabel('I/$\sqrt{Hz}$ [nA]')
-ax1.set_xlabel('f [Hz]')
-ax1.set_xlim([400, 2.5e6])
-ax1.legend()
-my_savefig(fig1, figure_dir_paper, f'noise_psd')
+    ax2.set_ylabel('Integrated noise [nA]')
+    ax2.set_xlabel('f [Hz]')
+    ax2.set_xlim([400, 2.5e6])
+    ax2.set_ylim([0.2, 3e2])
+    ax2.legend()
+    my_savefig(fig2, figure_dir_paper, f'integrated_noise')
 
-ax2.set_ylabel('Integrated noise [nA]')
-ax2.set_xlabel('f [Hz]')
-ax2.set_xlim([400, 2.5e6])
-ax2.set_ylim([0.2, 3e2])
-ax2.legend()
-my_savefig(fig2, figure_dir_paper, f'integrated_noise')
+    ax3.set_ylabel('Im')
+    ax3.set_xlabel('t [s]')
+    ax3.legend()
+    my_savefig(fig3, figure_dir_paper, f'noise_time_trace')
 
 # pandas dataframe to summarize results
 df_noise = pd.DataFrame(noise_res)

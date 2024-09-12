@@ -29,7 +29,7 @@ import numpy as np
 from scipy import signal
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
 from analysis.adc_data import read_h5, separate_ads_sequence
-from filters.filter_tools import butter_lowpass_filter
+from filters.filter_tools import bessel_lowpass_filter
 from control.matlab import stepinfo
 sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
 sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
@@ -111,7 +111,7 @@ class Datastream():
         y = self.data[idx]
 
         if fc is not None:
-            y = butter_lowpass_filter(y, cutoff=fc, fs=FS, order=order)
+            y = bessel_lowpass_filter(y, cutoff=fc, fs=FS, order=order)
 
         #  the Wiener deconvolution adds noise to the denominator so that the result doesn't explode.
         # imp_resp_w = wiener_deconvolution(y, step_func)[:(len(y)-len(step_func) + 1)]
@@ -141,7 +141,7 @@ class Datastream():
         
         Parameters 
         time_range : list [2 elements] specify a time range [in seconds] 
-        fc : cutoff frequency of 5th order Butterworth filter. Default is None which skipps the filter 
+        fc : cutoff frequency of 5th order Butterworth filter. Default is None which skips the filter 
         """
         def filter_fc(y, fs, fc, REMOVE_DC = True):
 
@@ -154,7 +154,7 @@ class Datastream():
                 y = y
                 fs = fs
 
-            y_filt = butter_lowpass_filter(y, cutoff=fc, fs=fs, order=5)
+            y_filt = bessel_lowpass_filter(y, cutoff=fc, fs=fs, order=5)
             filt_t = np.linspace(0, len(y_filt)-1,len(y_filt))*1/fs
 
             return y_filt, filt_t
@@ -171,10 +171,13 @@ class Datastream():
             t = t[idx]
 
         # get step info 
-        try:
-            si = stepinfo(y, t)
-        except:
-            si = None
+        si = stepinfo(y, t)
+        # try:
+        #     si = stepinfo(y, t)
+        # except Exception as e: 
+        #     print('Error in step info')
+        #     print(e)
+        #     si = None
 
         return si
 
@@ -516,7 +519,7 @@ def create_sys_connections(dc_config_dicts, daq_brd, ephys_sys=None, system='daq
                 if amp_net == 'AMP_OUT':
                     try:
                         v_sense_gain = dc_config_dicts[dc_config]['VSENSE']
-                        gain = v_sense_gain*11
+                        gain = v_sense_gain
                     except:
                         if dc_config_dicts[dc_config]['RF1'] == 60: # use RF1 = 60 as code for unity gain 
                             gain = 11

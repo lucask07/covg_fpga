@@ -125,6 +125,37 @@ class EphysSystem:
                           nominal={'res':200e3, 'offset':0})
             self.electrodes.append(e)
 
+        if self.system == 'Dagan_guard':
+            self.dc_mapping = {0: 'bath', 1: 'guard', 2: 'clamp', 3:'vclamp'}
+            self.daughtercard_to_net['vclamp'] = {'AMP_OUT': 'V1s', 'CAL_ADC': 'nc', 'AD7961': 'nc2'}
+            self.daughtercard_to_net['guard'] = {'AMP_OUT': 'GS1b', 'CAL_ADC': 'GS1', 'AD7961': 'Ig'}
+
+            # voltage clamp board 
+            e = Electrode(name='I', dc_num=1, dc_pin='P2',
+                      nominal={'res':100e3, 'offset':0})
+            self.electrodes.append(e)
+
+            e = Electrode(name='V2', dc_num=1, dc_pin='P1',
+                      nominal={'res':200e3, 'offset':0})
+            self.electrodes.append(e)
+
+            # bath clamp board 
+            e = Electrode(name='P1', dc_num=0, dc_pin='P1',
+                      nominal={'res':5e3, 'offset':0})
+            self.electrodes.append(e)
+
+            e = Electrode(name='P2', dc_num=0, dc_pin='P2',
+                      nominal={'res':5e3, 'offset':0})
+            self.electrodes.append(e)
+
+            e = Electrode(name='CC', dc_num=0, dc_pin='CC',
+                          nominal={'res':6.8e3, 'offset':0})
+            self.electrodes.append(e)
+
+            e = Electrode(name='V1s', dc_num=3, dc_pin='P1', # V1 sense; using a custom voltage sensing board 
+                          nominal={'res':200e3, 'offset':0})
+            self.electrodes.append(e)
+
         # no longer necessary if using JSON serialization with default=vars
         # self.electrodes_dict = {v: k for v, k in enumerate(self.electrodes)}
 

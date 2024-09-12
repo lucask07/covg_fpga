@@ -134,7 +134,7 @@ def butter_lowpass(cutoff, fs, order=5):
 
 
 def butter_lowpass_filter(data, cutoff, fs, order=5):
-    """ Filter data using a Butterworth highpass
+    """ Filter data using a Butterworth lowpass
 
     Arguments
     ---------
@@ -148,6 +148,46 @@ def butter_lowpass_filter(data, cutoff, fs, order=5):
     (ndarray) filtered data as array
     """
     b, a = butter_lowpass(cutoff, fs, order=order)
+    y = signal.filtfilt(b, a, data)
+    return y
+
+def bessel_lowpass(cutoff, fs, order=5):
+    """ create a Bessel low pass filter and return the filter coefficients.
+    see: https://stackoverflow.com/questions/39032325/python-high-pass-filter
+
+    Arguments
+    ---------
+    cutoff (float): cutoff frequency [same units as fs]
+    fs (float): the sampling frequency [same units as cutoff]
+    order (int): filter order (default=5)
+
+    Returns
+    -------
+    (ndarray) IIR filter numerator coefficients
+    (ndarray) IIR filter denominator coefficients
+    """
+    nyq = 0.5 * fs
+    normal_cutoff = cutoff / nyq
+    b, a = signal.bessel(order, normal_cutoff, btype='low', analog=False)
+    # print(f'Bessel filter: {b}, {a}. Normal cutoff = {normal_cutoff}')
+    return b, a
+
+
+def bessel_lowpass_filter(data, cutoff, fs, order=5):
+    """ Filter data using a Bessel lowpass
+
+    Arguments
+    ---------
+    data (ndarray): input data to filter as array
+    cutoff (float): cutoff frequency [same units as fs]
+    fs (float): the sampling frequency [same units as cutoff]
+    order (int): filter order (default=5)
+
+    Returns
+    -------
+    (ndarray) filtered data as array
+    """
+    b, a = bessel_lowpass(cutoff, fs, order=order)
     y = signal.filtfilt(b, a, data)
     return y
 

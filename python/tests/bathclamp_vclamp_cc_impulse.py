@@ -1,12 +1,5 @@
-"""This script attempts to replicate Figure 4 on the biophysical poster. This
-consists of measuring the membrane current (Im) with the AD7961 after
-supplying a step voltage of 0-50mV by the AD5453.
-The system uses two Daughtercards with:
- 1) the bath clamp - has a non-zero CMD voltage measures Im 
- 2) the voltage clamp - zero CMD voltage, goal is to hold capacitor plate at ground 
-
-Sept 2022
-
+"""
+Summer 2024 
 Dervied from clamp_step_response.py 
 
 Abe Stroschein, ajstroschein@stthomas.edu
