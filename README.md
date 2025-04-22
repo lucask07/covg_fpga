@@ -28,7 +28,7 @@ To use an FPGA and pyripherals:
 YAML created at C:/Users/username/.pyripherals
 ```
 
-See [Installation Guide](https://pyripherals.readthedocs.io/en/latest/installation.html) for more information. Additionally, please review [`instrbuilder`'s installation guide](https://lucask07.github.io/instrbuilder/build/html/installation.html) for setting up the fpga instruments.
+See [Installation Guide](https://pyripherals.readthedocs.io/en/latest/installation.html) for more information. Additionally, please review [`instrbuilder`'s installation guide](https://lucask07.github.io/instrbuilder/build/html/installation.html) for setting up the electrical engineering lab instruments.
 
 
 ## Acknowledgements 
