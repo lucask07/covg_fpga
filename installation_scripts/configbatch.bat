@@ -1,0 +1,79 @@
+@echo off
+setlocal enabledelayedexpansion
+
+:: Make the slug file to keep track of the installation process
+type nul > "..\slug.txt"
+
+:: Check for python version and ensure that it should be 3.9 or above
+for /f "tokens=2 delims= " %%v in ('python --version') do set PYVER=%%v
+:: %variable:~start,length%: This syntax extracts a substring from variable
+set PYVERONE=%PYVER:~0,1%
+set PYVERTWO=%PYVER:~2,1%
+if "!PYVERONE!" geq "3" (
+	if "!PYVERTWO" geq "9" (
+		echo Python verification SUCCESS! -- python version 3.9 or above
+		echo SUCCESS: Python verification SUCCESS! -- python version 3.9 or above >> "..\slug.txt"
+	) else (
+		echo Users need a version of python compiler of 3.9 or above
+		echo FAILURE: Users need a version of python compiler of 3.9 or above >> "..\slug.txt"
+		exit /b
+	)
+) else (
+	echo Users need a version of python compiler of 3.9 or above
+	echo FAILURE: Users need a version of python compiler of 3.9 or above >> "..\slug.txt"
+	exit /b
+)
+
+:: Install required Python packages
+echo Start installing pip from requirements.txt >> "..\slug.txt"
+:: pip install -r python\requirements.txt :: This line is to be used if we don't want to simplify the stdoutput and stderr
+python pip_custom_install.py "../python/requirements.txt" "../slug.txt"
+echo Finished installing pip >> "..\slug.txt"
+
+:: Install Registers.xlsx
+echo Start installing Registers.xlsx >> "..\slug.txt"
+curl https://github.com/Ajstros/pyripherals/blob/main/python/Registers.xlsx -o ..\python\Registers.xlsx
+echo Finished installing Registers.xlsx >> "..\slug.txt"
+
+echo Writing ~\.pyripherals\config.yml >> "..\slug.txt"
+:: Make .pyripherals directories inside the user's home directory
+:: The command `mkdir` will not give an error if the directories already exist
+mkdir "%USERPROFILE%\.pyripherals" >nul 2>&1
+set PYRI="%USERPROFILE%\.pyripherals"
+:: Take the path to the current directory
+for /f "delims=" %%a in ('cd .. ^& cd') do set ROOT_DIR=%%a
+
+:: Modify the config.yaml
+type nul > %PYRI%\config.yaml
+echo endpoint_max_width: 32 > %PYRI%\config.yaml
+echo ep_defines_path: %ROOT_DIR%\fpga_XEM7310\fpga_XEM7310.srcs\sources_1\ep_defines.v >> %PYRI%\config.yaml
+echo fpga_bitfile_path: %ROOT_DIR%\fpga_XEM7310\fpga_XEM7310.runs\impl_1\top_level_module.bit >> %PYRI%\config.yaml
+echo registers_path: %ROOT_DIR%\python\Registers.xlsx >> %PYRI%\config.yaml
+
+:: Find FrontPanelUSB directory (equivalent to "find / -name FrontPanelUSB") - only take the first line of the standard output
+set OPAL_FOUND=false
+echo Finding the path of the Opal Kelly API >> "..\slug.txt"
+for /f "delims=" %%b in ('dir /s /b C:\FrontPanelUSB 2^>nul') do (
+	if "!OPAL_FOUND!"=="false" (
+		set WHERE_OPAL=%%b
+		set OPAL_FOUND=true
+	)
+)
+
+echo Done finding the path to Opal Kelly - The path is: %WHERE_OPAL% >> "..\slug.txt"
+
+echo frontpanel_path: %WHERE_OPAL% >> %PYRI%\config.yaml
+echo Finished writing .pyripherals\config.yml >> "..\slug.txt"
+
+:: Create config_yaml for instrbuilder
+echo Initiate the config_yaml for the instrbuilder module >> "..\slug.txt"
+python create_yaml_instrbuilder.py
+echo Done initiating instrbuilder's config_yaml >> "..\slug.txt"
+
+::Inform users that configuration has finished
+echo Configuration finished!
+echo Configuration finished! >> "..\slug.txt"
+
+endlocal
+:: Done
+exit /b
