@@ -62,6 +62,15 @@ Then go to the directory that is a hub for lab system installation scripts:
 cd installation_scripts
 ```
 
+> [!NOTE]
+> For these following step, should you ever encounter this warning as shown below, you can just ignore it:
+> ```
+> Error:  <class 'ImportError'>
+> IC (integrated circuit imports failed)
+> The aardvark.so or dll must be in the cwd or an importable path
+> Continuing anyways, since many may not use this portion...
+> ```
+
 #### Open ipython interactive terminal and start system installation
 
 First, activate the python interpreter:
