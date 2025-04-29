@@ -1,8 +1,8 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Make the slug file to keep track of the installation process
-type nul > "..\slug.txt"
+:: Make the log file to keep track of the installation process
+type nul > "..\log.txt"
 
 :: Check for python version and ensure that it should be 3.9 or above
 for /f "tokens=2 delims= " %%v in ('python --version') do set PYVER=%%v
@@ -12,30 +12,30 @@ set PYVERTWO=%PYVER:~2,1%
 if "!PYVERONE!" geq "3" (
 	if "!PYVERTWO" geq "9" (
 		echo Python verification SUCCESS! -- python version 3.9 or above
-		echo SUCCESS: Python verification SUCCESS! -- python version 3.9 or above >> "..\slug.txt"
+		echo SUCCESS: Python verification SUCCESS! -- python version 3.9 or above >> "..\log.txt"
 	) else (
 		echo Users need a version of python compiler of 3.9 or above
-		echo FAILURE: Users need a version of python compiler of 3.9 or above >> "..\slug.txt"
+		echo FAILURE: Users need a version of python compiler of 3.9 or above >> "..\log.txt"
 		exit /b
 	)
 ) else (
 	echo Users need a version of python compiler of 3.9 or above
-	echo FAILURE: Users need a version of python compiler of 3.9 or above >> "..\slug.txt"
+	echo FAILURE: Users need a version of python compiler of 3.9 or above >> "..\log.txt"
 	exit /b
 )
 
 :: Install required Python packages
-echo Start installing pip from requirements.txt >> "..\slug.txt"
+echo Start installing pip from requirements.txt >> "..\log.txt"
 :: pip install -r python\requirements.txt :: This line is to be used if we don't want to simplify the stdoutput and stderr
-python pip_custom_install.py "../python/requirements.txt" "../slug.txt"
-echo Finished installing pip >> "..\slug.txt"
+python pip_custom_install.py "../python/requirements.txt" "../log.txt"
+echo Finished installing pip >> "..\log.txt"
 
 :: Install Registers.xlsx
-echo Start installing Registers.xlsx >> "..\slug.txt"
+echo Start installing Registers.xlsx >> "..\log.txt"
 curl https://github.com/Ajstros/pyripherals/blob/main/python/Registers.xlsx -o ..\python\Registers.xlsx
-echo Finished installing Registers.xlsx >> "..\slug.txt"
+echo Finished installing Registers.xlsx >> "..\log.txt"
 
-echo Writing ~\.pyripherals\config.yml >> "..\slug.txt"
+echo Writing ~\.pyripherals\config.yml >> "..\log.txt"
 :: Make .pyripherals directories inside the user's home directory
 :: The command `mkdir` will not give an error if the directories already exist
 mkdir "%USERPROFILE%\.pyripherals" >nul 2>&1
@@ -52,7 +52,7 @@ echo registers_path: %ROOT_DIR%\python\Registers.xlsx >> %PYRI%\config.yaml
 
 :: Find FrontPanelUSB directory (equivalent to "find / -name FrontPanelUSB") - only take the first line of the standard output
 set OPAL_FOUND=false
-echo Finding the path of the Opal Kelly API >> "..\slug.txt"
+echo Finding the path of the Opal Kelly API >> "..\log.txt"
 for /f "delims=" %%b in ('dir /s /b C:\FrontPanelUSB 2^>nul') do (
 	if "!OPAL_FOUND!"=="false" (
 		set WHERE_OPAL=%%b
@@ -60,19 +60,19 @@ for /f "delims=" %%b in ('dir /s /b C:\FrontPanelUSB 2^>nul') do (
 	)
 )
 
-echo Done finding the path to Opal Kelly - The path is: %WHERE_OPAL% >> "..\slug.txt"
+echo Done finding the path to Opal Kelly - The path is: %WHERE_OPAL% >> "..\log.txt"
 
 echo frontpanel_path: %WHERE_OPAL% >> %PYRI%\config.yaml
-echo Finished writing .pyripherals\config.yml >> "..\slug.txt"
+echo Finished writing .pyripherals\config.yml >> "..\log.txt"
 
 :: Create config_yaml for instrbuilder
-echo Initiate the config_yaml for the instrbuilder module >> "..\slug.txt"
+echo Initiate the config_yaml for the instrbuilder module >> "..\log.txt"
 python create_yaml_instrbuilder.py
-echo Done initiating instrbuilder's config_yaml >> "..\slug.txt"
+echo Done initiating instrbuilder's config_yaml >> "..\log.txt"
 
 ::Inform users that configuration has finished
 echo Configuration finished!
-echo Configuration finished! >> "..\slug.txt"
+echo Configuration finished! >> "..\log.txt"
 
 endlocal
 :: Done

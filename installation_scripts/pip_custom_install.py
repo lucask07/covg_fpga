@@ -7,7 +7,7 @@ if len(sys.argv) < 3:
     sys.exit(1)
 
 # Name of the slug file
-SLUG_NAME = sys.argv[2]
+LOG_NAME = sys.argv[2]
 REQUIREMENTS = sys.argv[1]
 COMMENT_MARKER = "#"
 
@@ -18,17 +18,17 @@ def install_packages(package):
     """
     result = subprocess.run(["pip", "install", package], capture_output = True, text = True)
     if result.returncode == 0:
-        write_to_slug(f"Package {package} installed successfully!\n")
+        write_to_log(f"Package {package} installed successfully!\n")
     else:
-        write_to_slug(f"Failed to install {package} package!\n")
+        write_to_log(f"Failed to install {package} package!\n")
 
-def write_to_slug(message):
+def write_to_log(message):
     """
     This function writes stdout and stderr to the slug so that 
     later users can keep track of their installation process. 
     All of this is to simplify the stderr and out messages!
     """
-    with open(SLUG_NAME, "a") as slug:
+    with open(LOG_NAME, "a") as slug:
         slug.write(message)
 
 try:
@@ -41,6 +41,5 @@ try:
                 pack = pack[:comment_marker_index]
             install_packages(pack.strip())
 except IOError:
-    write_to_slug("Installing scripts - requirements.txt - not found")
+    write_to_log("Installing scripts - requirements.txt - not found")
     print("Installing scripts - requirements.txt - not found")
-    
