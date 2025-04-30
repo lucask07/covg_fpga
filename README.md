@@ -45,6 +45,12 @@ Please make sure the python version you are using is 3.9 or above.
 
 #### Opal Kelly
 
+This project requires users to have already subscribed to Opal Kelly. In this [link provided here](https://pins.opalkelly.com/), please log in with your Opal Kelly account (or perhaps create a new account if you did not happen to have one - a little disclaimer - they wouldn't allow any email with "@gmail.com" domain, so you may need your corporation email to register). Once you get into your account dashboard, let's click onto "File Downloads" and install a Driver's `.exe` file. In your File Explorer, double-click onto that `.exe` file to get their installation instruction.
+
+#### National Instruments VISA (NI-VISA)
+
+This is another thing to allow the codebase to hash the lab instruments' addresses out. Users will need to install NI-VISA from [National Instruments](https://www.ni.com/en/support/downloads/drivers/download.ni-visa.html?srsltid=AfmBOoovcFQiQMx4IjaNkg-Cd8_ZoBqP2IjF_Lhh3Y8K0nGonVGv8YZC#565016). Log in with your account or create a new account if you haven't had one yet, and then click download to get their `.exe` file. Double-click on it to follow along with their installation instruction.
+
 ### Navigating and minimal scripting to install lab systems
 
 These following steps require users to script in the Anaconda Prompts terminal.
@@ -63,7 +69,7 @@ cd installation_scripts
 ```
 
 > [!NOTE]
-> For these following step, should you ever encounter this warning as shown below, you can just ignore it:
+> For these following steps, should you ever encounter this warning as shown below, you can just ignore it:
 > ```
 > Error:  <class 'ImportError'>
 > IC (integrated circuit imports failed)
@@ -97,7 +103,76 @@ import add_instruments
 add_instruments.add_instrument()
 ```
 
-Make sure to only connect your instruments piece by piece if you happen to work with multiple instruments. With each instrument connected, perform that function call and unplug the instrument when the function call is finished.
+Make sure to only connect your instruments piece by piece if you happen to work with multiple instruments. With each instrument connected, perform that function call and unplug the instrument when the function call is finished. This helps eliminate any ambiguity since the function call only gives the caller the address (visa), not the name of the instrument.
+
+When it asks for the path to point your class of instrument to, please choose the right one because the path points to the `csv` file recording important information for each particular instrument class. They are both inside of the `instrbuilder` Python site-package, which has been installed to your computer with [this function call](#open-ipython-interactive-terminal-and-start-system-installation). The important folder structures you need to know look like:
+
+```
+instrbuilder
+|__ instruments
+        |__ agilent __ function_gen __ 3320A
+        |__ gwinstek __ lcr __lcr6300
+        |__ keysight
+        |       |__ function_gen __ 33500B
+        |       |__ multimeter __ 34465A
+        |       |__ network_analyzer __ N5221A
+        |       |__ oscilloscope __ MSOX3000
+        |__ rigol
+        |   |__ oscilloscope __ xs1000
+        |   |__ supply __ DP832
+        |__ srs __ lock_in __ sr810
+        |__ tester
+```
+
+When specifying the path, only start from the folder that is the child of `instruments`. Do not include `instruments` or `instrbuilder` themselves. For example, if you are connecting your computer with an instrument that is tagged as "Rigol" and "Oscilloscope", your path should be `rigol/oscilloscope/xs1000`.
+
+**For now, you have finished the fundamental installation and set-up for lab instruments for the experiments!**
+
+### Debugging
+
+After the installation, you will likely see the `log.txt` file. When the installation is normal, your `log.txt` should look like:
+
+```txt
+SUCCESS: Python verification SUCCESS -- python version 3.9 or above 
+Start installing pip from requirements.txt 
+Package numpy==1.26.4 installed successfully!
+Package numfi installed successfully!
+Package matplotlib installed successfully!
+Package pandas installed successfully!
+Package numexpr>=2.8.4 installed successfully!
+Package bottleneck>=1.3.6 installed successfully!
+Package openpyxl installed successfully!
+Package pyvisa installed successfully!
+Package git+https://github.com/lucask07/instrbuilder@714d18d0a5d2dbcb2b1d8df46cb5673e67b10d64 installed successfully!
+Package ltspice installed successfully!
+Package h5py installed successfully!
+Package ipython installed successfully!
+Package jupyter installed successfully!
+Package pytest installed successfully!
+Package pyqt5==5.15.11 installed successfully!
+Package pyyaml installed successfully!
+Package torch installed successfully!
+Package control installed successfully!
+Package torch installed successfully!
+Package torch-cubic-spline-grids installed successfully!
+Package pyripherals @ git+https://github.com/lucask07/pyripherals installed successfully!
+Package torchaudio installed successfully!
+Package torchsummary installed successfully!
+Package tensorboard installed successfully!
+Package lmfit installed successfully!
+Finished installing pip 
+Start installing Registers.xlsx 
+Finished installing Registers.xlsx 
+Writing ~\.pyripherals\config.yml 
+Finding the path of the Opal Kelly API 
+Done finding the path to Opal Kelly - The path is: C:\Program Files\Opal Kelly\FrontPanelUSB 
+Finished writing .pyripherals\config.yml 
+Initiate the config_yaml for the instrbuilder module 
+Done initiating instrbuilder's config_yaml 
+Configuration finished 
+```
+
+If there is anything that seems a little bit off, there may be a sign that your installation flow has broken somewhere. In the meantime, please look at the terminal output to get a clearer idea of what's going on during your installation. _The purpose of log file is to provide us with information when you open an issue on this repository_.
 
 ## Acknowledgements 
 
