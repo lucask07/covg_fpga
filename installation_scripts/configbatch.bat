@@ -26,8 +26,10 @@ if "!PYVERONE!" geq "3" (
 
 :: Install required Python packages
 echo Start installing pip from requirements.txt >> "..\log.txt"
+echo Start installing pip from requirements.txt
 :: pip install -r python\requirements.txt :: This line is to be used if we don't want to simplify the stdoutput and stderr
 python pip_custom_install.py "../python/requirements.txt" "../log.txt"
+echo Finished installing pip
 echo Finished installing pip >> "..\log.txt"
 
 :: Install Registers.xlsx
