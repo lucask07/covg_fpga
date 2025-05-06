@@ -3,34 +3,8 @@
 Verilog and Python for a general purpose data acquisition system using an OpalKelly FPGA as the main controller. The Python is designed to be a general purpose approach to interface with multiple peripheral components that contain register maps. 
 
 
-## Quick Start
-
-1. Clone the covg_fpga repository with github. This provides the required FPGA bitfile and test code. 
-
-2. Install pyripherals with pip 
-
-```
-pip install git+https://github.com/lucask07/pyripherals
-```
-
-To use an FPGA and pyripherals:
-
-
-3. Download [FrontPanel](https://pins.opalkelly.com/downloads) from OpalKelly
-
-4. Download [Registers.xlsx](https://github.com/lucask07/pyripherals/blob/main/python/Registers.xlsx) from the GitHub
-
-5. Create config.yaml with create_yaml and edit fields as needed
-
-```python
->>> from pyripherals.utils import create_yaml
->>> create_yaml()
-YAML created at C:/Users/username/.pyripherals
-```
-
-See [Installation Guide](https://pyripherals.readthedocs.io/en/latest/installation.html) for more information. Additionally, please review [`instrbuilder`'s installation guide](https://lucask07.github.io/instrbuilder/build/html/installation.html) for setting up the electrical engineering lab instruments.
-
-## New updates - Quicker and easier installation
+# Quick Start 
+## System installation
 ### Installing dependencies
 #### Anaconda
 
@@ -45,15 +19,23 @@ Please make sure the python version you are using is 3.9 or above.
 
 #### Opal Kelly
 
-This project requires users to have already subscribed to Opal Kelly. In this [link provided here](https://pins.opalkelly.com/), please log in with your Opal Kelly account (or perhaps create a new account if you did not happen to have one - a little disclaimer - they wouldn't allow any email with "@gmail.com" domain, so you may need your corporation email to register). Once you get into your account dashboard, let's click onto "File Downloads" and install a Driver's `.exe` file. In your File Explorer, double-click onto that `.exe` file to get their installation instruction.
+This project requires users to have already subscribed to Opal Kelly. In this [link provided here](https://pins.opalkelly.com/), please log in with your Opal Kelly account (or perhaps create a new account if you did not happen to have one - a little disclaimer - they wouldn't allow any email with "@gmail.com" domain, so you may need your corporation email to register). Once you get into your account dashboard, let's click onto "File Downloads" and install the Driver `FrontPanelUSB-DriverOnly-5.X.Y.exe` file. In your File Explorer, double-click onto that `.exe` file to get their installation instruction.
 
 #### National Instruments VISA (NI-VISA)
 
-This is another thing to allow the codebase to hash the lab instruments' addresses out. Users will need to install NI-VISA from [National Instruments](https://www.ni.com/en/support/downloads/drivers/download.ni-visa.html?srsltid=AfmBOoovcFQiQMx4IjaNkg-Cd8_ZoBqP2IjF_Lhh3Y8K0nGonVGv8YZC#565016). Log in with your account or create a new account if you haven't had one yet, and then click download to get their `.exe` file. Double-click on it to follow along with their installation instruction.
+This allows the codebase to communicate with lab instruments like power supplies and oscilloscopes. Users need to install NI-VISA from [National Instruments](https://www.ni.com/en/support/downloads/drivers/download.ni-visa.html?srsltid=AfmBOoovcFQiQMx4IjaNkg-Cd8_ZoBqP2IjF_Lhh3Y8K0nGonVGv8YZC#565016). Log in with your account or create a new account if you haven't had one yet, and then click download to get their `.exe` file. Double-click on it to follow along with their installation instruction.
 
 ### Navigating and minimal scripting to install lab systems
 
 These following steps require users to script in the Anaconda Prompts terminal.
+
+#### Clone the covg_fpga repository
+
+Clone the covg_fpga repository with github. This provides the required FPGA bitfile and test code.
+
+```sh
+git clone --recursive https://github.com/lucask07/covg_fpga
+```
 
 #### Navigate to `installation_scripts` directory
 
@@ -62,7 +44,7 @@ As the first step, make sure you are in the `covg-fpga` directory. If not, type:
 ```sh
 cd covg-fpga
 ```
-Then go to the directory that is a hub for lab system installation scripts:
+Then go to the directory for the system installation scripts:
 
 ```sh
 cd installation_scripts
@@ -94,16 +76,19 @@ Make sure to check the output and `log.txt` to track the installation process to
 
 To give you more information about what that function does, it will automatically install all dependencies including python packages, and perform some initial set up for the covg-fpga lab environment. Now the next step is to register lab instruments to the configuration yaml file.
 
+> [!NOTE]
+> The scripts provided intend to do multiple small tasks under the hood to get the system installed, including PyPI packages' installation, whose progress is illustrated with a progress bar in the terminal. Please note that it only visualizes the progress of PyPI packages' installation but not for the whole installation procedure!
+
 #### Lab instruments registration
 
-After the installation, you still need to specify what Opal Kelly instrument(s) you will be using into a yaml configuration file. Luckily, this process can be finished with just a function call. Type this into your ipython terminal:
+After the installation, you still need to specify what lab instrument(s) you will be using into a yaml configuration file. Luckily, this process can be finished with just a function call. Type this into your ipython terminal:
 
 ```python
 import add_instruments
 add_instruments.add_instrument()
 ```
 
-Make sure to only connect your instruments piece by piece if you happen to work with multiple instruments. With each instrument connected, perform that function call and unplug the instrument when the function call is finished. This helps eliminate any ambiguity since the function call only gives the caller the address (visa), not the name of the instrument.
+Make sure to only connect your instruments one by one if you happen to work with multiple instruments. With each instrument connected, perform that function call and unplug the instrument when the function call is finished. This helps eliminate any ambiguity since the function call only gives the caller the address (visa), not the name of the instrument.
 
 When it asks for the path to point your class of instrument to, please choose the right one because the path points to the `csv` file recording important information for each particular instrument class. They are both inside of the `instrbuilder` Python site-package, which has been installed to your computer with [this function call](#open-ipython-interactive-terminal-and-start-system-installation). The important folder structures you need to know look like:
 
@@ -174,7 +159,11 @@ Configuration finished
 
 If there is anything that seems a little bit off, there may be a sign that your installation flow has broken somewhere. In the meantime, please look at the terminal output to get a clearer idea of what's going on during your installation. _The purpose of log file is to provide us with information when you open an issue on this repository_.
 
-## Acknowledgements 
+### Additional installation reference:
+
+See [Installation Guide](https://pyripherals.readthedocs.io/en/latest/installation.html) for more information. Additionally, please review [`instrbuilder`'s installation guide](https://lucask07.github.io/instrbuilder/build/html/installation.html) for setting up the electrical engineering lab instruments.
+
+# Acknowledgements 
 
 If this work contributes to your research please cite:
 
@@ -184,7 +173,9 @@ A. Stroschein, I. D. Bonequi, and L. J. Koerner, “Pyripherals: A Python Packag
 
 This work is partially supported by National Institutes of Health (NIH) R15 grant R15NS116907 to PI L. J. Koerner.
 
-### The FPGA code is dervied from many open-source contributions. 
+Research reported in this repository was supported by the National Institute Of Neurological Disorders And Stroke of the National Institutes of Health under Award Number R15NS116907. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
+
+## The FPGA code is dervied from many open-source contributions. 
 
 * The I2C controller is from OpalKelly [OpalKelly I2CController](https://github.com/opalkelly-opensource/design-resources/tree/main/HDLComponents/I2CController) (MIT License).
 
@@ -196,14 +187,14 @@ This work is partially supported by National Institutes of Health (NIH) R15 gran
 
 * The DDR user interface (ddr_test.v) started with the OpalKelly DDR example provided in the FrontPanel example RAMTester and was significantly modified to support two ports.
 
-### The Python code relies on wonderful open source packages such as:
+## The Python code relies on wonderful open source packages such as:
 
 * Matplotlib 
 * numpy
 * pandas
 
 
-## OpalKelly Module Compatibility. 
+# OpalKelly Module Compatibility. 
 We have targeted and tested with the [XEM7310-A75 module](https://opalkelly.com/products/xem7310/) (Xilinx Artix-7). We have not tested but anticipate reasonable portability to other USB 3 OpalKelly modules including:
 
 * XEM7310MT
@@ -211,10 +202,6 @@ We have targeted and tested with the [XEM7310-A75 module](https://opalkelly.com/
 * XEM7305
 * XEM7360
 
-## FPGA Block Diagram (Approximate)
+# FPGA Block Diagram (Approximate)
 <p align="center">
 <img src="docs/block_diagram/99_fig2.png" width="700">
-
-## Acknowledgments
-
-Research reported in this repository was supported by the National Institute Of Neurological Disorders And Stroke of the National Institutes of Health under Award Number R15NS116907. The content is solely the responsibility of the authors and does not necessarily represent the official views of the National Institutes of Health.
