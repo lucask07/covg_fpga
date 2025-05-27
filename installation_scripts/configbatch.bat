@@ -35,7 +35,7 @@ echo Finished installing pip >> "..\log.txt"
 :: Install Registers.xlsx
 echo Start installing Registers.xlsx >> "..\log.txt"
 echo Start installing Registers.xlsx
-curl https://github.com/Ajstros/pyripherals/raw/main/python/Registers.xlsx -o ..\python\Registers.xlsx || goto :error
+curl https://github.com/Ajstros/pyripherals/raw/main/python/Registers.xlsx -LO ..\python\Registers.xlsx || goto :error
 echo Finished installing Registers.xlsx >> "..\log.txt"
 echo Finished installing Registers.xlsx
 
