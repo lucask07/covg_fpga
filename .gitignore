@@ -19,6 +19,8 @@
 !*.v
 !*.bd
 !*.edif
+!installation_scripts/*.bat
+installation_scripts/__pycache__
 #########
 #IP files
 #########

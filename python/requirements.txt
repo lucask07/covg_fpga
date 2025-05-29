@@ -1,24 +1,28 @@
-numpy
+numpy==1.26.4
 numfi
 matplotlib
 pandas
+numexpr>=2.8.4
+bottleneck>=1.3.6
 openpyxl
 pyvisa
-instrbuilder
+# instrbuilder
+git+https://github.com/lucask07/instrbuilder
 ltspice
 h5py
 ipython
 jupyter
 pytest
-PyQt5
+pyqt5==5.15.11
 pyyaml
-pytorch
+torch
 control
+torch
 torch-cubic-spline-grids
 pyripherals @ git+https://github.com/lucask07/pyripherals
 # not sure that the nighly build is really required
 # pip install --pre torchaudio -f https://download.pytorch.org/whl/nightly/torch_nightly.html
 torchaudio
 torchsummary
-tensorboard  # TODO: check to see if actually used
+tensorboard
 lmfit

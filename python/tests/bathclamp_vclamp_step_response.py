@@ -1,13 +1,12 @@
 """
 
-Summer 2024 
-Dervied from clamp_step_response.py 
+Summer 2024
+Dervied from clamp_step_response.py
 
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
 import os
-os.environ['KMP_DUPLICATE_LIB_OK']="TRUE" # this is a workaround for an issue once pytorch was installed 
 import sys
 from time import sleep
 import datetime
@@ -39,11 +38,15 @@ from observer import Observer
 # from analysis.cc_calibration import cc_waveform
 from analysis.cc_inference import cat_cc_wave, infer_ccwave_spline
 
-sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\') # need to use pyABF fork
+# this is a workaround for an issue once pytorch was installed
+os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
+sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\')  # need to use pyABF fork
+
 from pyabf.abfWriter import writeABF1 
 from pyabf.tools.covg import interleave_np
 
-from instrbuilder.instrument_opening import open_by_name 
+from instrbuilder.instrument_opening import open_by_name
+
 osc = open_by_name('msox_scope')
 
 def cmd_mv2dac(mv, sys_connections, dac_chan='D1'):
