@@ -38,14 +38,14 @@ from observer import Observer
 # from analysis.cc_calibration import cc_waveform
 from analysis.cc_inference import cat_cc_wave, infer_ccwave_spline
 
+# this is a workaround for an issue once pytorch was installed
+os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
+sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\')  # need to use pyABF fork
+
 from pyabf.abfWriter import writeABF1 
 from pyabf.tools.covg import interleave_np
 
 from instrbuilder.instrument_opening import open_by_name
-
-# this is a workaround for an issue once pytorch was installed
-os.environ['KMP_DUPLICATE_LIB_OK'] = "TRUE"
-sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\')  # need to use pyABF fork
 
 osc = open_by_name('msox_scope')
 
