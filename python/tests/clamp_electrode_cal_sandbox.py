@@ -412,7 +412,8 @@ for i in range(1):  # loop to allow for ensuring that the ADS data stays consist
     ax[1].plot(tsub * 1e6, y, marker='.', color='g')
     ax[1].set_ylabel('AMP_OUT')
     ax[1].set_xlabel('t [$\mu$s]')
-
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
     fig, ax = plt.subplots()
     # Time in seconds
@@ -431,3 +432,5 @@ for i in range(1):  # loop to allow for ensuring that the ADS data stays consist
     ax.plot(tsub * 1e6, y, marker='.', color='g')
     ax.set_ylabel('AMP_OUT')
     ax.set_xlabel('t [$\mu$s]')
+    fig.canvas.draw()
+    fig.canvas.flush_events()

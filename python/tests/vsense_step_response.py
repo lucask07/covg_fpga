@@ -317,6 +317,8 @@ def collect_data(ddr, PLT=True, ads_chan=('A', 0), num_repeats=10, blk_multiples
             t =  datastreams[n].create_time()
             ax.plot(t, data, label=n)
         ax.legend()
+        fig.canvas.draw()
+        fig.canvas.flush_events()
 
     else:
         ax=None
