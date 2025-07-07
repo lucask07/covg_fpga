@@ -1,7 +1,7 @@
-,clamp
-r2,347601.5871801961
-cm,2.001439805062441e-08
-total_resistance,359147.5306764646
-resistance_msg,"Both actual and predicted relative reductions in the sum of squares
-  are at most 0.000000"
-fit_notes,"{'success': False, 'chisqr': 4.43911604193388, 'message': 'Tolerance seems to be too small. Could not estimate error-bars.'}"
+,bath
+r1,100.00000000582786
+r2,100.00000004520935
+r3,14999.520484064566
+total_resistance,8000.0
+resistance_msg,The relative error between two consecutive iterates is at most 0.000000
+fit_notes,"{'success': True, 'chisqr': 0.03084726279805903, 'message': 'Fit succeeded. Could not estimate error-bars.'}"

@@ -44,6 +44,8 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp, Vsense
 from calibration.electrodes import EphysSystem
 
+DAQ_V = "2.1"
+
 # ephys_sys = EphysSystem(system='Dagan_vclamp_no_guard')
 ephys_sys = EphysSystem(system='Dagan_guard')
 
@@ -63,7 +65,7 @@ DC_NUMS = [0, 1, 2, 3] # step response -> VSENSE2 is True
 # vclamp: (other name is vsense) amplifies V1 but no drive circuitry 
 
 # dc_mapping = {'bath': 0, 'clamp': 1, 'vclamp': 3}  # TODO get from System class in electrodes.py
-dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 2, 'vclamp': 3} # was vsense now changed to vclamp
+dc_mapping = {'bath': 0, 'guard': 3, 'clamp': 1, 'vclamp': 2} # was vsense now changed to vclamp
 eps = Endpoint.endpoints_from_defines
 
 pwr_setup = "3dual"
@@ -77,7 +79,8 @@ except:
         atexit.register(pwr_off, [dc_pwr])
     else:
         atexit.register(pwr_off, [dc_pwr, dc_pwr2])
-    config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
+    # config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=15)
+    config_supply(dc_pwr, dc_pwr2, setup=pwr_setup, neg=(16.5 if DAQ_V == '2.1' else 15.0))
 
     # turn on the 7V
     dc_pwr.set("out_state", "ON", configs={"chan": 1})
@@ -132,7 +135,7 @@ except NameError:
         clamp.DAC.write(data=from_voltage(voltage=0.9940 / 1.6662, num_bits=10, voltage_range=5, with_negatives=False))
         clamps[dc_num] = clamp
 
-    vsense = Vsense(f, dc_num=3) ##################
+    vsense = Vsense(f, dc_num=2) ##################
 
     # -------- configure the ADS8686
     ads_voltage_range = 5  # need this for to_voltage later 
@@ -155,7 +158,7 @@ except NameError:
     # TODO: update and make compatible with datastreams - ###################
     adc_chan0 = daq.parameters['ads_map'][dc_under_test]['CAL_ADC']  # ('A', 0)
     adc_chan1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT']  # ('A', 1)
-    adc_v1 = daq.parameters['ads_map'][dc_mapping['vclamp']]['AMP_OUT']  # ('A', 1)
+    adc_v1 = daq.parameters['ads_map'][dc_mapping['clamp']]['AMP_OUT']  # ('A', 1)
     ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]  # DC 0 has both to ADS 'A'.
     codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
     ads.write_reg_bridge(clk_div=200)  # 1 MSPS rate with clk_div=200 (do not use default value which is 200 ksps)
@@ -460,7 +463,7 @@ def setup_clamps(dc_under_test, dc_disconnect):
         FDBK=1,
         mode="voltage",
         EN_ipump=0,
-        RF_1_Out=1,
+        RF_1_Out=1, # 0 1
         addr_pins_1=0b110,
         addr_pins_2=0b000,
     )
@@ -556,6 +559,9 @@ def measure_resistance(config_dict_test, dc_configs, dc_under_test, testing='bat
     dc_dis = dc_mapping['clamp' if testing=='bath' else 'bath']
     log_info_dut, dc_configs[dc_dis] = clamps[dc_dis].configure_clamp(**dc_configs[dc_dis])
 
+    print(testing)
+    print(dc_configs)
+
     # inject current square wave, expect around 8 mV amplitude from 0.8 uA*10e3, 16 mV pk-pk         
     if write_ddr:
         dac_wave, freq, _ = dac_waveform(0, amp=current_amp, freq=freq, shape='SQ',
@@ -644,6 +650,9 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
 
         log_info_bath, dc_configs[dc_under_test] = clamps[dc_under_test].configure_clamp(**dc_configs[dc_under_test])
         log_info_dut, dc_configs[dc_disconnect] = clamps[dc_disconnect].configure_clamp(**dc_configs[dc_disconnect])
+
+        print(testing)
+        print(dc_configs)
 
         # download ADC data so that np.max(t_chirp) = total_chirp_time 
         # This can also be checked by the indices (2.5 MSPS)
