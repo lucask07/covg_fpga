@@ -673,7 +673,7 @@ class Daq:
         self.parameters["ads_map"] = { # first key is daughter-card number, 2nd key is HDMI signal, tuple is ADS converter channel (letter) and number 
             0: {"CAL_ADC": ('A',0), "AMP_OUT": ('A',1)},
             1: {"CAL_ADC": ('B',0), "AMP_OUT": ('A',2)},
-            2: {"CAL_ADC": ('B',1), "AMP_OUT": ('A',3)},
+            2: {"CAL_ADC": ('B',1), "AMP_OUT": ('A',3)}, 
             3: {"CAL_ADC": ('A',4), "AMP_OUT": ('B',2)},
         }
 

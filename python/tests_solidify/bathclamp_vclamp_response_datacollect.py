@@ -11,6 +11,7 @@ from boards import Clamp
 from instrbuilder.instrument_opening import open_by_name
 from bathclamp_vclamp_utils import *
 
+DAQ_V = "2.1"
 # ------------- vsense2 and quiet_dacs ------------------
 VSENSE2 = True
 QUIET_DACS = False
@@ -29,12 +30,12 @@ FS = 5e6
 ADS_FS = 1e6
 # ------------- board mapping ----------------------
 BATH = 0
-CLAMP = 2
+CLAMP = 3
 GUARD = 1
-VSENSE = 3
+VSENSE = 2
 # ------------- power instrument & setup -----------
 POWER_SETUP = '3dual'
-NEG = 15
+NEG = 16.5 if DAQ_V == "2.1" else 15
 # ------------- list of names to supply powers ---------
 LIST_POWERS = ["1V8", "5V", "3V3"]
 SPI_DEBUG = 'ads'
@@ -105,7 +106,7 @@ datastream_out_fname = 'clamptest1_quietdacs{}_rtia{}_ccomp{}_inamp{}.h5'
 idx = 0
 
 # set all fast-DAC DDR data to midscale
-set_cmd_cc(fpga_board, dc_nums=FAST_AD7961_CHANNELS, cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
+fpga_board.set_cmd_cc(fpga_board, dc_nums=FAST_AD7961_CHANNELS, cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
 
 # Set CMD and CC signals - only for the bath clamp
@@ -199,10 +200,11 @@ vsense, gain1, gain2 = fpga_board.operate_vsense2()
 sys_connections = render_sys_connections(dc_configs, fpga_board, instrument)
 # Capture data
 plt.close('all')
+plt.ion()
 first_time = True
 cmd_mv = 50
 cmd_val, actual_v = cmd_mv2dac(cmd_mv, sys_connections, dac_chan='D1')
-set_cmd_cc(fpga_board=fpga_board, dc_nums=[fpga_board.dc_mapping['bath'], fpga_board.dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+fpga_board.set_cmd_cc(dc_nums=[fpga_board.dc_mapping['bath'], fpga_board.dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
         step_len=step_len, cc_val=cc_val, cc_pickle_num=None)
 
 fpga_board.ddr.repeat_setup()  # Get data

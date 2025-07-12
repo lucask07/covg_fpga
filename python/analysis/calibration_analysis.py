@@ -17,6 +17,7 @@ import datetime
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import pickle as pkl
 import logging
 import itertools
@@ -162,7 +163,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
     # analyze two different electrode configurations at each frequency 
     # 1 is a reference and calculate 
     freq_arr_fixed = np.unique([data[data_key]['freq'] for data_key in data])
-    # Plot measured transfer functions and fits  
+    # Plot measured transfer functions and fits 
     fig_tf, ax_tf = plt.subplots(figsize=fig_size)
     electrodes = itertools.cycle(['P1', 'P2'])
     markers = itertools.cycle(['*', 'o'])
@@ -325,8 +326,8 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
     fit_notes = {'success': component_fits[component_fits_key][idx].success,
                'chisqr': component_fits[component_fits_key][idx].chisqr,
                'message': component_fits[component_fits_key][idx].message}
-
-    return component_fits, fit_notes, components
+    # Also return the transfer function plot to save into the list
+    return component_fits, fit_notes, components, fig_tf
 
 
 def total_res_iso_res(data_dir, filename, r_total_guess, tf_type, PLT=False):
@@ -339,12 +340,12 @@ def total_res_iso_res(data_dir, filename, r_total_guess, tf_type, PLT=False):
     
     shapes = [data[d]['shape'] for d in data]
     if shapes.count('SINE') > 1:
-        component_fits, fit_notes, components = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=PLT)
+        component_fits, fit_notes, components, fig_tf = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=PLT)
     else:
         # this is correct syntax 
         component_fits = fit_notes = components = None
-        
-    return predicted_res, res_fit_mesg, component_fits, fit_notes, components
+    # Also return the transfer function plot to save into the list
+    return predicted_res, res_fit_mesg, component_fits, fit_notes, components, fig_tf
 
 def main():
     """

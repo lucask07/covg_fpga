@@ -198,7 +198,7 @@ FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
 
-dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 2, 'vsense': 3}  # LJK, 8/30/2024 move clamp to 2 to prepare for adding guard -- this will mess up some of the ADS8686 numbers
+dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 3, 'vsense': 2}  # LJK, 8/30/2024 move clamp to 2 to prepare for adding guard -- this will mess up some of the ADS8686 numbers
 # dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3, 'guard': 2} # Guard is not actually used and not connected  
 
 eps = Endpoint.endpoints_from_defines

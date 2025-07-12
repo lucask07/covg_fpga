@@ -10,6 +10,7 @@ import copy
 import shutil
 import itertools
 from collections import UserDict
+from typing import Optional, Union, List
 from scipy.signal import decimate
 
 from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
@@ -21,7 +22,7 @@ from setup_paths import *
 
 from analysis.clamp_data import adjust_step2
 from analysis.adc_data import read_h5, separate_ads_sequence
-from datastream.datastream import create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
+from datastream.datastream import Datastreams, create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
 from filters.filter_tools import bessel_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp, Vsense2
@@ -152,15 +153,15 @@ class FPGAInterface:
 
         self.ads = self.daq.ADC_gp
         # clamp boards
-        self.clamps = [None] * 4
+        self.clamps : list[Optional[Clamp]] = [None] * 4
         # Set dc_mapping
         self.set_dc_map(dc_mapping)
     
     def set_dc_map(self, dc_mapping : dict):
         """
-        # Set dc_mapping -> dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 2, 'vsense': 3}
+        # Set dc_mapping -> dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 3, 'vsense': 2}
         """
-        self.dc_mapping = {'bath': None, 'guard': None, 'clamp': None, 'vsense': None}
+        self.dc_mapping : dict[str, Optional[int]] = {'bath': None, 'guard': None, 'clamp': None, 'vsense': None}
         for key in dc_mapping:
             if key not in self.dc_mapping:
                 raise ValueError("key can only be 1 in 4 components of the board, bath, guard, clamp, and vsense.")
@@ -184,7 +185,7 @@ class FPGAInterface:
         # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
         VSENSE2 = self.experiment_class.VSENSE2
         # not vsense2 -> indices of clamp boards, vsense2 -> can't be clamp. include the guard
-        self.DC_NUMS = [0,1,2] if VSENSE2 else [0,1,3]
+        self.DC_NUMS = [0,1,3] if VSENSE2 else [0,1,2]
         self.init_board()
 
     def init_board(self):
@@ -254,6 +255,17 @@ class FPGAInterface:
         time.sleep(0.1)
         self.ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
         time.sleep(0.1)
+
+    def configure_dac_80508(self):
+        """
+        Configure for DDR read to DAC80508
+        """
+        for dac_gp_ch in [0, 1]:
+            self.daq.DAC_gp[dac_gp_ch].set_spi_sclk_divide(0x2)
+            self.daq.DAC_gp[dac_gp_ch].set_ctrl_reg(0x3218)
+            self.daq.DAC_gp[dac_gp_ch].set_config_bin(0x00)
+            # daq.DAC_gp[dac_gp_ch].set_data_mux('host')
+            self.daq.DAC_gp[dac_gp_ch].set_data_mux('DDR')
     
     def operate_vsense2(self):
         """
@@ -288,101 +300,100 @@ class FPGAInterface:
             vsense.setOffsetVoltage(0)
             vsense.set_gain(0b1011, 0b1011) #requires DAC offset voltage set before running function. Could be combined easily.
             return vsense, gain1, gain2
-
-        
-
-
-
-def make_cmd_cc(fpga_board : FPGAInterface, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
-               cc_val=None, cc_pickle_num=None):
-    """Return the CMD and CC signals determined by the parameters.
-        Does not write to DDR 
-
-    Parameters
-    ----------
     
-    Returns
-    -------
-    np.ndarray, np.ndarray : the CMD signal data, the CC signal data.
-    """
-    dac_offset = 0x2000
-
-    cmd_signal = fpga_board.ddr.make_step(
-        low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len)  # 1.6 ms between edges
-
-    if fc is not None:
-        cmd_signal = bessel_lowpass_filter(cmd_signal, cutoff=fc, fs=2.5e6, order=1)
-
-    # create the cc using multiple methods
-    if cc_pickle_num is not None:
-        cc_impulse_scale = -2600/7424
-        out = get_cc_optimize(cc_pickle_num)
-        cc_wave = adjust_step2(
-            out['x'], cmd_signal.astype(np.int32) - dac_offset)
-        cc_wave = cc_wave * cc_impulse_scale
-        cc_wave = cc_wave + dac_offset
-        if cc_delay != 0:
-            # 2.5e6 is the sampling rate
-            cc_wave = delayseq_interp(cc_wave, cc_delay, 2.5e6)
-        cc_signal = cc_wave.astype(np.uint16)
-
-    elif cc_val is None:  # get the cc signal from scaling the cmd signal
-        if fc is not None:
-            cc_signal = bessel_lowpass_filter(
-                cmd_signal - dac_offset, cutoff=fc, fs=2.5e6, order=1)*cc_scale + dac_offset
-        else:
-            cc_signal = (
-                cmd_signal - dac_offset)*cc_scale + dac_offset
-        if cc_delay != 0:
-            cc_signal = delayseq_interp(
-                cc_signal, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
-
-    else:  # needed so that the cmd signal can be zero with a non-zero cc signal
-        cc_signal = fpga_board.ddr.make_step(low=dac_offset - int(cc_val),
-                                            high=dac_offset + int(cc_val),
-                                            length=step_len) 
-        if fc is not None:
-            cc_signal = bessel_lowpass_filter(
-                cc_signal, cutoff=fc, fs=2.5e6, order=1)
-        if cc_delay != 0:
-            cc_signal = delayseq_interp(
-                cc_signal, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
-
-    return cmd_signal, cc_signal
-
-def set_cmd_cc(fpga_board : FPGAInterface, dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
+    # TODO: the second function call, let's add some return values as in impulse file
+    def write_ddr(self):    
+        # write channels to the DDR
+        self.ddr.write_setup()
+        # clear read, set write, etc. handled within write_channels
+        self.ddr.write_channels(set_ddr_read=False)
+        self.ddr.reset_mig_interface()
+        self.ddr.write_finish()
+    
+    def set_cmd_cc(self, dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
             cc_val=None, cc_pickle_num=None):
-    """Write the CMD and CC signals to the DDR for the specified daughtercards.
+        """
+        Write the CMD and CC signals to the DDR for the specified daughtercards.
+            
+        Parameters
+        ----------
+            dc_nums : int or list
+            The port number(s) of the daughtercard(s) to write signals for.
+        
+        Returns
+        -------
+        None
+        """
+        # TODO: move to Clamp board class in boards.py
+        if (type(dc_nums) == int):
+            dc_nums = [dc_nums]
+        elif (type(dc_nums) != list):
+            raise TypeError('dc_nums must be int or list')
+
+        for dc_num in dc_nums:
+            cmd_ch = dc_num * 2 + 1 # TODO: replace with daq.parameters['fast_dac_map']
+            cc_ch = dc_num * 2
+            self.ddr.data_arrays[cmd_ch], self.ddr.data_arrays[cc_ch] = self.make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
+        self.write_ddr()
     
-    Parameters
-    ----------
-    dc_nums : int or list
-        The port number(s) of the daughtercard(s) to write signals for.
+    def make_cmd_cc(self, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
+               cc_val=None, cc_pickle_num=None):
+        """Return the CMD and CC signals determined by the parameters.
+            Does not write to DDR 
 
-    Returns
-    -------
-    None
-    """
-    # TODO: move to Clamp board class in boards.py
-    if (type(dc_nums) == int):
-        dc_nums = [dc_nums]
-    elif (type(dc_nums) != list):
-        raise TypeError('dc_nums must be int or list')
+        Parameters
+        ----------
+        
+        Returns
+        -------
+        np.ndarray, np.ndarray : the CMD signal data, the CC signal data.
+        """
+        dac_offset = 0x2000
 
-    for dc_num in dc_nums:
-        cmd_ch = dc_num * 2 + 1 # TODO: replace with daq.parameters['fast_dac_map']
-        cc_ch = dc_num * 2
-        fpga_board.ddr.data_arrays[cmd_ch], fpga_board.ddr.data_arrays[cc_ch] = make_cmd_cc(fpga_board=fpga_board, cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
-    write_ddr(fpga_board)
+        cmd_signal = self.ddr.make_step(
+            low=dac_offset - int(cmd_val), high=dac_offset + int(cmd_val), length=step_len)  # 1.6 ms between edges
 
-# TODO: the second function call, let's add some return values as in impulse file
-def write_ddr(fpga_board : FPGAInterface):    
-    # write channels to the DDR
-    fpga_board.ddr.write_setup()
-    # clear read, set write, etc. handled within write_channels
-    fpga_board.ddr.write_channels(set_ddr_read=False)
-    fpga_board.ddr.reset_mig_interface()
-    fpga_board.ddr.write_finish()
+        if fc is not None:
+            cmd_signal = bessel_lowpass_filter(cmd_signal, cutoff=fc, fs=2.5e6, order=1)
+
+        # create the cc using multiple methods
+        if cc_pickle_num is not None:
+            cc_impulse_scale = -2600/7424
+            out = get_cc_optimize(cc_pickle_num)
+            cc_wave = adjust_step2(
+                out['x'], cmd_signal.astype(np.int32) - dac_offset)
+            cc_wave = cc_wave * cc_impulse_scale
+            cc_wave = cc_wave + dac_offset
+            if cc_delay != 0:
+                # 2.5e6 is the sampling rate
+                cc_wave = delayseq_interp(cc_wave, cc_delay, 2.5e6)
+            cc_signal = cc_wave.astype(np.uint16)
+
+        elif cc_val is None:  # get the cc signal from scaling the cmd signal
+            if fc is not None:
+                cc_signal = bessel_lowpass_filter(
+                    cmd_signal - dac_offset, cutoff=fc, fs=2.5e6, order=1)*cc_scale + dac_offset
+            else:
+                cc_signal = (
+                    cmd_signal - dac_offset)*cc_scale + dac_offset
+            if cc_delay != 0:
+                cc_signal = delayseq_interp(
+                    cc_signal, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+
+        else:  # needed so that the cmd signal can be zero with a non-zero cc signal
+            cc_signal = self.ddr.make_step(low=dac_offset - int(cc_val),
+                                                high=dac_offset + int(cc_val),
+                                                length=step_len) 
+            if fc is not None:
+                cc_signal = bessel_lowpass_filter(
+                    cc_signal, cutoff=fc, fs=2.5e6, order=1)
+            if cc_delay != 0:
+                cc_signal = delayseq_interp(
+                    cc_signal, cc_delay, 2.5e6)  # 2.5e6 is the sampling rate
+
+        return cmd_signal, cc_signal
+
+
 
 def render_sys_connections(dc_configs, fpga_board : FPGAInterface, experiment_setup : BathclampVclampStepResponse):
     sys_connections = create_sys_connections(dc_configs, fpga_board.daq, experiment_setup.ephys_sys, 
@@ -408,7 +419,7 @@ def capture_data(fpga_board : FPGAInterface, experiment_setup : BathclampVclampS
  
     return datastreams, log_info
 
-def ds_add_log(experiment_setup : BathclampVclampStepResponse, datastreams, dc_configs, first_pos_step, *, cmd_val, 
+def ds_add_log(experiment_setup : BathclampVclampStepResponse, datastreams : Datastreams, dc_configs, first_pos_step, *, cmd_val, 
                step_len, 
                cc_val, 
                fc_cmd, 
@@ -525,7 +536,9 @@ class PlotManager(UserDict):
         except:
             raise Exception()
 
-def update_plots(first_time, datastreams, first_pos_step, plotmanager1=None, plotmanager2=None, figs=None, adg_r=100):
+def update_plots(first_time, datastreams, first_pos_step, plotmanager1 : Optional[PlotManager] = None, 
+                 plotmanager2 : Optional[List[PlotManager]] = None, 
+                 figs=None, adg_r=100):
 
     # Two plots that are updated in realtime 
     # First plot is 2x2
@@ -662,7 +675,7 @@ def measure_cmd_cc_impulse(fpga_board: FPGAInterface, experiment_class : Bathcla
                 elif test=='CC':
                     cmd_val = 0
                     cc_val = cc_val_set
-                set_cmd_cc(fpga_board=fpga_board, dc_nums=[fpga_board.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=cmd_cc_scale['fc_cmd'],
+                fpga_board.set_cmd_cc(dc_nums=[fpga_board.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=cmd_cc_scale['fc_cmd'],
                     step_len=cmd_cc_scale['step_len'], cc_val=cc_val, cc_pickle_num=None)        
                 time.sleep(0.2)
                 
@@ -755,13 +768,13 @@ def measure_cmd_cc_impulse(fpga_board: FPGAInterface, experiment_class : Bathcla
                 # now use the filtered_cc_wave to replace CC 
                 cc_val = int(-0.9*cmd_val_set)
                 cmd_val = cmd_val_set
-                set_cmd_cc(fpga_board=fpga_board, 
+                fpga_board.set_cmd_cc( 
                            dc_nums=[fpga_board.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
                         step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
             
             if 'spline' in method:
                 cmd_val = cmd_val_set
-                set_cmd_cc(dc_nums=[fpga_board.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
+                fpga_board.set_cmd_cc(dc_nums=[fpga_board.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
                         step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
                 cc_wave, configs, results = infer_ccwave_spline(DEBUG_PLOTS=True, run_date = '20240417', 
                                 run_time = '163357', rtia=adg_r, ccomp=ccomp)
@@ -806,7 +819,7 @@ def plot_if_cancellation(fpga_board : FPGAInterface, *, experiment_setup, dc_con
     ax.legend()
 
     # write channels to the DDR
-    write_ddr()
+    fpga_board.write_ddr()
 
     idx = plot_setting['idx']
     datastreams, log_info = capture_data(fpga_board, 
@@ -841,7 +854,7 @@ def plot_if_cancellation(fpga_board : FPGAInterface, *, experiment_setup, dc_con
     if CAPTURE_CC_ALONE:
         fpga_board.ddr.data_arrays[fpga_board.dc_mapping['bath'] + 1] = 8192 # zero CMD 
         # write channels to the DDR
-        write_ddr()
+        fpga_board.write_ddr()
         time.sleep(0.1)
         datastreams, log_info = capture_data(fpga_board, 
                                              experiment_setup=experiment_setup, 
@@ -905,7 +918,7 @@ def large_param_sweep(fpga_board : FPGAInterface, experiment_setup : BathclampVc
                 dc_configs[0]['ADG_RES'] = adg_r
                 dc_configs[0]['CCOMP'] = ccomp
                 fpga_board.clamps[0].configure_clamp(**dc_configs[0])
-                set_cmd_cc(fpga_board, dc_nums=[fpga_board.dc_mapping['bath'], fpga_board.dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=cmd_cc_scale['fc_cmd'],
+                fpga_board.set_cmd_cc(dc_nums=[fpga_board.dc_mapping['bath'], fpga_board.dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=cmd_cc_scale['fc_cmd'],
                     step_len=cmd_cc_scale['step_len'], cc_val=None, cc_pickle_num=None)
                 time.sleep(0.2) # extend for noise analysis
                 

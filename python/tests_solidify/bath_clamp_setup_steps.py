@@ -1,5 +1,6 @@
 import sys
 import openpyxl
+import json
 from setup_paths import *
 
 from instrbuilder.instrument_opening import open_by_name
@@ -18,6 +19,7 @@ for i, row in enumerate(content.iter_rows(min_col=1, max_col=1, values_only=True
 # ------------- vsense2 and quiet_dacs ------------------
 VSENSE2 = True # content['B'+str(key_map['VSENSE2'])] # True
 QUIET_DACS = False # content['B'+str(key_map['QUIET_DACS'])] # False
+DAQ_V = "2.1"
 # ------------- ephys system name -------------
 EPHYS_SYS_NAME = 'Dagan_guard' # content['B'+str(key_map['EPHYS_SYS_NAME'])] # 'Dagan_guard'
 # ------------- model cell configuration ------------
@@ -38,7 +40,6 @@ GUARD = 1
 VSENSE = 3
 # ------------- power instrument & setup -----------
 POWER_SETUP = '3dual'
-NEG = 15
 # ------------- list of names to supply powers ---------
 LIST_POWERS = ["1V8", "5V", "3V3"]
 SPI_DEBUG = 'ads'
@@ -74,7 +75,20 @@ FAST_AD7961_CHANNELS = [0, 1, 2, 3]
 MEASURE_CC_IMPULSE = True
 MEASURE_CC_CANCELATION = False
 METHOD_CC_CANCELATION = 'spline'
+
+# Load json #############
+with open("system_setup.json") as f:
+    data = json.load(f)
+
+for key, value in data.items():
+    globals()[key] = value
+#########################
+
 osc = open_by_name('msox_scope')
+
+# ----- chose negatives version -----------
+
+NEG = (16.5 if DAQ_V == '2.1' else 15.0)
 
 class DeviceSetUp:
     def __init__(self):
@@ -106,93 +120,11 @@ class DeviceSetUp:
         self.fpga_board.enable_fast_adcs(FAST_AD7961_CHANNELS)
 
         # set all fast-DAC DDR data to midscale
-        set_cmd_cc(self.fpga_board, dc_nums=FAST_AD7961_CHANNELS, cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
+        self.fpga_board.set_cmd_cc(dc_nums=FAST_AD7961_CHANNELS, cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
                 step_len=16384, cc_val=None, cc_pickle_num=None)
 
-        self.dc_configs = {}
-        # self.clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
-        # self.clamp_res = 1000 # modified board: set to 10 MOhms -> 0 Ohms; 3.32 MOhms -> Open; 1 MOhms -> 50 Ohms (snubber)
-        # self.clamp_cap = 47
-        # to digitize I1 use ADC_SEL = "CAL_SIG2"; P2_CAL_CTRL=1; DAC_SEL="noDrive"
-        for dc_num in [self.fpga_board.dc_mapping['clamp']]:
-            log_info, config_dict = self.fpga_board.clamps[dc_num].configure_clamp(
-                ADC_SEL="CAL_SIG2", 
-                DAC_SEL="noDrive", # must not be drive_CAL2 
-                CCOMP=clamp_cap,
-                RF1=clamp_fb_res,  # feedback circuit
-                ADG_RES=clamp_res,
-                PClamp_CTRL=0,
-                P1_E_CTRL=0,
-                P1_CAL_CTRL=0,
-                P2_E_CTRL=0,
-                P2_CAL_CTRL=1,
-                gain=1,  # instrumentation amplifier
-                FDBK=1,
-                mode="voltage",
-                EN_ipump=0,
-                RF_1_Out=1,
-                addr_pins_1=0b110,
-                addr_pins_2=0b000,
-            )
-            self.dc_configs[dc_num] = config_dict
 
-        # self.fb_res = 60  # this is disconnected and now in unity-gain! 60 is what configures the calibration to be at x1 
-        # Try with 5 different resistors
-        # self.adg_r = 33
-        # self.ccomp = 47
-        # Choose resistor; setup
-        for dc_num in [self.fpga_board.dc_mapping['bath']]:
-            log_info, config_dict = self.fpga_board.clamps[dc_num].configure_clamp(
-                ADC_SEL="CAL_SIG2",  # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1
-                DAC_SEL="noDrive",
-                CCOMP=bath_ccomp,
-                RF1=bath_fb_res,  # feedback circuit
-                ADG_RES=bath_adg_r,
-                PClamp_CTRL=0,
-                P1_E_CTRL=0,
-                P1_CAL_CTRL=0,
-                P2_E_CTRL=0,
-                P2_CAL_CTRL=0,
-                gain=in_amp,  # instrumentation amplifier
-                FDBK=1,
-                mode="voltage",
-                EN_ipump=0,
-                RF_1_Out=1,
-                addr_pins_1=0b110,
-                addr_pins_2=0b000,
-            )
-            self.dc_configs[dc_num] = config_dict
-
-        # self.fb_res = 60  # this is disconnected and now in unity-gain! 
-        # Try with 5 different resistors
-        # self.adg_r = 332
-        # self.ccomp = 4700
-        for dc_num in [self.fpga_board.dc_mapping['guard']]:
-            log_info, config_dict = self.fpga_board.clamps[dc_num].configure_clamp(
-                ADC_SEL="CAL_SIG2",  # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1; must also close the corresponding relay. Note that CAL_SIG1 and P1_CAL_CTRL=1 caused oscillations.
-                DAC_SEL="noDrive",
-                CCOMP=guard_ccomp,
-                RF1=guard_fb_res,  # feedback circuit
-                ADG_RES=guard_adg_r,
-                PClamp_CTRL=1,
-                P1_E_CTRL=0,
-                P1_CAL_CTRL=0,
-                P2_E_CTRL=0,
-                P2_CAL_CTRL=0,
-                gain=in_amp,  # instrumentation amplifier
-                FDBK=1,
-                mode="voltage",
-                EN_ipump=0,
-                RF_1_Out=1,
-                addr_pins_1=0b110,
-                addr_pins_2=0b000,
-            )
-            self.dc_configs[dc_num] = config_dict
-
-        self.vsense, self.gain1, self.gain2 = self.fpga_board.operate_vsense2()
-        self.sys_connections = render_sys_connections(self.dc_configs, self.fpga_board, self.instrument)
-
-def device_setup():
+def device_setup() -> DeviceSetUp:
     return DeviceSetUp()
 
 

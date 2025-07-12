@@ -65,7 +65,7 @@ DC_NUMS = [0, 1, 2, 3] # step response -> VSENSE2 is True
 # vclamp: (other name is vsense) amplifies V1 but no drive circuitry 
 
 # dc_mapping = {'bath': 0, 'clamp': 1, 'vclamp': 3}  # TODO get from System class in electrodes.py
-dc_mapping = {'bath': 0, 'guard': 3, 'clamp': 1, 'vclamp': 2} # was vsense now changed to vclamp
+dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 3, 'vclamp': 2} # was vsense now changed to vclamp
 eps = Endpoint.endpoints_from_defines
 
 pwr_setup = "3dual"
@@ -107,7 +107,7 @@ except NameError:
 
     daq = Daq(f)
     ddr = daq.ddr  # Or reference as daq.ddr throughout the file
-    ddr.data_version = 'TIMESTAMPS' #############
+    ddr.data_version = 'TIMESTAMPS' ############# TODO: This line is different from the response file
     ad7961s = daq.ADC
     ad7961s[0].reset_wire(1)  # Only actually one WIRE_RESET for all AD7961s
 
@@ -156,10 +156,13 @@ except NameError:
     dc_under_test = 0
 
     # TODO: update and make compatible with datastreams - ###################
+    """
     adc_chan0 = daq.parameters['ads_map'][dc_under_test]['CAL_ADC']  # ('A', 0)
     adc_chan1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT']  # ('A', 1)
     adc_v1 = daq.parameters['ads_map'][dc_mapping['clamp']]['AMP_OUT']  # ('A', 1)
-    ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]  # DC 0 has both to ADS 'A'.
+    """
+    # TODO: Questionable
+    ads_sequencer_setup = [('0', '0'), ('2', '0'), ('4', '2')]  # DC 0 has both to ADS 'A'.
     codes = ads.setup_sequencer(chan_list=ads_sequencer_setup)
     ads.write_reg_bridge(clk_div=200)  # 1 MSPS rate with clk_div=200 (do not use default value which is 200 ksps)
     ads.set_fpga_mode()
@@ -884,6 +887,11 @@ for testing in ['bath', 'clamp']:
         dc_disconnect = dc_mapping['bath']
 
     dc_configs, sys_connections = setup_clamps(dc_under_test=dc_under_test, dc_disconnect=dc_disconnect)
+
+    # Move from the top to adapt to the changing dc_under_test
+    adc_chan0 = daq.parameters['ads_map'][dc_under_test]['CAL_ADC']  # ('A', 0)
+    adc_chan1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT']  # ('A', 1)
+    adc_v1 = daq.parameters['ads_map'][dc_under_test]['AMP_OUT']  # ('A', 1)
 
     ddr.write_setup()
     block_pipe_return, speed_MBs = ddr.write_channels(

@@ -1,7 +1,8 @@
 ,bath
-r1,100.00000000582786
-r2,100.00000004520935
-r3,14999.520484064566
-total_resistance,8000.0
-resistance_msg,The relative error between two consecutive iterates is at most 0.000000
-fit_notes,"{'success': True, 'chisqr': 0.03084726279805903, 'message': 'Fit succeeded. Could not estimate error-bars.'}"
+r1,6813.345687365589
+r2,6818.232897033429
+r3,8695.634258667616
+total_resistance,94047.02400614627
+resistance_msg,"Both actual and predicted relative reductions in the sum of squares
+  are at most 0.000000"
+fit_notes,"{'success': True, 'chisqr': 0.007492574087595107, 'message': 'Fit succeeded. Could not estimate error-bars.'}"

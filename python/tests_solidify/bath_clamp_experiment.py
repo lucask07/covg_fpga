@@ -14,11 +14,98 @@ from boards import Clamp
 
 ## TODO: Add a conditional function here
 device_compilation = None
-def initialize_devices():
-    global device_compilation
+if __name__ == '__main__' and device_compilation is None:
     device_compilation = device_setup()
 
-def collect_data():
+if __name__ == '__main__':
+    dc_configs = {}
+    # self.clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
+    # self.clamp_res = 1000 # modified board: set to 10 MOhms -> 0 Ohms; 3.32 MOhms -> Open; 1 MOhms -> 50 Ohms (snubber)
+    # self.clamp_cap = 47
+    # to digitize I1 use ADC_SEL = "CAL_SIG2"; P2_CAL_CTRL=1; DAC_SEL="noDrive"
+    for dc_num in [device_compilation.fpga_board.dc_mapping['clamp']]:
+        log_info, config_dict = device_compilation.fpga_board.clamps[dc_num].configure_clamp(
+            ADC_SEL="CAL_SIG2", 
+            DAC_SEL="noDrive", # must not be drive_CAL2 
+            CCOMP=clamp_cap,
+            RF1=clamp_fb_res,  # feedback circuit
+            ADG_RES=clamp_res,
+            PClamp_CTRL=0,
+            P1_E_CTRL=0,
+            P1_CAL_CTRL=0,
+            P2_E_CTRL=0,
+            P2_CAL_CTRL=1,
+            gain=1,  # instrumentation amplifier
+            FDBK=1,
+            mode="voltage",
+            EN_ipump=0,
+            RF_1_Out=1,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000,
+        )
+        dc_configs[dc_num] = config_dict
+
+    # self.fb_res = 60  # this is disconnected and now in unity-gain! 60 is what configures the calibration to be at x1 
+    # Try with 5 different resistors
+    # self.adg_r = 33
+    # self.ccomp = 47
+    # Choose resistor; setup
+    for dc_num in [device_compilation.fpga_board.dc_mapping['bath']]:
+        log_info, config_dict = device_compilation.fpga_board.clamps[dc_num].configure_clamp(
+            ADC_SEL="CAL_SIG2",  # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1
+            DAC_SEL="noDrive",
+            CCOMP=bath_ccomp,
+            RF1=bath_fb_res,  # feedback circuit
+            ADG_RES=bath_adg_r,
+            PClamp_CTRL=0,
+            P1_E_CTRL=0,
+            P1_CAL_CTRL=0,
+            P2_E_CTRL=0,
+            P2_CAL_CTRL=0,
+            gain=in_amp,  # instrumentation amplifier
+            FDBK=1,
+            mode="voltage",
+            EN_ipump=0,
+            RF_1_Out=1,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000,
+        )
+        dc_configs[dc_num] = config_dict
+
+    # self.fb_res = 60  # this is disconnected and now in unity-gain! 
+    # Try with 5 different resistors
+    # self.adg_r = 332
+    # self.ccomp = 4700
+    for dc_num in [device_compilation.fpga_board.dc_mapping['guard']]:
+        log_info, config_dict = device_compilation.fpga_board.clamps[dc_num].configure_clamp(
+            ADC_SEL="CAL_SIG2",  # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1; must also close the corresponding relay. Note that CAL_SIG1 and P1_CAL_CTRL=1 caused oscillations.
+            DAC_SEL="noDrive",
+            CCOMP=guard_ccomp,
+            RF1=guard_fb_res,  # feedback circuit
+            ADG_RES=guard_adg_r,
+            PClamp_CTRL=1,
+            P1_E_CTRL=0,
+            P1_CAL_CTRL=0,
+            P2_E_CTRL=0,
+            P2_CAL_CTRL=0,
+            gain=in_amp,  # instrumentation amplifier
+            FDBK=1,
+            mode="voltage",
+            EN_ipump=0,
+            RF_1_Out=1,
+            addr_pins_1=0b110,
+            addr_pins_2=0b000,
+        )
+        dc_configs[dc_num] = config_dict
+    
+    vsense, gain1, gain2 = device_compilation.fpga_board.operate_vsense2()
+    
+    sys_connections = render_sys_connections(
+        dc_configs, 
+        device_compilation.fpga_board, 
+        device_compilation.instrument
+    )
+
     # -------- Collect Data -------------
     file_name = time.strftime("%Y%m%d-%H%M%S")
     datastream_out_fname = 'clamptest1_quietdacs{}_rtia{}_ccomp{}_inamp{}.h5'
@@ -36,7 +123,7 @@ def collect_data():
     plt.close('all')
     first_time = True
     cmd_mv = 50
-    cmd_val, actual_v = cmd_mv2dac(cmd_mv, device_compilation.sys_connections, dac_chan='D1')
+    cmd_val, actual_v = cmd_mv2dac(cmd_mv, sys_connections, dac_chan='D1')
     set_cmd_cc(fpga_board=device_compilation.fpga_board, dc_nums=[device_compilation.fpga_board.dc_mapping['bath'], 
                                                                 device_compilation.fpga_board.dc_mapping['guard']], 
                                                                 cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
@@ -48,18 +135,18 @@ def collect_data():
                                         experiment_setup=device_compilation.instrument, 
                                         file_name_raw=file_name, 
                                         data_dir=setup_paths.data_dir, 
-                                        dc_configs=device_compilation.dc_configs, idx=0)
+                                        dc_configs=dc_configs, idx=0)
     first_time, plotmanager1, plotmanager2, figs, datastreams, idx = update_plots(first_time=first_time, datastreams=datastreams, first_pos_step=first_pos_step)
     # run twice to remove initial transient 
     idx = 1
-    datastreams = ds_add_log(device_compilation.instrument, datastreams, device_compilation.dc_configs, first_pos_step, cmd_val=cmd_val, 
+    datastreams = ds_add_log(device_compilation.instrument, datastreams, dc_configs, first_pos_step, cmd_val=cmd_val, 
                             step_len=step_len, cc_val=cc_val, fc_cmd=fc_cmd, 
-                            sys_connections=device_compilation.sys_connections)
+                            sys_connections=sys_connections)
     datastreams.to_h5(setup_paths.data_dir, f"initial_startup_{guard_adg_r}rf_{guard_ccomp}ccomp.h5", log_info)
 
     ds, datastreams, first_time, plotmanager1, plotmanager2, figs, idx = measure_cmd_cc_impulse(device_compilation.fpga_board, 
                         experiment_class=device_compilation.instrument, FS=FS, 
-                        sys_connections=device_compilation.sys_connections, 
+                        sys_connections=sys_connections, 
                         cmd_cc_scale={'fc_cmd' : fc_cmd, 'step_len' : step_len}, 
                         plot_setting={'idx' : idx, 'first_time' : first_time, 'plotmanager1' : plotmanager1, 'plotmanager2' : plotmanager2, 'figs' : figs}, 
                         ccomp=guard_ccomp, 
@@ -67,7 +154,7 @@ def collect_data():
                         adgr_ccomp_combination=[(100, 47)], 
                         data_dir=setup_paths.data_dir, 
                         h5_file_name=file_name, 
-                        dc_configs=device_compilation.dc_configs, CC_IMPULSE=MEASURE_CC_IMPULSE, 
+                        dc_configs=dc_configs, CC_IMPULSE=MEASURE_CC_IMPULSE, 
                         CC_CANCELATION=MEASURE_CC_CANCELATION, 
                         method_cc_cancelation=METHOD_CC_CANCELATION, 
                         plot_cancel=True
@@ -105,7 +192,7 @@ def collect_data():
                                                                                     file_name_before_format=file_name, 
                                                                                     osc=osc, 
                                                                                     data_dir=data_dir, 
-                                                                                    dc_configs=device_compilation.dc_configs, 
+                                                                                    dc_configs=dc_configs, 
                                                                                     mv_val_arr=mv_val_arr, 
                                                                                     ccomp_arr=ccomp_arr, 
                                                                                     adg_r_arr=adg_r_arr, 
@@ -121,7 +208,7 @@ def collect_data():
                                                                                         clamp_res=clamp_res, 
                                                                                         first_pos_step=first_pos_step, 
                                                                                         TO_CLAMPFIT=TO_CLAMPFIT, 
-                                                                                        sys_connections=device_compilation.sys_connections)
+                                                                                        sys_connections=sys_connections)
 
     plot_oscilloscope(OSCOPE=OSCOPE, adg_r_arr=adg_r_arr, scope_data=scope_data)
     # p1_diff = plot_im_est(datastreams)
@@ -150,12 +237,12 @@ def collect_data():
     if 0:
         # sweep the gain of the voltage clamp; to check on the oscilloscope 
         for rf in Clamp.configs['RF1_dict']:
-            device_compilation.dc_configs[1]['RF1'] = rf
-            device_compilation.fpga_board.clamps[1].configure_clamp(**device_compilation.dc_configs[1])
+            dc_configs[1]['RF1'] = rf
+            device_compilation.fpga_board.clamps[1].configure_clamp(**dc_configs[1])
             print(f'RF = {rf}')
             input('next?')
 
-    device_compilation.dc_configs[0]['ADG_RES'] = 100
-    device_compilation.dc_configs[0]['CCOMP'] = 47
-    device_compilation.fpga_board.clamps[0].configure_clamp(**device_compilation.dc_configs[0])
+    dc_configs[0]['ADG_RES'] = 100
+    dc_configs[0]['CCOMP'] = 47
+    device_compilation.fpga_board.clamps[0].configure_clamp(**dc_configs[0])
     print(f'Configure at known good config to measure on oscope')
