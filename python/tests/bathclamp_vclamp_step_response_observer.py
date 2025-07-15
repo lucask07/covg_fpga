@@ -49,6 +49,7 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp
 from calibration.electrodes import EphysSystem
 from observer import Observer
+from tests.clamp_sandbox import get_cc_optimize
 
 eng = matlab.engine.start_matlab()
 eng.addpath('..\\Matlab\\control_system\\observer\\full_closed_loop\\')

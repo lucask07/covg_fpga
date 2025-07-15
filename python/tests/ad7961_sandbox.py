@@ -18,7 +18,7 @@ Realtime plots and maximum record length
 Abe Stroschein, ajstroschein@stthomas.edu
 Lucas Koerner, koerner.lucas@stthomas.edu
 """
-
+import setup_paths
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 import logging
 import os

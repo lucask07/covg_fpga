@@ -7,6 +7,7 @@ Lucas Koerner, koer2434@stthomas.edu
 """
 import functools
 import os
+import logging as log
 import numpy as np
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
@@ -22,6 +23,7 @@ fig_dir = os.path.join(fig_dir, 'calibration')
 plt.ion()
 
 cc_cap = 4.491e-9 # measured with LCR 
+c1 = cc_cap
 
 def soft_sq_wave(t, f, a, h, phi, s=1):
     # a square-wave that does not have infinitely fast edges. 
@@ -73,7 +75,7 @@ def tf(name):
         pass
 
 
-def vclamp_tf(f, cm, r5, rleak, r3, r4, cc, rcc):
+def vclamp_tf(f, cm, rleak, r5=100e3, r3=3.32e3, r4=5e3, cc=cc_cap, rcc=6.8e3):
     #  this is for voltage clamp calibration measurements
     # TODO: will need to solve for rleak 
     # Confirmed with the LTSpice result: clamp_electrodes.raw 
@@ -139,8 +141,8 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None, knowns={}):
             tf_nodut = tf('no_dut')
             tf_test = functools.partial(tf_nodut, c1=c1)
         elif (tf_type == 'vclamp') or (tf_type == 'vclamp_bound'):
-            print('vclamp knowns')
-            print(knowns)
+            # print('vclamp knowns')
+            # print(knowns)
             tf_test = functools.partial(vclamp_tf, **(knowns)) 
             # tf_test = vclamp_tf
 
@@ -159,7 +161,7 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None, knowns={}):
             except:
                 r1 = params['r1'].value # r1 is a typo here, actually solving for r5
                 cm = params['cm'].value 
-                print('Solving Vclamp for CM and r1')
+                # print('Solving Vclamp for CM and r1')
                 return tf_test(f, cm, r1)
 
         # TODO: not implemented once functools reduction of vclamp_tf was done 
@@ -218,6 +220,7 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None, knowns={}):
 
     # run the global fit to all the data sets
     # lmfit: minimize
+    # TODO: Plot the tf_phase 0 vs the f --> confident in the stats: f - x, tf_amp_phase[0] - y
     result = minimize(residuals_magnitude, fit_params, args=(f, tf_amp_phase[0], tf_type, knowns))
     report_fit(result)
 

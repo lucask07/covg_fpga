@@ -316,6 +316,7 @@ cmd_val_set = 0x0300
 cc_val_set = 0x0100
 
 for imp_on in ['CMD', 'CC']:
+    figs = []
     # set all fast-DAC DDR data to midscale -- this is writing each to the DDR which is wasteful 
     dac_step_len = 16384
     set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
@@ -371,6 +372,8 @@ for imp_on in ['CMD', 'CC']:
     # write data to datastream h5
     datastreams.to_h5(data_dir, f'{imp_on}_impulse.h5', log_info)
 
+    figs.append(fig)
+
     # plot impulses. 
     # TODO: the scaling of DAC codes needs to be checked with the oscilloscope. 
     #       The DAC DDR code generation needs to be simplified so that a 
@@ -384,3 +387,9 @@ for imp_on in ['CMD', 'CC']:
 
     imp, t, t0 = datastreams['Im'].get_impulse(t0 = dac_step_len/2/2.5e6)
     impulses[imp_on] = imp
+
+    figs.append(fig)
+
+    for fig in figs:
+        fig.canvas.draw()
+        fig.canvas.flush_events()

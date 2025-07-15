@@ -34,6 +34,8 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp, Vsense2
 from calibration.electrodes import EphysSystem
 from observer import Observer
+from tests_solidify.bathclamp_vclamp_utils import *
+from tests.clamp_sandbox import get_cc_optimize
 
 # from analysis.cc_calibration import cc_waveform
 from analysis.cc_inference import cat_cc_wave, infer_ccwave_spline
@@ -196,7 +198,7 @@ FS = 5e6
 SAMPLE_PERIOD = 1/FS
 ADS_FS = 1e6
 
-dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 2, 'vsense': 3}  # LJK, 8/30/2024 move clamp to 2 to prepare for adding guard -- this will mess up some of the ADS8686 numbers
+dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 3, 'vsense': 2}  # LJK, 8/30/2024 move clamp to 2 to prepare for adding guard -- this will mess up some of the ADS8686 numbers
 # dc_mapping = {'bath': 0, 'clamp': 1, 'vsense': 3, 'guard': 2} # Guard is not actually used and not connected  
 
 eps = Endpoint.endpoints_from_defines
@@ -515,7 +517,8 @@ def capture_data(idx=0, filename=None):
                                                  daq, sys_connections, outfile = None)
  
     return datastreams, log_info
-    
+
+"""
 def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=100):
 
     # Two plots that are updated in realtime 
@@ -600,7 +603,135 @@ def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, a
     first_time = False
 
     return first_time, lines1, lines2, figs
+"""
+def update_plots(first_time, datastreams, lines1=None, lines2=None, figs=None, adg_r=100):
 
+    # Two plots that are updated in realtime 
+    # First plot is 2x2 
+    if first_time:
+        figs = []
+        fig, ax = plt.subplots(2,2, figsize=(10,8))
+        fig.canvas.manager.window.move(0,0)
+        figs.append(fig)
+        lines1 = PlotManager(datastreams)
+        # AMP OUT : observing (buffered/amplified) electrode P1 -- represents Vmembrane
+        # l1 = datastreams['P1'].plot(ax[0,0], {'marker':'.'})
+        lines1.positional_plot_with_datastream(type='P1', ax=ax, row=0, col=0, aes_key={'marker' : '.'})
+        # ax[0,0].set_ylim([-100e-3, 100e-3])
+        lines1.set_ax_properties(type='P1', ylimit=[-100e-3, 100e-3])
+        # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
+        try:
+            # l2 = datastreams['P2'].plot(ax[0,1], {'marker':'.'})
+            lines1.positional_plot_with_datastream(type='P2', ax=ax, row=0, col=1, aes_key={'marker':'.'})
+            # ax[1].set_title('P2')
+            lines1.set_ax_properties(ax=ax, row=1, title='P2')
+            # wipe out the 'CMD0' from the map
+            print("plotted from P2")
+            lines1.pop('CMD0', None)
+        except:
+            # l2 = datastreams['CMD0'].plot(ax[0,1], {'marker':'.'})
+            lines1.positional_plot_with_datastream(type='CMD0', ax=ax, row=0, col=1, aes_key={'marker':'.'})
+            # ax[0,1].set_ylim([-100e-3, 100e-3])
+            lines1.set_ax_properties(type='CMD0', ylimit=[-100e-3, 100e-3])
+            # wipe out the 'P2' from the map
+            print("plotted from CMD0")
+            lines1.pop('P2', None)
+
+        # l3 = datastreams['V1'].plot(ax[1,0], {'marker':'.'})
+        lines1.positional_plot_with_datastream(type='V1', ax=ax, row=1, col=0, aes_key={'marker':'.'})
+        # l4 = datastreams['I'].plot(ax[1,1], {'marker':'.'})
+        lines1.positional_plot_with_datastream(type='I', ax=ax, row=1, col=1, aes_key={'marker':'.'})
+    else:
+        # reset the datastream since in the experiment we reassigned the datastreams object
+        lines1.reset_datastreams(datastreams)
+        # datastreams['P1'].update_lines(lines1[0][0])
+        # CAL ADC : observing electrode P2 (configured by CAL_SIG2)
+        # try:
+        #     datastreams['P2'].update_lines(lines1[1][0])
+        # except:
+        #     datastreams['CMD0'].update_lines(lines1[1][0])
+        # datastreams['V1'].update_lines(lines1[2][0])
+        # datastreams['I'].update_lines(lines1[3][0])
+        lines1.update_lines('P1')
+        # This complex handling scheme happens because we try to plot two things on the same ax, which is a very bad practice to 
+        # differentiate P2 from CMD0 and to know which parameter is being measured at real time
+        second_key = 'P2' if 'P2' in lines1 else 'CMD0'
+        try:
+            lines1.update_lines(second_key, custom_type='P2')
+        except:
+            lines1.update_lines(second_key, custom_type='CMD0')
+        lines1.update_lines('V1')
+        lines1.update_lines('I')
+
+    # second plot, membrane current and CMD 
+    if first_time:
+        fig, axs = plt.subplots(2,1,figsize=(10,8))
+        fig.canvas.manager.window.move(600,0)
+        figs.append(fig)
+        lines2 = []
+        for idx,ax in enumerate(axs):
+            ax_right = ax.twinx()
+            component_plot = PlotManager(datastreams)
+            # l1 = datastreams['CMD0'].plot(ax_right, {'linestyle':'--', 'color':'r', 'label': 'CMD'})
+            component_plot.positional_plot_with_datastream('CMD0', ax_right, aes_key={'linestyle':'--', 'color':'r', 'label': 'CMD'})
+            # l2 = datastreams['P1'].plot(ax_right, {'linestyle':'-', 'color': 'b', 'label': 'P1'})
+            component_plot.positional_plot_with_datastream('P1', ax_right, aes_key={'linestyle':'-', 'color': 'b', 'label': 'P1'})
+            # l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'decimate':[5,5], 'invert':-1})
+            component_plot.positional_plot_with_datastream('Im', ax, aes_key={'marker':'.', 'color': 'k', 'label': 'Im', 'decimate':[5,5], 'invert':-1})
+            #l3 = datastreams['Im'].plot(ax, {'marker':'.', 'color': 'k', 'label': 'Im', 'invert':-1})
+
+            # if idx==1:
+            #     ax.set_ylim([-60e-6, 60e-6])
+            # else:
+            #     ax.set_ylim([-60e-6, 60e-6])
+            component_plot.set_ax_properties(ax=ax, ylimit=[-60e-6, 60e-6])
+            # lns = l1+l2+l3
+            lns = []
+            for type in component_plot:
+                lns += component_plot.get_type_line_obj(type)
+            
+            labs = [l.get_label() for l in lns]
+            ax.legend(lns, labs, loc=2)
+            # lines2.append([l1,l2,l3])
+            lines2.append(component_plot)
+
+            if idx==1: # zoom in at edge 
+                ads_plot_zoom(ax, t_range=[first_pos_step*1e6-50, first_pos_step*1e6+200])
+                ads_plot_zoom(ax_right, t_range=[first_pos_step*1e6-50, first_pos_step*1e6+200])
+            else: 
+                ads_plot_zoom(ax, t_range=[first_pos_step*1e6-300, first_pos_step*1e6*2+300])
+                ads_plot_zoom(ax_right, t_range=[first_pos_step*1e6-300, first_pos_step*1e6*2+300])
+
+    else:
+        for l2 in lines2:
+            # Reset the datastreams
+            l2.reset_datastreams(datastreams)
+            # datastreams['CMD0'].update_lines(l2[0][0]) # TODO: why is this a list?
+            # datastreams['P1'].update_lines(l2[1][0])
+            # datastreams['Im'].update_lines(l2[2][0], {'decimate':[10,10], 'invert':-1})
+            for type in l2:
+                if type != 'Im':
+                    l2.update_lines(type)
+                else:
+                    l2.update_lines(type, custom_keys={'decimate':[10,10], 'invert':-1})
+        
+        im_data = datastreams['Im'].data
+        t = datastreams['Im'].create_time()
+        fc = 500e3 #5e3
+        im_data_filt = bessel_lowpass_filter(im_data, cutoff=fc, fs=1/(t[1]-t[0]), order=5)
+        idx = (t > first_pos_step + 2e-3) & (t < first_pos_step + 5e-3)
+        im_noise_wb = np.std(im_data[idx])
+        im_noise_filt = np.std(im_data_filt[idx])
+        print(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
+
+    for fig in figs:
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+    
+    first_time = False
+
+    return first_time, lines1, lines2, figs
+# """
 
 datastreams, log_info = capture_data(idx=0)
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
@@ -797,7 +928,8 @@ if 1:
     # adg_r_arr = [100, 100, 100, 100, 100, 100]
 
     # at a DAC gain of x5 limit will be about 500 mV due to the x1/11 at the clamp board 
-    mv_val_arr = np.concatenate( ([0,5,10,15,20,25,30,35,40], [50,60,70,80,90,100], [120, 140, 160, 180], [200, 240, 280, 320, 360, 400]) )
+    # mv_val_arr = np.concatenate( ([0,5,10,15,20,25,30,35,40], [50,60,70,80,90,100], [120, 140, 160, 180], [200, 240, 280, 320, 360, 400]) )
+    mv_val_arr = np.concatenate( ([0,5], [50,60]) )
     # short cmd step -- for noise investigations
     # mv_val_arr = np.concatenate( ([0],[40]) )
 

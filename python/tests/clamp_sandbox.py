@@ -41,7 +41,9 @@ from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from filters.filter_tools import butter_lowpass_filter, delayseq_interp
 from analysis.adc_data import read_h5, peak_area, get_impulse, im_conv, idx_timerange
 from analysis.clamp_data import adjust_step2, adjust_step_delay, adjust_step_scale
+# from tests.ad7961_sandbox import save_adc_data
 
+osc = open_by_name('msox_scope')
 
 FS = 5e6
 SAMPLE_PERIOD = 1/FS
@@ -328,6 +330,8 @@ for dv in [2**6, 2**8, 2**9]:
         ax.legend()
         ax.set_title('Fast ADC data')
         ax.set_xlabel('s [us]')
+        fig.canvas.draw()
+        fig.canvas.flush_events()
 
     # DACs 
     t_dacs = t[crop_start::2]  # fast DACs are saved every other 5 MSPS tick
@@ -339,6 +343,8 @@ for dv in [2**6, 2**8, 2**9]:
         ax.legend()
         ax.set_title('Fast DAC data')
         ax.set_xlabel('s [us]')
+        fig.canvas.draw()
+        fig.canvas.flush_events()
 
     # ADS8686. ToDo will need to chop up based on sequencer settings 
     t_ads = t[crop_start::5] # ADS8686 data is saved every fifth 5 MSPS tick
@@ -360,6 +366,8 @@ for dv in [2**6, 2**8, 2**9]:
     ax.legend()
     ax.set_xlabel('s [us]')
     ax.set_title('ADS8686 data')
+    fig.canvas.draw()
+    fig.canvas.flush_events()
 
 '''
 # Test the clamp v2 DAC
@@ -796,5 +804,7 @@ if 0:
         ax.legend()
         ymin, ymax = ax.get_ylim()
         ax.set_ylim([np.min([adc_min[0], adc_min[2]])-500, ymax])
+        fig.canvas.draw()
+        fig.canvas.flush_events()
         fig.tight_layout()
         fig.savefig(os.path.join(data_dir, 'final_comparison_rf{}_cc{}_.png'.format(rf, ccomp)))

@@ -1,5 +1,6 @@
 import os
 import sys
+import csv
 import numpy as np
 import scipy.fftpack
 import matplotlib.pyplot as plt
@@ -33,12 +34,21 @@ col_width = 3.342
 aspect_ratio = 0.7
 fig_size = (col_width, col_width*aspect_ratio)
 
-if sys.platform == 'darwin':
-    data_dir = '/Users/koer2434/Library/CloudStorage/OneDrive-UniversityofSt.Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
-    fig_dir = '/Users/koer2434/My Drive/UST/research/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/'
-elif sys.platform == 'win32':
-    data_dir = r'C:/Users/koer2434/OneDrive - University of St. Thomas/UST/research/covg/fpga_and_measurements/daq_v2/data/'
-    fig_dir = r'C:/Users/Public/Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/'
+# TODO: add data directories like this to a config file
+data_dir_base = os.path.expanduser('~')
+if sys.platform == "linux" or sys.platform == "linux2":
+    pass
+elif sys.platform == "darwin":
+    data_dir = os.path.join(data_dir_base, 'Documents/covg/fpga_and_measurements/daq_v2/data/')
+    fig_dir = os.path.join(data_dir_base, 'Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/')
+elif sys.platform == "win32":
+    data_dir = os.path.join(data_dir_base, 'Documents/covg/fpga_and_measurements/daq_v2/data/')
+    fig_dir = os.path.join(data_dir_base, 'Documents/covg/manuscripts/covg_methods/digital_amp_manuscript/overleaf/figures/')
+
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
+if not os.path.exists(fig_dir):
+    os.makedirs(fig_dir)
 
 def find_nearest(array, target):
     """ find value in an array nearest to a target value
@@ -259,3 +269,22 @@ def my_savefig(fig, figure_dir, figname, TIGHT_LAYOUT=True):
     for e in ['.png', '.pdf', '.eps']: # use pdf rather than eps to support transparency
         fig.savefig(os.path.join(figure_dir,
                                  figname + e))
+
+def my_savedata(file_name, **columns):
+    """
+    Save the data given the columns and their corresponding data
+    Params:
+        file_name: name of csv file to which data would be saved
+        columns: a map of column names and their data
+    """
+    max_len = max(len(data) for data in columns.values())
+    for key, data in columns.items():
+        if not isinstance(data, np.ndarray):
+            raise ValueError("the input for my_savedata() is not numpy array!")
+        if len(data) < max_len:
+            data = np.concatenate((data, np.array([''] * (max_len - len(data)), dtype=data.dtype)))
+            columns[key] = data
+    with open(file_name, 'w', newline="") as csvfile:
+        csver = csv.writer(csvfile)
+        csver.writerow(columns.keys())
+        csver.writerows(zip(*columns.values()))
