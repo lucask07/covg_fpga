@@ -448,7 +448,7 @@ def measure_resistance(config_dict_test, dc_configs, dc_under_test, testing='bat
     # For measure resistance, the value is the list, whose first value refers to plot object, 
     # second refers to relays states, ADC, DAC, and third the measuring parameters
     EXPERIMENTS.update({f"measure resistance of {testing}" : 
-                        [None if testing == "bath" or fig == None else fig, 
+                        [fig, 
                         {k : dc_configs[dc_under_test][k] for k in ['ADC_SEL', 
                                                                     'DAC_SEL',  
                                                                     'PClamp_CTRL', 
@@ -795,7 +795,7 @@ def transfer_functions_fit(testing, data_chirp, dc_configs, dc_under_test, volta
 
     # calculates both the total resistance (measured via current injection) and the isolated resistance infered by transfer functions 
     # fails with tf_type = 'vclamp'
-    predicted_res, res_fit_mesg, component_fits, fit_notes, components, fig = total_res_iso_res(data_dir, filename_chirp.format(testing) + '.npz',  
+    predicted_res, res_fit_mesg, component_fits, fit_notes, components, figures_table = total_res_iso_res(data_dir, filename_chirp.format(testing) + '.npz',  
                                                                                         r_total_guess, tf_type, PLT=True)
     print(components)
 
@@ -803,7 +803,7 @@ def transfer_functions_fit(testing, data_chirp, dc_configs, dc_under_test, volta
     EXPERIMENTS.update({
         f'Transfer functions fit for {testing}' : 
         [
-            fig, 
+            figures_table, 
             measured_params
         ]
     })

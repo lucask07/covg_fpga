@@ -160,6 +160,9 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
     fit_results = {}
     component_fits = {}
 
+    # Dictionary to look up plot object instead of showing all of them right away
+    figures_table = dict()
+
     # analyze two different electrode configurations at each frequency 
     # 1 is a reference and calculate 
     freq_arr_fixed = np.unique([data[data_key]['freq'] for data_key in data])
@@ -227,6 +230,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
                 marker='*', color=clr)
             fig.canvas.draw()
             fig.canvas.flush_events()
+            figures_table[f'mere gain for {test_type}, {drive_elec}'] = fig
 
         if freq_limit_forfit is not None:
             f_idx = fit_results[drive_elec]['freq'] < freq_limit_forfit
@@ -250,6 +254,8 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
                         linestyle=next(linesty))
             fig_tf.canvas.draw()
             fig_tf.canvas.flush_events()
+            
+
         if test_type == "voltage_clamp":
             vclamp_iter += 1
 
@@ -316,6 +322,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
         # TODO: There is no r3 in vclamp either!
         ax_tf.text(0.65, 0.7, f'$R_{{cc}} = {components["r3"]/1e3:2.2f} \, k\Omega$', bbox=dict(facecolor='white', edgecolor='white', pad=3), transform=ax_tf.transAxes)
 
+    figures_table[f'Comparative gain for {test_type}'] = fig_tf
     my_savefig(fig_tf, fig_dir, f'transfer_function_fit_{tf_type}{name}')
 
     component_fits_key = 'drive_CAL1' if tf_type == 'elec_r_cc' else 'drive_CAL2'
@@ -327,7 +334,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
                'chisqr': component_fits[component_fits_key][idx].chisqr,
                'message': component_fits[component_fits_key][idx].message}
     # Also return the transfer function plot to save into the list
-    return component_fits, fit_notes, components, fig_tf
+    return component_fits, fit_notes, components, figures_table
 
 
 def total_res_iso_res(data_dir, filename, r_total_guess, tf_type, PLT=False):
@@ -340,12 +347,12 @@ def total_res_iso_res(data_dir, filename, r_total_guess, tf_type, PLT=False):
     
     shapes = [data[d]['shape'] for d in data]
     if shapes.count('SINE') > 1:
-        component_fits, fit_notes, components, fig_tf = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=PLT)
+        component_fits, fit_notes, components, figures_table = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=PLT)
     else:
         # this is correct syntax 
         component_fits = fit_notes = components = fig_tf = None
     # Also return the transfer function plot to save into the list
-    return predicted_res, res_fit_mesg, component_fits, fit_notes, components, fig_tf
+    return predicted_res, res_fit_mesg, component_fits, fit_notes, components, figures_table
 
 def main():
     """
