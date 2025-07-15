@@ -1,8 +1,7 @@
-,bath
-r1,6813.345687365589
-r2,6818.232897033429
-r3,8695.634258667616
-total_resistance,94047.02400614627
+,clamp
+r2,50000.90121552083
+cm,2.000028042182001e-08
+total_resistance,286487.3108541577
 resistance_msg,"Both actual and predicted relative reductions in the sum of squares
   are at most 0.000000"
-fit_notes,"{'success': True, 'chisqr': 0.007492574087595107, 'message': 'Fit succeeded. Could not estimate error-bars.'}"
+fit_notes,"{'success': True, 'chisqr': 7.518653848332452, 'message': 'Fit succeeded.'}"

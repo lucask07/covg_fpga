@@ -161,7 +161,7 @@ class FPGAInterface:
         """
         # Set dc_mapping -> dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 3, 'vsense': 2}
         """
-        self.dc_mapping : dict[str, Optional[int]] = {'bath': None, 'guard': None, 'clamp': None, 'vsense': None}
+        self.dc_mapping : dict[str, Optional[int]] = {'bath': None, 'guard': None, 'clamp': None, 'vclamp': None}
         for key in dc_mapping:
             if key not in self.dc_mapping:
                 raise ValueError("key can only be 1 in 4 components of the board, bath, guard, clamp, and vsense.")
@@ -180,17 +180,19 @@ class FPGAInterface:
         self.gpio.spi_debug(spi_debug) # 'ads'
         self.gpio.ads_misc(ads_misc)  # -> 'convst' -> to check sample rate of ADS
     
-    def organize_clamp_board(self):
+    def organize_clamp_board(self, allfour=False):
         # instantiate the Clamp boards providing a daughter card number (from 0 to 3)
         # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
         VSENSE2 = self.experiment_class.VSENSE2
         # not vsense2 -> indices of clamp boards, vsense2 -> can't be clamp. include the guard
         self.DC_NUMS = [0,1,3] if VSENSE2 else [0,1,2]
+        if allfour:
+            self.DC_NUMS = [0, 1, 2, 3]
         self.init_board()
 
     def init_board(self):
         for dc_num in self.DC_NUMS:
-            if dc_num == self.dc_mapping['vsense']: # skip this with VSENSE2 
+            if dc_num == self.dc_mapping['vclamp']: # skip this with VSENSE2 
                 clamp = Clamp(self.f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
             else:
                 clamp = Clamp(self.f, dc_num=dc_num, version=2)

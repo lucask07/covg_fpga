@@ -51,7 +51,7 @@ cap = 47
 ## TODO: Add a conditional function here
 device_compilation = None
 if __name__ == '__main__' and device_compilation == None:
-    device_compilation = device_setup()
+    device_compilation = device_setup(allfour=True)
 
 # Set the dac channel
 adc_chan0 = device_compilation.fpga_board.daq.parameters['ads_map'][dc_under_test]['CAL_ADC']  # ('A', 0)
@@ -60,7 +60,10 @@ adc_v1 = device_compilation.fpga_board.daq.parameters['ads_map'][device_compilat
 
 
 
-
+#####################################################################
+## GENERAL DICT TO LOG EXPERIMENT PROCESS ###########################
+EXPERIMENTS = dict()
+#####################################################################
 
 
 
@@ -199,7 +202,7 @@ def get_ads_voltages(ddr, num_repeats=1, blk_multiples=10):
 
     # update system connections since the daughtercard configurations have changed
     sys_connections = create_sys_connections(
-        device_compilation.dc_configs, 
+        dc_configs, 
         device_compilation.fpga_board.daq, 
         device_compilation.instrument.ephys_sys
     )
@@ -409,6 +412,7 @@ def measure_resistance(config_dict_test, dc_configs, dc_under_test, testing='bat
         blk_multiples=blk_multiples
     )
     
+    fig = None
     if testing == 'clamp':
         v_vclamp = ads_separate_data[adc_v1[0]][adc_v1[1]]  # TODO: generalize if boards swap DAQ sockets
         idx = np.min([len(t), len(v_vclamp)])
@@ -440,6 +444,19 @@ def measure_resistance(config_dict_test, dc_configs, dc_under_test, testing='bat
         fit_resistance, pcov, mesg = r_from_square(r_total_guess, rdata, PLT=plt_fit)
     except:
         fit_resistance = pcov = mesg = None
+    
+    # For measure resistance, the value is the list, whose first value refers to plot object, 
+    # second refers to relays states, ADC, DAC, and third the measuring parameters
+    EXPERIMENTS.update({f"measure resistance of {testing}" : 
+                        [None if testing == "bath" or fig == None else fig, 
+                        {k : dc_configs[dc_under_test][k] for k in ['ADC_SEL', 
+                                                                    'DAC_SEL',  
+                                                                    'PClamp_CTRL', 
+                                                                    'P1_E_CTRL', 
+                                                                    'P2_E_CTRL', 
+                                                                    'P1_CAL_CTRL', 
+                                                                    'P2_CAL_CTRL']}, 
+                        copy.deepcopy(rdata[step])]})
 
     return config_dict_test, rdata, fit_resistance, pcov, mesg, ads_separate_data
 
@@ -456,6 +473,8 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
         voltage_amp : (float) voltage amplitude of chirp stimulus 
         step_chirp : (int) the step index for the list of dicts that store the final results 
     """
+    # A dictionary to keep track of relay states + measured parameters
+    measured_params = dict()
 
     for drive_elec in [1,2]:
         if drive_elec == 1:  # upload the chirp signal to DDR only for drive 1 since we repeat for drive electrode 2 
@@ -486,8 +505,7 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
         log_info_bath, dc_configs[dc_under_test] = device_compilation.fpga_board.clamps[dc_under_test].configure_clamp(**dc_configs[dc_under_test])
         log_info_dut, dc_configs[dc_disconnect] = device_compilation.fpga_board.clamps[dc_disconnect].configure_clamp(**dc_configs[dc_disconnect])
 
-        print(testing)
-        print(dc_configs)
+        
 
         # download ADC data so that np.max(t_chirp) = total_chirp_time 
         # This can also be checked by the indices (2.5 MSPS)
@@ -500,6 +518,19 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
                                                                             'CAL_ADC'],
                                                                         num_repeats=num_repeats_chirp,
                                                                         blk_multiples=blk_mult)
+        
+        # Round up relays states first
+        param_list = list()
+        measured_params[f'drive_elec_{drive_elec}'] = param_list
+        param_list.extend([
+            {
+                    k : dc_configs[dc_under_test][k] for k in [
+                        'ADC_SEL', 'DAC_SEL', 
+                        'PClamp_CTRL', 'P1_E_CTRL', 'P2_E_CTRL', 'P1_CAL_CTRL', 
+                        'P2_CAL_CTRL'
+                    ]
+                }, dict()]
+        )
 
         for freq, idx in zip(freq_arr, indices):
             chirp_idx = []
@@ -522,6 +553,8 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
                                       'bath_clamp': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['bath']]),
                                       'voltage_clamp': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['clamp']]),
                                       'vsense': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['vclamp']])}
+            param_list[1].update({step_chirp : 
+                                    {k : copy.deepcopy(v) for k,v in data_chirp[step_chirp].items() if k not in ['bath_clamp', 'voltage_clamp', 'vsense']}})
             step_chirp += 1
 
         # swap roles ADC_SEL electrode; keep drive electrode the same  
@@ -547,6 +580,18 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
                                                                         num_repeats=num_repeats_chirp,
                                                                         blk_multiples=blk_mult)
 
+        # Also do the same thing when drive elecs swap their roles
+        param_list_swap = list()
+        measured_params[f'drive_elec_{drive_elec}_swap'] = param_list_swap
+        param_list_swap.extend([
+            {
+                    k : dc_configs[dc_under_test][k] for k in [
+                        'ADC_SEL', 'DAC_SEL', 
+                        'PClamp_CTRL', 'P1_E_CTRL', 'P2_E_CTRL', 'P1_CAL_CTRL', 
+                        'P2_CAL_CTRL'
+                    ]
+                }, dict()]
+        )
         for freq, idx in zip(freq_arr, indices):
             chirp_idx = []
             chirp_idx.append(int(idx[0] / len(ADS8686_SEQUENCER_SETUP) / (2.5)))
@@ -565,13 +610,16 @@ def chirp_test(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step
                                       'bath_clamp': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['bath']]),
                                       'voltage_clamp': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['clamp']]),                                
                                       'vsense': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['vclamp']])}
+            param_list_swap[1].update({
+                step_chirp : 
+                {k : copy.deepcopy(v) for k,v in data_chirp[step_chirp].items() if k not in ['bath_clamp', 'voltage_clamp', 'vsense']}})
             step_chirp += 1
 
     # save Chirp data 
     filename_chirp = f'imp_all_steps_chirp_{file_name}' + '_{}'
     np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data_chirp) # saved to a Numpy npz file 
 
-    return data_chirp, filename_chirp, step_chirp
+    return data_chirp, measured_params, filename_chirp, step_chirp
 
 def chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step_chirp):
     """
@@ -588,6 +636,8 @@ def chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, voltage_am
         voltage_amp : (float) voltage amplitude of chirp stimulus 
         step_chirp : (int) the step index for the list of dicts that store the final results 
     """
+    # Create a dict to track measured parameters
+    measured_params = dict()
 
     for float_dut in [True, False]:
         if float_dut:  # upload the chirp signal to DDR only for drive 1 since we repeat for the next measurement
@@ -639,7 +689,21 @@ def chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, voltage_am
                                                                             'CAL_ADC'],
                                                                         num_repeats=num_repeats_chirp,
                                                                         blk_multiples=blk_mult)
-
+        
+        # Round up the relays states first, the second element in the list refers to data in each step chirp
+        param_list = list()
+        measured_params[f'float_dut_{float_dut}'] = param_list
+        param_list.extend(
+            [
+                 {
+                    k : dc_configs[dc_under_test][k] for k in [
+                        'ADC_SEL', 'DAC_SEL', 
+                        'PClamp_CTRL', 'P1_E_CTRL', 'P2_E_CTRL', 'P1_CAL_CTRL', 
+                        'P2_CAL_CTRL'
+                    ]
+                }, dict()]
+            )
+        
         for freq, idx in zip(freq_arr, indices):
             chirp_idx = []
             chirp_idx.append(int(idx[0] / len(ADS8686_SEQUENCER_SETUP) / (2.5)))
@@ -661,6 +725,11 @@ def chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, voltage_am
                                       'bath_clamp': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['bath']]),
                                       'voltage_clamp': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['clamp']]),
                                       'vsense': copy.deepcopy(dc_configs[device_compilation.fpga_board.dc_mapping['vclamp']])}
+            # Round all the step chirp data into the second dict of the list
+            param_list[1].update({
+                step_chirp : 
+            {k : copy.deepcopy(v) for k,v in data_chirp[step_chirp].items() if k not in ['bath_clamp', 'voltage_clamp', 'vsense']}
+            })
             step_chirp += 1
 
         # Doesn't help to swap roles of ADC_SEL electrode; keep drive electrode the same  
@@ -705,7 +774,41 @@ def chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, voltage_am
     filename_chirp = f'imp_all_steps_chirp_floatdut_{file_name}' + '_{}'
     np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data_chirp) # saved to a Numpy npz file 
 
-    return data_chirp, filename_chirp, step_chirp
+    return data_chirp, measured_params, filename_chirp, step_chirp
+
+def transfer_functions_fit(testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step_chirp, 
+                           r_total_guess, data_dir, filename_chirp, PLT=True):
+    measured_params = None
+    if testing == 'bath':
+        data_chirp, measured_params, filename_chirp, step_chirp = chirp_test(testing, data_chirp, dc_configs, dc_under_test, 
+                                                                voltage_amp, step_chirp)
+    elif testing=='clamp':
+        data_chirp, measured_params, filename_chirp, step_chirp = chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, 
+                                                            voltage_amp, step_chirp)
+    # process data
+    if testing == 'clamp':
+        tf_type = 'vclamp'
+        r_total_guess = 300e3
+    elif testing == 'bath':
+        tf_type = 'elec_r_cc'
+        r_total_guess = 8e3
+
+    # calculates both the total resistance (measured via current injection) and the isolated resistance infered by transfer functions 
+    # fails with tf_type = 'vclamp'
+    predicted_res, res_fit_mesg, component_fits, fit_notes, components, fig = total_res_iso_res(data_dir, filename_chirp.format(testing) + '.npz',  
+                                                                                        r_total_guess, tf_type, PLT=True)
+    print(components)
+
+    # For transfer function fit: a list [plot object, measured parameters]
+    EXPERIMENTS.update({
+        f'Transfer functions fit for {testing}' : 
+        [
+            fig, 
+            measured_params
+        ]
+    })
+
+    return predicted_res, res_fit_mesg, component_fits, fit_notes, components, data_chirp, filename_chirp, step_chirp
 
 #############################################################
 ####### MAIN SCRIPT FOR CALIBRATION ########################
@@ -718,7 +821,7 @@ if __name__ == '__main__':
     device_compilation.fpga_board.daq.set_isel(port=1, channels=None)
     device_compilation.fpga_board.daq.set_isel(port=2, channels=None)
 
-    vsense = Vsense(dc_num=2)
+    vsense = Vsense(fpga=device_compilation.fpga_board.f, dc_num=2)
 
     # ----------------- Colect Data -------------------
     setup_info = {
@@ -852,25 +955,17 @@ if __name__ == '__main__':
         step_chirp = 2
 
     #    if testing == 'bath' or testing == 'vclamp':
-        if testing == 'bath':
-            data_chirp, filename_chirp, step_chirp = chirp_test(testing, data_chirp, dc_configs, dc_under_test, 
-                                                                voltage_amp, step_chirp)
-        elif testing=='clamp':
-            data_chirp, filename_chirp, step_chirp = chirp_test_vclamp(testing, data_chirp, dc_configs, dc_under_test, 
-                                                                voltage_amp, step_chirp)
-        # process data
-        if testing == 'clamp':
-            tf_type = 'vclamp'
-            r_total_guess = 300e3
-        elif testing == 'bath':
-            tf_type = 'elec_r_cc'
-            r_total_guess = 8e3
-
-        # calculates both the total resistance (measured via current injection) and the isolated resistance infered by transfer functions 
-        # fails with tf_type = 'vclamp'
-        predicted_res, res_fit_mesg, component_fits, fit_notes, components = total_res_iso_res(data_dir, filename_chirp.format(testing) + '.npz',  
-                                                                                            r_total_guess, tf_type, PLT=True)
-        print(components)
+        predicted_res, res_fit_mesg, component_fits, fit_notes, components, data_chirp, filename_chirp, step_chirp = transfer_functions_fit(
+            testing=testing, 
+            data_chirp=data_chirp, 
+            dc_configs=dc_configs, 
+            dc_under_test=dc_under_test, 
+            voltage_amp=voltage_amp, 
+            step_chirp=step_chirp, 
+            r_total_guess=r_total_guess, 
+            data_dir=data_dir, 
+            filename_chirp=filename_chirp
+        )
         # components is calculated from component_fits so its ok to not capture component_fits
         component_results = {}
         component_results[testing] = components

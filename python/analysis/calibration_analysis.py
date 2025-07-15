@@ -343,7 +343,7 @@ def total_res_iso_res(data_dir, filename, r_total_guess, tf_type, PLT=False):
         component_fits, fit_notes, components, fig_tf = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=PLT)
     else:
         # this is correct syntax 
-        component_fits = fit_notes = components = None
+        component_fits = fit_notes = components = fig_tf = None
     # Also return the transfer function plot to save into the list
     return predicted_res, res_fit_mesg, component_fits, fit_notes, components, fig_tf
 
