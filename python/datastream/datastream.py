@@ -385,6 +385,7 @@ def data_to_datastreams(adc_data, ads_separate_data, dac_data, phys_connections,
     # for each physical connection, create a datastream instance, add to h5  
     for pc_name in phys_connections:
         pc = phys_connections[pc_name]
+
         if pc.converter == 'AD7961':
             data = np.array(to_voltage(adc_data[pc_name], num_bits=pc.bits, voltage_range=pc.conv_factor, use_twos_comp=True))
             sample_rate = FS

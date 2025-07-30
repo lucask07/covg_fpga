@@ -234,6 +234,8 @@ ads.set_lpf(376)
 #ads_sequencer_setup = [('0', '0'), ('1', '1'), ('2', '2')]
 # ads_sequencer_setup = [('1', '0'), ('2', '0')] # with Vm jumpered to U4 relay on the clamp board so it goes to CAL_ADC
 # ads_sequencer_setup = [('1', '0'), ('2', '2'), ('4', '0'),  ('1', '0')] # using clamp at socket 3
+
+
 ads_sequencer_setup = [('1', '0'), ('2', '2')] # using clamp at socket 3; misses I (voltage) 
 
 
@@ -248,10 +250,13 @@ in_amp = 2
 dac_range = 5
 dac_scale = 2**14*4.0/(10/(dac_range*2)) # DN/Volt TODO: verify this  # /0.58 ? 
 
-# ------ Collect Data --------------
+# ------ Setup Experiments --------------
 QUIET_DACS = False # if True use the host driven DAC to test noise
+SWP = True
+TEST_CC = False
 file_name = time.strftime("%Y%m%d-%H%M%S")
-datastream_out_fname = 'clamptest1_quietdacs{}_rtia{}_ccomp{}_inamp{}.h5'
+datastream_out_fname = 'debug1_quietdacs{}_rtia{}_ccomp{}_inamp{}_cmdval{}_ccval{}.h5'
+abf_file = 'debug1_rtia{}_ccomp{}_cmdval{}_ccval{}.abf'
 idx = 0
 
 # fast DAC channels setup
@@ -281,14 +286,23 @@ time.sleep(0.1)
 # set all fast-DAC DDR data to midscale
 set_cmd_cc(dc_nums=[0,1,2,3], cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
         step_len=16384, cc_val=None, cc_pickle_num=None)
-# Set CMD and CC signals - only for the bath clamp
-fc_cmd = 100e3
-#fc_cmd = None
+
+# Set CMD and CC signals for the bath clamp
+fc_cmd = None
 step_len = 16384*8
 first_pos_step = step_len/2*1/DAC_FS # in seconds 
 
-set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=0x0200, cc_scale=0, cc_delay=0, fc=fc_cmd,
-        step_len=16384*8, cc_val=None, cc_pickle_num=None)
+if TEST_CC:
+    cmd_val = 0x0000
+    cc_val = 0x0200
+    set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+            step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
+else:
+    cmd_val = 0x0200
+    cc_val = 0x0000
+    set_cmd_cc(dc_nums=[dc_mapping['bath'], dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+            step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
+
 
 dc_configs = {}
 clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
@@ -300,7 +314,6 @@ for dc_num in [dc_mapping['clamp']]:
     log_info, config_dict = clamps[dc_num].configure_clamp(
         ADC_SEL="CAL_SIG2", # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize jumpered Vm 
         DAC_SEL="noDrive", # must not be drive_CAL2; options are DAC_SEL_dict in boards.py gnd_CAL2 
-        #DAC_SEL="gnd_CAL2", # must not be drive_CAL2; options are DAC_SEL_dict in boards.py gnd_CAL2 
         CCOMP=clamp_cap,
         RF1=clamp_fb_res,  # feedback circuit
         ADG_RES=clamp_res,
@@ -309,8 +322,8 @@ for dc_num in [dc_mapping['clamp']]:
         P1_E_CTRL=0,
         P1_CAL_CTRL=0,
         P2_E_CTRL=0,
-        P2_CAL_CTRL=0, 
-        #P2_CAL_CTRL=1, # ground I 
+        #P2_CAL_CTRL=0, 
+        P2_CAL_CTRL=0, # digitize I if 1. setting this to 1 changes the stability of the loop. (surprisingly) 
         gain=in_amp,  # instrumentation amplifier
         FDBK=1,
         mode="voltage",
@@ -502,17 +515,16 @@ datastreams, log_info = capture_data()
 datastreams, log_info = capture_data()
 first_time, lines1, lines2, figs = update_plots(first_time, datastreams)
 
-OSCOPE = True
+OSCOPE = False
 
 if OSCOPE:
+    # setup channel labels 
     osc.set('chan_label', '"V1"', configs={'chan':1})
     osc.set('chan_label', '"VM"', configs={'chan':2})
     osc.set('chan_label', '"VG"', configs={'chan':3})
     osc.set('chan_label', '"P2"', configs={'chan':4})
     osc.set('chan_label', '"VMd"', configs={'chan':'MATH1'})
 
-
-if OSCOPE:
     scope_data = {} 
     components = ['CC', 'RTIA', 'CLAMP_TIA', 'CLAMP_RF']
     scope_meas = ['OVER', 'RIS']
@@ -524,10 +536,9 @@ if OSCOPE:
 
 
 # extensive sweep
-SWP = True
-adg_r_arr = [10, 33, 100, 332]
+#adg_r_arr = [10, 33, 100, 332]
 adg_r_arr = [33, 100]
-ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
+#ccomp_arr = [47, 200, 247, 1000, 1247, 4700]
 ccomp_arr = [47, 1247, 4700]
 inamp_arr = [2]
 # inamp_arr = [1,2,5,10]
@@ -569,7 +580,7 @@ if SWP:
 
             TO_CLAMPFIT = True
             if TO_CLAMPFIT:
-                datastreams.to_clampfit(data_dir, 'test2_step_quietdacs_rtia{}_ccomp{}.abf'.format(adg_r, ccomp),
+                datastreams.to_clampfit(data_dir, abf_file.format(adg_r, ccomp, cmd_val, cc_val),
                                         names_pclamp = ['Im', 'CMD0', 'V1', 'P1'],
                                         dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
 
@@ -579,7 +590,9 @@ if SWP:
             datastreams.add_log_info({'ddr_step_peak': first_pos_step})
             datastreams.add_log_info({'dut': 'model_cell'})
             datastreams.add_log_info({'quiet_dacs': QUIET_DACS})
-            datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp, in_amp), log_info)
+            datastreams.add_log_info({'cmd_val': cmd_val})
+            datastreams.add_log_info({'cc_val': cc_val})
+            datastreams.to_h5(data_dir, datastream_out_fname.format(QUIET_DACS, adg_r, ccomp, in_amp, cmd_val, cc_val), log_info)
 
     # plot oscilloscope data vs. parameters 
     if OSCOPE:
@@ -607,15 +620,6 @@ if SWP:
         p1_diff = np.diff(datastreams['P1'].data)/dt
         #ax.plot(t[:-1]*1e6, -Cm*p1_diff, label='Im estimate via p1')
         ax.legend()
-
-    # test writing and reading datastream h5
-    TST_DATASTREAM_RW = False
-    if TST_DATASTREAM_RW:
-        datastreams2 = h5_to_datastreams(data_dir, 'test.h5')
-        # this datastreams has the log info but as a dictionary, not as Python classes
-        # if the original objects are needed could use these methods https://stackoverflow.com/questions/6578986/how-to-convert-json-data-into-a-python-object
-        for n in datastreams:
-            assert (datastreams[n].data == datastreams2[n].data).all(), f'Datastream data with key {n} after writing and reading from file are not equal!'
 
     print('-'*100)
     for sig in ['P1', 'CMD0']:
