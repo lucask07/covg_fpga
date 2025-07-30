@@ -32,6 +32,7 @@ from analysis.adc_data import read_h5, separate_ads_sequence
 from filters.filter_tools import butter_lowpass_filter
 from control.matlab import stepinfo
 sys.path.append('C:\\Users\\koer2434\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
+sys.path.append('C:\\Users\\Public\\Documents\\covg\\my_pyabf\\pyABF\\src\\')
 from pyabf.abfWriter import writeABF1 
 from pyabf.tools.covg import interleave_np
 
