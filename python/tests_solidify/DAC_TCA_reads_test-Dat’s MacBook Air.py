@@ -1,13 +1,13 @@
-from typing import Optional, Union
+from typing import Optional
 from collections.abc import Iterable
 from boards import Daq, Clamp
 
 class ReadTest:
     def __init__(self):
-        self.board_list : dict[str, Optional[Union[Daq, Clamp]]] = dict()
+        self.board_list : dict[str, Optional[Daq | Clamp]] = dict()
         self.log : str = ""
     
-    def add_board(self, board : Optional[Union[Daq, Clamp]], name=None, TCA_write=0b000, DAC_write=0b000):
+    def add_board(self, board : Optional[Daq | Clamp], name=None, TCA_write=0b000, DAC_write=0b000):
         self.board_list = self.board_list | {name : board}
         if isinstance(board.DAC, Iterable):
             for dac in board.DAC:
