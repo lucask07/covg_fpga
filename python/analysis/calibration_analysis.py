@@ -96,7 +96,7 @@ def r_from_square(r_total_guess, data, PLT=False, name='', ANNOTATE=False):
             predicted_res = yfit[1]/current_amp
             log.info(f'Current amplitude {current_amp}')
             log.info(f'Predicted resistance {predicted_res}')
-
+            fig = None
             if PLT:
                 fig, ax = plt.subplots(figsize=fig_size)
                 ax.plot(t*1e3, y*1e3, marker='.', label='meas.', linestyle='none')
@@ -108,7 +108,7 @@ def r_from_square(r_total_guess, data, PLT=False, name='', ANNOTATE=False):
                 # ax.legend()
                 my_savefig(fig, fig_dir, f'resistance_cal_square_wave{name}')
                 
-    return predicted_res, pcov, mesg
+    return predicted_res, pcov, mesg, fig
 
 
 def meas_transfer_func(freqs, ts, data, dac_wave):
@@ -180,6 +180,11 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
             fit_results[drive_elec][k] = np.array([])
 
         freq_arr = freq_arr_fixed
+        ###
+        frequencies = []
+        y_values = []
+        y_pair_values = []
+        ###
         for data_key in data:
             d = data[data_key]
             # Determine if the test is on bath_clamp or voltage_clamp:
@@ -187,6 +192,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
             if tf_type == "elec_r_cc":
                 test_type = "bath_clamp"
             elif tf_type == "vclamp":
+                meas_adc = 'CAL_SIG1' # Force the ADC to CAL_SIG1 since the config changed for clamp
                 test_type = "voltage_clamp"
             ##### end #######
             # print(f"~~~~ Testing {test_type} ~~~~")
@@ -208,15 +214,31 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
                     max_freq, amp, phase = fit_sine_fft(t, y, method=method) # cnly used for finding the frequency 
                     xcorr_phase, sample_lag, n_period_float, amp_ratio, amp, dac_amp = phase_by_xcorr(freq, t, y_pair, 
                                                                                         dac_wave=y, debug_plots=False)
+                    y_pair_values.append(amp)
+                    y_values.append(dac_amp)
+                    frequencies.append(freq)
                     log.info(f'Amp. of sine from fft: {amp:.2f}. Phase: {np.degrees(phase):.2f}, {np.degrees(xcorr_phase):.2f}  at freq of {max_freq} [Hz]') 
                     log.info(f'Sample lag of {sample_lag}. With {n_period_float} samples in a period')
 
-                fit_results[drive_elec]['freq'] = np.append(fit_results[drive_elec]['freq'], max_freq)
+                fit_results[drive_elec]['freq'] = np.append(fit_results[drive_elec]['freq'], freq) # max_freq
                 fit_results[drive_elec]['gain'] = np.append(fit_results[drive_elec]['gain'], amp_ratio)
                 # TODO: Uncomment this line below when debugging process is finished
                 # print("flagged!")
                 fit_results[drive_elec]['phase'] = np.append(fit_results[drive_elec]['phase'], xcorr_phase)
+        ###
+        fig_temp, ax_temp = plt.subplots(1,1)
+        ax_temp.semilogx(frequencies, y_values, label='DAC Wave')
+        ax_temp.semilogx(frequencies, y_pair_values, label='DAC')
+        ax_temp.legend()
+        ax_temp.set_xlabel('Frequency (Hz)')
+        ax_temp.set_ylabel('Amplitude')
+        ax_temp.set_title('Amplitude vs Frequency')
+        fig_temp.canvas.draw()
+        fig_temp.canvas.flush_events()
 
+        figures_table[f'components to calculate ratio for {test_type}'] = fig_temp
+
+        ###
         if PLT:
             fig, ax = plt.subplots(2,1)
             if drive_elec == 'drive_CAL1':
@@ -242,7 +264,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
             component_fits[drive_elec], f, model_eval, meas_data = elec_r_cc(fit_results[drive_elec]['freq'][f_idx], 
                                                 (fit_results[drive_elec]['gain'][f_idx], fit_results[drive_elec]['phase'][f_idx]),
                                                 tf_type = tf_type, knowns=knowns)
-            data_csv : dict = dict(f=f, meas_data=meas_data, model_eval=model_eval)
+            data_csv : dict = dict(f=f, meas_data=meas_data, model_eval=model_eval, dac=np.array(y_pair_values), dac_wave=np.array(y_values))
             data_csv_dir = os.path.join(data_dir, f"bathguard_headstage_{test_type}_{drive_elec}_regression_data.csv")
             my_savedata(data_csv_dir, **data_csv)
             elec = next(electrodes) 
@@ -323,7 +345,7 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
         ax_tf.text(0.65, 0.7, f'$R_{{cc}} = {components["r3"]/1e3:2.2f} \, k\Omega$', bbox=dict(facecolor='white', edgecolor='white', pad=3), transform=ax_tf.transAxes)
 
     figures_table[f'Comparative gain for {test_type}'] = fig_tf
-    my_savefig(fig_tf, fig_dir, f'transfer_function_fit_{tf_type}{name}')
+    my_savefig(fig_tf, fig_dir, f'transfer_function_fit_{tf_type}')
 
     component_fits_key = 'drive_CAL1' if tf_type == 'elec_r_cc' else 'drive_CAL2'
 
@@ -337,17 +359,18 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
     return component_fits, fit_notes, components, figures_table
 
 
-def total_res_iso_res(data_dir, filename, r_total_guess, tf_type, PLT=False):
+def total_res_iso_res(data, r_total_guess, tf_type, PLT=False):
     '''
     reads a numpy .npz file and then determines resistance from a square wave fits 
     '''
     # TODO: where is the `knowns`??
-    data = read_cal_data(data_dir=data_dir, filename=filename)
-    predicted_res, pcov, res_fit_mesg = r_from_square(r_total_guess, data, PLT=PLT)  # get resistance from a square wave 
+    # data = read_cal_data(data_dir=data_dir, filename=filename)
+    predicted_res, pcov, res_fit_mesg, fig_sqr = r_from_square(r_total_guess, data, PLT=PLT)  # get resistance from a square wave 
     
     shapes = [data[d]['shape'] for d in data]
     if shapes.count('SINE') > 1:
-        component_fits, fit_notes, components, figures_table = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=PLT)
+        component_fits, fit_notes, components, figures_table = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, name=tf_type, PLT=PLT)
+        figures_table[f"Square wave regression for {tf_type}"] = fig_sqr
     else:
         # this is correct syntax 
         component_fits = fit_notes = components = fig_tf = None
@@ -388,7 +411,7 @@ def main():
         r_total_guess = 5e3 + 5e3
             
         data = read_cal_data(data_dir=data_dir, filename=filename)
-        predicted_res, pcov, res_fit_mesg = r_from_square(r_total_guess, data, PLT=PLT, name=names[len(res['rp1_fit'])], ANNOTATE=True)  # get resistance from a square wave 
+        predicted_res, pcov, res_fit_mesg, figure = r_from_square(r_total_guess, data, PLT=PLT, name=names[len(res['rp1_fit'])], ANNOTATE=True)  # get resistance from a square wave 
         component_fits, fit_notes, components = two_elec_vs_freq(data, tf_type, rtotal=predicted_res, PLT=False, name=names[len(res['rp1_fit'])], ANNOTATE=True)
         res['rp1_fit'].append(component_fits['drive_CAL1'][0].params['r1'].value)
         res['rp2_fit'].append(component_fits['drive_CAL2'][0].params['r1'].value)

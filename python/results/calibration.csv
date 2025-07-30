@@ -1,7 +1,7 @@
 ,clamp
-r2,50000.06917864865
-cm,2.0000002779940974e-08
-total_resistance,362957.82909450313
+r2,993238.2445120828
+cm,2.000000018468737e-08
+total_resistance,3315776.494753265
 resistance_msg,"Both actual and predicted relative reductions in the sum of squares
   are at most 0.000000"
-fit_notes,"{'success': True, 'chisqr': 7.613126959554839, 'message': 'Fit succeeded.'}"
+fit_notes,"{'success': True, 'chisqr': 3.11433668867081, 'message': 'Fit succeeded.'}"

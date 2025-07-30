@@ -61,6 +61,7 @@ def fit_sine_fft(t, y, method='quad_interpolate'):
                                           method=method, plot=False, window='hann')
 
     return max_freq, amp, phase
+    # return freq, max_freq, amp, phase
 
 
 def tf(name):

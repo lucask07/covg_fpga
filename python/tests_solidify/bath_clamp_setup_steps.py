@@ -5,76 +5,65 @@ from setup_paths import *
 
 from instrbuilder.instrument_opening import open_by_name
 from bathclamp_vclamp_utils import *
-
-"""
-excel_cfg_file = sys.argv[1]
-workbook = openpyxl.load_workbook(excel_cfg_file)
-content = workbook.active
-
-key_map = dict()
-for i, row in enumerate(content.iter_rows(min_col=1, max_col=1, values_only=True)):
-    key_map[row[0]] = i
-    """
-
 # ------------- vsense2 and quiet_dacs ------------------
-VSENSE2 = True # content['B'+str(key_map['VSENSE2'])] # True
-QUIET_DACS = False # content['B'+str(key_map['QUIET_DACS'])] # False
-DAQ_V = "2.1"
+VSENSE2 = 0 # True # content['B'+str(key_map['VSENSE2'])] # True
+QUIET_DACS = 0 # False # content['B'+str(key_map['QUIET_DACS'])] # False
+DAQ_V = 0 # "2.1"
 # ------------- ephys system name -------------
-EPHYS_SYS_NAME = 'Dagan_guard' # content['B'+str(key_map['EPHYS_SYS_NAME'])] # 'Dagan_guard'
+EPHYS_SYS_NAME = 0 # 'Dagan_guard' # content['B'+str(key_map['EPHYS_SYS_NAME'])] # 'Dagan_guard'
 # ------------- model cell configuration ------------
-NUMBER = 3 # guard
-RS = 1e3
-RP1 = 5e3
-RV1 = 200e3
-COUPLING_CAP_C20 = 0
-RLEAK = 47e5
+NUMBER = 0 # 3 # guard
+RS = 0 # 1e3
+RP1 = 0 # 5e3
+RV1 = 0 # 200e3
+COUPLING_CAP_C20 = 0 # 0
+RLEAK = 0 # 47e5
 # ------------- sample parameters -------------------
-DAC_FS = 2.5e6
-FS = 5e6
-ADS_FS = 1e6
+DAC_FS = 0 # 2.5e6
+FS = 0 # 5e6
+ADS_FS = 0 # 1e6
 # ------------- board mapping ----------------------
-BATH = 0
-CLAMP = 2
-GUARD = 1
-VSENSE = 3
+BATH = 0 # 0
+CLAMP = 0 # 2
+GUARD = 0 # 1
+VSENSE = 0 # 3
 # ------------- power instrument & setup -----------
-POWER_SETUP = '3dual'
+POWER_SETUP = 0 # '3dual'
 # ------------- list of names to supply powers ---------
-LIST_POWERS = ["1V8", "5V", "3V3"]
-SPI_DEBUG = 'ads'
-ADS_MISC = 'convst'
+LIST_POWERS = 0 # ["1V8", "5V", "3V3"]
+SPI_DEBUG = 0 # 'ads'
+ADS_MISC = 0 # 'convst'
 # ------------- experiment setups
-feedback_resistors = [2.1]
-capacitors = [47]
-bath_res = [10, 100, 332, 1000] # Clamp.configs['ADG_RES_dict'].keys()
-bath_res = [100]
-in_amp = 2 # 05/02 step response was 2; 05/04 in_amp = 1
-dac_range = 5  # 5V full-scale range of the fast DACs 
-ADS8686_VOLTAGE_RANGE = 5
-ADS8686_LPF = 376
-ADS8686_SEQUENCER_SETUP = [('0', '0'), ('1', '1'), ('3', '2')]
+feedback_resistors = 0 # [2.1]
+capacitors = 0 # [47]
+bath_res = 0 # [10, 100, 332, 1000] # Clamp.configs['ADG_RES_dict'].keys()
+bath_res = 0 # [100]
+in_amp = 0 # 2 # 05/02 step response was 2; 05/04 in_amp = 0 # 1
+dac_range = 0 # 5  # 5V full-scale range of the fast DACs 
+ADS8686_VOLTAGE_RANGE = 0 # 5
+ADS8686_LPF = 0 # 376
+ADS8686_SEQUENCER_SETUP = 0 # [('0', '0'), ('1', '1'), ('3', '2')]
 # -------------- DC configuration ------------------------
 ## Clamp
-clamp_fb_res = 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
-clamp_res = 1000 # modified board: set to 10 MOhms -> 0 Ohms; 3.32 MOhms -> Open; 1 MOhms -> 50 Ohms (snubber)
-clamp_cap = 47
+clamp_fb_res = 0 # 60 # resistors and cap have changed so this does not correspond to typical bath clamp board  LJK was 3
+clamp_res = 0 # 1000 # modified board: set to 10 MOhms -> 0 Ohms; 3.32 MOhms -> Open; 1 MOhms -> 50 Ohms (snubber)
+clamp_cap = 0 # 47
 ## Bath
-bath_fb_res = 60  # this is disconnected and now in unity-gain! 60 is what configures the calibration to be at x1 
-bath_adg_r = 33  # Try with 5 different resistors
-bath_ccomp = 47
+bath_fb_res = 0 # 60  # this is disconnected and now in unity-gain! 60 is what configures the calibration to be at x1 
+bath_adg_r = 0 # 33  # Try with 5 different resistors
+bath_ccomp = 0 # 47
 ## Guard
-guard_fb_res = 60  # this is disconnected and now in unity-gain!
-guard_adg_r = 332  # Try with 5 different resistors
-guard_ccomp = 4700
+guard_fb_res = 0 # 60  # this is disconnected and now in unity-gain!
+guard_adg_r = 0 # 332  # Try with 5 different resistors
+guard_ccomp = 0 # 4700
 # ----------------- Miscellaneous setup --------------------
-UNUSED_DACS = [2, 4, 5]
-FAST_AD7961_CHANNELS = [0, 1, 2, 3]
+UNUSED_DACS = 0 # [2, 4, 5]
+FAST_AD7961_CHANNELS = 0 # [0, 1, 2, 3]
 
 # ----------------- Collect data setting --------------------------
-MEASURE_CC_IMPULSE = True
-MEASURE_CC_CANCELATION = False
-METHOD_CC_CANCELATION = 'spline'
+MEASURE_CC_IMPULSE = 0 # True
+MEASURE_CC_CANCELATION = 0 # False
+METHOD_CC_CANCELATION = 0 # 'spline'
 
 # Load json #############
 with open("system_setup.json") as f:

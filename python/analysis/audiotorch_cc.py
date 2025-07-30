@@ -228,7 +228,7 @@ if __name__ == '__main__':
 
     plt.plot(filt_step_ideal.cpu().detach().numpy(), 'g', marker='o', label='target')
 
-    net, before_training, after_training,training_loss, results = train_net(step_wave, filt_step_ideal, EPOCHS = 20, imp=None)
+    net, before_training, after_training,training_loss, results, _ = train_net(step_wave, filt_step_ideal, EPOCHS = 20, imp=None)
     plt.plot(before_training.cpu().detach().numpy(), 'm', marker='o', label='before training')
     plt.show()
     plt.plot(after_training.cpu().detach().numpy(), 'b', marker='x', label='after training')

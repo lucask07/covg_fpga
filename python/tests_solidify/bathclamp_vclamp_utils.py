@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import copy
 import shutil
 import itertools
+from bidict import bidict
 from collections import UserDict
 from typing import Optional, Union, List
 from scipy.signal import decimate
@@ -161,11 +162,17 @@ class FPGAInterface:
         """
         # Set dc_mapping -> dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 3, 'vsense': 2}
         """
-        self.dc_mapping : dict[str, Optional[int]] = {'bath': None, 'guard': None, 'clamp': None, 'vclamp': None}
+        value_check = set()
+        for value in dc_mapping.values():
+            value_check.add(value)
+        if len(dc_mapping.values()) != len(value_check):
+            raise ValueError("One socket must only go with one daughtercard.")
+        dc_mapping_buffer : dict[str, Optional[int]] = {'bath': None, 'guard': None, 'clamp': None, 'vclamp': None}
         for key in dc_mapping:
-            if key not in self.dc_mapping:
+            if key not in dc_mapping_buffer:
                 raise ValueError("key can only be 1 in 4 components of the board, bath, guard, clamp, and vsense.")
-            self.dc_mapping[key] = dc_mapping[key]
+            dc_mapping_buffer[key] = dc_mapping[key]
+        self.dc_mapping : bidict[str, int] = bidict(dc_mapping_buffer)
 
     
     def turn_on_power_supply(self, name_supply : list):
@@ -193,7 +200,7 @@ class FPGAInterface:
     def init_board(self):
         for dc_num in self.DC_NUMS:
             if dc_num == self.dc_mapping['vclamp']: # skip this with VSENSE2 
-                clamp = Clamp(self.f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
+                clamp = Clamp(self.f, dc_num=dc_num, DAC_addr_pins=0b001, version=2)
             else:
                 clamp = Clamp(self.f, dc_num=dc_num, version=2)
             print(f'Clamp {dc_num} Init'.center(35, '-'))
@@ -274,8 +281,9 @@ class FPGAInterface:
         Only used during the experiment step
         """
         if self.experiment_class.VSENSE2:
+            vsensekey = 'vsense' if 'vsense' in self.dc_mapping.keys() else 'vclamp'
             # declare the Vsense2 class as the operating vsense board
-            vsense = Vsense2(fpga=self.f, DAC_addr_pins=0b001, dc_num=self.dc_mapping['vsense'], TCA_addr_pins=0b111) # I don't know why this needs to be 0b001 for DAC
+            vsense = Vsense2(fpga=self.f, DAC_addr_pins=0b001, dc_num=self.dc_mapping[vsensekey], TCA_addr_pins=0b111) # I don't know why this needs to be 0b001 for DAC
             #vsense.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
 
             #read/write testing for DAC and I/O expander
