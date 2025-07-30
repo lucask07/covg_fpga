@@ -657,13 +657,14 @@ set_property IOSTANDARD LVCMOS33 [get_ports {dc_sda[1]}]
 set_property PACKAGE_PIN U16 [get_ports {dc_scl[1]}]  
 set_property IOSTANDARD LVCMOS33 [get_ports {dc_scl[1]}]
 ## MC2-70
+## unswap for clamp board v2 
 ## swap scl and sda due to clamp board bug 
-set_property PACKAGE_PIN T15 [get_ports {dc_scl[2]}]   
-set_property IOSTANDARD LVCMOS33 [get_ports {dc_scl[2]}]
+set_property PACKAGE_PIN T15 [get_ports {dc_sda[2]}]   
+set_property IOSTANDARD LVCMOS33 [get_ports {dc_sda[2]}]
 ## MC2-71
 ## swap scl and sda due to clamp board bug 
-set_property PACKAGE_PIN V13 [get_ports {dc_sda[2]}]   
-set_property IOSTANDARD LVCMOS33 [get_ports {dc_sda[2]}]
+set_property PACKAGE_PIN V13 [get_ports {dc_scl[2]}]   
+set_property IOSTANDARD LVCMOS33 [get_ports {dc_scl[2]}]
 ## MC2-72
 ## unswap for clamp board v2 
 ## swap scl and sda due to clamp board bug 
