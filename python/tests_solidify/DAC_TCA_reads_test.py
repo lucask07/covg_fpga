@@ -1,3 +1,5 @@
+import logging
+from logging import getLogger
 from typing import Optional, Union
 from collections.abc import Iterable
 from boards import Daq, Clamp
@@ -64,13 +66,17 @@ class ReadTest:
         This method iterates through each board, retrieves the DAC and TCA reads,
         and formats them into a readable log string.
         """
+        # Logger setup
+        logger = getLogger("ReadTestLogger")
+        logger.setLevel(logging.INFO)
+
         self.log = ""
         for key, value in self.board_list.items():
-            self.log += (f"Reads for {key}".center(35, "-") + "\n")
+            self.log += (f"Reads for {key}" + "\n")
             DAC_reads = [value.DAC] if not isinstance(value.DAC, Iterable) else value.DAC
             TCA_reads = [value.TCA] if not isinstance(value.TCA, Iterable) else value.TCA
             for i, dac in enumerate(DAC_reads):
                 self.log += (f"\tDAC {i} read = {dac.read()}\n")
             for i, tca in enumerate(TCA_reads):
                 self.log += (f"\tTCA {i} read = {tca.read()}\n")
-        print(self.log)
+        logger.info(self.log)

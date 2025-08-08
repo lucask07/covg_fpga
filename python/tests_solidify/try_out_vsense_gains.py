@@ -1,4 +1,5 @@
-import os, sys, copy, math, io, time, setup_paths
+import os, sys, copy, math, io, time, setup_paths, logging
+from logging import getLogger
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from itertools import permutations
@@ -61,7 +62,7 @@ def cleanse():
             except PermissionError:
                 pass
             except Exception as e:
-                print(f"Error deleting {file_path}: {e}")
+                print(f"Error deleting {file_path}: {e}", file=sys.stderr)
 
 def headstage_experiment(lowergain_clamp, uppergain_clamp):
     """
@@ -100,13 +101,18 @@ def learn():
     This function iterates through all possible gain combinations, runs the experiment,
     and saves the results as images in the specified directory.
     """
+    # Logger for overall process
+    logger = logging.getLogger("Overall Process Logger")
+    logger.setLevel(logging.INFO)
+    logger.info('Starting the gain combination experiments...')
+
     total_time = 0
     for i in range(n_gains):
         
         # gains = next(gain_perms)
         gain_1 = 74 # gains[0]
         gain_2 = 36 # gains[1]
-        print(f"[IN PROGRESS]: Iter {i+1}, lowergain = {gain_1}, uppergain={gain_2}")
+        logger.info(f"[IN PROGRESS]: Iter {i+1}, lowergain = {gain_1}, uppergain={gain_2}")
         start = time.perf_counter()
         with suppress_output():
             headstage : Headstage = experiment(
@@ -122,10 +128,10 @@ def learn():
         stop = time.perf_counter()
         duration = (stop - start) * 1000
         total_time += duration
-        print(f"[FINISHED]: In {duration : .2f} milliseconds ----")
+        logger.info(f"[FINISHED]: In {duration : .2f} milliseconds ----")
         cleanse()
         
 
         
         
-    print(f"------------------------\nJob finished in a total of {total_time / (1000 * 60) : .2f} minutes")
+    logger.info(f"------------------------\nJob finished in a total of {total_time / (1000 * 60) : .2f} minutes")

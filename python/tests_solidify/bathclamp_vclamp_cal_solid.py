@@ -11,7 +11,9 @@ import pandas as pd
 import json
 import math
 import io
+import logging
 from itertools import permutations
+from logging import getLogger
 from bidict import bidict
 from pyripherals.utils import to_voltage, from_voltage
 from pyripherals.core import FPGA, Endpoint
@@ -125,6 +127,9 @@ class Headstage:
         uppergain_clamp : int
             Upper gain setting for clamp amplifier.
         """
+        # Logger for headstage instantiation
+        logger = getLogger("Headstage Instantiation")
+        logger.setLevel(logging.INFO)
         self.hardware = hardware
 
         # Set the dac channel
@@ -151,7 +156,7 @@ class Headstage:
         )
         # Explicitly set the gain for vsense
         self.vsense.set_gain(lowergain_clamp, uppergain_clamp)
-        print(f"ADC for clamp is {self.hardware.daq.parameters['ads_map'][hardware.dc_mapping['clamp']]['CAL_ADC']}")
+        logger.info(f"ADC for clamp is {self.hardware.daq.parameters['ads_map'][hardware.dc_mapping['clamp']]['CAL_ADC']}")
     
     @staticmethod
     def save_plot(directory : str, plt_dict : dict[str, Figure]) -> dict[str, str]:
@@ -220,6 +225,10 @@ class Headstage:
         tuple
             (waveform array, frequency, indices)
         """
+        # Log inside the dac_waveform method
+        logger = getLogger("DAC Waveform Generation")
+        logger.setLevel(logging.INFO)
+
         for i in range(6):
             # set all fast-DAC DDR data to midscale
             self.hardware.ddr.data_arrays[i][:] = 0x2000
@@ -236,7 +245,7 @@ class Headstage:
         # subtract one since if this value is precisely 2^15 we in effect get 0 for both high and low amplitude.
         if sdac_amp_code == 2 ** 15:
             sdac_amp_code = sdac_amp_code - 1
-        print(f'Max sdac amp {sdac_amp_code}')
+        logger.info(f'Max sdac amp {sdac_amp_code}')
 
         # Data for the 2 DAC80508 "Slow DACs"
         if shape == 'SINE':
@@ -247,14 +256,14 @@ class Headstage:
             # low, high
             sq_length = int(1 / DDR3.UPDATE_PERIOD / freq)
             if sdac_amp_code > dac80508_offset:
-                print(f'error, square-wave amplitude of {sdac_amp_code} too large ')
+                logger.error(f'Square-wave amplitude of {sdac_amp_code} too large ')
             sdac_wave = self.hardware.ddr.make_step(low=int(dac80508_offset - sdac_amp_code),
                                     high=int(dac80508_offset + sdac_amp_code),
                                     length=sq_length)
             indices = None
         elif shape == 'CHIRP':
             if sdac_amp_code > dac80508_offset:
-                print(f'error, square-wave amplitude of {sdac_amp_code} too large ')
+                logger.error(f'Square-wave amplitude of {sdac_amp_code} too large ')
             sdac_wave, freq, indices = self.hardware.ddr.make_chirp(amplitude=sdac_amp_code,
                                                     frequencies=freq, periods=periods,
                                                     offset=dac80508_offset)
@@ -323,6 +332,10 @@ class Headstage:
         datastreams : Datastreams
             Datastreams object for plotting and analysis.
         """
+        # Log inside the get_ads_voltages method
+        logger = getLogger("Get ADS Voltages")
+        logger.setLevel(logging.INFO)
+
         ddr.repeat_setup()  # Setup for reading new data without writing to the DDR again.
 
         # saves data to a file
@@ -352,7 +365,7 @@ class Headstage:
             for num in ads_separate_data[chan]:
                 v = np.mean(ads_separate_data[chan][num])
                 volts[chan][num] = v
-                print(f'Channel {chan}{num} at {v:.4g} [V]')
+                logger.info(f'Channel {chan}{num} at {v:.4g} [V]')
 
         # update system connections since the daughtercard configurations have changed
         sys_connections = create_sys_connections(
@@ -397,6 +410,10 @@ class Headstage:
         ax : Axes or None
             Matplotlib axes if PLT is True.
         """
+        # Log inside the collect_data method
+        logger = getLogger("Collect Data")
+        logger.setLevel(logging.INFO)
+
         ddr.repeat_setup()  # Setup for reading new data without writing to the DDR again.
 
         # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
@@ -410,7 +427,7 @@ class Headstage:
             idx) + '.h5', chan_list=np.arange(8))
 
         adc_data, timestamp, dac_data, ads_data_tmp, ads_seq_cnt, reading_error = ddr.data_to_names(chan_data)
-        print(f'Timestamp spans {5e-9 * (timestamp[-1] - timestamp[0]) * 1000} [ms]')
+        logger.info(f'Timestamp spans {5e-9 * (timestamp[-1] - timestamp[0]) * 1000} [ms]')
 
         ############### extract the ADS data ############
         ads_data_v = {}
@@ -523,6 +540,10 @@ class Headstage:
         ads_separate_data : dict
             Separated ADS data.
         """
+        # Log inside the measure_resistance method
+        logger = getLogger("Measure Resistance")
+        logger.setLevel(logging.INFO)
+
         # Determine the directory where figures specific to measure resistant are stored
         figure_path = Headstage.define_directory_for_plots(
             os.path.join(fig_dir, f"Measure_resistance_for_{testing}")
@@ -608,7 +629,7 @@ class Headstage:
                 figures_table[f"fit_resistance_plot_for_{testing}"] = fig_sqr
                 plt.close(fig_sqr)
         except Exception as e:
-            print(f"[Error]: Failed to fit resistance function -> {e}")
+            logger.error(f"Failed to fit resistance function -> {e}")
             fit_resistance = pcov = mesg = None
 
         # Save the plots and pinpoint the directory where they are stored
@@ -726,6 +747,10 @@ class Headstage:
         """
         from contextlib import contextmanager
 
+        # Logger for optimization
+        logger = getLogger("Optimize ADC to Zero")
+        logger.setLevel(logging.INFO)
+
         @contextmanager
         def suppress_stdout():
             original_stdout = sys.stdout
@@ -810,12 +835,12 @@ class Headstage:
             del DAC_offsets, mean_ADC_clamp
             
             if i % verbose_batches == 0 or i == (perm_size - 1):
-                print(f"ITER {i}, gain = ({optimized['uppergain']}, {optimized['lowergain']}), DAC = {optimized['DAC']}, value = {inner_optimized['ADC']}")
+                logger.info(f"ITER {i}, gain = ({optimized['uppergain']}, {optimized['lowergain']}), DAC = {optimized['DAC']}, value = {inner_optimized['ADC']}")
             
             if inner_optimized['ADC'] == 0.0:
                 break
 
-            print(f"-----------------\nFinal result = {optimized}")
+            logger.info(f"-----------------\nFinal result = {optimized}")
         
         return optimized
 
@@ -854,6 +879,12 @@ class Headstage:
         step_chirp : int
             Updated step index.
         """
+        # Log inside the chirp_test method
+        logger = getLogger("Chirp Test")
+        logger.setLevel(logging.INFO)
+
+        # Announce the start of the chirp test
+        logger.info(f"Starting chirp test for {testing} with voltage amplitude {voltage_amp} V")
         # A dictionary to keep track of relay states + measured parameters
         measured_params = dict()
         relays_daqs = dict()
@@ -867,7 +898,7 @@ class Headstage:
                                                             freq=freq_arr, shape='CHIRP', source='v', 
                                                             periods=periods)
                     total_chirp_time = np.sum(1/freq_arr*periods)
-                    print(f'Total chirp time = {total_chirp_time}')
+                    logger.info(f'Total chirp time = {total_chirp_time}')
                     # find the last index to 'download' using the starting index of the last frequency
                     end_index = indices[-1][0] + periods[-1] * ((1 / DDR3.UPDATE_PERIOD) / freq_arr[-1])
 
@@ -954,6 +985,9 @@ class Headstage:
         filename_chirp = f'imp_all_steps_chirp_{file_name}' + '_{}'
         np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data_chirp) # saved to a Numpy npz file 
 
+        # Announce the completion of the chirp test
+        logger.info(f"Completed chirp test for {testing}. Data saved to {filename_chirp.format(testing)}")
+
         return data_chirp, measured_params, filename_chirp, step_chirp
 
     def chirp_test_vclamp(self, testing, data_chirp, dc_configs, dc_under_test, voltage_amp, step_chirp, 
@@ -989,6 +1023,11 @@ class Headstage:
         step_chirp : int
             Updated step index.
         """
+        # Log inside the chirp_test_vclamp method
+        logger = getLogger("Chirp Test VClamp")
+        logger.setLevel(logging.INFO)
+        # Announce the start of the chirp test for voltage clamp
+        logger.info(f"Starting chirp test for voltage clamp with voltage amplitude {voltage_amp} V")
         # Create a dict to track measured parameters
         measured_params = dict()
         relays_daqs = dict()
@@ -1001,7 +1040,7 @@ class Headstage:
                                                         freq=freq_arr, shape='CHIRP', source='v', 
                                                         periods=periods)
                 total_chirp_time = np.sum(1/freq_arr*periods)
-                print(f'Total chirp time = {total_chirp_time}')
+                logger.info(f'Total chirp time = {total_chirp_time}')
                 # find the last index to 'download' using the starting index of the last frequency
                 end_index = indices[-1][0] + periods[-1] * ((1 / DDR3.UPDATE_PERIOD) / freq_arr[-1])
             # setup the voltage clamp board 
@@ -1078,6 +1117,8 @@ class Headstage:
         # save Chirp data 
         filename_chirp = f'imp_all_steps_chirp_floatdut_{file_name}' + '_{}'
         np.savez(os.path.join(data_dir, filename_chirp.format(testing)), data_chirp) # saved to a Numpy npz file 
+        # Announce the completion of the chirp test for voltage clamp
+        logger.info(f"Completed chirp test for voltage clamp. Data saved to {filename_chirp.format(testing)}")
 
         return data_chirp, measured_params, filename_chirp, step_chirp
 
@@ -1124,6 +1165,9 @@ class Headstage:
         step_chirp : int
             Updated step index.
         """
+        # Log inside the transfer_functions_fit method
+        logger = getLogger("Transfer Functions Fit")
+        logger.setLevel(logging.INFO)
         # Path to save figures
         figure_path = Headstage.define_directory_for_plots(
             os.path.join(fig_dir, f"Transfer_function_figures_for_{testing}")
@@ -1152,7 +1196,7 @@ class Headstage:
         predicted_res, res_fit_mesg, component_fits, fit_notes, components, figures_table = total_res_iso_res(
             data_chirp, r_total_guess, tf_type, PLT=True
         )
-        print(components)
+        logger.info(json.dumps(components))
 
         # Save the figure and create the look up table based on paths
         figure_paths_table = Headstage.save_plot(figure_path, figures_table)
@@ -1232,6 +1276,9 @@ def experiment(hardware : HardwareSetup, lowergain_clamp, uppergain_clamp) -> He
     -----
     Results are saved to JSON and CSV files in the results and data directories.
     """
+    # Root logger for the experiment
+    logging.basicConfig(level=logging.INFO)
+
     read_test = ReadTest()
 
     for i, daughtercard in enumerate(hardware.clamps):
@@ -1275,7 +1322,11 @@ def experiment(hardware : HardwareSetup, lowergain_clamp, uppergain_clamp) -> He
     sdac_amp_code = from_voltage(voltage=sdac_amp_volt, num_bits=16, voltage_range=2.5, with_negatives=False)
 
     # Data for the 2 DAC80508 "Slow DACs"
-    sdac_sine, sdac_freq = headstage.hardware.ddr.make_sine_wave(amplitude=sdac_amp_code, frequency=target_freq_sdac, offset=dac80508_offset)
+    sdac_sine, sdac_freq = headstage.hardware.ddr.make_sine_wave(
+        amplitude=sdac_amp_code, 
+        frequency=target_freq_sdac, 
+        offset=dac80508_offset
+    )
 
     # Specify output channel for DAC80508
     sdac_ch = headstage.hardware.daq.parameters['gp_dac_map'][0]['CAL']
@@ -1367,15 +1418,8 @@ def experiment(hardware : HardwareSetup, lowergain_clamp, uppergain_clamp) -> He
         # ------------- Prepare the daughtercards for chirp testing -----------------
         
         if testing == 'bath':
-            # dc_configs[dc_disconnect]['P1_CAL_CTRL'] = 0 # disconnect the vclamp board and use CC as the load capacitance 
-            # dc_configs[dc_disconnect]['P2_CAL_CTRL'] = 0
-            # dc_configs[dc_disconnect]['DAC_SEL'] = 'drive_CAL2'  # irrelevant since disconnected 
             freq_arr = np.logspace(np.log10(400), np.log10(50000), 8)
         elif testing == 'clamp':  # ground the bath clamp electrodes since 5k is small compared to the 200kOhm of the voltage clamp
-            # dc_configs[dc_disconnect]['P1_CAL_CTRL'] = 1
-            # dc_configs[dc_disconnect]['P2_CAL_CTRL'] = 1
-            # dc_configs[dc_disconnect]['DAC_SEL'] = 'gnd_both'
-            # freq_arr = np.logspace(np.log10(40), np.log10(2000), 8)
             freq_arr = np.logspace(np.log10(10), np.log10(2000), 8)
 
         # log_info_bath, dc_configs[dc_disconnect] = headstage.hardware.clamps[dc_disconnect].configure_clamp(**dc_configs[dc_disconnect])
@@ -1415,7 +1459,11 @@ def experiment(hardware : HardwareSetup, lowergain_clamp, uppergain_clamp) -> He
             df.to_csv(os.path.join(data_dir, 'calibration_' + file_name + f"{testing}" + '.csv'))
         
         del data, data_chirp
+    
+    # Log the experiment results
 
-    print('final component results ' + '-' * 40)
-    print(component_results)
+    logging.info('Final Component Results ' + '-' * 40)
+    logging.info(json.dumps(component_results))
+    logging.info(f"CALIBRATION FINISHED")
+    logging.info(f"To inspect the process with figures, visit path={fig_dir}")
     return headstage

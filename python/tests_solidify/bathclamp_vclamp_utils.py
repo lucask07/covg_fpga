@@ -7,6 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import shutil
 import itertools
+import logging
+from logging import getLogger
 from bidict import bidict
 from collections import UserDict
 from typing import Optional, List
@@ -313,12 +315,16 @@ class HardwareSetup:
         """
         Initializes the hardware board.
         """
+        # Logger for this class
+        logger = logging.getLogger("Clamp Setup Logger")
+        logger.setLevel(logging.INFO)
+        # --------- Initialize the Clamp boards -----------
         for dc_num in self.DC_NUMS:
             if dc_num == self.dc_mapping['vclamp']: # skip this with VSENSE2 
                 clamp = Clamp(self.f, dc_num=dc_num, DAC_addr_pins=0b001, TCA_addr_pins_0=0b111, TCA_addr_pins_1=0b111) # version=2)
             else:
                 clamp = Clamp(self.f, dc_num=dc_num, version=2)
-            print(f'Clamp {dc_num} Init'.center(35, '-'))
+            logger.info(f'Clamp {dc_num} Init')
             clamp.init_board()
             clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
             self.clamps[dc_num] = clamp
@@ -433,6 +439,10 @@ class HardwareSetup:
         """
         Only used during the experiment step
         """
+        # Logger for operating Vsense2
+        logger = logging.getLogger("Vsense2 Operation Logger")
+        logger.setLevel(logging.INFO)
+
         if self.VSENSE2:
             vsensekey = 'vsense' if 'vsense' in self.dc_mapping.keys() else 'vclamp'
             # declare the Vsense2 class as the operating vsense board
@@ -443,13 +453,13 @@ class HardwareSetup:
             message = 0xBF
             vsense.DAC.write(message)
             r = vsense.DAC.read()
-            print('-----READ/WRITE TESTS-----')
-            print(f'DAC - write: {message}, DAC read: {r}')
+            logger.info('READ/WRITE TESTS:')
+            logger.info(f'DAC - write: {message}, DAC read: {r}')
 
             message = 0xAAAA #I/O expander writes 2 bytes
             vsense.TCA.write(message)
             r2 = vsense.TCA.read(register_name='OUTPUT') #need to specify here that I am reading from output
-            print(f'TCA OUTPUT - write: {message}, TCA read: {r2}')
+            logger.info(f'TCA OUTPUT - write: {message}, TCA read: {r2}')
 
             #calling gain setting method
             #vsense.set_gains(0b0000, 0b0000)
@@ -1034,6 +1044,11 @@ def update_plots(first_time, datastreams, first_pos_step, plotmanager1 : Optiona
     -------
     None
     """
+    # Logger for plot updates
+    logger = logging.getLogger("Plot Update Logger")
+    logger.setLevel(logging.INFO)
+    logger.info('Updating plots...')
+
     # Two plots that are updated in realtime 
     # First plot is 2x2
     if first_time:
@@ -1127,7 +1142,7 @@ def update_plots(first_time, datastreams, first_pos_step, plotmanager1 : Optiona
         idx = (t > first_pos_step + 2e-3) & (t < first_pos_step + 5e-3)
         im_noise_wb = np.std(im_data[idx])
         im_noise_filt = np.std(im_data_filt[idx])
-        print(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
+        logger.info(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
 
     for fig in figs:
         fig.canvas.draw()
@@ -1495,11 +1510,16 @@ def large_param_sweep(hardware : HardwareSetup,
     -------
     None
     """
+    # Logger for parameter sweep
+    logger = logging.getLogger("Parameter Sweep Logger")
+    logger.setLevel(logging.INFO)
+    logger.info('Starting large parameter sweep...')
+
     for cmd_mv in mv_val_arr:
         cmd_val, actual_v = cmd_mv2dac(float(cmd_mv), sys_connections, dac_chan='D1') # if the input to from_voltage is numpy then assumption is array and it returns a 0d array
         for ccomp in ccomp_arr:
             for adg_r in adg_r_arr:
-                print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
+                logger.info(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
 
                 if OSCOPE: 
                     scope_data['CC'] = np.append(scope_data['CC'], ccomp)
@@ -1531,9 +1551,8 @@ def large_param_sweep(hardware : HardwareSetup,
 
                 sig = 'Im' 
                 si = datastreams[sig].stepinfo_range([first_pos_step-0.02e-3, first_pos_step+170e-6])
-                print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
-                print(f'{sig} step info: {si}')
-                print('-'*100)
+                logger.info(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
+                logger.info(f'{sig} step info: {si}')
 
                 if OSCOPE:
                     osc.set('single_acq')
