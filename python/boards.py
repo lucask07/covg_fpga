@@ -1230,14 +1230,48 @@ class Vsense2:
         print(f"serial list: {self.UID.read(word_address=UID_24AA025UID.registers['SERIAL_NUMBER'].address, words_read=4)}")
     
     def set_gain(self, gain1, gain2): #gain1 is first stage
+        """
+        Write the gain into the TCA with gain 1 as the first stage and gain 2 as the second
+        --------------
+        Params:
+            gain1 : the gain key that translates into bit code for stage 1
+            gain2 : the gain key that translates into bit code for stage 2
+        
+        ----------------
+        Guides for setting the gain
+        ```
+        gain_dict = {  #available gains for main amplifier stages
+            #R4 R3 R2 R1 active-low
+            31: 0b0000, 
+            36: 0b1000,
+            38: 0b0100,
+            41: 0b0010,
+            46: 0b1100,
+            51: 0b0001,
+            52: 0b1010,
+            56: 0b0110,
+            67: 0b1001,
+            74: 0b0101,
+            76: 0b1110,
+            88: 0b0011,
+            116: 0b1101,
+            157: 0b1011,
+            201: 0b0111,
+            None: 0
+        }
+        ```
+        """
         #write test setup to DAC
         #Vsense2.setOffsetVoltage(self, 0)
         #fetch register data for I/O Expander
         self.config_data = Register.get_chip_registers('TCA9555')
+
+        bit_gain1 = Vsense2.gain_dict[gain1]
+        bit_gain2 = Vsense2.gain_dict[gain2]
         
         #set up message
         #upper_byte = ((self.gain1 << 4) | self.gain2)
-        upper_byte = ((gain2 << 4) | gain1)
+        upper_byte = ((bit_gain2 << 4) | bit_gain1)
         lower_byte = 0x0000 #not using lower byte of expander
         message = (upper_byte << 8) | lower_byte
         

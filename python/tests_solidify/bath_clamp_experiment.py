@@ -13,9 +13,9 @@ from datastream.datastream import h5_to_datastreams
 from boards import Clamp
 
 ## TODO: Add a conditional function here
-device_compilation = None
-if __name__ == '__main__' and device_compilation is None:
-    device_compilation = device_setup()
+hardware = None
+if __name__ == '__main__' and hardware is None:
+    hardware : HardwareSetup = device_setup()
 
 if __name__ == '__main__':
     dc_configs = {}
@@ -23,8 +23,8 @@ if __name__ == '__main__':
     # self.clamp_res = 1000 # modified board: set to 10 MOhms -> 0 Ohms; 3.32 MOhms -> Open; 1 MOhms -> 50 Ohms (snubber)
     # self.clamp_cap = 47
     # to digitize I1 use ADC_SEL = "CAL_SIG2"; P2_CAL_CTRL=1; DAC_SEL="noDrive"
-    for dc_num in [device_compilation.fpga_board.dc_mapping['clamp']]:
-        log_info, config_dict = device_compilation.fpga_board.clamps[dc_num].configure_clamp(
+    for dc_num in [hardware.dc_mapping['clamp']]:
+        log_info, config_dict = hardware.clamps[dc_num].configure_clamp(
             ADC_SEL="CAL_SIG2", 
             DAC_SEL="noDrive", # must not be drive_CAL2 
             CCOMP=clamp_cap,
@@ -50,8 +50,8 @@ if __name__ == '__main__':
     # self.adg_r = 33
     # self.ccomp = 47
     # Choose resistor; setup
-    for dc_num in [device_compilation.fpga_board.dc_mapping['bath']]:
-        log_info, config_dict = device_compilation.fpga_board.clamps[dc_num].configure_clamp(
+    for dc_num in [hardware.dc_mapping['bath']]:
+        log_info, config_dict = hardware.clamps[dc_num].configure_clamp(
             ADC_SEL="CAL_SIG2",  # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1
             DAC_SEL="noDrive",
             CCOMP=bath_ccomp,
@@ -76,8 +76,8 @@ if __name__ == '__main__':
     # Try with 5 different resistors
     # self.adg_r = 332
     # self.ccomp = 4700
-    for dc_num in [device_compilation.fpga_board.dc_mapping['guard']]:
-        log_info, config_dict = device_compilation.fpga_board.clamps[dc_num].configure_clamp(
+    for dc_num in [hardware.dc_mapping['guard']]:
+        log_info, config_dict = hardware.clamps[dc_num].configure_clamp(
             ADC_SEL="CAL_SIG2",  # CAL_SIG2 to digitize P2 or CAL_SIG1 to digitize P1; must also close the corresponding relay. Note that CAL_SIG1 and P1_CAL_CTRL=1 caused oscillations.
             DAC_SEL="noDrive",
             CCOMP=guard_ccomp,
@@ -98,12 +98,10 @@ if __name__ == '__main__':
         )
         dc_configs[dc_num] = config_dict
     
-    vsense, gain1, gain2 = device_compilation.fpga_board.operate_vsense2()
+    vsense, gain1, gain2 = hardware.operate_vsense2()
     
     sys_connections = render_sys_connections(
-        dc_configs, 
-        device_compilation.fpga_board, 
-        device_compilation.instrument
+        dc_configs, hardware
     )
 
     # -------- Collect Data -------------
@@ -124,28 +122,28 @@ if __name__ == '__main__':
     first_time = True
     cmd_mv = 50
     cmd_val, actual_v = cmd_mv2dac(cmd_mv, sys_connections, dac_chan='D1')
-    set_cmd_cc(fpga_board=device_compilation.fpga_board, dc_nums=[device_compilation.fpga_board.dc_mapping['bath'], 
-                                                                device_compilation.fpga_board.dc_mapping['guard']], 
-                                                                cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
+    hardware.set_cmd_cc(dc_nums=[hardware.dc_mapping['bath'], 
+                        hardware.dc_mapping['guard']], 
+                        cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
             step_len=step_len, cc_val=cc_val, cc_pickle_num=None)
 
-    device_compilation.fpga_board.ddr.repeat_setup()  # Get data
+    hardware.ddr.repeat_setup()  # Get data
 
-    datastreams, log_info = capture_data(fpga_board=device_compilation.fpga_board, 
-                                        experiment_setup=device_compilation.instrument, 
+    datastreams, log_info = capture_data(hardware=hardware, 
                                         file_name_raw=file_name, 
                                         data_dir=setup_paths.data_dir, 
                                         dc_configs=dc_configs, idx=0)
     first_time, plotmanager1, plotmanager2, figs, datastreams, idx = update_plots(first_time=first_time, datastreams=datastreams, first_pos_step=first_pos_step)
     # run twice to remove initial transient 
     idx = 1
-    datastreams = ds_add_log(device_compilation.instrument, datastreams, dc_configs, first_pos_step, cmd_val=cmd_val, 
+    datastreams = ds_add_log(hardware, datastreams, dc_configs, first_pos_step, cmd_val=cmd_val, 
                             step_len=step_len, cc_val=cc_val, fc_cmd=fc_cmd, 
                             sys_connections=sys_connections)
     datastreams.to_h5(setup_paths.data_dir, f"initial_startup_{guard_adg_r}rf_{guard_ccomp}ccomp.h5", log_info)
 
-    ds, datastreams, first_time, plotmanager1, plotmanager2, figs, idx = measure_cmd_cc_impulse(device_compilation.fpga_board, 
-                        experiment_class=device_compilation.instrument, FS=FS, 
+    ds, datastreams, first_time, plotmanager1, plotmanager2, figs, idx = measure_cmd_cc_impulse(
+                        hardware, 
+                        FS=FS, 
                         sys_connections=sys_connections, 
                         cmd_cc_scale={'fc_cmd' : fc_cmd, 'step_len' : step_len}, 
                         plot_setting={'idx' : idx, 'first_time' : first_time, 'plotmanager1' : plotmanager1, 'plotmanager2' : plotmanager2, 'figs' : figs}, 
@@ -187,28 +185,30 @@ if __name__ == '__main__':
 
     TO_CLAMPFIT = False
 
-    first_time, plotmanager1, plotmanager2, figs, datastreams, idx = large_param_sweep(fpga_board=device_compilation.fpga_board, 
-                                                                                    experiment_setup=device_compilation.instrument, 
-                                                                                    file_name_before_format=file_name, 
-                                                                                    osc=osc, 
-                                                                                    data_dir=data_dir, 
-                                                                                    dc_configs=dc_configs, 
-                                                                                    mv_val_arr=mv_val_arr, 
-                                                                                    ccomp_arr=ccomp_arr, 
-                                                                                    adg_r_arr=adg_r_arr, 
-                                                                                    scope_meas=scope_meas, 
-                                                                                    OSCOPE=OSCOPE, 
-                                                                                    scope_data=scope_data, 
-                                                                                    cmd_cc_scale={'fc_cmd' : fc_cmd, 'step_len' : step_len}, 
-                                                                                    plot_setting={'idx' : idx, 'first_time' : first_time, 
-                                                                                                    'plotmanager1' : plotmanager1, 
-                                                                                                    'plotmanager2' : plotmanager2, 'figs' : figs}, 
-                                                                                        cc_val=cc_val, 
-                                                                                        clamp_fb_res=clamp_fb_res, 
-                                                                                        clamp_res=clamp_res, 
-                                                                                        first_pos_step=first_pos_step, 
-                                                                                        TO_CLAMPFIT=TO_CLAMPFIT, 
-                                                                                        sys_connections=sys_connections)
+    first_time, plotmanager1, plotmanager2, figs, datastreams, idx = large_param_sweep(
+        hardware=hardware, 
+        file_name_before_format=file_name, 
+        osc=osc, 
+        data_dir=data_dir, 
+        dc_configs=dc_configs, 
+        mv_val_arr=mv_val_arr, 
+        ccomp_arr=ccomp_arr, 
+        adg_r_arr=adg_r_arr, 
+        scope_meas=scope_meas, 
+        OSCOPE=OSCOPE, 
+        scope_data=scope_data, 
+        cmd_cc_scale={'fc_cmd' : fc_cmd, 'step_len' : step_len}, 
+        plot_setting={
+            'idx' : idx, 'first_time' : first_time, 
+            'plotmanager1' : plotmanager1, 
+            'plotmanager2' : plotmanager2, 'figs' : figs}, 
+        cc_val=cc_val, 
+        clamp_fb_res=clamp_fb_res, 
+        clamp_res=clamp_res, 
+        first_pos_step=first_pos_step, 
+        TO_CLAMPFIT=TO_CLAMPFIT, 
+        sys_connections=sys_connections
+    )
 
     plot_oscilloscope(OSCOPE=OSCOPE, adg_r_arr=adg_r_arr, scope_data=scope_data)
     # p1_diff = plot_im_est(datastreams)
@@ -238,11 +238,11 @@ if __name__ == '__main__':
         # sweep the gain of the voltage clamp; to check on the oscilloscope 
         for rf in Clamp.configs['RF1_dict']:
             dc_configs[1]['RF1'] = rf
-            device_compilation.fpga_board.clamps[1].configure_clamp(**dc_configs[1])
+            hardware.clamps[1].configure_clamp(**dc_configs[1])
             print(f'RF = {rf}')
             input('next?')
 
     dc_configs[0]['ADG_RES'] = 100
     dc_configs[0]['CCOMP'] = 47
-    device_compilation.fpga_board.clamps[0].configure_clamp(**dc_configs[0])
+    hardware.clamps[0].configure_clamp(**dc_configs[0])
     print(f'Configure at known good config to measure on oscope')
