@@ -67,6 +67,8 @@ def cmd_mv2dac(mv, sys_connections, dac_chan='D1'):
 class HardwareSetup:
     """
     Manages the configuration and initialization of hardware components for bath clamp and vclamp experiments.
+    [Method chaining](https://www.geeksforgeeks.org/python/method-chaining-in-python/) is supported for setting up various hardware parameters.
+    Please refer to the file `python/tests_solidify/bathclamp_vclamp_utils.py` for examples of how to use this class and its supported method chaining feature.
 
     Attributes
     ----------
@@ -175,11 +177,17 @@ class HardwareSetup:
             Sample period in seconds.
         ADS_FS : float
             ADS sampling frequency.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         self.DAC_FS = DAC_FS
         self.FS = FS
         self.SAMPLE_PERIOD = SAMPLE_PERIOD
         self.ADS_FS = ADS_FS
+        return self
     
     def setup_power(self, *, pwr_setup : str, neg):
         """
@@ -191,6 +199,11 @@ class HardwareSetup:
             Power supply setup configuration.
         neg : Any
             Negative supply configuration.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         self.pwr_setup = pwr_setup
         # -------- power supplies -----------
@@ -211,6 +224,7 @@ class HardwareSetup:
             # turn on the +/-16.5 V input
             for ch in [2, 3]:
                 self.dc_pwr.set("out_state", "ON", configs={"chan": ch})
+        return self
 
     def fpga_interface(self, dc_mapping : dict):
         """
@@ -220,6 +234,11 @@ class HardwareSetup:
         ----------
         dc_mapping : dict
             Mapping of daughtercard channels.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # Initialize FPGA
         self.f = FPGA()
@@ -240,6 +259,7 @@ class HardwareSetup:
         self.clamps : list[Optional[Clamp]] = [None] * 4
         # Set dc_mapping
         self.set_dc_map(dc_mapping)
+        return self
     
     def set_dc_map(self, dc_mapping : dict):
         """
@@ -271,11 +291,17 @@ class HardwareSetup:
         ----------
         name_supply : list
             List of supply names to power on.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # power supply turn on via FPGA enables -> name_supply = ["1V8", "5V", "3V3"]
         for name in name_supply:
             self.pwr.supply_on(name)
             sleep(0.05)
+        return self
     
     def config_spi_debug_mux(self, *, spi_debug : str, ads_misc : str):
         """
@@ -287,11 +313,17 @@ class HardwareSetup:
             SPI debug configuration.
         ads_misc : str
             ADS multiplexer configuration.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # configure the SPI debug MUXs
         self.gpio = Daq.GPIO(self.f)
         self.gpio.spi_debug(spi_debug) # 'ads'
         self.gpio.ads_misc(ads_misc)  # -> 'convst' -> to check sample rate of ADS
+        return self
     
     def organize_clamp_board(self, allfour=False):
         """
@@ -301,6 +333,11 @@ class HardwareSetup:
         ----------
         allfour : bool, optional
             Whether to organize all four clamp boards (default is False).
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # instantiate the Clamp boards providing a daughter card number (from 0 to 3)
         # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
@@ -310,6 +347,7 @@ class HardwareSetup:
         if allfour:
             self.DC_NUMS = [0, 1, 2, 3]
         self.init_board()
+        return self
 
     def init_board(self):
         """
@@ -343,6 +381,11 @@ class HardwareSetup:
             Low-pass filter configuration.
         ads_sequencer_setup : list
             Sequencer setup for ADS8686.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # -------- configure the ADS8686
         # ads_voltage_range = 5  # need this for to_voltage later 
@@ -364,6 +407,7 @@ class HardwareSetup:
         # in_amp = 1 # 05/02 step response was 2; 05/04 in_amp = 1
         # in_amp = 2 # 05/02 step response was 2; 05/04 in_amp = 1
         # dac_range = 5  # 5V full-scale range of the fast DACs 
+        return self
     
     # TODO: Function in question!!
     def fast_dac_chan_setup(self, dac_range):
@@ -374,6 +418,11 @@ class HardwareSetup:
         ----------
         dac_range : Any
             Configuration for the DAC channel range.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         for i in range(6):
             self.daq.DAC[i].set_ctrl_reg(self.daq.DAC[i].master_config)
@@ -389,6 +438,7 @@ class HardwareSetup:
             self.daq.DAC[i].change_filter_coeff(target="passthru")
             self.daq.DAC[i].write_filter_coeffs()
             self.daq.set_dac_gain(i, dac_range)  # 5V 
+        return self
     
     # TODO: so the dacs is from 0 to 5 ???
     def quiet_unused_dacs(self, list_unused_dac: list):
@@ -399,6 +449,16 @@ class HardwareSetup:
         ----------
         list_unused_dac : list
             List of unused DAC channels to quiet.
+        
+        Raises
+        ------
+        ValueError
+            If any DAC value is not in the range of 0 to 5.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # Quiet unused DACs (add 2024/09/12) 2, 4, 5
         for i in list_unused_dac:
@@ -406,6 +466,7 @@ class HardwareSetup:
                 raise ValueError("DAC values are only from 0 to 5.")
             self.daq.DAC[i].write(int(0x2000)) # midscale 
             self.daq.DAC[i].set_data_mux("host")
+        return self
     
     def enable_fast_adcs(self, fast_adc_chans: list):
         """
@@ -415,6 +476,11 @@ class HardwareSetup:
         ----------
         fast_adc_chans : list
             List of fast ADC channels to enable.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         for chan in fast_adc_chans:
             self.ad7961s[chan].power_up_adc()  # standard sampling
@@ -423,10 +489,19 @@ class HardwareSetup:
         time.sleep(0.1)
         self.ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
         time.sleep(0.1)
+        return self
 
     def configure_dac_80508(self):
         """
         Configure for DDR read to DAC80508
+        This method sets up the DAC80508 for DDR read operations.
+        It configures the SPI clock speed and control registers for the DAC channels.
+        It is used to set up the DAC channels for data transfer from DDR memory.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         for dac_gp_ch in [0, 1]:
             self.daq.DAC_gp[dac_gp_ch].set_spi_sclk_divide(0x2)
@@ -434,10 +509,14 @@ class HardwareSetup:
             self.daq.DAC_gp[dac_gp_ch].set_config_bin(0x00)
             # daq.DAC_gp[dac_gp_ch].set_data_mux('host')
             self.daq.DAC_gp[dac_gp_ch].set_data_mux('DDR')
+        return self
     
     def operate_vsense2(self):
         """
-        Only used during the experiment step
+        Only used during the experiment step. This method operates the Vsense2 hardware.
+
+        [!NOTE]: This method is not used in the setup phase, but rather during the experiment step. Therefore, 
+        it is not included in the method chaining of the HardwareSetup class.
         """
         # Logger for operating Vsense2
         logger = logging.getLogger("Vsense2 Operation Logger")
@@ -473,6 +552,12 @@ class HardwareSetup:
     def write_ddr(self):
         """
         Writes data to DDR memory.
+        This method prepares the DDR memory for writing data by setting up the necessary configurations.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # write channels to the DDR
         self.ddr.write_setup()
@@ -480,6 +565,7 @@ class HardwareSetup:
         self.ddr.write_channels(set_ddr_read=False)
         self.ddr.reset_mig_interface()
         self.ddr.write_finish()
+        return self
     
     def set_cmd_cc(self, dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
             cc_val=None, cc_pickle_num=None):
@@ -492,6 +578,11 @@ class HardwareSetup:
             Daughtercard numbers or identifiers.
         ... : 
             Additional parameters as required.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # TODO: move to Clamp board class in boards.py
         if (type(dc_nums) == int):
@@ -504,11 +595,14 @@ class HardwareSetup:
             cc_ch = dc_num * 2
             self.ddr.data_arrays[cmd_ch], self.ddr.data_arrays[cc_ch] = self.make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
         self.write_ddr()
+        return self
     
     def make_cmd_cc(self, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
         """
         Creates command waveform for current clamp.
+        [!NOTE]: This method must not be used in the method chaining of the HardwareSetup class,
+        as it is used to generate the command and current clamp waveforms for the experiment.
 
         Parameters
         ----------
@@ -516,6 +610,13 @@ class HardwareSetup:
             Command value for current clamp.
         ... : 
             Additional parameters as required.
+        
+        Returns
+        -------
+        cmd_signal : np.ndarray
+            Command signal waveform.
+        cc_signal : np.ndarray
+            Current clamp signal waveform.
         """
         dac_offset = 0x2000
 

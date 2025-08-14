@@ -4,11 +4,10 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from itertools import permutations
 from contextlib import contextmanager
-from bathclamp_vclamp_cal_solid import Headstage, experiment
+from python.tests_solidify.bath_clamp_headstage import Headstage, experiment
 from bath_clamp_setup_steps import *
 from bathclamp_vclamp_utils import HardwareSetup
 from boards import Vsense2
-from instruments.power_supply import pwr_off
 
 # vsense_img_path = os.path.join(os.getcwd(), "vsense_tf_function")
 
@@ -18,8 +17,6 @@ directory = setup_paths.data_dir
 
 if not os.path.exists(vsense_img_path):
     os.makedirs(vsense_img_path)
-
-POWERED = True
 
 hardware : HardwareSetup = device_setup(allfour=True)
 
@@ -79,19 +76,8 @@ def headstage_experiment(lowergain_clamp, uppergain_clamp):
     headstage_obj : Headstage
         The headstage object containing the results of the experiment.
     """
-    #global POWERED
-    #if not POWERED:
-    #    hardware.turn_on_power_supply(
-    #        LIST_POWERS
-    #    )
-    #    POWERED = True
     headstage_obj = experiment(hardware=hardware, lowergain_clamp=lowergain_clamp, uppergain_clamp=uppergain_clamp)
     cleanse()
-    #dc_pwr = hardware.dc_pwr
-    #dc_pwr2 = hardware.dc_pwr2
-    #pwr_setup = hardware.pwr_setup
-    #pwr_off([dc_pwr] if pwr_setup == "3dual" else [dc_pwr, dc_pwr2])
-    #POWERED = False
     return headstage_obj
     
 
@@ -102,7 +88,7 @@ def learn():
     and saves the results as images in the specified directory.
     """
     # Logger for overall process
-    logger = logging.getLogger("Overall Process Logger")
+    logger = getLogger("Overall Process Logger")
     logger.setLevel(logging.INFO)
     logger.info('Starting the gain combination experiments...')
 

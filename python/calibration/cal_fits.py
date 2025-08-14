@@ -26,26 +26,126 @@ cc_cap = 4.491e-9 # measured with LCR
 c1 = cc_cap
 
 def soft_sq_wave(t, f, a, h, phi, s=1):
+    """
+    Generate a softened square wave (sigmoid edges).
+
+    Parameters
+    ----------
+    t : array-like
+        Time array.
+    f : float
+        Frequency in Hz.
+    a : float
+        Amplitude.
+    h : float
+        DC offset.
+    phi : float
+        Phase offset in radians.
+    s : float, optional
+        Softness parameter (default 1).
+
+    Returns
+    -------
+    ndarray
+        Soft square wave signal.
+    """
     # a square-wave that does not have infinitely fast edges. 
     return h + a * np.tanh(s * np.cos(2 * np.pi * f * t + phi))
 
 
 def sine_wave(t, f, a, h, phi):
+    """
+    Generate a sine wave.
+
+    Parameters
+    ----------
+    t : array-like
+        Time array.
+    f : float
+        Frequency in Hz.
+    a : float
+        Amplitude.
+    h : float
+        DC offset.
+    phi : float
+        Phase offset in radians.
+
+    Returns
+    -------
+    ndarray
+        Sine wave signal.
+    """
     return h + a * np.sin(2 * np.pi * f * t + phi)
 
 
 def sine_wave_nodc(t, f, a, phi):
+    """
+    Generate a sine wave with no DC offset.
+
+    Parameters
+    ----------
+    t : array-like
+        Time array.
+    f : float
+        Frequency in Hz.
+    a : float
+        Amplitude.
+    phi : float
+        Phase offset in radians.
+
+    Returns
+    -------
+    ndarray
+        Sine wave signal.
+    """
     return a * np.sin(2 * np.pi * f * t + phi)
 
 
 def exponential_rise(t, a, k, c):
+    """
+    Generate an exponential rise signal.
+
+    Parameters
+    ----------
+    t : array-like
+        Time array.
+    a : float
+        Amplitude.
+    k : float
+        Exponential rate.
+    c : float
+        DC offset.
+
+    Returns
+    -------
+    ndarray
+        Exponential rise signal.
+    """
     return a * (np.exp(k * t)) + c
 
 
 def fit_sine(t, y, freq, freq_eps=1e-3):
+    """
+    Fit a sine wave to data using curve_fit.
+
+    Parameters
+    ----------
+    t : array-like
+        Time array.
+    y : array-like
+        Data to fit.
+    freq : float
+        Expected frequency.
+    freq_eps : float, optional
+        Allowed relative error in frequency (default 1e-3).
+
+    Returns
+    -------
+    tuple
+        Fit parameters and covariance.
+    """
     # linear least squares fit to a sinusoid often has problems
     # better to use an FFT to extract amplitude and phase
-
     y = y - np.mean(y)
     a_guess = np.sqrt(2) * np.std(y)
     yfit = curve_fit(sine_wave_nodc, t, y,
@@ -56,6 +156,27 @@ def fit_sine(t, y, freq, freq_eps=1e-3):
 
 
 def fit_sine_fft(t, y, method='quad_interpolate'):
+    """
+    Fit a sine wave to data using FFT for amplitude and phase extraction.
+
+    Parameters
+    ----------
+    t : array-like
+        Time array.
+    y : array-like
+        Data to fit.
+    method : str, optional
+        FFT peak extraction method (default 'quad_interpolate').
+
+    Returns
+    -------
+    max_freq : float
+        Frequency with maximum amplitude.
+    amp : float
+        Amplitude at max_freq.
+    phase : float
+        Phase at max_freq.
+    """
     dc_level = np.mean(y)
     freq, max_freq, amp, phase = fft_maxs(y - dc_level, 1 / (t[1] - t[0]),
                                           method=method, plot=False, window='hann')
@@ -65,6 +186,19 @@ def fit_sine_fft(t, y, method='quad_interpolate'):
 
 
 def tf(name):
+    """
+    Create a transfer function with selected parameters fixed.
+
+    Parameters
+    ----------
+    name : str
+        Name of the transfer function type.
+
+    Returns
+    -------
+    function
+        Partial transfer function with fixed parameters.
+    """
     # create a transfer function from calc_tf that only uses 
     #   a subset of the parameters. 
     #   functools.partial generates a new function that has constant parameters
@@ -77,6 +211,27 @@ def tf(name):
 
 
 def vclamp_tf(f, cm, rleak, r5=100e3, r3=3.32e3, r4=5e3, cc=cc_cap, rcc=6.8e3):
+    """
+    Transfer function for voltage clamp calibration measurements.
+
+    Parameters
+    ----------
+    f : float or array-like
+        Frequency in Hz.
+    cm : float
+        Membrane capacitance.
+    rleak : float
+        Leak resistance.
+    r5, r3, r4, cc, rcc : float, optional
+        Circuit parameters.
+
+    Returns
+    -------
+    amp : float or ndarray
+        Gain (magnitude).
+    phase : float or ndarray
+        Phase (radians).
+    """
     #  this is for voltage clamp calibration measurements
     # TODO: will need to solve for rleak 
     # Confirmed with the LTSpice result: clamp_electrodes.raw 
@@ -97,6 +252,25 @@ def vclamp_tf(f, cm, rleak, r5=100e3, r3=3.32e3, r4=5e3, cc=cc_cap, rcc=6.8e3):
 
 
 def lpf_tf(f, r5, cm):
+    """
+    Low-pass filter transfer function.
+
+    Parameters
+    ----------
+    f : float or array-like
+        Frequency in Hz.
+    r5 : float
+        Resistance.
+    cm : float
+        Capacitance.
+
+    Returns
+    -------
+    amp : float or ndarray
+        Gain (magnitude).
+    phase : float or ndarray
+        Phase (radians).
+    """
     # Test lowpass filter transfer function 
     #  verify transfer function calculation match LTSpice
     w = f * 2 * np.pi
@@ -107,6 +281,27 @@ def lpf_tf(f, r5, cm):
 
 
 def calc_tf(f, r1, r2, r3, c1, rs, c2, r5, r6):
+    """
+    General transfer function for the bath clamp with CC held at small signal ground.
+
+    Parameters
+    ----------
+    f : float or array-like
+        Frequency in Hz.
+    r1, r2, r3 : float
+        Resistances.
+    c1, c2 : float
+        Capacitances.
+    rs, r5, r6 : float
+        Additional resistances.
+
+    Returns
+    -------
+    amp : float or ndarray
+        Gain (magnitude).
+    phase : float or ndarray
+        Phase (radians).
+    """
     # General transfer function for the bath clamp with CC held at small signal ground 
     # 
     #  variables match reference designators in schematic LTSpice bath_electrodes.asc 
@@ -126,16 +321,27 @@ def calc_tf(f, r1, r2, r3, c1, rs, c2, r5, r6):
 
 
 def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None, knowns={}):
-    '''
-    f : freqeuencies tested: np.array 
-    tf_amp_phase : tuple of measured gain (array) and phase (array) 
-    tf_type : string (names the transfer function type)
-                'elec_r_cc': evaluates bath-clamp transfer function and ignores the membrane capacitance -- 
-                                voltage clamp should be disconnected. Uses calc_tf analytical expression
-                'vclamp': find I resistance and the membrane capacitance with injection on the I terminal 
-                'vclamp_bound': find I resistance and the membrane capacitance with injection on the I terminal 
-                                r is found as rtotal - r1 -- TODO: not sure if this is implemented
-    '''
+    """
+    Fit electrode resistance and capacitance from measured transfer function data.
+
+    Parameters
+    ----------
+    f : array-like
+        Frequencies tested.
+    tf_amp_phase : tuple
+        Measured gain (array) and phase (array).
+    tf_type : str
+        Transfer function type ('elec_r_cc', 'vclamp', 'vclamp_bound').
+    rtotal : float, optional
+        Known total resistance (for vclamp_bound).
+    knowns : dict, optional
+        Known circuit parameters.
+
+    Returns
+    -------
+    tuple
+        (fit results, frequency array, model evaluation, measured data)
+    """
     def tf_eval(params, f, tf_type, knowns):
 
         if tf_type == 'elec_r_cc':
@@ -246,6 +452,21 @@ def elec_r_cc(f, tf_amp_phase, tf_type='elec_r_cc', rtotal=None, knowns={}):
 # use known rtotal: 1 TF is r1; the other is rtotal-r1
 
 def par(z1, z2):
+    """
+    Calculate the parallel combination of two impedances.
+
+    Parameters
+    ----------
+    z1 : float or complex
+        First impedance.
+    z2 : float or complex
+        Second impedance.
+
+    Returns
+    -------
+    float or complex
+        Parallel impedance.
+    """
     # parallel combination of two impedances
     return 1 / (1 / z1 + 1 / z2)
 

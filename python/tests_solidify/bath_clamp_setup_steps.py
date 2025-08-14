@@ -91,41 +91,39 @@ def device_setup(allfour=False) -> HardwareSetup:
     hardware : HardwareSetup
         Configured hardware setup for the experiment.
     """
-    hardware = HardwareSetup(set_vsense2=VSENSE2, 
-                                            quiet_dacs=QUIET_DACS, 
-                                            ephys_system_name=EPHYS_SYS_NAME, 
-                                            model_cell_config=dict(number=NUMBER, 
-                                                                    Rs=RS,
-                                                                    Rv1=RV1,
-                                                                    Rp1=RP1, 
-                                                                    coupling_cap_c20=COUPLING_CAP_C20, 
-                                                                    Rleak=RLEAK
-                                                                    )
-                                            )
-    hardware.set_sample_params(DAC_FS=DAC_FS, FS=FS, SAMPLE_PERIOD=1/FS, ADS_FS=ADS_FS)
-    hardware.setup_power(pwr_setup=POWER_SETUP, neg=NEG)
+    return (
+        HardwareSetup(
+            set_vsense2=VSENSE2, 
+            quiet_dacs=QUIET_DACS, 
+            ephys_system_name=EPHYS_SYS_NAME, 
+            model_cell_config=dict(
+                number=NUMBER, 
+                Rs=RS,
+                Rv1=RV1,
+                Rp1=RP1, 
+                coupling_cap_c20=COUPLING_CAP_C20, 
+                Rleak=RLEAK
+            )
+        )
+        .set_sample_params(DAC_FS=DAC_FS, FS=FS, SAMPLE_PERIOD=1/FS, ADS_FS=ADS_FS)
+        .setup_power(pwr_setup=POWER_SETUP, neg=NEG)
+        .fpga_interface(dc_mapping=dict(bath=BATH, guard=GUARD, clamp=CLAMP, vclamp=VSENSE))
+        .turn_on_power_supply(LIST_POWERS)
+        # Config debug muxs
+        .config_spi_debug_mux(spi_debug=SPI_DEBUG, ads_misc=ADS_MISC)
+        .organize_clamp_board(allfour=allfour)
+        # configure the ADS8686
+        .configure_ads8686(ads_voltage_range=ADS8686_VOLTAGE_RANGE, 
+                                    lpf=ADS8686_LPF, 
+                                    ads_sequencer_setup=ADS8686_SEQUENCER_SETUP)
+        .fast_dac_chan_setup(dac_range=dac_range)
+        .quiet_unused_dacs(UNUSED_DACS)
+        .enable_fast_adcs(FAST_AD7961_CHANNELS)
 
-    hardware.fpga_interface(dc_mapping=dict(bath=BATH, guard=GUARD, clamp=CLAMP, vclamp=VSENSE))
-    hardware.turn_on_power_supply(LIST_POWERS)
-    # Config debug muxs
-    hardware.config_spi_debug_mux(spi_debug=SPI_DEBUG, ads_misc=ADS_MISC)
-    hardware.organize_clamp_board(allfour=allfour)
-    # configure the ADS8686
-    hardware.configure_ads8686(ads_voltage_range=ADS8686_VOLTAGE_RANGE, 
-                                lpf=ADS8686_LPF, 
-                                ads_sequencer_setup=ADS8686_SEQUENCER_SETUP)
-    hardware.fast_dac_chan_setup(dac_range=dac_range)
-    hardware.quiet_unused_dacs(UNUSED_DACS)
-    hardware.enable_fast_adcs(FAST_AD7961_CHANNELS)
-
-    # set all fast-DAC DDR data to midscale
-    hardware.set_cmd_cc(dc_nums=FAST_AD7961_CHANNELS, cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
-            step_len=16384, cc_val=None, cc_pickle_num=None)
-    return hardware
-
-
-
-
+        # set all fast-DAC DDR data to midscale
+        .set_cmd_cc(dc_nums=FAST_AD7961_CHANNELS, cmd_val=0x0, cc_scale=0, cc_delay=0, fc=None,
+                step_len=16384, cc_val=None, cc_pickle_num=None)
+    )
 
 __all__ = ['VSENSE2', 'QUIET_DACS', 'EPHYS_SYS_NAME', 'NUMBER', 'RS', 'RP1', 'RV1',
     'COUPLING_CAP_C20', 'RLEAK', 'DAC_FS', 'FS', 'ADS_FS', 'BATH', 'CLAMP',

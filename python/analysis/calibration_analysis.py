@@ -51,7 +51,21 @@ log.setLevel(logging.DEBUG)
 
 
 def read_cal_data(data_dir, filename):
+    """
+    Load calibration data from a .npz file.
 
+    Parameters
+    ----------
+    data_dir : str
+        Directory containing the data file.
+    filename : str
+        Name of the .npz file.
+
+    Returns
+    -------
+    dict
+        Calibration data dictionary.
+    """
     data = np.load(os.path.join(data_dir, filename), allow_pickle=True)
     # 0-d arrays can be indexed using the empty tuple:
     # https://stackoverflow.com/questions/8361561/recover-dict-from-0-d-numpy-array
@@ -60,10 +74,33 @@ def read_cal_data(data_dir, filename):
     return data
 
 def r_from_square(r_total_guess, data, PLT=False, name='', ANNOTATE=False):
-    # analyze square wave signal for the predicted resistance 
+    """
+    Analyze square wave signal to estimate resistance.
 
-    # name: names the figure that is saved 
+    Parameters
+    ----------
+    r_total_guess : float
+        Initial guess for total resistance.
+    data : dict
+        Calibration data.
+    PLT : bool, optional
+        If True, plot the fit.
+    name : str, optional
+        Name for the saved figure.
+    ANNOTATE : bool, optional
+        If True, annotate the plot.
 
+    Returns
+    -------
+    predicted_res : float
+        Estimated resistance.
+    pcov : ndarray
+        Covariance of the fit parameters.
+    mesg : str
+        Fit message.
+    fig : matplotlib.figure.Figure
+        Figure object (if PLT is True).
+    """
     for data_key in data:
         d = data[data_key]
         
@@ -112,11 +149,37 @@ def r_from_square(r_total_guess, data, PLT=False, name='', ANNOTATE=False):
 
 
 def meas_transfer_func(freqs, ts, data, dac_wave):
+    """
+    Measure transfer function from sine wave data.
+
+    Parameters
+    ----------
+    freqs : array-like
+        Array of frequencies.
+    ts : list of arrays
+        List of time arrays for each frequency.
+    data : list of arrays
+        List of measured voltage arrays.
+    dac_wave : list of arrays
+        List of DAC wave arrays.
+
+    Returns
+    -------
+    freq_m : ndarray
+        Measured frequencies.
+    gain : ndarray
+        Gain values.
+    phase_arr : ndarray
+        Phase values.
+    amp_arr : ndarray
+        Amplitude values.
+    dac_amp_arr : ndarray
+        DAC amplitude values.
+    """
     # freqs: array of frequency. one y1 array and one y2 array for each frequency 
     # t: the time array from the y data 
     # y1s : array of arrays 
     # y2s : array of arrays 
-
     # summary arrays that are the output of this function
     freq_m = np.array([])
     gain = np.array([])
@@ -148,15 +211,39 @@ def meas_transfer_func(freqs, ts, data, dac_wave):
     return freq_m, gain, phase_arr, amp_arr, dac_amp_arr
 
 def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=False, knowns={}, name='', ANNOTATE=False):
-    '''
-    Analyze sine-wave data that alternates between driving electrode 1 and then driving electrode 2
-    DUT (cell capacitance is expected to be connected)
-    This compares amplitudes of the two different swap configurations -- in both cases uses the 'volt' measurement not the 'v1'
+    """
+    Analyze sine-wave data for two electrode configurations to extract RC circuit parameters.
 
-        Only works for the bath clamp; the vclamp needs to use the v1 measurements since only one electrode can be driven
-    
-        name : names the figures that are saved 
-    '''
+    Parameters
+    ----------
+    data : dict
+        Calibration data.
+    tf_type : str
+        Type of transfer function ('elec_r_cc' or 'vclamp').
+    rtotal : float, optional
+        Total resistance for fitting.
+    freq_limit_forfit : float, optional
+        Frequency limit for fitting.
+    PLT : bool, optional
+        If True, plot results.
+    knowns : dict, optional
+        Known circuit parameters.
+    name : str, optional
+        Name for saved figures.
+    ANNOTATE : bool, optional
+        If True, annotate plots.
+
+    Returns
+    -------
+    component_fits : dict
+        Fit results for each electrode configuration.
+    fit_notes : dict
+        Notes about the fit (success, chisqr, message).
+    components : dict
+        Extracted component values.
+    figures_table : dict
+        Dictionary of generated figures.
+    """
     fit_results = {}
     component_fits = {}
 
@@ -374,9 +461,35 @@ def two_elec_vs_freq(data, tf_type, rtotal=None, freq_limit_forfit=None, PLT=Fal
 
 
 def total_res_iso_res(data, r_total_guess, tf_type, PLT=False):
-    '''
-    reads a numpy .npz file and then determines resistance from a square wave fits 
-    '''
+    """
+    Estimate total and individual resistances from calibration data.
+
+    Parameters
+    ----------
+    data : dict
+        Calibration data.
+    r_total_guess : float
+        Initial guess for total resistance.
+    tf_type : str
+        Type of transfer function.
+    PLT : bool, optional
+        If True, plot results.
+
+    Returns
+    -------
+    predicted_res : float
+        Estimated total resistance.
+    res_fit_mesg : str
+        Fit message.
+    component_fits : dict or None
+        Fit results for components.
+    fit_notes : dict or None
+        Notes about the fit.
+    components : dict or None
+        Extracted component values.
+    figures_table : dict or None
+        Dictionary of generated figures.
+    """
     # TODO: where is the `knowns`??
     # data = read_cal_data(data_dir=data_dir, filename=filename)
     predicted_res, pcov, res_fit_mesg, fig_sqr = r_from_square(r_total_guess, data, PLT=PLT)  # get resistance from a square wave 
@@ -395,7 +508,26 @@ def total_res_iso_res(data, r_total_guess, tf_type, PLT=False):
 
 def main():
     """
-    analyze data already captured. Only supports the bath clamp. Use calibration_analysis_vclamp_tf.py 
+    Main analysis routine for calibration data.
+
+    Loads calibration data, estimates resistances, fits transfer functions, and saves summary statistics.
+
+    Returns
+    -------
+    predicted_res : float
+        Estimated resistance.
+    res_fit_mesg : str
+        Fit message.
+    component_fits : dict
+        Fit results for components.
+    fit_notes : dict
+        Notes about the fit.
+    components : dict
+        Extracted component values.
+    data : dict
+        Calibration data.
+    res : dict
+        Summary statistics.
     """
     tf_type = 'elec_r_cc'  # bath clamp using the CC capacitor as a load 
 

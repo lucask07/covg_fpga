@@ -152,7 +152,7 @@ class Headstage:
         )
     
         self.vsense.DAC.write(
-            data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False)
+            data=100
         )
         # Explicitly set the gain for vsense
         self.vsense.set_gain(lowergain_clamp, uppergain_clamp)
@@ -475,6 +475,8 @@ class Headstage:
         """
 
         dc_configs = {}
+        self.dc_under_test = dc_under_test
+        self.dc_disconnect = dc_disconnect
 
         log_info_test, dc_configs[dc_under_test] = self.hardware.clamps[dc_under_test].configure_clamp(
             **self.hardware.clamps[dc_under_test].config_close_cal_relays
@@ -568,9 +570,9 @@ class Headstage:
         # TODO: How is the disconnected clamp board configured? 
         if testing == 'bath':
             config_dict_test['DAC_SEL'] = 'drive_CAL2_gnd_CAL1'
-        # elif testing == 'vlcamp':
         elif testing == "clamp":
             config_dict_test['DAC_SEL'] = 'drive_CAL2'
+
 
         log_info_bath, config_dict_test = self.hardware.clamps[dc_under_test].configure_clamp(**config_dict_test)
 
@@ -1033,7 +1035,27 @@ class Headstage:
         relays_daqs = dict()
         self.RELAYS_DAQS[f"Transfer fit function for {testing}"] = relays_daqs
 
+        dc_guard = self.hardware.dc_mapping['guard']
+
+        # Close calibration relays for DAC grounding
+        dc_configs[dc_guard]['P1_CAL_CTRL'] = 1
+        dc_configs[dc_guard]['P2_CAL_CTRL'] = 1
+        dc_configs[self.dc_disconnect]['P1_CAL_CTRL'] = 1
+        dc_configs[self.dc_disconnect]['P2_CAL_CTRL'] = 1
+
+        # Configure all these changes
+        self.hardware.clamps[dc_guard].configure_clamp(
+            **dc_configs[dc_guard]
+        )
+        self.hardware.clamps[self.dc_disconnect].configure_clamp(
+            **dc_configs[self.dc_disconnect]
+        )
+
         for float_dut in [True, False]:
+            if not float_dut:
+                logger.info("Waiting time for clamp transfer function")
+                input("Hit enter to continue")
+                
             if float_dut:  # upload the chirp signal to DDR only for drive 1 since we repeat for the next measurement
                 periods = np.ones(len(freq_arr))*30
                 dac_wave, freq_chirp, indices = self.dac_waveform(dc_under_test, amp=voltage_amp, 
@@ -1092,9 +1114,9 @@ class Headstage:
                 chirp_idx.append(int(idx[1] / len(ADS8686_SEQUENCER_SETUP) / (2.5)))
 
                 v1_gain = 31 * 31 * (10**(-13/20)) if float_dut else 1
-                v1_gain = 3.5 if not float_dut else 1
+
                 data_chirp[step_chirp] = {
-                    'volt': volt_chirp[chirp_idx[0]:chirp_idx[1]] / v1_gain,  # measured stimulus data
+                    'volt': volt_chirp[chirp_idx[0]:chirp_idx[1]],  # measured stimulus data
                     't': t_chirp[chirp_idx[0]:chirp_idx[1]],
                     'v1': ads_separate_data_chirp[self.adc_v1[0]][self.adc_v1[1]][chirp_idx[0]:chirp_idx[1]],
                     'v1_gain': v1_gain, 
