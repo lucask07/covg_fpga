@@ -140,7 +140,7 @@ In conclusion, check out the documentation of the `HardwareSetup`, `Headstage`, 
 
 ### Bath clamp & Voltage clamp step responses
 
-### Future maintenance & development
+## Future maintenance & development
 1. Fix up the clamp's transfer function fit cause it has by now not been OKAY!
 2. Add datasets for the results of Resistance Measurements for both Bath and Clamp.
 3. Refactor the code for bath and clamp step responses. Then, finish up the section describing the [bath & clamp step responses procedure](#bath-clamp--voltage-clamp-step-responses).
