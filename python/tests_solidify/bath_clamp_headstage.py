@@ -1053,8 +1053,8 @@ class Headstage:
 
         for float_dut in [True, False]:
             if not float_dut:
-                logger.info("Waiting time for clamp transfer function")
-                input("Hit enter to continue")
+                logger.info("Waiting time for clamp transfer function...")
+                time.sleep(5.0)
                 
             if float_dut:  # upload the chirp signal to DDR only for drive 1 since we repeat for the next measurement
                 periods = np.ones(len(freq_arr))*30

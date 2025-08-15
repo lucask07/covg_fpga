@@ -4,7 +4,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 from itertools import permutations
 from contextlib import contextmanager
-from python.tests_solidify.bath_clamp_headstage import Headstage, experiment
+from bath_clamp_headstage import Headstage, experiment
 from bath_clamp_setup_steps import *
 from bathclamp_vclamp_utils import HardwareSetup
 from boards import Vsense2
