@@ -8,6 +8,7 @@ openpyxl
 pyvisa
 # instrbuilder
 git+https://github.com/lucask07/instrbuilder
+bidict
 ltspice
 h5py
 ipython

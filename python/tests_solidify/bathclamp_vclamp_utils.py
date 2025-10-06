@@ -1,19 +1,20 @@
 import os
 import sys
 from time import sleep
-import datetime
 import time
 import atexit
 import numpy as np
 import matplotlib.pyplot as plt
-import copy
 import shutil
 import itertools
+import logging
+from logging import getLogger
+from bidict import bidict
 from collections import UserDict
-from typing import Optional, Union, List
+from typing import Optional, List
 from scipy.signal import decimate
 
-from pyripherals.utils import to_voltage, from_voltage, create_filter_coefficients
+from pyripherals.utils import to_voltage, from_voltage
 from pyripherals.core import FPGA, Endpoint
 from pyripherals.peripherals.DDR3 import DDR3
 
@@ -21,13 +22,11 @@ from pyripherals.peripherals.DDR3 import DDR3
 from setup_paths import *
 
 from analysis.clamp_data import adjust_step2
-from analysis.adc_data import read_h5, separate_ads_sequence
 from datastream.datastream import Datastreams, create_sys_connections, rawh5_to_datastreams, h5_to_datastreams
 from filters.filter_tools import bessel_lowpass_filter, delayseq_interp
 from instruments.power_supply import open_rigol_supply, pwr_off, config_supply
 from boards import Daq, Clamp, Vsense2
 from calibration.electrodes import EphysSystem
-from observer import Observer
 
 # from analysis.cc_calibration import cc_waveform
 from analysis.cc_inference import cat_cc_wave, infer_ccwave_spline
@@ -65,21 +64,88 @@ def cmd_mv2dac(mv, sys_connections, dac_chan='D1'):
 
     return dac_amplitude, cmd_voltage
 
-class BathclampVclampStepResponse:
+class HardwareSetup:
+    """
+    Manages the configuration and initialization of hardware components for bath clamp and vclamp experiments.
+    [Method chaining](https://www.geeksforgeeks.org/python/method-chaining-in-python/) is supported for setting up various hardware parameters.
+    Please refer to the file `python/tests_solidify/bathclamp_vclamp_utils.py` for examples of how to use this class and its supported method chaining feature.
+
+    Attributes
+    ----------
+    eps : Endpoint
+        Endpoint definitions for hardware communication.
+    QUIET_DACS : list
+        List of DAC channels to be quieted (if applicable).
+    model_cell : dict
+        Configuration for the model cell.
+    VSENSE2 : bool
+        Indicates if Vsense2 is enabled.
+    daq : Daq
+        DAQ board instance.
+    clamps : dict
+        Clamp board instances.
+    dc_mapping : dict
+        Mapping of daughtercard channels.
+    ddr : DDR3
+        DDR3 memory interface.
+    ephys_sys : EphysSystem
+        Electrophysiology system instance.
+
+    Methods
+    -------
+    set_sample_params(DAC_FS, FS, SAMPLE_PERIOD, ADS_FS)
+        Sets sample parameters for data acquisition.
+    setup_power(pwr_setup, neg)
+        Configures power supply settings.
+    fpga_interface(dc_mapping)
+        Initializes FPGA interface with daughtercard mapping.
+    set_dc_map(dc_mapping)
+        Sets the mapping for daughtercard channels.
+    turn_on_power_supply(name_supply)
+        Powers on specified supplies.
+    config_spi_debug_mux(spi_debug, ads_misc)
+        Configures SPI debug and ADS multiplexer.
+    organize_clamp_board(allfour)
+        Organizes clamp board setup.
+    init_board()
+        Initializes the hardware board.
+    configure_ads8686(ads_voltage_range, ads_hw_reset, lpf, ads_sequencer_setup)
+        Configures the ADS8686 ADC.
+    fast_dac_chan_setup(dac_range)
+        Sets up fast DAC channels.
+    quiet_unused_dacs(list_unused_dac)
+        Quiets unused DAC channels.
+    enable_fast_adcs(fast_adc_chans)
+        Enables fast ADC channels.
+    configure_dac_80508()
+        Configures DAC80508.
+    operate_vsense2()
+        Operates Vsense2 hardware.
+    write_ddr()
+        Writes data to DDR memory.
+    set_cmd_cc(dc_nums, ...)
+        Sets command for current clamp.
+    make_cmd_cc(cmd_val, ...)
+        Creates command waveform for current clamp.
+    """
 
     eps = Endpoint.endpoints_from_defines
 
     def __init__(self,* , set_vsense2, quiet_dacs : bool, ephys_system_name : str, 
                  model_cell_config : dict):
         """
-        self.model_cell['number'] = 3 # guard
-        # jumper configurable
-        self.model_cell['Rs'] = 1e3
-        self.model_cell['Rp1'] = 5e3
-        self.model_cell['Rv1'] = 200e3
-        # coupling cap back onto V1 might be DNI
-        self.model_cell['coupling_cap_c20'] = 0
-        self.model_cell['Rleak'] = 47e5 # this was misinterpreted. Its always been 4.7 Meg.
+        Initializes the HardwareSetup instance.
+
+        Parameters
+        ----------
+        set_vsense2 : bool
+            Whether to enable Vsense2 hardware.
+        quiet_dacs : bool
+            Whether to quiet unused DAC channels.
+        ephys_system_name : str
+            Name of the electrophysiology system.
+        model_cell_config : dict
+            Configuration dictionary for the model cell.
         """
         self.model_cell = dict()
         self.model_cell['number'] = model_cell_config['number'] # guard
@@ -99,19 +165,45 @@ class BathclampVclampStepResponse:
     
     def set_sample_params(self, *, DAC_FS, FS, SAMPLE_PERIOD, ADS_FS):
         """
-        DAC_FS = 2.5e6
-        FS = 5e6
-        SAMPLE_PERIOD = 1/FS
-        ADS_FS = 1e6
+        Sets sample parameters for data acquisition.
+
+        Parameters
+        ----------
+        DAC_FS : float
+            DAC full-scale value.
+        FS : float
+            Sampling frequency.
+        SAMPLE_PERIOD : float
+            Sample period in seconds.
+        ADS_FS : float
+            ADS sampling frequency.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         self.DAC_FS = DAC_FS
         self.FS = FS
         self.SAMPLE_PERIOD = SAMPLE_PERIOD
         self.ADS_FS = ADS_FS
+        return self
     
     def setup_power(self, *, pwr_setup : str, neg):
         """
-        pwr_setup = "3dual"
+        Configures power supply settings.
+
+        Parameters
+        ----------
+        pwr_setup : str
+            Power supply setup configuration.
+        neg : Any
+            Negative supply configuration.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         self.pwr_setup = pwr_setup
         # -------- power supplies -----------
@@ -132,16 +224,27 @@ class BathclampVclampStepResponse:
             # turn on the +/-16.5 V input
             for ch in [2, 3]:
                 self.dc_pwr.set("out_state", "ON", configs={"chan": ch})
+        return self
 
-# Consider extending the FPGA class itself
-class FPGAInterface:
-    def __init__(self, experiment_class, dc_mapping : dict):
-        self.experiment_class = experiment_class
+    def fpga_interface(self, dc_mapping : dict):
+        """
+        Initializes FPGA interface with daughtercard mapping.
+
+        Parameters
+        ----------
+        dc_mapping : dict
+            Mapping of daughtercard channels.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         # Initialize FPGA
         self.f = FPGA()
         self.f.init_device()
         sleep(2)
-        self.f.send_trig(self.experiment_class.eps["GP"]["SYSTEM_RESET"])  # system reset
+        self.f.send_trig(self.eps["GP"]["SYSTEM_RESET"])  # system reset
 
         self.pwr = Daq.Power(self.f)
         self.pwr.all_off()  # disable all power enables
@@ -156,52 +259,134 @@ class FPGAInterface:
         self.clamps : list[Optional[Clamp]] = [None] * 4
         # Set dc_mapping
         self.set_dc_map(dc_mapping)
+        return self
     
     def set_dc_map(self, dc_mapping : dict):
         """
-        # Set dc_mapping -> dc_mapping = {'bath': 0, 'guard': 1, 'clamp': 3, 'vsense': 2}
+        Sets the mapping for daughtercard channels.
+
+        Parameters
+        ----------
+        dc_mapping : dict
+            Mapping of daughtercard channels.
         """
-        self.dc_mapping : dict[str, Optional[int]] = {'bath': None, 'guard': None, 'clamp': None, 'vclamp': None}
+        value_check = set()
+        for value in dc_mapping.values():
+            value_check.add(value)
+        if len(dc_mapping.values()) != len(value_check):
+            raise ValueError("One socket must only go with one daughtercard.")
+        dc_mapping_buffer : dict[str, Optional[int]] = {'bath': None, 'guard': None, 'clamp': None, 'vclamp': None}
         for key in dc_mapping:
-            if key not in self.dc_mapping:
+            if key not in dc_mapping_buffer:
                 raise ValueError("key can only be 1 in 4 components of the board, bath, guard, clamp, and vsense.")
-            self.dc_mapping[key] = dc_mapping[key]
+            dc_mapping_buffer[key] = dc_mapping[key]
+        self.dc_mapping : bidict[str, int] = bidict(dc_mapping_buffer)
 
     
     def turn_on_power_supply(self, name_supply : list):
+        """
+        Powers on specified supplies.
+
+        Parameters
+        ----------
+        name_supply : list
+            List of supply names to power on.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         # power supply turn on via FPGA enables -> name_supply = ["1V8", "5V", "3V3"]
         for name in name_supply:
             self.pwr.supply_on(name)
             sleep(0.05)
+        return self
     
     def config_spi_debug_mux(self, *, spi_debug : str, ads_misc : str):
+        """
+        Configures SPI debug and ADS multiplexer.
+
+        Parameters
+        ----------
+        spi_debug : str
+            SPI debug configuration.
+        ads_misc : str
+            ADS multiplexer configuration.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         # configure the SPI debug MUXs
         self.gpio = Daq.GPIO(self.f)
         self.gpio.spi_debug(spi_debug) # 'ads'
         self.gpio.ads_misc(ads_misc)  # -> 'convst' -> to check sample rate of ADS
+        return self
     
     def organize_clamp_board(self, allfour=False):
+        """
+        Organizes clamp board setup.
+
+        Parameters
+        ----------
+        allfour : bool, optional
+            Whether to organize all four clamp boards (default is False).
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         # instantiate the Clamp boards providing a daughter card number (from 0 to 3)
         # list of the Daughter-card channels under test. Order on board from L to R: 1,0,2,3
-        VSENSE2 = self.experiment_class.VSENSE2
+        VSENSE2 = self.VSENSE2
         # not vsense2 -> indices of clamp boards, vsense2 -> can't be clamp. include the guard
-        self.DC_NUMS = [0,1,3] if VSENSE2 else [0,1,2]
+        self.DC_NUMS = [0,1,2] if VSENSE2 else [0,1,3]
         if allfour:
             self.DC_NUMS = [0, 1, 2, 3]
         self.init_board()
+        return self
 
     def init_board(self):
+        """
+        Initializes the hardware board.
+        """
+        # Logger for this class
+        logger = logging.getLogger("Clamp Setup Logger")
+        logger.setLevel(logging.INFO)
+        # --------- Initialize the Clamp boards -----------
         for dc_num in self.DC_NUMS:
             if dc_num == self.dc_mapping['vclamp']: # skip this with VSENSE2 
-                clamp = Clamp(self.f, dc_num=dc_num, DAC_addr_pins=0b000, version=2)
+                clamp = Clamp(self.f, dc_num=dc_num, DAC_addr_pins=0b001, TCA_addr_pins_0=0b111, TCA_addr_pins_1=0b111) # version=2)
             else:
                 clamp = Clamp(self.f, dc_num=dc_num, version=2)
-            print(f'Clamp {dc_num} Init'.center(35, '-'))
+            logger.info(f'Clamp {dc_num} Init')
             clamp.init_board()
             clamp.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
             self.clamps[dc_num] = clamp
     
     def configure_ads8686(self, *, ads_voltage_range, ads_hw_reset=False, lpf, ads_sequencer_setup: list):
+        """
+        Configures the ADS8686 ADC.
+
+        Parameters
+        ----------
+        ads_voltage_range : Any
+            Voltage range for ADS8686.
+        ads_hw_reset : bool, optional
+            Whether to perform hardware reset (default is False).
+        lpf : Any
+            Low-pass filter configuration.
+        ads_sequencer_setup : list
+            Sequencer setup for ADS8686.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         # -------- configure the ADS8686
         # ads_voltage_range = 5  # need this for to_voltage later 
         self.ads.hw_reset(val=ads_hw_reset)
@@ -222,14 +407,28 @@ class FPGAInterface:
         # in_amp = 1 # 05/02 step response was 2; 05/04 in_amp = 1
         # in_amp = 2 # 05/02 step response was 2; 05/04 in_amp = 1
         # dac_range = 5  # 5V full-scale range of the fast DACs 
+        return self
     
     # TODO: Function in question!!
     def fast_dac_chan_setup(self, dac_range):
+        """
+        Sets up fast DAC channels.
+
+        Parameters
+        ----------
+        dac_range : Any
+            Configuration for the DAC channel range.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         for i in range(6):
             self.daq.DAC[i].set_ctrl_reg(self.daq.DAC[i].master_config)
             self.daq.DAC[i].set_spi_sclk_divide()
             self.daq.DAC[i].filter_select(operation="clear")
-            if self.experiment_class.QUIET_DACS:
+            if self.QUIET_DACS:
                 self.daq.DAC[i].write(int(0x2000)) # midscale 
                 self.daq.DAC[i].set_data_mux("host")
             else:
@@ -239,17 +438,50 @@ class FPGAInterface:
             self.daq.DAC[i].change_filter_coeff(target="passthru")
             self.daq.DAC[i].write_filter_coeffs()
             self.daq.set_dac_gain(i, dac_range)  # 5V 
+        return self
     
     # TODO: so the dacs is from 0 to 5 ???
     def quiet_unused_dacs(self, list_unused_dac: list):
+        """
+        Quiets unused DAC channels.
+
+        Parameters
+        ----------
+        list_unused_dac : list
+            List of unused DAC channels to quiet.
+        
+        Raises
+        ------
+        ValueError
+            If any DAC value is not in the range of 0 to 5.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         # Quiet unused DACs (add 2024/09/12) 2, 4, 5
         for i in list_unused_dac:
             if i not in range(6):
                 raise ValueError("DAC values are only from 0 to 5.")
             self.daq.DAC[i].write(int(0x2000)) # midscale 
             self.daq.DAC[i].set_data_mux("host")
+        return self
     
-    def enable_fast_adcs(self, fast_adc_chans: list): # [0, 1, 2, 3]
+    def enable_fast_adcs(self, fast_adc_chans: list):
+        """
+        Enables fast ADC channels.
+
+        Parameters
+        ----------
+        fast_adc_chans : list
+            List of fast ADC channels to enable.
+        
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         for chan in fast_adc_chans:
             self.ad7961s[chan].power_up_adc()  # standard sampling
         time.sleep(0.5)
@@ -257,10 +489,19 @@ class FPGAInterface:
         time.sleep(0.1)
         self.ad7961s[0].reset_trig() # this IS required because it resets the timing generator of the ADS8686. Make sure to configure the ADS8686 before this reset
         time.sleep(0.1)
+        return self
 
     def configure_dac_80508(self):
         """
         Configure for DDR read to DAC80508
+        This method sets up the DAC80508 for DDR read operations.
+        It configures the SPI clock speed and control registers for the DAC channels.
+        It is used to set up the DAC channels for data transfer from DDR memory.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         for dac_gp_ch in [0, 1]:
             self.daq.DAC_gp[dac_gp_ch].set_spi_sclk_divide(0x2)
@@ -268,32 +509,36 @@ class FPGAInterface:
             self.daq.DAC_gp[dac_gp_ch].set_config_bin(0x00)
             # daq.DAC_gp[dac_gp_ch].set_data_mux('host')
             self.daq.DAC_gp[dac_gp_ch].set_data_mux('DDR')
+        return self
     
     def operate_vsense2(self):
         """
-        Only used during the experiment step
+        Only used during the experiment step. This method operates the Vsense2 hardware.
+
+        [!NOTE]: This method is not used in the setup phase, but rather during the experiment step. Therefore, 
+        it is not included in the method chaining of the HardwareSetup class.
         """
-        if self.experiment_class.VSENSE2:
+        # Logger for operating Vsense2
+        logger = logging.getLogger("Vsense2 Operation Logger")
+        logger.setLevel(logging.INFO)
+
+        if self.VSENSE2:
+            vsensekey = 'vsense' if 'vsense' in self.dc_mapping.keys() else 'vclamp'
             # declare the Vsense2 class as the operating vsense board
-            vsense = Vsense2(fpga=self.f, DAC_addr_pins=0b001, dc_num=self.dc_mapping['vsense'], TCA_addr_pins=0b111) # I don't know why this needs to be 0b001 for DAC
+            vsense = Vsense2(fpga=self.f, DAC_addr_pins=0b001, dc_num=self.dc_mapping[vsensekey], TCA_addr_pins=0b111) # I don't know why this needs to be 0b001 for DAC
             #vsense.DAC.write(data=from_voltage(voltage=0.9940/1.6662, num_bits=10, voltage_range=5, with_negatives=False))
 
             #read/write testing for DAC and I/O expander
             message = 0xBF
             vsense.DAC.write(message)
             r = vsense.DAC.read()
-            print('-----READ/WRITE TESTS-----')
-            print(f'DAC - write: {message}, DAC read: {r}')
+            logger.info('READ/WRITE TESTS:')
+            logger.info(f'DAC - write: {message}, DAC read: {r}')
 
             message = 0xAAAA #I/O expander writes 2 bytes
             vsense.TCA.write(message)
             r2 = vsense.TCA.read(register_name='OUTPUT') #need to specify here that I am reading from output
-            print(f'TCA OUTPUT - write: {message}, TCA read: {r2}')
-
-            message = 0x6666
-            vsense.TCA.write(message, register_name='INPUT') #defaults to writing to OUTPUT, so specify otherwise
-            r3 = vsense.TCA.read(register_name='INPUT') #defaults to reading input
-            print(f'TCA INPUT - write: {message}, TCA read: {r3}')
+            logger.info(f'TCA OUTPUT - write: {message}, TCA read: {r2}')
 
             #calling gain setting method
             #vsense.set_gains(0b0000, 0b0000)
@@ -304,27 +549,40 @@ class FPGAInterface:
             return vsense, gain1, gain2
     
     # TODO: the second function call, let's add some return values as in impulse file
-    def write_ddr(self):    
+    def write_ddr(self):
+        """
+        Writes data to DDR memory.
+        This method prepares the DDR memory for writing data by setting up the necessary configurations.
+
+        Returns
+        -------
+        self : HardwareSetup
+            Returns the instance for method chaining.
+        """
         # write channels to the DDR
         self.ddr.write_setup()
         # clear read, set write, etc. handled within write_channels
         self.ddr.write_channels(set_ddr_read=False)
         self.ddr.reset_mig_interface()
         self.ddr.write_finish()
+        return self
     
     def set_cmd_cc(self, dc_nums, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
             cc_val=None, cc_pickle_num=None):
         """
-        Write the CMD and CC signals to the DDR for the specified daughtercards.
-            
+        Sets command for current clamp.
+
         Parameters
         ----------
-            dc_nums : int or list
-            The port number(s) of the daughtercard(s) to write signals for.
+        dc_nums : Any
+            Daughtercard numbers or identifiers.
+        ... : 
+            Additional parameters as required.
         
         Returns
         -------
-        None
+        self : HardwareSetup
+            Returns the instance for method chaining.
         """
         # TODO: move to Clamp board class in boards.py
         if (type(dc_nums) == int):
@@ -337,18 +595,28 @@ class FPGAInterface:
             cc_ch = dc_num * 2
             self.ddr.data_arrays[cmd_ch], self.ddr.data_arrays[cc_ch] = self.make_cmd_cc(cmd_val=cmd_val, cc_scale=cc_scale, cc_delay=cc_delay, fc=fc, step_len=step_len, cc_val=cc_val, cc_pickle_num=cc_pickle_num)
         self.write_ddr()
+        return self
     
     def make_cmd_cc(self, cmd_val=0x1d00, cc_scale=0.351, cc_delay=0, fc=4.8e3, step_len=8000,
                cc_val=None, cc_pickle_num=None):
-        """Return the CMD and CC signals determined by the parameters.
-            Does not write to DDR 
+        """
+        Creates command waveform for current clamp.
+        [!NOTE]: This method must not be used in the method chaining of the HardwareSetup class,
+        as it is used to generate the command and current clamp waveforms for the experiment.
 
         Parameters
         ----------
+        cmd_val : Any
+            Command value for current clamp.
+        ... : 
+            Additional parameters as required.
         
         Returns
         -------
-        np.ndarray, np.ndarray : the CMD signal data, the CC signal data.
+        cmd_signal : np.ndarray
+            Command signal waveform.
+        cc_signal : np.ndarray
+            Current clamp signal waveform.
         """
         dac_offset = 0x2000
 
@@ -397,52 +665,132 @@ class FPGAInterface:
 
 
 
-def render_sys_connections(dc_configs, fpga_board : FPGAInterface, experiment_setup : BathclampVclampStepResponse):
-    sys_connections = create_sys_connections(dc_configs, fpga_board.daq, experiment_setup.ephys_sys, 
-                                             inamp_gain_correct=fpga_board.clamps[fpga_board.dc_mapping['bath']].correct_inamp_gain)
+def render_sys_connections(dc_configs, hardware : HardwareSetup):
+    """
+    Renders system connections based on daughtercard configurations and hardware setup.
+
+    Parameters
+    ----------
+    dc_configs : dict
+        Daughtercard configuration dictionary.
+    hardware : HardwareSetup
+        Hardware setup instance.
+
+    Returns
+    -------
+    dict
+        Rendered system connections.
+    """
+    sys_connections = create_sys_connections(dc_configs, hardware.daq, hardware.ephys_sys, 
+                                             inamp_gain_correct=hardware.clamps[hardware.dc_mapping['bath']].correct_inamp_gain)
     return sys_connections
 
-def capture_data(fpga_board : FPGAInterface, experiment_setup : BathclampVclampStepResponse, *, file_name_raw, data_dir, dc_configs, idx=0, filename=None):
-    fpga_board.ddr.repeat_setup() # Get data
+def capture_data(hardware : HardwareSetup, *, file_name_raw, data_dir, dc_configs, idx=0, filename=None):
+    """
+    Captures experimental data using the specified hardware setup.
+
+    Parameters
+    ----------
+    hardware : HardwareSetup
+        Hardware setup instance.
+    file_name_raw : str
+        Raw data file name.
+    data_dir : str
+        Directory to save data.
+    dc_configs : dict
+        Daughtercard configurations.
+    idx : int, optional
+        Index for data capture (default is 0).
+    filename : str, optional
+        Optional filename for saving data.
+
+    Returns
+    -------
+    Any
+        Captured data or status.
+    """
+    hardware.ddr.repeat_setup() # Get data
 
     if filename is None:
         filename = file_name_raw.format(idx) + '.h5'
 
     # saves data to a file; returns to the workspace the deswizzled DDR data of the last repeat
-    fpga_board.ddr.save_data(data_dir, filename, num_repeats=128,
+    hardware.ddr.save_data(data_dir, filename, num_repeats=128,
                                         blk_multiples=200)  # blk multiples must be multiple of 10 
     # each block multiple is 256 bytes 
 
     # update system connections since the daughtercard configurations have changed
-    sys_connections = render_sys_connections(dc_configs, fpga_board, experiment_setup)
+    sys_connections = render_sys_connections(dc_configs, hardware)
     # Plot using datastreams 
-    datastreams, log_info = rawh5_to_datastreams(data_dir, filename, fpga_board.ddr.data_to_names, 
-                                                 fpga_board.daq, sys_connections, outfile = None)
+    datastreams, log_info = rawh5_to_datastreams(data_dir, filename, hardware.ddr.data_to_names, 
+                                                 hardware.daq, sys_connections, outfile = None)
  
     return datastreams, log_info
 
-def ds_add_log(experiment_setup : BathclampVclampStepResponse, datastreams : Datastreams, dc_configs, first_pos_step, *, cmd_val, 
+def ds_add_log(hardware : HardwareSetup, datastreams : Datastreams, dc_configs, first_pos_step, *, cmd_val, 
                step_len, 
                cc_val, 
                fc_cmd, 
                sys_connections):
-    datastreams.add_log_info(experiment_setup.ephys_sys.__dict__)  # all properties of ephys_sys 
+    """
+    Adds a log entry to the datastreams object.
+
+    Parameters
+    ----------
+    hardware : HardwareSetup
+        Hardware setup instance.
+    datastreams : Datastreams
+        Datastreams object.
+    dc_configs : dict
+        Daughtercard configurations.
+    first_pos_step : Any
+        First positive step value.
+    cmd_val : Any
+        Command value.
+    step_len : Any
+        Step length.
+    cc_val : Any
+        Current clamp value.
+    fc_cmd : Any
+        Fast command value.
+    sys_connections : dict
+        System connections.
+
+    Returns
+    -------
+    None
+    """
+    datastreams.add_log_info(hardware.ephys_sys.__dict__)  # all properties of ephys_sys 
     datastreams.add_log_info({'dc_configs': dc_configs})
     datastreams.add_log_info({'ddr_step_peak': first_pos_step})
     datastreams.add_log_info({'dut': 'model_cell'})
-    datastreams.add_log_info({'quiet_dacs': experiment_setup.QUIET_DACS})
+    datastreams.add_log_info({'quiet_dacs': hardware.QUIET_DACS})
     datastreams.add_log_info({'cmd_val': cmd_val})
     datastreams.add_log_info({'cc_val': cc_val})
     datastreams.add_log_info({'step_len': step_len})
     datastreams.add_log_info({'fc_cmd': fc_cmd})
-    datastreams.add_log_info({'model_cell': experiment_setup.model_cell})
+    datastreams.add_log_info({'model_cell': hardware.model_cell})
     datastreams.add_log_info({'sys_connections': sys_connections})
-    if experiment_setup.VSENSE2:
+    if hardware.VSENSE2:
         datastreams.add_log_info({'notes': 'vsense2_board, guard, connect CC'})
 
     return datastreams
 
 def ads_plot_zoom(ax, t_range=[3250,3300]):
+    """
+    Plots a zoomed-in region of the ADS data.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        Axis to plot on.
+    t_range : list, optional
+        Time range to zoom in (default is [3250, 3300]).
+
+    Returns
+    -------
+    None
+    """
     try:
         for ax_s in ax:
             ax_s.set_xlim(t_range)
@@ -452,17 +800,109 @@ def ads_plot_zoom(ax, t_range=[3250,3300]):
         ax.grid('on')
 
 class PlotManager(UserDict):
+    """
+    Manages and organizes plot objects for experiment visualization.
+
+    This class extends UserDict to store and update multiple plot-related objects,
+    such as axes, line objects, and plot aesthetics, for interactive or batch plotting
+    during experiments. It provides methods to create, update, and access plots
+    based on data streams.
+
+    Attributes
+    ----------
+    datastreams : Datastreams
+        The datastreams object containing experiment data.
+    data : dict
+        Dictionary mapping plot types to PlotManager.Item instances.
+
+    Methods
+    -------
+    reset_datastreams(datastreams)
+        Updates the datastreams reference for the manager.
+    positional_plot_with_datastream(type, ax, row=None, col=None, aes_key=None)
+        Creates and stores a plot for a given data type and axis.
+    set_ax_properties(type=None, ax=None, row=None, col=None, xlimit=None, ylimit=None, title=None)
+        Sets axis properties for a given plot type or axis.
+    get_type_ax(type)
+        Returns the axis object for a given plot type.
+    get_type_line_obj(type)
+        Returns the line object(s) for a given plot type.
+    get_type_aestheme(type)
+        Returns the aesthetics dictionary for a given plot type.
+    update_lines(type, custom_type=None, custom_keys=None)
+        Updates the line object(s) for a given plot type, optionally with custom keys.
+
+    Inner Classes
+    -------------
+    Item
+        Stores axis, line object, and aesthetics for a plot.
+    """
+
     def __init__(self, datastreams):
+        """
+        Initializes the PlotManager.
+
+        Parameters
+        ----------
+        datastreams : Datastreams
+            The datastreams object containing experiment data.
+        """
         super().__init__()
         self.datastreams = datastreams
     def reset_datastreams(self, datastreams):
+        """
+        Updates the datastreams reference for the manager.
+
+        Parameters
+        ----------
+        datastreams : Datastreams
+            The new datastreams object.
+        """
         self.datastreams = datastreams
     class Item:
+        """
+        Stores axis, line object, and aesthetics for a plot.
+
+        Attributes
+        ----------
+        ax : matplotlib.axes.Axes
+            The axis object for the plot.
+        line_object : Any
+            The line object(s) for the plot.
+        aes_key : dict
+            Dictionary of plot aesthetics.
+        """
         def __init__(self, *, ax, row=None, col=None, aes_key=None):
+            """
+            Initializes an Item.
+
+            Parameters
+            ----------
+            ax : matplotlib.axes.Axes or array-like
+                Axis object or array of axes.
+            row : int, optional
+                Row index for axis selection.
+            col : int, optional
+                Column index for axis selection.
+            aes_key : dict, optional
+                Plot aesthetics dictionary.
+            """
             self.set_ax(ax=ax, row=row, col=col)
             if aes_key is not None:
                 self.set_attribute(aes_key=aes_key)
         def set_ax(self, *, ax, row=None, col=None):
+            """
+            Sets the axis for the plot.
+
+            Parameters
+            ----------
+            ax : matplotlib.axes.Axes or array-like
+                Axis object or array of axes.
+            row : int, optional
+                Row index for axis selection.
+            col : int, optional
+                Column index for axis selection.
+            """
             if ax is None:
                 raise ValueError('ax cannot be None')
             if row == None:
@@ -476,6 +916,18 @@ class PlotManager(UserDict):
                 else:
                     self.ax = ax[row, col]
         def set_ax_properties(self, *, xlimit=None, ylimit=None, title=None):
+            """
+            Sets axis properties such as limits and title.
+
+            Parameters
+            ----------
+            xlimit : tuple, optional
+                X-axis limits.
+            ylimit : tuple, optional
+                Y-axis limits.
+            title : str, optional
+                Axis title.
+            """
             # Set x and y limits and title:
             if title is not None:
                 self.ax.set_title(title)
@@ -484,10 +936,47 @@ class PlotManager(UserDict):
             if ylimit is not None:
                 self.ax.set_ylim(ylimit)
         def set_attribute(self, aes_key : dict):
+            """
+            Sets the plot aesthetics dictionary.
+
+            Parameters
+            ----------
+            aes_key : dict
+                Plot aesthetics dictionary.
+            """
             self.aes_key = aes_key
         def set_line(self, line_object):
+            """
+            Sets the line object(s) for the plot.
+
+            Parameters
+            ----------
+            line_object : Any
+                The line object(s) returned by the plot call.
+            """
             self.line_object = line_object
     def positional_plot_with_datastream(self, type : str, ax, row=None, col=None, aes_key=None):
+        """
+        Creates and stores a plot for a given data type and axis.
+
+        Parameters
+        ----------
+        type : str
+            Data type key for the plot.
+        ax : matplotlib.axes.Axes or array-like
+            Axis object or array of axes.
+        row : int, optional
+            Row index for axis selection.
+        col : int, optional
+            Column index for axis selection.
+        aes_key : dict, optional
+            Plot aesthetics dictionary.
+
+        Raises
+        ------
+        Exception
+            If plotting fails.
+        """
         try:
             self[type] = self.Item(ax=ax, row=row, col=col, aes_key=aes_key)
             line = self.datastreams[type].plot(self[type].ax, self[type].aes_key)
@@ -496,8 +985,43 @@ class PlotManager(UserDict):
             self.pop(type, None)
             raise Exception()
     def __setitem__(self, key : str, item : Item):
+        """
+        Stores an Item in the manager.
+
+        Parameters
+        ----------
+        key : str
+            Data type key.
+        item : Item
+            The Item instance to store.
+        """
         return super().__setitem__(key, item)
     def set_ax_properties(self, *, type=None, ax=None, row=None, col=None, xlimit=None, ylimit=None, title=None):
+        """
+        Sets axis properties for a given plot type or axis.
+
+        Parameters
+        ----------
+        type : str, optional
+            Data type key for the plot.
+        ax : matplotlib.axes.Axes or array-like, optional
+            Axis object or array of axes.
+        row : int, optional
+            Row index for axis selection.
+        col : int, optional
+            Column index for axis selection.
+        xlimit : tuple, optional
+            X-axis limits.
+        ylimit : tuple, optional
+            Y-axis limits.
+        title : str, optional
+            Axis title.
+
+        Raises
+        ------
+        ValueError
+            If axis selection arguments are invalid.
+        """
         if type is not None:
             self[type].set_ax_properties(xlimit=xlimit, ylimit=ylimit, title=title)
         else:
@@ -518,12 +1042,68 @@ class PlotManager(UserDict):
                 if ylimit is not None:
                     ax_dest.set_ylim(ylimit)
     def get_type_ax(self, type : str):
+        """
+        Returns the axis object for a given plot type.
+
+        Parameters
+        ----------
+        type : str
+            Data type key.
+
+        Returns
+        -------
+        matplotlib.axes.Axes
+            Axis object for the plot.
+        """
         return self[type].ax
     def get_type_line_obj(self, type : str) -> list:
+        """
+        Returns the line object(s) for a given plot type.
+
+        Parameters
+        ----------
+        type : str
+            Data type key.
+
+        Returns
+        -------
+        list
+            List of line objects.
+        """
         return self[type].line_object
     def get_type_aestheme(self, type : str):
+        """
+        Returns the aesthetics dictionary for a given plot type.
+
+        Parameters
+        ----------
+        type : str
+            Data type key.
+
+        Returns
+        -------
+        dict
+            Plot aesthetics dictionary.
+        """
         return self[type].aes_key
     def update_lines(self, type : str, custom_type=None, custom_keys=None):
+        """
+        Updates the line object(s) for a given plot type, optionally with custom keys.
+
+        Parameters
+        ----------
+        type : str
+            Data type key.
+        custom_type : str, optional
+            Alternate data type key for update.
+        custom_keys : dict, optional
+            Custom aesthetics dictionary.
+
+        Raises
+        ------
+        Exception
+            If update fails.
+        """
         try:
             if custom_type is None:
                 if custom_keys is None:
@@ -541,6 +1121,34 @@ class PlotManager(UserDict):
 def update_plots(first_time, datastreams, first_pos_step, plotmanager1 : Optional[PlotManager] = None, 
                  plotmanager2 : Optional[List[PlotManager]] = None, 
                  figs=None, adg_r=100):
+    """
+    Updates plots with new data.
+
+    Parameters
+    ----------
+    first_time : bool
+        Whether this is the first plot update.
+    datastreams : Datastreams
+        Datastreams object.
+    first_pos_step : Any
+        First positive step value.
+    plotmanager1 : PlotManager, optional
+        First plot manager.
+    plotmanager2 : list of PlotManager, optional
+        Additional plot managers.
+    figs : Any, optional
+        Figure objects.
+    adg_r : int, optional
+        ADG resistance value (default is 100).
+
+    Returns
+    -------
+    None
+    """
+    # Logger for plot updates
+    logger = logging.getLogger("Plot Update Logger")
+    logger.setLevel(logging.INFO)
+    logger.info('Updating plots...')
 
     # Two plots that are updated in realtime 
     # First plot is 2x2
@@ -635,7 +1243,7 @@ def update_plots(first_time, datastreams, first_pos_step, plotmanager1 : Optiona
         idx = (t > first_pos_step + 2e-3) & (t < first_pos_step + 5e-3)
         im_noise_wb = np.std(im_data[idx])
         im_noise_filt = np.std(im_data_filt[idx])
-        print(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
+        logger.info(f'Im gain of {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA. Current noise of {im_noise_wb*1e9} nA full-bw; {im_noise_filt*1e9} nA {fc} bw')
 
     for fig in figs:
         fig.canvas.draw()
@@ -645,12 +1253,52 @@ def update_plots(first_time, datastreams, first_pos_step, plotmanager1 : Optiona
 
     return first_time, plotmanager1, plotmanager2, figs, datastreams, idx
 
-def measure_cmd_cc_impulse(fpga_board: FPGAInterface, experiment_class : BathclampVclampStepResponse, *, FS,
+def measure_cmd_cc_impulse(hardware : HardwareSetup, *, FS,
                            sys_connections, 
                            cmd_cc_scale : dict, plot_setting : dict, ccomp, first_pos_step, adgr_ccomp_combination, 
                            data_dir, h5_file_name, dc_configs, 
                            CC_IMPULSE : bool, CC_CANCELATION : bool, method_cc_cancelation : str, 
                            plot_cancel : bool):
+    """
+    Measures the command current clamp impulse response.
+
+    Parameters
+    ----------
+    hardware : HardwareSetup
+        Hardware setup instance.
+    FS : float
+        Sampling frequency.
+    sys_connections : dict
+        System connections.
+    cmd_cc_scale : dict
+        Command current clamp scaling.
+    plot_setting : dict
+        Plot settings.
+    ccomp : Any
+        Compensation value.
+    first_pos_step : Any
+        First positive step value.
+    adgr_ccomp_combination : Any
+        ADGR and compensation combination.
+    data_dir : str
+        Data directory.
+    h5_file_name : str
+        HDF5 file name.
+    dc_configs : dict
+        Daughtercard configurations.
+    CC_IMPULSE : bool
+        Whether to measure impulse.
+    CC_CANCELATION : bool
+        Whether to perform cancellation.
+    method_cc_cancelation : str
+        Cancellation method.
+    plot_cancel : bool
+        Whether to plot cancellation.
+
+    Returns
+    -------
+    None
+    """
     file_name = h5_file_name
     # measure CMD and CC impulse 
     ds = {}
@@ -668,7 +1316,7 @@ def measure_cmd_cc_impulse(fpga_board: FPGAInterface, experiment_class : Bathcla
             filename_imp = '{}_rtia{}_ccomp{}'.format(file_name, adg_r, ccomp)
             dc_configs[0]['ADG_RES'] = adg_r
             dc_configs[0]['CCOMP'] = ccomp
-            fpga_board.clamps[0].configure_clamp(**dc_configs[0])
+            hardware.clamps[0].configure_clamp(**dc_configs[0])
 
             for test in ['CMD', 'CC']:
                 if test=='CMD':
@@ -677,12 +1325,11 @@ def measure_cmd_cc_impulse(fpga_board: FPGAInterface, experiment_class : Bathcla
                 elif test=='CC':
                     cmd_val = 0
                     cc_val = cc_val_set
-                fpga_board.set_cmd_cc(dc_nums=[fpga_board.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=cmd_cc_scale['fc_cmd'],
+                hardware.set_cmd_cc(dc_nums=[hardware.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=cmd_cc_scale['fc_cmd'],
                     step_len=cmd_cc_scale['step_len'], cc_val=cc_val, cc_pickle_num=None)        
                 time.sleep(0.2)
                 
-                datastreams, log_info = capture_data(fpga_board=fpga_board, 
-                                                     experiment_setup=experiment_class, 
+                datastreams, log_info = capture_data(hardware=hardware, 
                                                      file_name_raw=file_name, 
                                                      data_dir=data_dir, 
                                                      dc_configs=dc_configs, 
@@ -697,7 +1344,7 @@ def measure_cmd_cc_impulse(fpga_board: FPGAInterface, experiment_class : Bathcla
                 plot_setting['plotmanager1'] = plotmanager1
                 plot_setting['plotmanager2'] = plotmanager2
                 plot_setting['figs'] = figs
-                datastreams = ds_add_log(experiment_setup=experiment_class, 
+                datastreams = ds_add_log(hardware=hardware, 
                                          datastreams=datastreams, 
                                          dc_configs=dc_configs, 
                                          first_pos_step=first_pos_step, 
@@ -733,72 +1380,43 @@ def measure_cmd_cc_impulse(fpga_board: FPGAInterface, experiment_class : Bathcla
 
             if 'wiener' in method: 
                 pass
-                """
-                windowed_filtered_cc_wave, filtered_cc_wave, cc_wave, impulse_c = cc_waveform(ds, l=0.0035, fc=20e3)
-
-                # now use the filtered_cc_wave to replace CC 
-                set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=None,
-                step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
-
-                cc_nofilt = copy.deepcopy(ddr.data_arrays[dc_mapping['bath']])
-
-                set_cmd_cc(dc_nums=[dc_mapping['bath']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=fc_cmd,
-                step_len=16384*8, cc_val=cmd_val, cc_pickle_num=None)
-
-                idx = np.where(np.abs(np.diff(cc_nofilt)) > 0)
-                span_l = int(len(filtered_cc_wave)/2)
-                span_r = len(filtered_cc_wave) - span_l
-                filtered_cc_wave_scale = filtered_cc_wave*0x200/1e-6*6
-                dac_offset = 0x2000
-
-                low = filtered_cc_wave_scale[0]
-                high = filtered_cc_wave_scale[-1]
-                low_replace = np.min(cc_nofilt)
-                high_replace = np.max(cc_nofilt)
-                ddr.data_arrays[dc_mapping['bath']][cc_nofilt < dac_offset] = low + dac_offset
-                ddr.data_arrays[dc_mapping['bath']][cc_nofilt > dac_offset] = high + dac_offset
-
-                for s in idx[0]:
-                    pos = (ddr.data_arrays[dc_mapping['bath']][(s-span_l)] > dac_offset)
-                    if pos:
-                        ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (filtered_cc_wave_scale + dac_offset).astype(np.uint16)
-                    else:
-                        ddr.data_arrays[dc_mapping['bath']][(s-span_l):(s+span_r)] = (-filtered_cc_wave_scale + dac_offset).astype(np.uint16)
-
-                """
+                
             if 'guess' in method: 
                 # now use the filtered_cc_wave to replace CC 
                 cc_val = int(-0.9*cmd_val_set)
                 cmd_val = cmd_val_set
-                fpga_board.set_cmd_cc( 
-                           dc_nums=[fpga_board.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
+                hardware.set_cmd_cc( 
+                           dc_nums=[hardware.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
                         step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
             
             if 'spline' in method:
                 cmd_val = cmd_val_set
-                fpga_board.set_cmd_cc(dc_nums=[fpga_board.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
+                hardware.set_cmd_cc(dc_nums=[hardware.dc_mapping['bath']], cmd_val=cmd_val, cc_scale=None, cc_delay=0, fc=None,
                         step_len=16384*8, cc_val=cc_val, cc_pickle_num=None)
                 cc_wave, configs, results = infer_ccwave_spline(DEBUG_PLOTS=True, run_date = '20240417', 
                                 run_time = '163357', rtia=adg_r, ccomp=ccomp)
                 cc_wave = decimate(cc_wave, q=2)
                 norm_factor = cc_wave[-1] # so that we can concatenate rising and falling edges we need the the left most value to equal 0 and the right most to equal 1
                 cc_wave = cc_wave/norm_factor
-                cmd_wave = fpga_board.ddr.data_arrays[fpga_board.dc_mapping['bath']+1]
+                cmd_wave = hardware.ddr.data_arrays[hardware.dc_mapping['bath']+1]
                 # restore the amplitude below. Multiply by x2 due to difference in amplitude and pk-pk. FS due to discrete convolution "missing" the time step.  
                 cc_wave_full = cat_cc_wave(cmd_wave, cc_wave, amplitude=-(cmd_val*2)*norm_factor*FS, midpt=8192)
-                fpga_board.ddr.data_arrays[fpga_board.dc_mapping['bath']] = cc_wave_full.astype(np.uint16)
+                hardware.ddr.data_arrays[hardware.dc_mapping['bath']] = cc_wave_full.astype(np.uint16)
             plot_setting['idx'] = plot_setting['idx'] + 1
+
             if plot_cancel:
-                first_time, plotmanager1, plotmanager2, figs, datastreams, idx = plot_if_cancellation(fpga_board, experiment_setup=experiment_class, dc_configs=dc_configs, 
-                                                   sys_connections=sys_connections,  
-                                                   plot_setting=plot_setting, 
-                                                   cmd_cc_scale=cmd_cc_scale, 
-                                                   first_pos_step=first_pos_step, cmd_val=cmd_val, cc_val=cc_val, adg_r=adg_r, 
-                                                   data_dir=data_dir, h5_file_name=h5_file_name, 
+                first_time, plotmanager1, plotmanager2, figs, datastreams, idx = plot_if_cancellation(
+                                                    hardware=hardware, 
+                                                    dc_configs=dc_configs, 
+                                                    sys_connections=sys_connections,  
+                                                    plot_setting=plot_setting, 
+                                                    cmd_cc_scale=cmd_cc_scale, 
+                                                    first_pos_step=first_pos_step, cmd_val=cmd_val, cc_val=cc_val, adg_r=adg_r, 
+                                                    data_dir=data_dir, h5_file_name=h5_file_name, 
                                     method=method, ccomp=ccomp, ds=ds)
     return ds, datastreams, first_time, plotmanager1, plotmanager2, figs, idx
 
-def plot_if_cancellation(fpga_board : FPGAInterface, *, experiment_setup, dc_configs, 
+def plot_if_cancellation(hardware : HardwareSetup, *, dc_configs, 
                          sys_connections, 
                          plot_setting : dict, 
                          cmd_cc_scale : dict, 
@@ -812,20 +1430,57 @@ def plot_if_cancellation(fpga_board : FPGAInterface, *, experiment_setup, dc_con
                          ccomp, 
                          ds : dict
                          ):
+    """
+    Plots results if cancellation is performed.
+
+    Parameters
+    ----------
+    hardware : HardwareSetup
+        Hardware setup instance.
+    dc_configs : dict
+        Daughtercard configurations.
+    sys_connections : dict
+        System connections.
+    plot_setting : dict
+        Plot settings.
+    cmd_cc_scale : dict
+        Command current clamp scaling.
+    first_pos_step : Any
+        First positive step value.
+    cmd_val : Any
+        Command value.
+    cc_val : Any
+        Current clamp value.
+    adg_r : Any
+        ADG resistance value.
+    data_dir : str
+        Data directory.
+    h5_file_name : str
+        HDF5 file name.
+    method : str
+        Method used.
+    ccomp : Any
+        Compensation value.
+    ds : dict
+        Data streams.
+
+    Returns
+    -------
+    None
+    """
     file_name = h5_file_name
     # show the waveforms used 
     fig,ax = plt.subplots()
-    ax.plot(fpga_board.ddr.data_arrays[fpga_board.dc_mapping['bath']][0:2**19], label='CC')
-    ax.plot(fpga_board.ddr.data_arrays[fpga_board.dc_mapping['bath'] + 1][0:2**19], 'tab:orange', label='CMD')
+    ax.plot(hardware.ddr.data_arrays[hardware.dc_mapping['bath']][0:2**19], label='CC')
+    ax.plot(hardware.ddr.data_arrays[hardware.dc_mapping['bath'] + 1][0:2**19], 'tab:orange', label='CMD')
     fig.suptitle('Cancelation waveforms')
     ax.legend()
 
     # write channels to the DDR
-    fpga_board.write_ddr()
+    hardware.write_ddr()
 
     idx = plot_setting['idx']
-    datastreams, log_info = capture_data(fpga_board, 
-                                             experiment_setup=experiment_setup, 
+    datastreams, log_info = capture_data(hardware=hardware, 
                                              file_name_raw=file_name, 
                                              data_dir=data_dir, 
                                              dc_configs=dc_configs, idx=idx)
@@ -839,7 +1494,7 @@ def plot_if_cancellation(fpga_board : FPGAInterface, *, experiment_setup, dc_con
     plot_setting['plotmanager1'] = plotmanager1
     plot_setting['plotmanager2'] = plotmanager2
     plot_setting['figs'] = figs
-    datastreams = ds_add_log(fpga_board=fpga_board, experiment_setup=experiment_setup, 
+    datastreams = ds_add_log(hardware=hardware, 
                                  datastreams=datastreams, dc_configs=dc_configs, first_pos_step=first_pos_step, 
                                  cmd_val=cmd_val, step_len=cmd_cc_scale['step_len'], cc_val=cc_val, fc_cmd=cmd_cc_scale['fc_cmd'], sys_connections=sys_connections)
     datastreams.to_h5(data_dir, f"cancelation_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5", log_info)
@@ -854,12 +1509,11 @@ def plot_if_cancellation(fpga_board : FPGAInterface, *, experiment_setup, dc_con
 
     CAPTURE_CC_ALONE = True
     if CAPTURE_CC_ALONE:
-        fpga_board.ddr.data_arrays[fpga_board.dc_mapping['bath'] + 1] = 8192 # zero CMD 
+        hardware.ddr.data_arrays[hardware.dc_mapping['bath'] + 1] = 8192 # zero CMD 
         # write channels to the DDR
-        fpga_board.write_ddr()
+        hardware.write_ddr()
         time.sleep(0.1)
-        datastreams, log_info = capture_data(fpga_board, 
-                                             experiment_setup=experiment_setup, 
+        datastreams, log_info = capture_data(hardware=hardware, 
                                              file_name_raw=file_name, 
                                              data_dir=data_dir, 
                                              dc_configs=dc_configs, idx=idx)
@@ -869,9 +1523,12 @@ def plot_if_cancellation(fpga_board : FPGAInterface, *, experiment_setup, dc_con
                                                                                  plot_setting['plotmanager1'], 
                                                                                  plot_setting['plotmanager2'], 
                                                                                  plot_setting['figs'], adg_r)
-        datastreams = ds_add_log(experiment_setup=experiment_setup, 
-                                 datastreams=datastreams, dc_configs=dc_configs, first_pos_step=first_pos_step, 
-                                 cmd_val=cmd_val, step_len=cmd_cc_scale['step_len'], cc_val=cc_val, fc_cmd=cmd_cc_scale['fc_cmd'], sys_connections=sys_connections)
+        datastreams = ds_add_log(hardware=hardware, 
+                                 datastreams=datastreams, dc_configs=dc_configs, 
+                                 first_pos_step=first_pos_step, 
+                                 cmd_val=cmd_val, step_len=cmd_cc_scale['step_len'], 
+                                 cc_val=cc_val, fc_cmd=cmd_cc_scale['fc_cmd'], 
+                                 sys_connections=sys_connections)
         datastreams.to_h5(data_dir, f"canceling_cc_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5", log_info)
         ds['canceling_cc'] = h5_to_datastreams(data_dir, f"canceling_cc_{method}_{file_name}_rtia{adg_r}_ccomp{ccomp}.h5")
 
@@ -886,7 +1543,8 @@ def plot_if_cancellation(fpga_board : FPGAInterface, *, experiment_setup, dc_con
     ax.legend()
     return first_time, plotmanager1, plotmanager2, figs, datastreams, idx
 
-def large_param_sweep(fpga_board : FPGAInterface, experiment_setup : BathclampVclampStepResponse, file_name_before_format, 
+def large_param_sweep(hardware : HardwareSetup, 
+                      file_name_before_format, 
                       *, 
                       osc, 
                       data_dir, 
@@ -905,11 +1563,64 @@ def large_param_sweep(fpga_board : FPGAInterface, experiment_setup : BathclampVc
                       first_pos_step, 
                       TO_CLAMPFIT, 
                       sys_connections):
+    """
+    Performs a large parameter sweep for experiments.
+
+    Parameters
+    ----------
+    hardware : HardwareSetup
+        Hardware setup instance.
+    file_name_before_format : str
+        Base file name.
+    osc : Any
+        Oscilloscope object.
+    data_dir : str
+        Data directory.
+    dc_configs : dict
+        Daughtercard configurations.
+    mv_val_arr : np.ndarray
+        Array of millivolt values.
+    ccomp_arr : Any
+        Compensation array.
+    adg_r_arr : Any
+        ADG resistance array.
+    scope_meas : Any
+        Scope measurement object.
+    OSCOPE : bool
+        Whether to use oscilloscope.
+    scope_data : dict
+        Scope data dictionary.
+    cmd_cc_scale : dict
+        Command current clamp scaling.
+    plot_setting : dict
+        Plot settings.
+    cc_val : Any
+        Current clamp value.
+    clamp_fb_res : Any
+        Clamp feedback resistance.
+    clamp_res : Any
+        Clamp resistance.
+    first_pos_step : Any
+        First positive step value.
+    TO_CLAMPFIT : Any
+        Clampfit configuration.
+    sys_connections : dict
+        System connections.
+
+    Returns
+    -------
+    None
+    """
+    # Logger for parameter sweep
+    logger = logging.getLogger("Parameter Sweep Logger")
+    logger.setLevel(logging.INFO)
+    logger.info('Starting large parameter sweep...')
+
     for cmd_mv in mv_val_arr:
         cmd_val, actual_v = cmd_mv2dac(float(cmd_mv), sys_connections, dac_chan='D1') # if the input to from_voltage is numpy then assumption is array and it returns a 0d array
         for ccomp in ccomp_arr:
             for adg_r in adg_r_arr:
-                print(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
+                logger.info(f'Im-gain = {adg_r} kOhm = {(adg_r*1e3)*1e3*1e-9} mV/nA')
 
                 if OSCOPE: 
                     scope_data['CC'] = np.append(scope_data['CC'], ccomp)
@@ -919,13 +1630,13 @@ def large_param_sweep(fpga_board : FPGAInterface, experiment_setup : BathclampVc
 
                 dc_configs[0]['ADG_RES'] = adg_r
                 dc_configs[0]['CCOMP'] = ccomp
-                fpga_board.clamps[0].configure_clamp(**dc_configs[0])
-                fpga_board.set_cmd_cc(dc_nums=[fpga_board.dc_mapping['bath'], fpga_board.dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=cmd_cc_scale['fc_cmd'],
+                hardware.clamps[0].configure_clamp(**dc_configs[0])
+                hardware.set_cmd_cc(dc_nums=[hardware.dc_mapping['bath'], hardware.dc_mapping['guard']], cmd_val=cmd_val, cc_scale=0, cc_delay=0, fc=cmd_cc_scale['fc_cmd'],
                     step_len=cmd_cc_scale['step_len'], cc_val=None, cc_pickle_num=None)
                 time.sleep(0.2) # extend for noise analysis
                 
                 filename = 'step_rtia{}_ccomp{}_cmd{}.h5'.format(adg_r, ccomp, cmd_val)
-                datastreams, log_info = capture_data(fpga_board=fpga_board, experiment_setup=experiment_setup, 
+                datastreams, log_info = capture_data(hardware=hardware, 
                                                      file_name_raw=file_name_before_format, data_dir=data_dir, dc_configs=dc_configs, 
                                                      idx=1, filename=filename)
                 first_time, plotmanager1, plotmanager2, figs, datastreams, idx = update_plots(plot_setting['first_time'], 
@@ -941,9 +1652,8 @@ def large_param_sweep(fpga_board : FPGAInterface, experiment_setup : BathclampVc
 
                 sig = 'Im' 
                 si = datastreams[sig].stepinfo_range([first_pos_step-0.02e-3, first_pos_step+170e-6])
-                print(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
-                print(f'{sig} step info: {si}')
-                print('-'*100)
+                logger.info(f'Ccomp = {ccomp} and TIA resistance = {adg_r}; vclamp RF = {clamp_fb_res} and TIA {clamp_res}')
+                logger.info(f'{sig} step info: {si}')
 
                 if OSCOPE:
                     osc.set('single_acq')
@@ -958,7 +1668,7 @@ def large_param_sweep(fpga_board : FPGAInterface, experiment_setup : BathclampVc
                                             dac_len=len(datastreams['CMD0'].data), dac_sample_rate=2.5e6, sweeps=1)
 
                 # add log info to datastreams -- any dictionary is ok  
-                datastreams = ds_add_log(experiment_setup=experiment_setup, 
+                datastreams = ds_add_log(hardware=hardware, 
                                          datastreams=datastreams, 
                                          dc_configs=dc_configs, 
                                          first_pos_step=first_pos_step, 
@@ -973,6 +1683,22 @@ def large_param_sweep(fpga_board : FPGAInterface, experiment_setup : BathclampVc
 def plot_oscilloscope(*, OSCOPE, 
                       adg_r_arr, 
                       scope_data):
+    """
+    Plots oscilloscope data.
+
+    Parameters
+    ----------
+    OSCOPE : bool
+        Whether oscilloscope is enabled.
+    adg_r_arr : Any
+        ADG resistance array.
+    scope_data : dict
+        Scope data dictionary.
+
+    Returns
+    -------
+    None
+    """
     # plot oscilloscope data vs. parameters 
     if OSCOPE:
         for adg_r in adg_r_arr:
@@ -987,6 +1713,18 @@ def plot_oscilloscope(*, OSCOPE,
             fig.suptitle(f'RTIA = {adg_r}')
 
 def plot_im_est(datastreams):
+    """
+    Plots impedance estimation results.
+
+    Parameters
+    ----------
+    datastreams : Datastreams
+        Datastreams object containing experiment data.
+
+    Returns
+    -------
+    None
+    """
     Cm = 33e-9
     fig, ax = plt.subplots()
     fig.suptitle('Overlay Meas. Im and Im estimate')

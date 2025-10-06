@@ -1,0 +1,59 @@
+{
+    "VSENSE2" : true,
+    "QUIET_DACS" : false,
+    "DAQ_V" : "2.1",
+    
+    "EPHYS_SYS_NAME" : "Dagan_guard",
+    
+    "NUMBER" : 1,
+    "RS" : 1e3,
+    "RP1" : 5e3,
+    "RV1" : 200e3,
+    "COUPLING_CAP_C20" : 0,
+    "RLEAK" : 47e5,
+    
+    "DAC_FS" : 2.5e6,
+    "FS" : 5e6,
+    "ADS_FS" : 1e6,
+    
+    "BATH" : 0,
+    "CLAMP" : 3,
+    "GUARD" : 1,
+    "VSENSE" : 2,
+    
+    "POWER_SETUP" : "3dual",
+    
+    "LIST_POWERS" : ["1V8", "5V", "3V3"],
+    "SPI_DEBUG" : "ads",
+    "ADS_MISC" : "convst",
+    
+    "feedback_resistors" : [2.1],
+    "capacitors" : [47],
+    "bath_res" : [100],
+    "in_amp" : 2,
+    "dac_range" : 5,
+    "ADS8686_VOLTAGE_RANGE" : 5,
+    "ADS8686_LPF" : 376,
+    "ADS8686_SEQUENCER_SETUP" : [["0", "0"], ["1", "1"], ["4", "2"]],
+    
+    
+    "clamp_fb_res" : 60,
+    "clamp_res" : 1000,
+    "clamp_cap" : 47,
+    
+    "bath_fb_res" : 60,
+    "bath_adg_r" : 33,
+    "bath_ccomp" : 47,
+    
+    "guard_fb_res" : 60,
+    "guard_adg_r" : 332, 
+    "guard_ccomp" : 4700,
+    
+    "UNUSED_DACS" : [2, 4, 5],
+    "FAST_AD7961_CHANNELS" : [0, 1, 2, 3],
+
+    
+    "MEASURE_CC_IMPULSE" : true,
+    "MEASURE_CC_CANCELATION" : false,
+    "METHOD_CC_CANCELATION" : "spline"
+}

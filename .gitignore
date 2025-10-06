@@ -157,3 +157,6 @@ covg/data/*
 # ignore these sandbox files for now
 python/tests/bathclamp_vclamp_step_response_wcommon.py
 python/tests/common.py
+
+# do not ignore setup.json
+!python/tests_solidify/system_setup.json

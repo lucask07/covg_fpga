@@ -163,6 +163,9 @@ If there is anything that seems a little bit off, there may be a sign that your 
 
 See [Installation Guide](https://pyripherals.readthedocs.io/en/latest/installation.html) for more information. Additionally, please review [`instrbuilder`'s installation guide](https://lucask07.github.io/instrbuilder/build/html/installation.html) for setting up the electrical engineering lab instruments.
 
+## Experiment Manual
+Please visit [experiment_manual.md](installation_scripts/experiment_manual.md) for details about experiment manuals.
+
 # Acknowledgements 
 
 If this work contributes to your research please cite:
